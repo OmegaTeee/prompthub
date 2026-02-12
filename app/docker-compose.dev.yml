@@ -1,0 +1,58 @@
+# AgentHub - Development Docker Compose Configuration
+# Extends docker-compose.yml with development-specific settings
+
+version: '3.8'
+
+services:
+  router:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Cache build stages for faster rebuilds
+      cache_from:
+        - agenthub-router:latest
+    
+    # Override image name for dev
+    image: agenthub-router:dev
+    
+    # Bind mount source code for hot reload
+    volumes:
+      - ./router:/app/router:ro
+      - ./configs:/app/configs:rw
+      - ./templates:/app/templates:ro
+      - agenthub-data:/app/data
+      - agenthub-logs:/app/logs
+    
+    # Development environment variables
+    environment:
+      LOG_LEVEL: "debug"
+      ROUTER_HOST: "0.0.0.0"
+      ROUTER_PORT: "9090"
+      OLLAMA_HOST: "host.docker.internal"
+      OLLAMA_PORT: "11434"
+    
+    # Override command to enable auto-reload
+    command: >
+      uvicorn router.main:app
+      --host 0.0.0.0
+      --port 9090
+      --reload
+      --log-level debug
+    
+    # Expose debugger port
+    ports:
+      - "9090:9090"
+      - "5678:5678"  # Python debugger (debugpy)
+    
+    # Development-friendly restart policy
+    restart: "no"
+
+volumes:
+  agenthub-data:
+    driver: local
+  agenthub-logs:
+    driver: local
+
+networks:
+  agenthub-network:
+    driver: bridge

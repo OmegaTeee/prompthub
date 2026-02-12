@@ -1,0 +1,57 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${HOME}/.local/share/mcps/node_modules/@upstash/context7-mcp/dist/index.js"
+      ]
+    },
+    "deepseek-reasoner": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${HOME}/.local/share/mcps/node_modules/deepseek-reasoner-mcp/dist/index.js"
+      ]
+    },
+    "desktop-commander": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${HOME}/.local/share/mcps/node_modules/@wonderwhy-er/desktop-commander/dist/index.js"
+      ]
+    },
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${HOME}/.local/share/mcps/node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"
+      ]
+    },
+    "obsidian": {
+      "command": "${HOME}/.local/share/mcps/scripts/mcp-obsidian.sh"
+    },
+    "obsidian-mcp-tools": {
+      "command": "${HOME}/.local/share/mcps/scripts/obsidian-mcp-tools.sh"
+    },
+    "sprouti": {
+      "command": "/opt/homebrew/bin/node",
+      "args": [
+        "~/Library/Containers/com.skyphic.sprouti/Data/Library/Application Support/sprouti/mcp/development/server.js"
+      ],
+      "env": {
+        "PATH": "/opt/homebrew/bin/node:/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "skills-mcp": {
+      "args": [
+        "-y",
+        "skills-mcp",
+        "-s",
+        "${HOME}/.claude/skills"
+      ],
+      "command": "npx",
+      "type": "stdio"
+    }
+  }
+}

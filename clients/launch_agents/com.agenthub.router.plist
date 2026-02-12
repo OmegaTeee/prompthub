@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Service identification -->
+    <key>Label</key>
+    <string>com.agenthub.router</string>
+
+    <!-- Program to run -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/visualval/.local/share/agenthub/.venv/bin/uvicorn</string>
+        <string>router.main:app</string>
+        <string>--host</string>
+        <string>127.0.0.1</string>
+        <string>--port</string>
+        <string>9090</string>
+        <string>--reload</string>
+    </array>
+
+    <!-- Working directory -->
+    <key>WorkingDirectory</key>
+    <string>/Users/visualval/.local/share/agenthub</string>
+
+    <!-- Environment variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/visualval/.local/share/agenthub/.venv/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>PYTHONPATH</key>
+        <string>/Users/visualval/.local/share/agenthub</string>
+    </dict>
+
+    <!-- Auto-start on login -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Keep alive - restart if it crashes -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <!-- Restart settings -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <!-- Logging -->
+    <key>StandardOutPath</key>
+    <string>/Users/visualval/.local/share/agenthub/logs/router-stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/visualval/.local/share/agenthub/logs/router-stderr.log</string>
+
+    <!-- Process type -->
+    <key>ProcessType</key>
+    <string>Interactive</string>
+
+    <!-- Nice level (lower priority) -->
+    <key>Nice</key>
+    <integer>0</integer>
+</dict>
+</plist>

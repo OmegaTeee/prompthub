@@ -1,0 +1,21 @@
+  @font-face {
+    font-family:'monofonto-bold';
+    font-weight:normal;
+    font-style:normal;
+    font-display:swap;
+    src:url('bold.woff') format("woff");
+  }
+
+  .webfont-bold {
+    font-family: 'monofonto-bold', 'UnderscoreFallback' !important;
+    line-height:1.2em;
+    text-decoration:none;
+    color:#0B0A0A !important;
+    transition:all 0.5s ease-out;
+    -webkit-touch-callout:none;
+    -webkit-user-select:none;
+    -khtml-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+  }

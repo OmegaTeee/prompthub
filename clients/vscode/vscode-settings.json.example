@@ -1,0 +1,15 @@
+{
+  "claude.mcp.enabled": true,
+  "claude.mcp.servers": {
+    "agenthub": {
+      "url": "http://localhost:9090",
+      "transport": "http",
+      "headers": {
+        "X-Client-Name": "vscode"
+      },
+      "timeout": 30000
+    }
+  },
+  "claude.mcp.autoConnect": true,
+  "claude.mcp.cacheResponses": true
+}

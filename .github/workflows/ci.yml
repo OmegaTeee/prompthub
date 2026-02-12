@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Run Ruff linter
+        run: ruff check router/ tests/ --output-format=github
+        continue-on-error: true
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]" || pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run tests
+        run: |
+          WORKSPACE_ROOT=${{ github.workspace }} pytest tests/ -v --cov=router --cov-report=xml
+        continue-on-error: true
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./app/coverage.xml
+          fail_ci_if_error: false
+
+  build:
+    name: Build Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          file: ./app/Dockerfile
+          push: false
+          tags: agenthub:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        continue-on-error: true

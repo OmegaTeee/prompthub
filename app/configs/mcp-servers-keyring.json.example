@@ -1,0 +1,46 @@
+{
+  "_comment": "Example configuration with keyring integration",
+  "servers": {
+    "obsidian": {
+      "package": "obsidian-mcp-tools",
+      "transport": "stdio",
+      "command": "./mcps/obsidian-mcp-tools/bin/mcp-server",
+      "args": [],
+      "env": {
+        "_comment": "Router will retrieve these from keyring before spawning",
+        "OBSIDIAN_API_KEY": {
+          "source": "keyring",
+          "service": "agenthub",
+          "key": "obsidian_api_key"
+        },
+        "OBSIDIAN_HOST": "https://127.0.0.1",
+        "OBSIDIAN_PORT": "27124"
+      },
+      "auto_start": true,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Semantic search, templates, and file management for Obsidian vault"
+    },
+    "example-with-multiple-keys": {
+      "package": "example-mcp",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/example-mcp/dist/index.js"],
+      "env": {
+        "API_KEY": {
+          "source": "keyring",
+          "service": "agenthub",
+          "key": "example_api_key"
+        },
+        "SECRET_TOKEN": {
+          "source": "keyring",
+          "service": "agenthub",
+          "key": "example_token"
+        },
+        "STATIC_VALUE": "this-is-just-a-string"
+      },
+      "auto_start": false
+    }
+  }
+}

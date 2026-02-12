@@ -1,0 +1,56 @@
+<h3>&#x1F4DD; Recent Activity</h3>
+
+{% if activity %}
+<table>
+    <tr>
+        <th>Time</th>
+        <th>Method</th>
+        <th>Endpoint</th>
+        <th>Status</th>
+        <th style="text-align: right;">Duration</th>
+    </tr>
+{% for req in activity %}
+    <tr>
+        <td class="text-muted">{{ req.timestamp }}</td>
+        <td>
+            {% if req.method == 'GET' %}
+            <span class="badge badge-info">GET</span>
+            {% elif req.method == 'POST' %}
+            <span class="badge badge-success">POST</span>
+            {% elif req.method == 'DELETE' %}
+            <span class="badge badge-danger">DELETE</span>
+            {% else %}
+            <span class="badge">{{ req.method }}</span>
+            {% endif %}
+        </td>
+        <td class="mono" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+            {{ req.path }}
+        </td>
+        <td>
+            {% if req.status >= 200 and req.status < 300 %}
+            <span class="text-success">{{ req.status }}</span>
+            {% elif req.status >= 400 and req.status < 500 %}
+            <span class="text-warning">{{ req.status }}</span>
+            {% elif req.status >= 500 %}
+            <span class="text-danger">{{ req.status }}</span>
+            {% else %}
+            {{ req.status }}
+            {% endif %}
+        </td>
+        <td style="text-align: right;" class="mono">
+            {% if req.duration < 0.1 %}
+            <span class="text-success">{{ "%.0f" | format(req.duration * 1000) }}ms</span>
+            {% elif req.duration < 1.0 %}
+            <span class="text-warning">{{ "%.0f" | format(req.duration * 1000) }}ms</span>
+            {% else %}
+            <span class="text-danger">{{ "%.1f" | format(req.duration) }}s</span>
+            {% endif %}
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% else %}
+<p class="text-muted" style="text-align: center; padding: 20px;">
+    No activity recorded yet. Make some API requests!
+</p>
+{% endif %}

@@ -1,0 +1,104 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Documentation (don't need in container)
+docs/
+*.md
+!README.md
+guides/
+CLAUDE.md
+BUILD-*.md
+ASYNC-AUDIT.md
+KEYRING-*.md
+DASHBOARD-*.md
+
+# Development and testing
+tests/
+test_*.py
+*.test.js
+*.spec.js
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Logs and data directories (use volumes instead)
+logs/
+data/
+*.log
+
+# MCP server packages (will be installed at runtime via npx)
+mcps/node_modules/
+mcps/package-lock.json
+
+# Scripts (unless needed at runtime)
+scripts/
+!scripts/run-*.sh
+
+# Workspace files
+*.code-workspace
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# macOS specific
+.local/
+.cache/
+.config/
+Library/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Lock files (requirements.txt is preferred)
+poetry.lock
+Pipfile.lock
+
+# Node modules (installed at runtime as needed)
+node_modules/
+package-lock.json

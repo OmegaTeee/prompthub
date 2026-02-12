@@ -1,0 +1,38 @@
+{
+  "//": "Full VS Code workspace configuration for AgentHub",
+  "//": "Place this in .vscode/settings.json in your workspace root",
+
+  "claude.mcp.enabled": true,
+  "claude.mcp.autoConnect": true,
+  "claude.mcp.cacheResponses": true,
+
+  "claude.mcp.servers": {
+    "agenthub": {
+      "url": "http://localhost:9090",
+      "transport": "http",
+      "headers": {
+        "X-Client-Name": "vscode"
+      },
+      "timeout": 30000,
+      "description": "AgentHub unified MCP router (7+ servers)"
+    }
+  },
+
+  "//tasks": "See tasks.json for AgentHub-specific tasks",
+
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+
+  "files.associations": {
+    "*.mcp.json": "jsonc"
+  },
+
+  "//": "Recommended extensions for AgentHub development",
+  "recommendations": [
+    "anthropic.claude-code",
+    "ms-python.python",
+    "dbaeumer.vscode-eslint"
+  ]
+}

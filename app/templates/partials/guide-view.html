@@ -1,0 +1,148 @@
+<style>
+.guide-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.guide-modal-content {
+  background: var(--card);
+  border-radius: var(--radius-md);
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.guide-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 1;
+}
+
+.guide-modal-body {
+  padding: 20px;
+}
+
+/* Markdown content styling */
+.guide-modal-body h1 {
+  font-size: 28px;
+  margin-top: 0;
+  color: var(--text);
+}
+
+.guide-modal-body h2 {
+  font-size: 22px;
+  margin-top: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  color: var(--text);
+}
+
+.guide-modal-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: var(--text);
+}
+
+.guide-modal-body p {
+  line-height: 1.6;
+  margin: 12px 0;
+  color: var(--text);
+}
+
+.guide-modal-body code {
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.guide-modal-body pre {
+  background: var(--bg);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  border: 1px solid var(--border);
+}
+
+.guide-modal-body pre code {
+  background: none;
+  padding: 0;
+}
+
+.guide-modal-body a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.guide-modal-body a:hover {
+  text-decoration: underline;
+}
+
+.guide-modal-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.guide-modal-body th,
+.guide-modal-body td {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  text-align: left;
+  color: var(--text);
+}
+
+.guide-modal-body th {
+  background: var(--bg);
+  font-weight: 500;
+}
+
+.guide-modal-body ul,
+.guide-modal-body ol {
+  margin: 12px 0;
+  padding-left: 24px;
+  color: var(--text);
+}
+
+.guide-modal-body li {
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
+.guide-modal-body blockquote {
+  border-left: 4px solid var(--border);
+  padding-left: 16px;
+  margin: 16px 0;
+  color: var(--text-secondary);
+}
+</style>
+
+<div class="guide-modal-overlay" onclick="closeGuideModal()">
+  <div class="guide-modal-content" onclick="event.stopPropagation()">
+    <div class="guide-modal-header">
+      <h2 style="margin: 0;">{{ title }}</h2>
+      <button class="btn btn-sm btn-secondary" onclick="closeGuideModal()">Close ✕</button>
+    </div>
+    <div class="guide-modal-body">
+      {{ content|safe }}
+    </div>
+  </div>
+</div>

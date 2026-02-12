@@ -1,0 +1,96 @@
+{
+  "servers": {
+    "context7": {
+      "package": "@upstash/context7-mcp",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/@upstash/context7-mcp/dist/index.js"],
+      "env": {},
+      "auto_start": true,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Documentation fetching from libraries"
+    },
+    "desktop-commander": {
+      "package": "@wonderwhy-er/desktop-commander",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/@wonderwhy-er/desktop-commander/dist/index.js"],
+      "env": {},
+      "auto_start": true,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "File operations and terminal commands"
+    },
+    "sequential-thinking": {
+      "package": "@modelcontextprotocol/server-sequential-thinking",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"],
+      "env": {},
+      "auto_start": true,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Step-by-step reasoning and planning"
+    },
+    "memory": {
+      "package": "@modelcontextprotocol/server-memory",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/@modelcontextprotocol/server-memory/dist/index.js"],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Cross-session context persistence"
+    },
+    "deepseek-reasoner": {
+      "package": "deepseek-reasoner-mcp",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/deepseek-reasoner-mcp/dist/index.js"],
+      "env": {},
+      "auto_start": true,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Local reasoning without API costs"
+    },
+    "obsidian": {
+      "package": "obsidian-mcp-tools",
+      "transport": "stdio",
+      "command": "./mcps/obsidian-mcp-tools/bin/mcp-server",
+      "args": [],
+      "env": {
+        "OBSIDIAN_API_KEY": {
+          "source": "keyring",
+          "service": "agenthub",
+          "key": "obsidian_api_key"
+        },
+        "OBSIDIAN_HOST": "https://127.0.0.1",
+        "OBSIDIAN_PORT": "27124"
+      },
+      "auto_start": true,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Semantic search, templates, and file management for Obsidian vault"
+    },
+    "duckduckgo": {
+      "package": "ddg-mcp-search",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/ddg-mcp-search/dist/index.js"],
+      "env": {},
+      "auto_start": true,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "DuckDuckGo web search with SafeSearch and region support"
+    }
+  }
+}

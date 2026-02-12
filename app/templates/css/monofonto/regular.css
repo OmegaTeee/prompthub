@@ -1,0 +1,29 @@
+@font-face {
+  font-family: 'webfont-HW4AS0B965';
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  src: url('data:application/font-woff;base64,') format("woff");
+}
+
+@font-face {
+    font-family:'monofonto';
+    font-weight:normal;
+    font-style:normal;
+    font-display:swap;
+    src:url('regular.woff') format("woff");
+  }
+
+  .webfont-regular {
+    font-family: 'monofonto', 'UnderscoreFallback' !important;
+    line-height:1.2em;
+    text-decoration:none;
+    color:#0B0A0A !important;
+    transition:all 0.5s ease-out;
+    -webkit-touch-callout:none;
+    -webkit-user-select:none;
+    -khtml-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+  }

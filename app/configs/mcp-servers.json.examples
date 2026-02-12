@@ -1,0 +1,82 @@
+{
+  "_comment": "Example MCP server configurations. Copy entries to mcp-servers.json to enable.",
+  "servers": {
+    "obsidian-rest": {
+      "_comment": "Python-based Obsidian MCP via REST API",
+      "_requirements": [
+        "Add to requirements.txt: mcp-obsidian>=0.1.0",
+        "Install: pip install mcp-obsidian",
+        "Install Local REST API plugin in Obsidian",
+        "Configure API key in Keychain",
+        "Wrapper script: scripts/mcp-obsidian-rest.sh"
+      ],
+      "package": "mcp-obsidian",
+      "transport": "stdio",
+      "command": "./scripts/mcp-obsidian-rest.sh",
+      "args": [],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Obsidian vault integration via REST API (requires Local REST API plugin)"
+    },
+    "example-python-mcp": {
+      "_comment": "Template for any Python-based MCP server",
+      "_requirements": [
+        "Add to requirements.txt: <package-name>",
+        "Install: pip install <package-name>",
+        "Create wrapper script in scripts/ if API keys needed",
+        "See scripts/mcp-obsidian-rest.sh for wrapper pattern"
+      ],
+      "package": "<python-package-name>",
+      "transport": "stdio",
+      "command": "./scripts/<wrapper-script-name>.sh",
+      "args": [],
+      "env": {
+        "API_KEY": "loaded-by-wrapper-script"
+      },
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Description of what this MCP server does"
+    },
+    "example-npm-mcp": {
+      "_comment": "Template for npm-based MCP server",
+      "_requirements": [
+        "cd mcps && npm install <package-name>",
+        "Point args to ./mcps/node_modules/<package-name>/dist/index.js"
+      ],
+      "package": "<npm-package-name>",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/<package-name>/dist/index.js"],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Description of what this MCP server does"
+    },
+    "example-binary-mcp": {
+      "_comment": "Template for standalone binary MCP server",
+      "_requirements": [
+        "Create directory: mkdir -p mcps/<mcp-name>/bin",
+        "Copy binary: cp /path/to/binary mcps/<mcp-name>/bin/",
+        "Make executable: chmod +x mcps/<mcp-name>/bin/<binary-name>",
+        "Create wrapper script if API keys needed"
+      ],
+      "package": "<binary-name>",
+      "transport": "stdio",
+      "command": "./scripts/<wrapper-script-name>.sh",
+      "args": [],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Description of what this MCP server does"
+    }
+  }
+}

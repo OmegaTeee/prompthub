@@ -1,0 +1,65 @@
+/* === Base styles ===================================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: var(--font-sans-features);
+  font-variant-numeric: tabular-nums;
+  font-variation-settings:
+    "wdth" var(--font-sans-wdth),
+    "wght" var(--font-sans-wght);
+  font-optical-sizing: auto;
+  text-rendering: geometricPrecision;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 20px;
+  line-height: 1.5;
+}
+
+/* Typography utilities */
+.font-sans-strong {
+  font-variation-settings:
+    "wdth" var(--font-sans-wdth),
+    "wght" 700;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: var(--font-mono-features);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: var(--font-mono-wght);
+}
+
+code,
+pre {
+  font-family: monospace;
+  font-family: var(--font-lilex-mono);
+  font-feature-settings: var(--font-lilex-features);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: 450;
+}
+
+.mono {
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: 13px;
+}
+
+/* Text color utilities */
+.text-success {
+  color: var(--green);
+}
+
+.text-warning {
+  color: var(--yellow);
+}
+
+.text-danger {
+  color: var(--red);
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}

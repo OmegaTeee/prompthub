@@ -1,0 +1,1 @@
+/Users/visualval/Public/Code/ai.instructions/awesome-copilot/instructions/copilot-thought-logging.instructions.md

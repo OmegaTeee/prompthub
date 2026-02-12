@@ -1,0 +1,119 @@
+# AgentHub - Docker Compose Configuration
+# For local development and testing
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # AgentHub Router
+  # =============================================================================
+  router:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: agenthub-router:latest
+    container_name: agenthub-router
+    ports:
+      - "9090:9090"
+    environment:
+      # Router configuration
+      ROUTER_HOST: "0.0.0.0"
+      ROUTER_PORT: "9090"
+      
+      # Ollama connection (assumes Ollama running on host)
+      OLLAMA_HOST: "host.docker.internal"
+      OLLAMA_PORT: "11434"
+      OLLAMA_TIMEOUT: "30"
+      
+      # Logging
+      LOG_LEVEL: "info"
+      
+      # Cache configuration
+      CACHE_MAX_SIZE: "1000"
+      
+      # Circuit breaker
+      CB_FAILURE_THRESHOLD: "3"
+      CB_RECOVERY_TIMEOUT: "30"
+      
+      # Config file paths (relative to /app in container)
+      MCP_SERVERS_CONFIG: "/app/configs/mcp-servers.json"
+      ENHANCEMENT_RULES_CONFIG: "/app/configs/enhancement-rules.json"
+    
+    volumes:
+      # Mount config files (read-only)
+      - ./configs:/app/configs:ro
+      
+      # Mount data directory for persistence (optional)
+      - agenthub-data:/app/data
+      
+      # Mount logs for debugging
+      - agenthub-logs:/app/logs
+    
+    networks:
+      - agenthub-network
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Resource limits (adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:9090/health', timeout=5.0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Use non-root user (set in Dockerfile)
+    user: "1000:1000"
+
+# =============================================================================
+# Optional: Qdrant Vector Database (Phase 2.1 - L2 cache)
+# =============================================================================
+  # qdrant:
+  #   image: qdrant/qdrant:latest
+  #   container_name: agenthub-qdrant
+  #   ports:
+  #     - "6333:6333"
+  #     - "6334:6334"
+  #   volumes:
+  #     - qdrant-storage:/qdrant/storage
+  #   networks:
+  #     - agenthub-network
+  #   restart: unless-stopped
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '1'
+  #         memory: 1G
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  agenthub-data:
+    driver: local
+  agenthub-logs:
+    driver: local
+  # qdrant-storage:
+  #   driver: local
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  agenthub-network:
+    driver: bridge

@@ -1,0 +1,78 @@
+<h3>&#x1F4E1; Services</h3>
+<div>
+{% for service in services %}
+    <div class="status-item">
+        <span class="status-dot {{ service.status_class }}"></span>
+        <strong>{{ service.name }}</strong>
+        <span style="margin-left: auto; color: var(--text-secondary);">
+            {{ service.status }}
+            {% if service.pid %}
+            <span class="text-muted">(PID: {{ service.pid }})</span>
+            {% endif %}
+        </span>
+        <div style="margin-left: 10px; display: flex; gap: 5px;">
+            {% if service.status == 'running' %}
+            <button
+                class="btn btn-sm btn-warning"
+                hx-post="/dashboard/actions/stop/{{ service.name }}"
+                hx-swap="none"
+                hx-disabled-elt="this"
+                hx-indicator="#spinner-stop-{{ service.name }}"
+                hx-on::after-request="setTimeout(() => htmx.trigger('#health-section', 'load'), 500)">
+                Stop
+                <span id="spinner-stop-{{ service.name }}" class="htmx-indicator spinner"></span>
+            </button>
+            <button
+                class="btn btn-sm btn-secondary"
+                hx-post="/dashboard/actions/restart/{{ service.name }}"
+                hx-swap="none"
+                hx-disabled-elt="this"
+                hx-indicator="#spinner-restart-{{ service.name }}"
+                hx-on::after-request="setTimeout(() => htmx.trigger('#health-section', 'load'), 500)">
+                Restart
+                <span id="spinner-restart-{{ service.name }}" class="htmx-indicator spinner"></span>
+            </button>
+            {% else %}
+            <button
+                class="btn btn-sm btn-success"
+                hx-post="/dashboard/actions/start/{{ service.name }}"
+                hx-swap="none"
+                hx-disabled-elt="this"
+                hx-indicator="#spinner-start-{{ service.name }}"
+                hx-on::after-request="setTimeout(() => htmx.trigger('#health-section', 'load'), 500)">
+                Start
+                <span id="spinner-start-{{ service.name }}" class="htmx-indicator spinner"></span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+</div>
+
+{% if circuit_breakers %}
+<h3 style="margin-top: 25px;">&#x26A0; Circuit Breakers</h3>
+<table>
+    <tr>
+        <th>Service</th>
+        <th>State</th>
+        <th>Failures</th>
+    </tr>
+{% for breaker in circuit_breakers %}
+    <tr>
+        <td>{{ breaker.name }}</td>
+        <td>
+            {% if breaker.state == 'closed' %}
+            <span class="badge badge-success">CLOSED</span>
+            {% elif breaker.state == 'open' %}
+            <span class="badge badge-danger">OPEN</span>
+            {% elif breaker.state == 'half_open' %}
+            <span class="badge badge-warning">HALF-OPEN</span>
+            {% else %}
+            <span class="badge badge-info">{{ breaker.state }}</span>
+            {% endif %}
+        </td>
+        <td>{{ breaker.failures }}</td>
+    </tr>
+{% endfor %}
+</table>
+{% endif %}

@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "agenthub": {
+      "command": "curl",
+      "args": [
+        "-s",
+        "-X",
+        "POST",
+        "http://localhost:9090/mcp/context7/tools/call",
+        "-H",
+        "Content-Type: application/json",
+        "-H",
+        "X-Client-Name: claude-desktop",
+        "-d",
+        "@-"
+      ]
+    }
+  }
+}

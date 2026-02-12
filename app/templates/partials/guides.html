@@ -1,0 +1,22 @@
+<div class="guides-grid" style="display: grid; gap: 12px;">
+  {% for guide in guides %}
+  <div class="guide-item"
+       style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: background-color 0.2s;"
+       onclick="openGuideModal('{{ guide.filename }}')"
+       onmouseover="this.style.backgroundColor='var(--hover)'"
+       onmouseout="this.style.backgroundColor='transparent'">
+    <div>
+      <div style="font-weight: 500; margin-bottom: 4px;">{{ guide.title }}</div>
+      <div class="text-muted" style="font-size: 13px;">
+        {{ guide.size_kb }} KB
+        {% if guide.description %}
+        · {{ guide.description }}
+        {% endif %}
+      </div>
+    </div>
+    <div>
+      <span style="color: var(--text-secondary); font-size: 20px;">→</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>

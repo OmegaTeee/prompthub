@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "agenthub": {
+      "args": [
+        "/Users/visualval/.local/share/agenthub/mcps/agenthub-bridge.js"
+      ],
+      "command": "node",
+      "env": {
+        "AGENTHUB_URL": "http://localhost:9090",
+        "CLIENT_NAME": "raycast"
+      }
+    }
+  }
+}

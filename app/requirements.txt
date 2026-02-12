@@ -1,0 +1,36 @@
+# Core dependencies
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+httpx>=0.26.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+jinja2>=3.1.0
+python-multipart>=0.0.6
+
+# Development tools
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+ruff>=0.1.0
+mypy>=1.8.0
+
+# Keychain integration (for secure MCP credential management)
+keyring>=24.0.0
+
+# Structured logging for audit trails
+structlog>=25.0.0
+
+# Async SQLite for persistent activity log
+aiosqlite>=0.22.0
+
+# Markdown rendering for dashboard guides
+markdown2>=2.4.0
+
+# Metrics (used by enhancement middleware)
+prometheus_client>=0.20.0
+
+# Optional: Vector cache (Phase 2.1)
+# qdrant-client>=1.7.0
+
+# MCP Servers (Python-based) - Examples only, uncomment to use
+# mcp-obsidian>=0.1.0  # Example: Obsidian via REST API (requires Local REST API plugin)

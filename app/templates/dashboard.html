@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wdth,wght@0,87.5,400..700;1,87.5,400..700&family=Lilex:ital,wght@0,100..700;1,100..700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- CSS Modules -->
+    <link rel="stylesheet" href="/static/css/theme.css" />
+    <link rel="stylesheet" href="/static/css/base.css" />
+    <link rel="stylesheet" href="/static/css/layout.css" />
+    <link rel="stylesheet" href="/static/css/components.css" />
+    <link rel="stylesheet" href="/static/css/states.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>
+          <span style="font-size: 1.5rem">&#x1F680;</span>
+          AgentHub Dashboard
+        </h1>
+        <div class="header-actions">
+          <button
+            hx-post="/dashboard/actions/clear-cache"
+            hx-swap="none"
+            hx-confirm="Clear the prompt cache?"
+            class="btn font-mono btn-danger"
+          >
+            &#x1F5D1; Clear Cache
+          </button>
+          <button onclick="location.reload()" class="btn font-mono btn-success">
+            &#x21BB; Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Services Health -->
+        <div
+          class="card"
+          id="health-section"
+          hx-get="/dashboard/health-partial"
+          hx-trigger="load, every 5s"
+          hx-swap="innerHTML"
+        >
+          <div class="loading">Loading services</div>
+        </div>
+
+        <!-- Enhancement Stats -->
+        <div
+          class="card"
+          hx-get="/dashboard/stats-partial"
+          hx-trigger="load, every 10s"
+          hx-swap="innerHTML"
+        >
+          <div class="loading">Loading stats</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <!-- div class="card" style="margin-bottom: 20px">
+        <h3>&#x26A1; Quick Actions</h3>
+        <div class="actions">
+          <button
+            hx-post="/dashboard/actions/clear-cache"
+            hx-swap="none"
+            hx-confirm="Clear the prompt cache?"
+            class="btn font-mono btn-danger"
+          >
+            &#x1F5D1; Clear Cache
+          </button>
+          <button
+            hx-post="/dashboard/actions/restart/context7"
+            hx-swap="none"
+            hx-confirm="Restart Context7 server?"
+          >
+            &#x21BB; Restart Context7
+          </button>
+          <button
+            hx-post="/dashboard/actions/restart/desktop-commander"
+            hx-swap="none"
+            hx-confirm="Restart Desktop Commander?"
+          >
+            &#x21BB; Restart Desktop Cmd
+          </button>
+          <button
+            hx-post="/dashboard/actions/restart/sequential-thinking"
+            hx-swap="none"
+            hx-confirm="Restart Sequential Thinking?"
+          >
+            &#x21BB; Restart Seq Thinking
+          </button>
+        </div>
+      </div -->
+
+      <!-- Recent Activity -->
+      <div
+        class="card"
+        hx-get="/dashboard/activity-partial"
+        hx-trigger="load, every 3s"
+        hx-swap="innerHTML"
+      >
+        <div class="loading">Loading activity</div>
+      </div>
+
+      <!-- User Guides -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h2>📚 User Guides</h2>
+        </div>
+        <div
+          id="guides-section"
+          hx-get="/dashboard/guides-partial"
+          hx-trigger="load"
+          hx-swap="innerHTML"
+        >
+          <div class="loading">Loading guides...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Toast notification system
+      function showToast(message, type = "success") {
+        // Remove existing toasts
+        document.querySelectorAll(".toast").forEach((t) => t.remove());
+
+        // Create toast element
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+
+        const icon = type === "success" ? "✓" : "✗";
+        toast.innerHTML = `
+                <div class="toast-content">
+                    <span class="toast-icon">${icon}</span>
+                    <span class="toast-message">${message}</span>
+                </div>
+            `;
+
+        document.body.appendChild(toast);
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+          toast.style.animation = "slideOut 0.3s ease-out";
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Show toast notifications for HTMX responses
+      document.body.addEventListener("htmx:afterRequest", function (evt) {
+        if (evt.detail.pathInfo.requestPath.includes("/actions/")) {
+          const xhr = evt.detail.xhr;
+
+          if (xhr.status === 200) {
+            const data = JSON.parse(xhr.responseText);
+            if (data.status === "success") {
+              showToast(data.message, "success");
+            } else if (data.status === "error") {
+              showToast(data.message, "error");
+            }
+          } else if (xhr.status === 400) {
+            const data = JSON.parse(xhr.responseText);
+            showToast(data.message || "Invalid request", "error");
+          } else if (xhr.status >= 500) {
+            const data = JSON.parse(xhr.responseText);
+            showToast(data.message || "Server error", "error");
+          }
+        }
+      });
+
+      // Show error toast for failed requests
+      document.body.addEventListener("htmx:responseError", function (evt) {
+        if (evt.detail.pathInfo.requestPath.includes("/actions/")) {
+          showToast("Request failed. Please try again.", "error");
+        }
+      });
+
+      // Guide modal management
+      let currentGuideModal = null;
+
+      function openGuideModal(filename) {
+        // Create modal container if it doesn't exist
+        if (!currentGuideModal) {
+          currentGuideModal = document.createElement('div');
+          currentGuideModal.id = 'guide-modal-container';
+          document.body.appendChild(currentGuideModal);
+        }
+
+        // Fetch and display guide content
+        htmx.ajax('GET', `/dashboard/guides/view/${filename}`, {
+          target: '#guide-modal-container',
+          swap: 'innerHTML'
+        });
+      }
+
+      function closeGuideModal() {
+        if (currentGuideModal) {
+          currentGuideModal.innerHTML = '';
+        }
+      }
+
+      // Close modal on Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && currentGuideModal && currentGuideModal.innerHTML) {
+          closeGuideModal();
+        }
+      });
+    </script>
+  </body>
+</html>

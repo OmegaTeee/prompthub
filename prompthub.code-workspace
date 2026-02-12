@@ -1,0 +1,47 @@
+{
+  "folders": [
+    {
+      "name": "app",
+      "path": "app"
+    },
+    {
+      "name": "clients",
+      "path": "clients"
+    },
+    {
+      "name": "guides",
+      "path": "guides"
+    },
+    {
+      "name": "mcps",
+      "path": "mcps"
+    },
+    {
+      "name": "workspace",
+      "path": ""
+    }
+  ],
+  "settings": {
+    "markdownlint.configFile": ".vscode/.markdownlint-cli2.jsonc",
+    "markdown.styles": [
+      ".vscode/markdown.css"
+    ],
+    "python.experiments.optOutFrom": [
+      "pythonTerminalEnvVarActivation"
+    ],
+    "chat.tools.terminal.autoApprove": {
+      "/^python3 -m pytest -q$/": {
+        "approve": true,
+        "matchCommandLine": true
+      },
+      "/^python3 -m pip install -r requirements\\.txt$/": {
+        "approve": true,
+        "matchCommandLine": true
+      },
+      "/^bash -lc \"python3 -m venv \\.venv && \\. \\.venv/bin/activate && python3 -m pip install --upgrade pip setuptools wheel && python3 -m pip install -r requirements\\.txt\"$/": {
+        "approve": true,
+        "matchCommandLine": true
+      }
+    }
+  }
+}

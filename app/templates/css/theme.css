@@ -1,0 +1,64 @@
+/* === Theme tokens ===================================== */
+:root {
+  /* Colors */
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --text: #eee;
+  --text-secondary: #888;
+  --green: #4ecca3;
+  --yellow: #ffc107;
+  --red: #e74c3c;
+  --blue: #3498db;
+  --border: #444;
+  --hover: rgba(255, 255, 255, 0.05);
+
+  /* Typography */
+  --font-sans:
+    "Instrument Sans", "SF Pro Text", Inter, system-ui, sans-serif;
+  --font-sans-features:
+    "case" 1, "ss04" 1, "ss05" 1, "ss07" 1, "ss08" 1, "ss09" 1, "ss10" 1,
+    "ss12" 1, "tnum" 1;
+  --font-sans-wdth: 87.5;
+  --font-sans-wght: 450;
+
+  --font-mono: "Lilex", "SF Mono", Monaco, ui-monospace, monospace;
+  --font-mono-features:
+    "case" 1, "zero" 1, "calt" 1, "ss02" 1, "ss04" 1, "cv03" 1, "cv05" 1,
+    "cv06" 1, "cv10" 1;
+  --font-mono-wght: 450;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Spacing */
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Theme variants */
+body[data-theme="midnight"] {
+  --bg: #050816;
+  --card: #0b1020;
+  --border: #283046;
+  --blue: #6366f1;
+  --green: #22c55e;
+  --yellow: #facc15;
+  --red: #f97373;
+}
+
+body[data-theme="solarized"] {
+  --bg: #002b36;
+  --card: #073642;
+  --border: #0b3948;
+  --blue: #268bd2;
+  --green: #2aa198;
+  --yellow: #b58900;
+  --red: #dc322f;
+}

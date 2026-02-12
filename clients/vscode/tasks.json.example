@@ -1,0 +1,168 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "AgentHub: Health Check",
+      "type": "shell",
+      "command": "curl",
+      "args": [
+        "-s",
+        "http://localhost:9090/health",
+        "|",
+        "python3",
+        "-m",
+        "json.tool"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "AgentHub: List MCP Servers",
+      "type": "shell",
+      "command": "curl",
+      "args": [
+        "-s",
+        "http://localhost:9090/servers",
+        "|",
+        "python3",
+        "-m",
+        "json.tool"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "AgentHub: Start Router",
+      "type": "shell",
+      "command": "launchctl",
+      "args": ["start", "com.agenthub.router"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AgentHub: Stop Router",
+      "type": "shell",
+      "command": "launchctl",
+      "args": ["stop", "com.agenthub.router"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AgentHub: View Dashboard",
+      "type": "shell",
+      "command": "open",
+      "args": ["http://localhost:9090/dashboard"],
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AgentHub: Clear Cache",
+      "type": "shell",
+      "command": "curl",
+      "args": [
+        "-s",
+        "-X",
+        "POST",
+        "http://localhost:9090/dashboard/actions/clear-cache"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AgentHub: Test Context7 (Documentation Fetch)",
+      "type": "shell",
+      "command": "curl",
+      "args": [
+        "-s",
+        "-X",
+        "POST",
+        "http://localhost:9090/mcp/context7/tools/call",
+        "-H",
+        "Content-Type: application/json",
+        "-H",
+        "X-Client-Name: vscode",
+        "-d",
+        "{\"jsonrpc\":\"2.0\",\"method\":\"tools/list\",\"id\":1}",
+        "|",
+        "python3",
+        "-m",
+        "json.tool"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "AgentHub: Restart Server",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo -n 'Enter server name: ' && read server && curl -s -X POST http://localhost:9090/servers/$server/restart | python3 -m json.tool"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AgentHub: View Logs",
+      "type": "shell",
+      "command": "tail",
+      "args": [
+        "-f",
+        "${userHome}/.local/share/agenthub/logs/router.log"
+      ],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AgentHub: Test All Servers",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "for server in context7 desktop-commander sequential-thinking memory deepseek-reasoner fetch obsidian; do echo \"\\n=== Testing $server ===\"  curl -s http://localhost:9090/servers/$server | python3 -m json.tool; done"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": [],
+      "group": "test"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "agenthub": {
+      "command": "node",
+      "args": [
+        "/Users/visualval/.local/share/agenthub/mcps/agenthub-bridge.js"
+      ],
+      "env": {
+        "AGENTHUB_URL": "http://localhost:9090",
+        "CLIENT_NAME": "claude-desktop"
+      }
+    }
+  }
+}

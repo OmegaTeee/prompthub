@@ -1,0 +1,70 @@
+<h3>&#x1F4CA; Enhancement Stats</h3>
+
+<div class="stat-grid">
+    <div class="stat-box">
+        <div class="stat-value">{{ cache_stats.hits }}</div>
+        <div class="stat-label">Cache Hits</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value" style="color: var(--yellow);">{{ cache_stats.misses }}</div>
+        <div class="stat-label">Cache Misses</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ "%.1f" | format(cache_stats.hit_rate * 100) }}%</div>
+        <div class="stat-label">Hit Rate</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value" style="color: var(--blue);">{{ cache_stats.total_cached }}</div>
+        <div class="stat-label">Cached</div>
+    </div>
+</div>
+
+<h3 style="margin-top: 25px;">&#x1F916; Ollama Status</h3>
+<div class="status-item">
+    {% if ollama_healthy %}
+    <span class="status-dot healthy"></span>
+    <strong>Ollama</strong>
+    <span style="margin-left: auto;">
+        <span class="badge badge-success">Healthy</span>
+    </span>
+    {% else %}
+    <span class="status-dot down"></span>
+    <strong>Ollama</strong>
+    <span style="margin-left: auto;">
+        <span class="badge badge-danger">Unavailable</span>
+    </span>
+    {% endif %}
+</div>
+
+{% if circuit_breaker %}
+<table style="margin-top: 15px;">
+    <tr>
+        <th>Metric</th>
+        <th style="text-align: right;">Value</th>
+    </tr>
+    <tr>
+        <td>Circuit State</td>
+        <td style="text-align: right;">
+            {% if circuit_breaker.state == 'closed' %}
+            <span class="badge badge-success">CLOSED</span>
+            {% elif circuit_breaker.state == 'open' %}
+            <span class="badge badge-danger">OPEN</span>
+            {% else %}
+            <span class="badge badge-warning">{{ circuit_breaker.state }}</span>
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>Total Successes</td>
+        <td style="text-align: right;" class="text-success">{{ circuit_breaker.total_successes }}</td>
+    </tr>
+    <tr>
+        <td>Total Failures</td>
+        <td style="text-align: right;" class="text-danger">{{ circuit_breaker.total_failures }}</td>
+    </tr>
+    <tr>
+        <td>Times Opened</td>
+        <td style="text-align: right;">{{ circuit_breaker.times_opened }}</td>
+    </tr>
+</table>
+{% endif %}
