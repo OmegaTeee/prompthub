@@ -1,8 +1,8 @@
-# Awesome-Copilot Resources for AgentHub Development
+# Awesome-Copilot Resources for PromptHub Development
 
 ## Summary of Findings
 
-Located and analyzed awesome-copilot repository for collections, instructions, agents, and prompts aligned with AgentHub's development needs.
+Located and analyzed awesome-copilot repository for collections, instructions, agents, and prompts aligned with PromptHub's development needs.
 
 ---
 
@@ -57,7 +57,7 @@ Located and analyzed awesome-copilot repository for collections, instructions, a
 
 ### python-mcp-server.instructions.md
 
-**Key Takeaways for AgentHub:**
+**Key Takeaways for PromptHub:**
 
 - Use **FastMCP** from `mcp.server.fastmcp`
 - `@mcp.tool()`, `@mcp.resource()`, `@mcp.prompt()` decorators
@@ -83,7 +83,7 @@ Located and analyzed awesome-copilot repository for collections, instructions, a
 - **Non-root user** - Security best practice
 - **Health checks** - HEALTHCHECK directive with intervals/timeouts
 - **Resource limits** - CPU and memory constraints
-- **`.dockerignore`** - Already enhanced for AgentHub
+- **`.dockerignore`** - Already enhanced for PromptHub
 
 ---
 
@@ -117,7 +117,7 @@ Located and analyzed awesome-copilot repository for collections, instructions, a
 
 ---
 
-## Recommendations for AgentHub Development
+## Recommendations for PromptHub Development
 
 ### Immediate Actions
 
@@ -143,7 +143,7 @@ Located and analyzed awesome-copilot repository for collections, instructions, a
    ```bash
    # Add to CI/CD
    hadolint Dockerfile
-   trivy image agenthub-router:latest
+   trivy image prompthub-router:latest
    ```
 
 5. **Document architecture**

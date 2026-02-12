@@ -5,7 +5,7 @@ Scripts for generating client configurations and bridging MCP protocols.
 ## Scripts
 
 ### `generate-claude-config.py`
-Generates Claude Desktop MCP configuration from AgentHub MCP server registry.
+Generates Claude Desktop MCP configuration from PromptHub MCP server registry.
 
 **Purpose:** Automates creation of `claude_desktop_config.json` from `configs/mcp-servers.json`.
 
@@ -37,7 +37,7 @@ python3 clients/generate-claude-config.py
       "args": ["-y", "@upstash/context7-mcp"]
     },
     "obsidian": {
-      "command": "/Users/user/.local/share/agenthub/scripts/mcps/obsidian-mcp-tools.sh"
+      "command": "/Users/user/.local/share/prompthub/scripts/mcps/obsidian-mcp-tools.sh"
     }
   }
 }
@@ -46,7 +46,7 @@ python3 clients/generate-claude-config.py
 ### `mcp-stdio-bridge.sh`
 Bridges HTTP MCP requests to stdio-based MCP servers (legacy approach).
 
-**Purpose:** Allows Claude Desktop to communicate with AgentHub via stdio protocol.
+**Purpose:** Allows Claude Desktop to communicate with PromptHub via stdio protocol.
 
 **Usage:**
 ```bash
@@ -59,14 +59,14 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | ./mcp-stdio-bridge.sh
 
 **Features:**
 - Translates stdio JSON-RPC to HTTP requests
-- Forwards to AgentHub at `http://localhost:9090`
+- Forwards to PromptHub at `http://localhost:9090`
 - Handles error responses
 - Supports all MCP methods (tools/list, tools/call, etc.)
 
-**Note:** The **unified MCP bridge** (`mcps/agenthub-bridge.js`) is now the recommended approach. This script is kept for backwards compatibility.
+**Note:** The **unified MCP bridge** (`mcps/prompthub-bridge.js`) is now the recommended approach. This script is kept for backwards compatibility.
 
 **Dependencies:**
-- AgentHub running on `localhost:9090`
+- PromptHub running on `localhost:9090`
 - `curl` available in PATH
 - `jq` for JSON processing
 
@@ -76,11 +76,11 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | ./mcp-stdio-bridge.sh
 - ✅ You want individual stdio connections to each MCP server
 - ✅ You need granular control over which servers Claude Desktop sees
 - ✅ You're debugging specific MCP server issues
-- ✅ You want to bypass AgentHub's HTTP layer
+- ✅ You want to bypass PromptHub's HTTP layer
 
 ### Use the unified bridge instead when:
 - ✅ You want all MCP servers in one connection (recommended)
-- ✅ You want prompt enhancement via AgentHub
+- ✅ You want prompt enhancement via PromptHub
 - ✅ You want circuit breaker protection
 - ✅ You want audit logging of MCP requests
 
@@ -108,11 +108,11 @@ See [Claude setup](claude/) for unified bridge setup.
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "node",
-      "args": ["~/.local/share/agenthub/mcps/agenthub-bridge.js"],
+      "args": ["~/.local/share/prompthub/mcps/prompthub-bridge.js"],
       "env": {
-        "AGENTHUB_URL": "http://localhost:9090",
+        "PROMPTHUB_URL": "http://localhost:9090",
         "CLIENT_NAME": "claude-desktop"
       }
     }
@@ -146,7 +146,7 @@ See [Claude setup](claude/) for unified bridge setup.
    ```
 
 4. **Verify:**
-   - Look for `🔌 agenthub` badge at bottom
+   - Look for `🔌 prompthub` badge at bottom
    - Ask: "What MCP tools are available?"
    - Should see tools like `context7_query-docs`, `fetch_fetch`, etc.
 
@@ -177,8 +177,8 @@ See [Claude setup](claude/) for unified bridge setup.
 # Ensure MCP server registry exists
 ls -la configs/mcp-servers.json
 
-# Run from AgentHub root directory
-cd ~/.local/share/agenthub
+# Run from PromptHub root directory
+cd ~/.local/share/prompthub
 python3 clients/generate-claude-config.py
 ```
 
@@ -199,11 +199,11 @@ cat configs/mcp-servers.json | jq .
 
 **Solution:**
 ```bash
-# Ensure AgentHub is running
+# Ensure PromptHub is running
 curl http://localhost:9090/health
 
-# Start AgentHub if needed
-launchctl start com.agenthub.router
+# Start PromptHub if needed
+launchctl start com.prompthub.router
 ```
 
 **Problem:** Responses are malformed

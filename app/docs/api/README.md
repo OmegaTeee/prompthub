@@ -1,6 +1,6 @@
 # API Documentation
 
-Comprehensive API reference for AgentHub Router.
+Comprehensive API reference for PromptHub Router.
 
 ## OpenAPI Specification
 
@@ -221,7 +221,7 @@ API versioning via URL path:
 ```python
 import httpx
 
-class AgentHubClient:
+class PromptHubClient:
     def __init__(self, base_url: str = "http://localhost:9090"):
         self.base_url = base_url
         self.client = httpx.AsyncClient()
@@ -246,7 +246,7 @@ class AgentHubClient:
 
 ### TypeScript
 ```typescript
-class AgentHubClient {
+class PromptHubClient {
   constructor(private baseUrl: string = "http://localhost:9090") {}
 
   async enhancePrompt(

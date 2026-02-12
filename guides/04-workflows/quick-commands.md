@@ -1,8 +1,8 @@
 # Quick Commands Workflow with Raycast
 
-**Master productivity shortcuts using Raycast + AgentHub for rapid information retrieval and task automation**
+**Master productivity shortcuts using Raycast + PromptHub for rapid information retrieval and task automation**
 
-> **What you'll learn:** How to use Raycast with AgentHub for lightning-fast documentation lookup, quick calculations, system automation, and context-aware assistance.
+> **What you'll learn:** How to use Raycast with PromptHub for lightning-fast documentation lookup, quick calculations, system automation, and context-aware assistance.
 
 ---
 
@@ -18,9 +18,9 @@
 
 ### Prerequisites
 - ✅ Raycast installed ([raycast.com](https://raycast.com))
-- ✅ AgentHub running ([Quick check](../../_shared/health-checks.md))
+- ✅ PromptHub running ([Quick check](../../_shared/health-checks.md))
 - ✅ Enhancement configured for concise responses
-- ✅ Raycast AgentHub extension configured
+- ✅ Raycast PromptHub extension configured
 
 ### Estimated Time
 - Initial setup: 10 minutes
@@ -38,15 +38,15 @@ Raycast is optimized for **speed** and **context**:
 - **Action-oriented** - Get answers and execute tasks in one flow
 - **Minimal UI** - No distraction, just results
 
-### How AgentHub Enhances Raycast
+### How PromptHub Enhances Raycast
 
-Without AgentHub:
+Without PromptHub:
 - ❌ Generic responses
 - ❌ No access to local files/context
 - ❌ Can't search documentation offline
 - ❌ Limited system integration
 
-With AgentHub:
+With PromptHub:
 - ✅ Concise, action-oriented responses (<200 words default)
 - ✅ Access to filesystem, brave-search, fetch
 - ✅ Project-aware assistance
@@ -56,12 +56,12 @@ With AgentHub:
 
 ## Step-by-Step: Initial Setup
 
-### 1. Install Raycast AgentHub Extension
+### 1. Install Raycast PromptHub Extension
 
 **In Raycast:**
 1. Open Raycast (Cmd+Space)
 2. Type "Extensions"
-3. Search for "AgentHub" or "MCP"
+3. Search for "PromptHub" or "MCP"
 4. Click "Install"
 
 **Or configure manually:**
@@ -71,11 +71,11 @@ With AgentHub:
 open ~/Library/Application\ Support/com.raycast.macos/mcp_servers.json
 ```
 
-Add AgentHub:
+Add PromptHub:
 
 ```json
 {
-  "agenthub": {
+  "prompthub": {
     "url": "http://localhost:9090",
     "headers": {
       "X-Enhance": "true",
@@ -89,7 +89,7 @@ Add AgentHub:
 
 ### 2. Configure Enhancement for Conciseness
 
-Edit `~/.local/share/agenthub/configs/enhancement-rules.json`:
+Edit `~/.local/share/prompthub/configs/enhancement-rules.json`:
 
 ```json
 {
@@ -103,11 +103,11 @@ Edit `~/.local/share/agenthub/configs/enhancement-rules.json`:
 }
 ```
 
-**Restart AgentHub:**
+**Restart PromptHub:**
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -116,7 +116,7 @@ launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
 
 **In Raycast:**
 1. Cmd+Space
-2. Type "Ask AgentHub" (or your configured trigger)
+2. Type "Ask PromptHub" (or your configured trigger)
 3. Enter: "What's the git command to undo last commit?"
 4. Should get concise response:
 
@@ -412,7 +412,7 @@ git apply changes.patch
 Create custom Raycast shortcuts for frequent commands:
 
 **In Raycast settings:**
-- "Ask AgentHub" → Cmd+Shift+A
+- "Ask PromptHub" → Cmd+Shift+A
 - "Search Docs" → Cmd+Shift+D
 - "Code Snippet" → Cmd+Shift+C
 
@@ -437,12 +437,12 @@ grep -r "TODO" --include="*.js" .
 
 ### Technique 4: Fallback Chains
 
-Use AgentHub as fallback when Raycast's built-in features don't have answer:
+Use PromptHub as fallback when Raycast's built-in features don't have answer:
 
 ```
 1. Try Raycast's built-in command palette
-2. If not found → Ask AgentHub
-3. AgentHub searches docs via brave-search MCP
+2. If not found → Ask PromptHub
+3. PromptHub searches docs via brave-search MCP
 4. Get answer in seconds
 ```
 
@@ -486,7 +486,7 @@ Start queries with action verbs for better results:
 
 ### 3. Leverage Context
 
-Assume AgentHub knows your environment:
+Assume PromptHub knows your environment:
 
 ```
 ✅ "restart server" (knows you're working on a project)
@@ -547,13 +547,13 @@ echo "Deployed!"
 
 ---
 
-### Creating AgentHub Query Aliases
+### Creating PromptHub Query Aliases
 
 **Example: "Docs" command for documentation lookup**
 
 **Setup in Raycast:**
 - Alias: "docs"
-- Command: Ask AgentHub with prefix "Documentation for: {query}"
+- Command: Ask PromptHub with prefix "Documentation for: {query}"
 
 **Usage:**
 
@@ -621,12 +621,12 @@ curl http://localhost:9090/servers
 
 Track your efficiency gains:
 
-**Before AgentHub + Raycast:**
+**Before PromptHub + Raycast:**
 - Google search: 30-60 seconds
 - Find documentation: 2-5 minutes
 - Recall command syntax: 1-2 minutes
 
-**After AgentHub + Raycast:**
+**After PromptHub + Raycast:**
 - Quick query: 2-5 seconds
 - Get documentation: 5-10 seconds
 - Get command syntax: 3-5 seconds
@@ -637,10 +637,10 @@ Track your efficiency gains:
 
 ## Key Takeaways
 
-- ✅ **Speed is king** - Raycast + AgentHub optimized for < 5 second answers
+- ✅ **Speed is king** - Raycast + PromptHub optimized for < 5 second answers
 - ✅ **Concise prompts** - Short queries (< 7 words) get faster responses
 - ✅ **Action verbs** - "find", "convert", "calculate" work best
-- ✅ **Context awareness** - AgentHub remembers your project environment
+- ✅ **Context awareness** - PromptHub remembers your project environment
 - ✅ **Keyboard shortcuts** - Cmd+Space → Query → Answer → Copy
 - ✅ **Custom commands** - Automate frequent tasks with script commands
 - ✅ **Clipboard integration** - Transform copied content on-the-fly
@@ -655,4 +655,4 @@ Track your efficiency gains:
 **Last Updated:** 2026-02-05
 **Workflow Difficulty:** Beginner
 **Time to Master:** 1-2 days of daily use
-**Prerequisites:** Raycast + AgentHub + llama3.2
+**Prerequisites:** Raycast + PromptHub + llama3.2

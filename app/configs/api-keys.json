@@ -1,16 +1,16 @@
 {
   "keys": {
-    "sk-agenthub-cursor-dev001": {
+    "sk-prompthub-cursor-dev001": {
       "client_name": "cursor",
       "enhance": true,
       "description": "Cursor IDE"
     },
-    "sk-agenthub-obsidian-dev001": {
+    "sk-prompthub-obsidian-dev001": {
       "client_name": "obsidian",
       "enhance": false,
       "description": "Obsidian plugin"
     },
-    "sk-agenthub-raycast-dev001": {
+    "sk-prompthub-raycast-dev001": {
       "client_name": "raycast",
       "enhance": true,
       "description": "Raycast AI commands"

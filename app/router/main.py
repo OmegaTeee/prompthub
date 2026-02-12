@@ -1,5 +1,5 @@
 """
-AgentHub Router - Main FastAPI Application
+PromptHub Router - Main FastAPI Application
 
 A centralized MCP router that provides:
 - MCP server lifecycle management (install, start, stop, monitor)
@@ -69,7 +69,7 @@ async def lifespan(app: FastAPI):
 
     # Setup audit logging (log to /tmp for development, can be changed in production)
     from pathlib import Path
-    log_dir = Path("/tmp/agenthub")
+    log_dir = Path("/tmp/prompthub")
     setup_audit_logging(log_dir=log_dir, console_output=True)
 
     # Initialize persistent activity log
@@ -78,7 +78,7 @@ async def lifespan(app: FastAPI):
     await persistent_activity_log.initialize()
     logger.info("Initialized persistent activity log")
 
-    logger.info(f"Starting AgentHub Router on {settings.host}:{settings.port}")
+    logger.info(f"Starting PromptHub Router on {settings.host}:{settings.port}")
 
     # Initialize server management
     registry = ServerRegistry(settings.mcp_servers_config)
@@ -110,7 +110,7 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown
-    logger.info("Shutting down AgentHub Router")
+    logger.info("Shutting down PromptHub Router")
 
     if enhancement_service:
         await enhancement_service.close()
@@ -188,7 +188,7 @@ def normalize_mcp_response(response: dict, method: str) -> dict:
 
 
 app = FastAPI(
-    title="AgentHub Router",
+    title="PromptHub Router",
     description="Centralized MCP router with server management, prompt enhancement, and caching",
     version="0.1.0",
     lifespan=lifespan,
@@ -1021,7 +1021,7 @@ async def run_documentation_pipeline(request: DocumentationRequest):
 
 @app.get("/configs/claude-desktop")
 async def get_claude_desktop_config():
-    """Generate Claude Desktop configuration for AgentHub."""
+    """Generate Claude Desktop configuration for PromptHub."""
     settings = get_settings()
     return generate_claude_desktop_config(
         router_host="localhost",
@@ -1031,7 +1031,7 @@ async def get_claude_desktop_config():
 
 @app.get("/configs/vscode")
 async def get_vscode_config():
-    """Generate VS Code MCP configuration for AgentHub."""
+    """Generate VS Code MCP configuration for PromptHub."""
     settings = get_settings()
     return generate_vscode_config(
         router_host="localhost",
@@ -1041,7 +1041,7 @@ async def get_vscode_config():
 
 @app.get("/configs/vscode-tasks")
 async def get_vscode_tasks():
-    """Generate VS Code tasks.json for AgentHub pipelines."""
+    """Generate VS Code tasks.json for PromptHub pipelines."""
     settings = get_settings()
     return generate_vscode_tasks(
         router_host="localhost",

@@ -1,6 +1,6 @@
 # Claude Desktop Configuration
 
-This folder contains configuration files for connecting Claude Desktop to AgentHub.
+This folder contains configuration files for connecting Claude Desktop to PromptHub.
 
 ## Files
 
@@ -10,11 +10,11 @@ This folder contains configuration files for connecting Claude Desktop to AgentH
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "node",
-      "args": ["/Users/visualval/.local/share/agenthub/mcps/agenthub-bridge.js"],
+      "args": ["/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"],
       "env": {
-        "AGENTHUB_URL": "http://localhost:9090",
+        "PROMPTHUB_URL": "http://localhost:9090",
         "CLIENT_NAME": "claude-desktop"
       }
     }
@@ -45,7 +45,7 @@ Symlink to your actual Claude Desktop configuration:
 **Note:** This is a convenience symlink for quick access. Your actual configuration should be edited at the real location.
 
 ### `setup-claude.sh`
-Automated setup script for configuring Claude Desktop with AgentHub.
+Automated setup script for configuring Claude Desktop with PromptHub.
 
 **Features:**
 - Checks if Claude Desktop is installed
@@ -53,13 +53,13 @@ Automated setup script for configuring Claude Desktop with AgentHub.
 - Backs up existing configuration
 - Merges settings with existing config (using jq)
 - Installs unified MCP bridge configuration
-- Verifies AgentHub is running
+- Verifies PromptHub is running
 - Checks for Node.js and MCP dependencies
 - Offers to restart Claude Desktop automatically
 
 **Usage:**
 ```bash
-cd ~/.local/share/agenthub/clients/claude
+cd ~/.local/share/prompthub/clients/claude
 
 # Quick setup
 ./setup-claude.sh

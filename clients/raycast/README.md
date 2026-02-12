@@ -1,6 +1,6 @@
 # Raycast Configuration
 
-This folder contains configuration files for connecting Raycast to AgentHub.
+This folder contains configuration files for connecting Raycast to PromptHub.
 
 ## Files
 
@@ -11,8 +11,8 @@ Example configuration for Raycast MCP integration.
 ```json
 {
   "servers": [{
-    "id": "agenthub",
-    "name": "AgentHub",
+    "id": "prompthub",
+    "name": "PromptHub",
     "url": "http://localhost:9090",
     "type": "http",
     "enabled": true,
@@ -26,20 +26,20 @@ Example configuration for Raycast MCP integration.
 ```
 
 ### `setup-raycast.sh`
-Automated setup script for configuring Raycast with AgentHub.
+Automated setup script for configuring Raycast with PromptHub.
 
 **Features:**
 - Checks if Raycast is installed
 - Creates config directory if needed
 - Backs up existing configuration
-- Installs AgentHub MCP configuration
-- Verifies AgentHub is running
+- Installs PromptHub MCP configuration
+- Verifies PromptHub is running
 - Offers to restart Raycast automatically
 
 **Usage:**
 ```bash
 # Quick setup
-cd ~/.local/share/agenthub/clients/raycast
+cd ~/.local/share/prompthub/clients/raycast
 ./setup-raycast.sh
 
 # With explicit backup
@@ -48,7 +48,7 @@ cd ~/.local/share/agenthub/clients/raycast
 
 ## Setup
 
-Raycast connects to AgentHub via HTTP endpoints. See the [Raycast integration guide](../../../guides/raycast-integration.md) for:
+Raycast connects to PromptHub via HTTP endpoints. See the [Raycast integration guide](../../../guides/raycast-integration.md) for:
 
 - Custom script commands
 - MCP query shortcuts

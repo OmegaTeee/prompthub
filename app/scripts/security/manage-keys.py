@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AgentHub Key Manager
+PromptHub Key Manager
 
 Manage API keys and credentials for MCP servers using system keyring.
 
@@ -39,9 +39,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from router.keyring_manager import get_keyring_manager
 
-SERVICE_NAME = "agenthub"
+SERVICE_NAME = "prompthub"
 
-# Known keys for AgentHub
+# Known keys for PromptHub
 KNOWN_KEYS = [
     "obsidian_api_key",
     "github_api_key",
@@ -86,7 +86,7 @@ def list_keys():
     """List all known keys and their status."""
     km = get_keyring_manager(SERVICE_NAME)
 
-    print(f"\nAgentHub Keys (service: {SERVICE_NAME}):")
+    print(f"\nPromptHub Keys (service: {SERVICE_NAME}):")
     print("-" * 50)
 
     for key_name in KNOWN_KEYS:

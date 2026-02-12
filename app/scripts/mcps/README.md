@@ -50,7 +50,7 @@ chmod +x scripts/mcps/obsidian-mcp-tools.sh
 # Direct invocation
 scripts/mcps/obsidian-mcp-tools.sh
 
-# Via AgentHub (auto-started)
+# Via PromptHub (auto-started)
 curl -X POST http://localhost:9090/servers/obsidian/start
 
 # Test manually
@@ -106,7 +106,7 @@ curl -X POST http://localhost:8080/tools/call \
 - REST-style endpoints
 - JSON request/response
 
-**Note:** This is a **reference implementation**. For production, use stdio transport with AgentHub.
+**Note:** This is a **reference implementation**. For production, use stdio transport with PromptHub.
 
 ## Security Pattern
 
@@ -211,7 +211,7 @@ security add-generic-password \
 python3 scripts/security/manage-keys.py --add github_api_key
 ```
 
-### Step 3: Configure in AgentHub
+### Step 3: Configure in PromptHub
 
 ```json
 // configs/mcp-servers.json
@@ -245,7 +245,7 @@ curl -X POST http://localhost:9090/mcp/github/tools/call \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```
 
-## Integration with AgentHub
+## Integration with PromptHub
 
 ### Configuration Flow
 
@@ -277,7 +277,7 @@ configs/mcp-servers.json
 }
 ```
 
-AgentHub's KeyringManager automatically:
+PromptHub's KeyringManager automatically:
 1. Reads `mcp-servers-keyring.json`
 2. Retrieves keys from Keychain
 3. Sets environment variables before starting MCP servers
@@ -400,7 +400,7 @@ API_KEY="$(security find-generic-password -a "${USER}" -s "api_key" -w 2>/dev/nu
 export API_KEY
 
 # Development vs Production
-if [[ "${AGENTHUB_ENV}" == "dev" ]]; then
+if [[ "${PROMPTHUB_ENV}" == "dev" ]]; then
     export SERVICE_URL="https://dev.service.com"
     export LOG_LEVEL="debug"
 else

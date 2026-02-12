@@ -1,16 +1,16 @@
 # Testing Client Integrations
 
-> **Comprehensive test procedures for verifying Claude Desktop, VS Code, and Raycast integrations with AgentHub**
+> **Comprehensive test procedures for verifying Claude Desktop, VS Code, and Raycast integrations with PromptHub**
 
 ---
 
 ## Overview
 
-This guide provides **step-by-step testing procedures** to verify that each client is properly integrated with AgentHub and can access all MCP servers.
+This guide provides **step-by-step testing procedures** to verify that each client is properly integrated with PromptHub and can access all MCP servers.
 
 ### Test Coverage
 
-- ✅ **Connection Tests** - Verify client can reach AgentHub
+- ✅ **Connection Tests** - Verify client can reach PromptHub
 - ✅ **MCP Server Access** - Test each of the 7 MCP servers
 - ✅ **Enhancement Tests** - Verify client-specific prompt enhancement
 - ✅ **Performance Tests** - Check response times and caching
@@ -23,7 +23,7 @@ This guide provides **step-by-step testing procedures** to verify that each clie
 Before running tests, ensure:
 
 ```bash
-# 1. AgentHub is running
+# 1. PromptHub is running
 curl http://localhost:9090/health
 # Expected: {"status": "healthy", ...}
 
@@ -43,9 +43,9 @@ ollama list | grep -E "(deepseek-r1|qwen3-coder)"
 ```
 
 **Quick reference for example configs:**
-- Claude Desktop: `~/.local/share/agenthub/clients/claude/`
-- VS Code: `~/.local/share/agenthub/clients/vscode/`
-- Raycast: `~/.local/share/agenthub/clients/raycast/`
+- Claude Desktop: `~/.local/share/prompthub/clients/claude/`
+- VS Code: `~/.local/share/prompthub/clients/vscode/`
+- Raycast: `~/.local/share/prompthub/clients/raycast/`
 
 ---
 
@@ -53,12 +53,12 @@ ollama list | grep -E "(deepseek-r1|qwen3-coder)"
 
 ### T1.1: Connection Test
 
-**Objective:** Verify Claude Desktop can connect to AgentHub
+**Objective:** Verify Claude Desktop can connect to PromptHub
 
 **Steps:**
 1. Open Claude Desktop
 2. Look for MCP badge at bottom of chat window
-3. Should show: `🔌 AgentHub` or `🔌 agenthub-router`
+3. Should show: `🔌 PromptHub` or `🔌 prompthub-router`
 
 **Expected Result:**
 ✅ MCP badge visible
@@ -66,7 +66,7 @@ ollama list | grep -E "(deepseek-r1|qwen3-coder)"
 
 **If Failed:**
 - Check config: `cat ~/Library/Application\ Support/Claude/claude_desktop_config.json`
-- Verify AgentHub running: `curl http://localhost:9090/health`
+- Verify PromptHub running: `curl http://localhost:9090/health`
 - Restart Claude Desktop
 
 ---
@@ -119,7 +119,7 @@ Use context7: Show me React useEffect hook documentation
 
 **Validation:**
 ```bash
-# Check AgentHub logs
+# Check PromptHub logs
 curl http://localhost:9090/dashboard/activity-partial | grep "context7"
 ```
 
@@ -256,7 +256,7 @@ curl http://localhost:9090/dashboard/stats-partial | grep "cache_hits"
 
 ### T2.1: Connection Test
 
-**Objective:** Verify VS Code extension connects to AgentHub
+**Objective:** Verify VS Code extension connects to PromptHub
 
 **Steps:**
 1. Open VS Code
@@ -265,12 +265,12 @@ curl http://localhost:9090/dashboard/stats-partial | grep "cache_hits"
 4. Check status
 
 **Expected Result:**
-✅ Shows: "Connected to AgentHub (7 tools)"
+✅ Shows: "Connected to PromptHub (7 tools)"
 
 **Alternative Check:**
 ```bash
 # Check VS Code settings
-code ~/.vscode/settings.json | grep agenthub
+code ~/.vscode/settings.json | grep prompthub
 ```
 
 **If Failed:**
@@ -369,7 +369,7 @@ Use desktop-commander: Find all package.json files in current workspace
    ```json
    {
      "claude.mcp.servers": {
-       "agenthub": {
+       "prompthub": {
          "headers": {
            "X-Client-Name": "vscode-test-project"
          }
@@ -378,7 +378,7 @@ Use desktop-commander: Find all package.json files in current workspace
    }
    ```
 
-2. Update `~/.local/share/agenthub/configs/enhancement-rules.json`:
+2. Update `~/.local/share/prompthub/configs/enhancement-rules.json`:
    ```json
    {
      "clients": {
@@ -425,16 +425,16 @@ curl http://localhost:9090/audit/activity?client_id=vscode-test-project&limit=1
 
 ### T3.1: Connection Test
 
-**Objective:** Verify Raycast AI connects to AgentHub
+**Objective:** Verify Raycast AI connects to PromptHub
 
 **Steps:**
 1. Open Raycast (`Cmd+Space`)
 2. Type: "AI Settings"
 3. Navigate to: MCP Servers
-4. Check AgentHub status
+4. Check PromptHub status
 
 **Expected Result:**
-✅ AgentHub listed with green checkmark
+✅ PromptHub listed with green checkmark
 ✅ Shows: "Connected (7 tools)"
 
 **If Failed:**
@@ -602,7 +602,7 @@ raycast: deepseek-r1:latest
 
 ### T4.3: Concurrent Request Test
 
-**Objective:** Verify AgentHub handles concurrent requests from multiple clients
+**Objective:** Verify PromptHub handles concurrent requests from multiple clients
 
 **Steps:**
 1. Open all three clients (Claude Desktop, VS Code, Raycast)
@@ -627,14 +627,14 @@ curl http://localhost:9090/audit/activity?limit=3 | jq -r '.[] | .timestamp'
 
 ## Test Suite 5: Error Handling
 
-### T5.1: Test AgentHub Down
+### T5.1: Test PromptHub Down
 
-**Objective:** Verify graceful handling when AgentHub is unreachable
+**Objective:** Verify graceful handling when PromptHub is unreachable
 
 **Steps:**
-1. Stop AgentHub:
+1. Stop PromptHub:
    ```bash
-   launchctl stop com.agenthub.router
+   launchctl stop com.prompthub.router
    ```
 
 2. Try query in any client:
@@ -643,13 +643,13 @@ curl http://localhost:9090/audit/activity?limit=3 | jq -r '.[] | .timestamp'
    ```
 
 **Expected:**
-- ✅ Client shows clear error: "Cannot connect to AgentHub"
+- ✅ Client shows clear error: "Cannot connect to PromptHub"
 - ✅ No crash or hang
-- ✅ Suggested action: "Check if AgentHub is running"
+- ✅ Suggested action: "Check if PromptHub is running"
 
-3. Restart AgentHub:
+3. Restart PromptHub:
    ```bash
-   launchctl start com.agenthub.router
+   launchctl start com.prompthub.router
    ```
 
 ---
@@ -762,10 +762,10 @@ time curl -X POST http://localhost:9090/mcp/context7/tools/call \
 After running all tests, generate a report:
 
 ```markdown
-# AgentHub Integration Test Report
+# PromptHub Integration Test Report
 
 **Date:** YYYY-MM-DD
-**AgentHub Version:** 1.0.0
+**PromptHub Version:** 1.0.0
 **Tester:** [Your Name]
 
 ## Summary
@@ -826,14 +826,14 @@ Save this script to automate tests:
 #!/bin/bash
 # File: test-integrations.sh
 
-echo "🧪 AgentHub Integration Test Suite"
+echo "🧪 PromptHub Integration Test Suite"
 echo "=================================="
 
 # Check prerequisites
 echo "Checking prerequisites..."
 
 if ! curl -s http://localhost:9090/health > /dev/null; then
-  echo "❌ AgentHub not running"
+  echo "❌ PromptHub not running"
   exit 1
 fi
 
@@ -915,7 +915,7 @@ chmod +x test-integrations.sh
 
 ## Automated Integration Tests
 
-In addition to manual testing, AgentHub includes a comprehensive automated integration test suite using pytest.
+In addition to manual testing, PromptHub includes a comprehensive automated integration test suite using pytest.
 
 ### Running Automated Tests
 
@@ -994,7 +994,7 @@ $ pytest tests/integration/ -v
 
 ============================= test session starts ==============================
 platform darwin -- Python 3.14.2, pytest-9.0.2, pluggy-1.6.0
-rootdir: /Users/visualval/.local/share/agenthub
+rootdir: /Users/visualval/.local/share/prompthub
 configfile: pyproject.toml
 
 tests/integration/test_client_integrations.py::TestClaudeDesktopIntegration::test_curl_based_stdio_bridge PASSED [  2%]
@@ -1034,7 +1034,7 @@ Tests run automatically on:
 - Every pull request
 - Release tags
 
-CI Status: [![Tests](https://github.com/your-org/agenthub/workflows/Tests/badge.svg)](https://github.com/your-org/agenthub/actions)
+CI Status: [![Tests](https://github.com/your-org/prompthub/workflows/Tests/badge.svg)](https://github.com/your-org/prompthub/actions)
 
 ### Key Differences: Manual vs Automated Tests
 
@@ -1054,6 +1054,6 @@ CI Status: [![Tests](https://github.com/your-org/agenthub/workflows/Tests/badge.
 - [claude-desktop-integration.md](claude-desktop-integration.md) - Claude Desktop setup
 - [vscode-integration.md](vscode-integration.md) - VS Code setup
 - [raycast-integration.md](raycast-integration.md) - Raycast setup
-- [getting-started.md](getting-started.md) - AgentHub installation
+- [getting-started.md](getting-started.md) - PromptHub installation
 - `tests/integration/` - Automated test suite source code
 - `scripts/run-tests.sh` - Test runner script

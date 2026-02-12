@@ -56,7 +56,7 @@ colima start
 
 ```bash
 # Create a home for all router files
-mkdir -p ~/.agenthub/logs
+mkdir -p ~/.prompthub/logs
 ```
 
 This creates a folder where everything will live.
@@ -67,12 +67,12 @@ Someone built the router for you. Get the installation files and run:
 
 ```bash
 # Navigate to where you downloaded the router
-cd ~/Downloads/agenthub
+cd ~/Downloads/prompthub
 
 # Install it
 ./install.sh
 
-# This should print: "✓ Router installed successfully at ~/.agenthub"
+# This should print: "✓ Router installed successfully at ~/.prompthub"
 ```
 
 ### Step 4: Verify Installation
@@ -107,14 +107,14 @@ Copy-paste these commands (replace `your-actual-key-here`):
 ```bash
 # Store Context7 key securely
 security add-generic-password \
-  -s "agenthub-context7" \
+  -s "prompthub-context7" \
   -a "default" \
   -w "your-actual-context7-key-here" \
   ~/Library/Keychains/login.keychain-db
 
 # Grant permanent access (click "Always Allow" when prompted)
 security add-generic-password \
-  -s "agenthub-context7" \
+  -s "prompthub-context7" \
   -a "default" \
   -w "your-actual-context7-key-here" \
   -A \
@@ -145,19 +145,19 @@ Copy-paste this entire block:
 # Create the service configuration file
 mkdir -p ~/.config/launchagents
 
-cat > ~/.config/launchagents/com.agenthub.plist << 'EOF'
+cat > ~/.config/launchagents/com.prompthub.plist << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.agenthub.service</string>
+    <string>com.prompthub.service</string>
     <key>ProgramArguments</key>
     <array>
         <string>docker</string>
         <string>compose</string>
         <string>-f</string>
-        <string>HOME_PLACEHOLDER/.agenthub/docker-compose.yml</string>
+        <string>HOME_PLACEHOLDER/.prompthub/docker-compose.yml</string>
         <string>up</string>
     </array>
     <key>RunAtLoad</key>
@@ -165,27 +165,27 @@ cat > ~/.config/launchagents/com.agenthub.plist << 'EOF'
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>HOME_PLACEHOLDER/.agenthub/logs/stdout.log</string>
+    <string>HOME_PLACEHOLDER/.prompthub/logs/stdout.log</string>
     <key>StandardErrorPath</key>
-    <string>HOME_PLACEHOLDER/.agenthub/logs/stderr.log</string>
+    <string>HOME_PLACEHOLDER/.prompthub/logs/stderr.log</string>
 </dict>
 </plist>
 EOF
 
 # Replace HOME_PLACEHOLDER with your actual home directory
-sed -i '' "s|HOME_PLACEHOLDER|$HOME|g" ~/.config/launchagents/com.agenthub.plist
+sed -i '' "s|HOME_PLACEHOLDER|$HOME|g" ~/.config/launchagents/com.prompthub.plist
 
 # Copy to system location
-cp ~/.config/launchagents/com.agenthub.plist ~/Library/LaunchAgents/com.agenthub.plist
+cp ~/.config/launchagents/com.prompthub.plist ~/Library/LaunchAgents/com.prompthub.plist
 
 # Load it
-launchctl load ~/Library/LaunchAgents/com.agenthub.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.plist
 
 # Verify
-launchctl list com.agenthub.service
+launchctl list com.prompthub.service
 ```
 
-**If the last command shows `com.agenthub.service` in the output:** ✅ Success!
+**If the last command shows `com.prompthub.service` in the output:** ✅ Success!
 
 ### Step 2: Test That It's Running
 
@@ -222,7 +222,7 @@ cp ~/Library/Application\ Support/Claude/claude_desktop_config.json \
 cat > ~/Library/Application\ Support/Claude/claude_desktop_config.json << 'EOF'
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "localhost",
       "args": ["9090"],
       "type": "stdio",
@@ -262,7 +262,7 @@ Then add this to the file:
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "command": "localhost:9090",
       "type": "http",
       "disabled": false
@@ -275,7 +275,7 @@ Then add this to the file:
 
 1. Close and reopen VS Code
 2. Open Cline chat (sidebar)
-3. Look for "Connected to agenthub" message
+3. Look for "Connected to prompthub" message
 4. Try a prompt
 
 ### Raycast
@@ -290,7 +290,7 @@ cat > ~/Library/Preferences/com.raycast.macos/mcpServers.json << 'EOF'
 {
   "servers": [
     {
-      "id": "agenthub",
+      "id": "prompthub",
       "name": AI Agent Hub,
       "url": "http://localhost:9090",
       "type": "http",
@@ -333,7 +333,7 @@ VAULT_PATH="$HOME/path/to/your/vault"
 cat > "$VAULT_PATH/.obsidian/mcp.json" << 'EOF'
 {
   "servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "type": "http",
       "enabled": true,
@@ -428,20 +428,20 @@ No manual steps needed.
 curl http://localhost:9090/health
 
 # Detailed status
-launchctl list com.agenthub.service
+launchctl list com.prompthub.service
 ```
 
 ### Stopping/Restarting Router
 
 ```bash
 # Stop
-launchctl stop com.agenthub.service
+launchctl stop com.prompthub.service
 
 # Start
-launchctl start com.agenthub.service
+launchctl start com.prompthub.service
 
 # Restart
-launchctl stop com.agenthub.service && launchctl start com.agenthub.service
+launchctl stop com.prompthub.service && launchctl start com.prompthub.service
 ```
 
 ---
@@ -469,7 +469,7 @@ launchctl stop com.agenthub.service && launchctl start com.agenthub.service
 **A:** Run:
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.plist
 ```
 
 ### Q: Can I use Figma or ComfyUI with this?
@@ -519,15 +519,15 @@ See: **advanced/app-configs.md** for context7 setup.
 
 ```bash
 # Check if service is loaded
-launchctl list com.agenthub.service
+launchctl list com.prompthub.service
 
 # Should output a dict with service info
 
 # If not found, reload it:
-launchctl load ~/Library/LaunchAgents/com.agenthub.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.plist
 
 # Check logs for errors
-tail -50 ~/.agenthub/logs/stderr.log
+tail -50 ~/.prompthub/logs/stderr.log
 ```
 
 ### "Port 9090 Already in use"
@@ -557,7 +557,7 @@ kill -9 <PID>
 security unlock-keychain ~/Library/Keychains/login.keychain-db
 
 # Restart router
-launchctl restart com.agenthub.service
+launchctl restart com.prompthub.service
 ```
 
 ### App says "MCP Server not responding"
@@ -568,13 +568,13 @@ launchctl restart com.agenthub.service
 
 ```bash
 # Check if running
-ps aux | grep agenthub
+ps aux | grep prompthub
 
 # Restart it
-launchctl restart com.agenthub.service
+launchctl restart com.prompthub.service
 
 # Check for errors
-tail -100 ~/.agenthub/logs/stderr.log
+tail -100 ~/.prompthub/logs/stderr.log
 
 # Common causes:
 # - Ollama not installed (if using prompt enhancement)
@@ -601,7 +601,7 @@ tail -100 ~/.agenthub/logs/stderr.log
 ```bash
 # Re-add with -A flag (always allow)
 security add-generic-password \
-  -s "agenthub-context7" \
+  -s "prompthub-context7" \
   -a "default" \
   -w "your-key" \
   -U -A \
@@ -611,7 +611,7 @@ security add-generic-password \
 Or manually via Keychain Access app:
 
 1. Open `/Applications/Utilities/Keychain Access.app`
-2. Find `agenthub-*` items
+2. Find `prompthub-*` items
 3. Double-click → "Access Control" tab
 4. Set to "Allow all applications"
 
@@ -641,7 +641,7 @@ colima status
 1. Manually start the router to see errors:
 
 ```bash
-cd ~/.agenthub
+cd ~/.prompthub
 docker compose -f docker-compose.yml up
 ```
 
@@ -657,14 +657,14 @@ docker compose -f docker-compose.yml up
 1. **Check logs first:**
 
 ```bash
-tail -100 ~/.agenthub/logs/stderr.log
+tail -100 ~/.prompthub/logs/stderr.log
 ```
 
 1. **Verify basics:**
 
 ```bash
 # Is service loaded?
-launchctl list com.agenthub.service
+launchctl list com.prompthub.service
 
 # Is Docker running?
 docker ps
@@ -676,7 +676,7 @@ lsof -i :9090
 1. **Restart everything:**
 
 ```bash
-launchctl restart com.agenthub.service
+launchctl restart com.prompthub.service
 sleep 3
 curl http://localhost:9090/health
 ```
@@ -687,7 +687,7 @@ curl http://localhost:9090/health
    - Last 100 lines of logs:
 
 ```bash
-tail -100 ~/.agenthub/logs/stderr.log
+tail -100 ~/.prompthub/logs/stderr.log
 ```
 
 ---
@@ -754,7 +754,7 @@ Before you call setup "done," verify:
 - [ ] At least one app (Claude, VS Code, Raycast, or Obsidian) shows AI Agent Hub connected
 - [ ] You can send a prompt and get a response
 - [ ] Router starts automatically after Mac restart
-- [ ] No errors in `~/.agenthub/logs/stderr.log`
+- [ ] No errors in `~/.prompthub/logs/stderr.log`
 
 If all checked: ✅ **Setup is complete!**
 

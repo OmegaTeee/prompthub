@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-AgentHub routes prompts to Ollama for enhancement before sending to LLMs. Different clients (Claude Desktop, VS Code, Raycast, Obsidian) have different use cases and require different enhancement strategies.
+PromptHub routes prompts to Ollama for enhancement before sending to LLMs. Different clients (Claude Desktop, VS Code, Raycast, Obsidian) have different use cases and require different enhancement strategies.
 
 ### Problem Statement
 A one-size-fits-all approach doesn't work:

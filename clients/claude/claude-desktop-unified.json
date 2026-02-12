@@ -1,12 +1,12 @@
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "node",
       "args": [
-        "/Users/visualval/.local/share/agenthub/mcps/agenthub-bridge.js"
+        "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
       ],
       "env": {
-        "AGENTHUB_URL": "http://localhost:9090",
+        "PROMPTHUB_URL": "http://localhost:9090",
         "CLIENT_NAME": "claude-desktop"
       }
     }

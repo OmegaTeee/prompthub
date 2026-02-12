@@ -1,8 +1,8 @@
-# AgentHub - Copilot Instructions
+# PromptHub - Copilot Instructions
 
 ## Project Overview
 
-AgentHub is a centralized MCP (Model Context Protocol) router for macOS that:
+PromptHub is a centralized MCP (Model Context Protocol) router for macOS that:
 
 - Unifies MCP server access across desktop apps (Claude, VS Code, Raycast, Obsidian)
 - Enhances prompts via local Ollama models before forwarding
@@ -150,7 +150,7 @@ See `docs/` for development and architecture documentation:
 
 ## Awesome-Copilot Resources
 
-AgentHub integrates with awesome-copilot collections for development guidance. See:
+PromptHub integrates with awesome-copilot collections for development guidance. See:
 
 - [docs/AWESOME-COPILOT-RESOURCES.md](../../docs/AWESOME-COPILOT-RESOURCES.md) - Comprehensive reference of all available collections, instructions, agents, and prompts
 - [.github/awesome-copilot-recommendations.md](.github/awesome-copilot-recommendations.md) - Quick reference guide for frequently used agents and generators

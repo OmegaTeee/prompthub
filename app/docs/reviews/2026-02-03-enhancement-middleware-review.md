@@ -595,7 +595,7 @@ except Exception as e:
 
 ### 6. Workspace Configuration
 
-#### File: `mcp-agenthub.code-workspace`
+#### File: `mcp-prompthub.code-workspace`
 
 **Type:** ✨ **Praise**
 

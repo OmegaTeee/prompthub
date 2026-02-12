@@ -1,6 +1,6 @@
 # VS Code Configuration
 
-This folder contains configuration files for connecting VS Code (Claude Code/Cline) to AgentHub.
+This folder contains configuration files for connecting VS Code (Claude Code/Cline) to PromptHub.
 
 ## Files
 
@@ -12,7 +12,7 @@ Example VS Code settings for MCP integration via workspace settings.
 ```json
 {
   "mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "type": "http",
       "url": "http://localhost:9090",
       "headers": {
@@ -34,12 +34,12 @@ Full VS Code workspace settings with MCP integration and editor preferences.
 - Extension recommendations
 
 ### `tasks.json.example`
-VS Code tasks for AgentHub operations.
+VS Code tasks for PromptHub operations.
 
 **Available tasks:**
 - Health Check - Verify router is running
 - List MCP Servers - Show all servers and their status
-- Start/Stop Router - Control AgentHub LaunchAgent
+- Start/Stop Router - Control PromptHub LaunchAgent
 - View Dashboard - Open monitoring UI
 - Clear Cache - Reset response cache
 - Test Servers - Verify MCP server connectivity
@@ -48,26 +48,26 @@ VS Code tasks for AgentHub operations.
 **Usage:** Copy to `.vscode/tasks.json` and run via `Cmd+Shift+P` → "Tasks: Run Task"
 
 ### `setup-vscode.sh`
-Automated setup script for configuring VS Code with AgentHub.
+Automated setup script for configuring VS Code with PromptHub.
 
 **Features:**
 - Checks if VS Code CLI is installed
 - Creates settings directory if needed
 - Backs up existing configuration
 - Merges settings with existing config (using jq)
-- Installs AgentHub MCP configuration
+- Installs PromptHub MCP configuration
 - Optionally installs VS Code tasks
-- Verifies AgentHub is running
+- Verifies PromptHub is running
 - Checks for Claude Code/Cline extension
 
 **Usage:**
 ```bash
-cd ~/.local/share/agenthub/clients/vscode
+cd ~/.local/share/prompthub/clients/vscode
 
 # Workspace setup (recommended)
 ./setup-vscode.sh --workspace
 
-# With AgentHub tasks
+# With PromptHub tasks
 ./setup-vscode.sh --workspace --with-tasks
 
 # Global setup (all workspaces)
@@ -76,10 +76,10 @@ cd ~/.local/share/agenthub/clients/vscode
 
 ## Setup
 
-VS Code connects to AgentHub via HTTP endpoints (not stdio). See the [VS Code integration guide](../../../guides/vscode-integration.md) for:
+VS Code connects to PromptHub via HTTP endpoints (not stdio). See the [VS Code integration guide](../../../guides/vscode-integration.md) for:
 
 - Workspace configuration
-- Task definitions for AgentHub operations
+- Task definitions for PromptHub operations
 - Debugging MCP connections
 - Extension-specific settings
 
@@ -92,12 +92,12 @@ VS Code uses **Qwen3-Coder** for prompt enhancement with code-first focus:
 
 This is configured in `../../enhancement-rules.json`.
 
-## AgentHub Tasks
+## PromptHub Tasks
 
 The configuration includes helpful VS Code tasks:
 
-- **AgentHub: Health Check** - Verify router is running
-- **AgentHub: List Servers** - See all MCP servers and status
-- **AgentHub: Document Workspace** - Generate docs for current project
+- **PromptHub: Health Check** - Verify router is running
+- **PromptHub: List Servers** - See all MCP servers and status
+- **PromptHub: Document Workspace** - Generate docs for current project
 
-Access via `Cmd+Shift+P` → "Tasks: Run Task" → "AgentHub: ..."
+Access via `Cmd+Shift+P` → "Tasks: Run Task" → "PromptHub: ..."

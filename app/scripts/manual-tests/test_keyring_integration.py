@@ -50,7 +50,7 @@ def test_process_env_config():
     test_config = {
         "OBSIDIAN_API_KEY": {
             "source": "keyring",
-            "service": "agenthub",
+            "service": "prompthub",
             "key": "obsidian_api_key"
         },
         "OBSIDIAN_HOST": "https://127.0.0.1",

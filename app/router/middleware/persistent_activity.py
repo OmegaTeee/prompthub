@@ -41,7 +41,7 @@ class PersistentActivityLog:
     Uses aiosqlite for async database operations without blocking the event loop.
     """
 
-    def __init__(self, db_path: Path = Path("/tmp/agenthub/activity.db")):
+    def __init__(self, db_path: Path = Path("/tmp/prompthub/activity.db")):
         """
         Initialize persistent activity log.
 
@@ -343,7 +343,7 @@ persistent_activity_log: PersistentActivityLog | None = None
 
 
 def get_persistent_activity_log(
-    db_path: Path = Path("/tmp/agenthub/activity.db"),
+    db_path: Path = Path("/tmp/prompthub/activity.db"),
 ) -> PersistentActivityLog:
     """Get or create the global persistent activity log instance."""
     global persistent_activity_log

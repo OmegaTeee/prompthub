@@ -34,15 +34,6 @@
     "obsidian-mcp-tools": {
       "command": "${HOME}/.local/share/mcps/scripts/obsidian-mcp-tools.sh"
     },
-    "sprouti": {
-      "command": "/opt/homebrew/bin/node",
-      "args": [
-        "~/Library/Containers/com.skyphic.sprouti/Data/Library/Application Support/sprouti/mcp/development/server.js"
-      ],
-      "env": {
-        "PATH": "/opt/homebrew/bin/node:/usr/local/bin:/usr/bin:/bin"
-      }
-    },
     "skills-mcp": {
       "args": [
         "-y",

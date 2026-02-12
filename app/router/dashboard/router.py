@@ -62,7 +62,7 @@ def create_dashboard_router(
             "dashboard.html",
             {
                 "request": request,
-                "title": "AgentHub Dashboard",
+                "title": "PromptHub Dashboard",
             },
         )
 

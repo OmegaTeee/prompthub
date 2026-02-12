@@ -10,16 +10,16 @@ echo "npx: ${NPX:-not-found}" && { [[ -n "${NPX:-}" ]] && ${NPX} --version || tr
 
 echo "Checking configured server files/commands..."
 
-AGENTHUB_DIR="${HOME}/.local/share/agenthub"
+PROMPTHUB_DIR="${HOME}/.local/share/prompthub"
 
 FILES=(
-  "${AGENTHUB_DIR}/mcps/node_modules/@upstash/context7-mcp/dist/index.js"
-  "${AGENTHUB_DIR}/mcps/node_modules/@wonderwhy-er/desktop-commander/dist/index.js"
-  "${AGENTHUB_DIR}/mcps/node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"
-  "${AGENTHUB_DIR}/mcps/node_modules/@modelcontextprotocol/server-memory/dist/index.js"
-  "${AGENTHUB_DIR}/mcps/node_modules/deepseek-reasoner-mcp/dist/index.js"
-  "${AGENTHUB_DIR}/mcps/node_modules/mcp-fetch/dist/stdio.js"
-  "${AGENTHUB_DIR}/mcps/obsidian-mcp-tools/bin/mcp-server"
+  "${PROMPTHUB_DIR}/mcps/node_modules/@upstash/context7-mcp/dist/index.js"
+  "${PROMPTHUB_DIR}/mcps/node_modules/@wonderwhy-er/desktop-commander/dist/index.js"
+  "${PROMPTHUB_DIR}/mcps/node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"
+  "${PROMPTHUB_DIR}/mcps/node_modules/@modelcontextprotocol/server-memory/dist/index.js"
+  "${PROMPTHUB_DIR}/mcps/node_modules/deepseek-reasoner-mcp/dist/index.js"
+  "${PROMPTHUB_DIR}/mcps/node_modules/mcp-fetch/dist/stdio.js"
+  "${PROMPTHUB_DIR}/mcps/obsidian-mcp-tools/bin/mcp-server"
 )
 
 for f in "${FILES[@]}"; do
@@ -37,16 +37,16 @@ done
 
 echo ""
 echo "Checking Python MCP servers..."
-if [[ -f "${AGENTHUB_DIR}/.venv/bin/activate" ]]; then
+if [[ -f "${PROMPTHUB_DIR}/.venv/bin/activate" ]]; then
   # mcp-obsidian requires OBSIDIAN_API_KEY to import, so check if package is installed via pip
-  if "${AGENTHUB_DIR}/.venv/bin/pip" show mcp-obsidian &>/dev/null; then
+  if "${PROMPTHUB_DIR}/.venv/bin/pip" show mcp-obsidian &>/dev/null; then
     echo "FOUND: mcp-obsidian (Python package)"
-    "${AGENTHUB_DIR}/.venv/bin/pip" show mcp-obsidian | grep "Version:" || echo "  Version: unknown"
+    "${PROMPTHUB_DIR}/.venv/bin/pip" show mcp-obsidian | grep "Version:" || echo "  Version: unknown"
   else
     echo "MISSING: mcp-obsidian (Python package)"
   fi
 else
-  echo "MISSING: Python virtual environment at ${AGENTHUB_DIR}/.venv"
+  echo "MISSING: Python virtual environment at ${PROMPTHUB_DIR}/.venv"
 fi
 
 echo ""
@@ -57,5 +57,5 @@ echo "  npx -y @modelcontextprotocol/server-sequential-thinking --help"
 echo "  npx -y @modelcontextprotocol/server-memory --help"
 echo "  npx -y deepseek-reasoner-mcp --help"
 echo "  npx -y mcp-fetch --help"
-echo "  ${AGENTHUB_DIR}/scripts/obsidian-mcp-tools.sh --help"
-echo "  ${AGENTHUB_DIR}/scripts/mcp-obsidian-rest.sh --help"
+echo "  ${PROMPTHUB_DIR}/scripts/obsidian-mcp-tools.sh --help"
+echo "  ${PROMPTHUB_DIR}/scripts/mcp-obsidian-rest.sh --help"

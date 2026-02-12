@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# VS Code AgentHub Setup Script
+# VS Code PromptHub Setup Script
 #
-# This script configures VS Code (Claude Code / Cline) to use AgentHub as an MCP server.
+# This script configures VS Code (Claude Code / Cline) to use PromptHub as an MCP server.
 #
 # Usage:
 #   ./setup-vscode.sh [--global|--workspace] [--with-tasks]
@@ -85,7 +85,7 @@ if [ -f "$TARGET_SETTINGS" ]; then
     EXISTING=$(cat "$TARGET_SETTINGS")
     EXAMPLE=$(cat "$EXAMPLE_SETTINGS")
 
-    # Merge (example settings take precedence for AgentHub config)
+    # Merge (example settings take precedence for PromptHub config)
     echo "$EXISTING" | jq -s '.[0] * .[1]' - <(echo "$EXAMPLE") > "$TARGET_SETTINGS"
     log_success "Settings merged successfully"
   else
@@ -96,7 +96,7 @@ if [ -f "$TARGET_SETTINGS" ]; then
 else
   # No existing settings, just copy example
   cp "$EXAMPLE_SETTINGS" "$TARGET_SETTINGS"
-  log_success "AgentHub settings installed"
+  log_success "PromptHub settings installed"
 fi
 
 # Install tasks if requested
@@ -110,21 +110,21 @@ if [ "$WITH_TASKS" = "--with-tasks" ] || [ "$2" = "--with-tasks" ]; then
   fi
 
   cp "$EXAMPLE_TASKS" "$TASKS_FILE"
-  log_success "AgentHub tasks installed to: $TASKS_FILE"
+  log_success "PromptHub tasks installed to: $TASKS_FILE"
 fi
 
-# Verify AgentHub is running
+# Verify PromptHub is running
 echo ""
-log_info "Verifying AgentHub connection..."
+log_info "Verifying PromptHub connection..."
 if curl -s --max-time 2 http://localhost:9090/health > /dev/null 2>&1; then
-  log_success "AgentHub is running on localhost:9090"
+  log_success "PromptHub is running on localhost:9090"
 else
-  log_warning "AgentHub is not running or not reachable"
+  log_warning "PromptHub is not running or not reachable"
   echo ""
-  echo "Start AgentHub with:"
-  echo "  launchctl start com.agenthub.router"
+  echo "Start PromptHub with:"
+  echo "  launchctl start com.prompthub.router"
   echo "Or:"
-  echo "  cd ~/.local/share/agenthub && uvicorn router.main:app --port 9090"
+  echo "  cd ~/.local/share/prompthub && uvicorn router.main:app --port 9090"
 fi
 
 # Check for Claude Code or Cline extension
@@ -164,8 +164,8 @@ echo "  2. Verify MCP connection:"
 echo "     - Check status bar for MCP indicator"
 echo "     - Or use Claude Code command palette"
 echo ""
-echo "  3. Try AgentHub tasks:"
-echo "     Cmd+Shift+P → 'Tasks: Run Task' → 'AgentHub: Health Check'"
+echo "  3. Try PromptHub tasks:"
+echo "     Cmd+Shift+P → 'Tasks: Run Task' → 'PromptHub: Health Check'"
 echo ""
 echo "  4. Test MCP tools:"
 echo "     - Ask Claude Code to use context7 for documentation"

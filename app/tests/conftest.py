@@ -1,5 +1,5 @@
 """
-Pytest configuration and shared fixtures for AgentHub tests.
+Pytest configuration and shared fixtures for PromptHub tests.
 
 Provides common test utilities, mocks, and fixtures used across all test modules.
 """

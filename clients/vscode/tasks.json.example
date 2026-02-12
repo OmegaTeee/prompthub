@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "AgentHub: Health Check",
+      "label": "PromptHub: Health Check",
       "type": "shell",
       "command": "curl",
       "args": [
@@ -22,7 +22,7 @@
       "group": "test"
     },
     {
-      "label": "AgentHub: List MCP Servers",
+      "label": "PromptHub: List MCP Servers",
       "type": "shell",
       "command": "curl",
       "args": [
@@ -42,10 +42,10 @@
       "group": "test"
     },
     {
-      "label": "AgentHub: Start Router",
+      "label": "PromptHub: Start Router",
       "type": "shell",
       "command": "launchctl",
-      "args": ["start", "com.agenthub.router"],
+      "args": ["start", "com.prompthub.router"],
       "presentation": {
         "reveal": "always",
         "panel": "shared"
@@ -53,10 +53,10 @@
       "problemMatcher": []
     },
     {
-      "label": "AgentHub: Stop Router",
+      "label": "PromptHub: Stop Router",
       "type": "shell",
       "command": "launchctl",
-      "args": ["stop", "com.agenthub.router"],
+      "args": ["stop", "com.prompthub.router"],
       "presentation": {
         "reveal": "always",
         "panel": "shared"
@@ -64,7 +64,7 @@
       "problemMatcher": []
     },
     {
-      "label": "AgentHub: View Dashboard",
+      "label": "PromptHub: View Dashboard",
       "type": "shell",
       "command": "open",
       "args": ["http://localhost:9090/dashboard"],
@@ -74,7 +74,7 @@
       "problemMatcher": []
     },
     {
-      "label": "AgentHub: Clear Cache",
+      "label": "PromptHub: Clear Cache",
       "type": "shell",
       "command": "curl",
       "args": [
@@ -91,7 +91,7 @@
       "problemMatcher": []
     },
     {
-      "label": "AgentHub: Test Context7 (Documentation Fetch)",
+      "label": "PromptHub: Test Context7 (Documentation Fetch)",
       "type": "shell",
       "command": "curl",
       "args": [
@@ -119,7 +119,7 @@
       "group": "test"
     },
     {
-      "label": "AgentHub: Restart Server",
+      "label": "PromptHub: Restart Server",
       "type": "shell",
       "command": "bash",
       "args": [
@@ -134,12 +134,12 @@
       "problemMatcher": []
     },
     {
-      "label": "AgentHub: View Logs",
+      "label": "PromptHub: View Logs",
       "type": "shell",
       "command": "tail",
       "args": [
         "-f",
-        "${userHome}/.local/share/agenthub/logs/router.log"
+        "${userHome}/.local/share/prompthub/logs/router.log"
       ],
       "isBackground": true,
       "presentation": {
@@ -149,7 +149,7 @@
       "problemMatcher": []
     },
     {
-      "label": "AgentHub: Test All Servers",
+      "label": "PromptHub: Test All Servers",
       "type": "shell",
       "command": "bash",
       "args": [

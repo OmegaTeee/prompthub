@@ -1,8 +1,8 @@
 # Client Integrations
 
-**Connect your favorite apps to AgentHub**
+**Connect your favorite apps to PromptHub**
 
-Configure desktop applications to use AgentHub as their MCP router for enhanced functionality.
+Configure desktop applications to use PromptHub as their MCP router for enhanced functionality.
 
 ## Available Integrations
 

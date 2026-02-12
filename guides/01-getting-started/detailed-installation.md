@@ -8,7 +8,7 @@
 
 ## Welcome!
 
-You're about to install AgentHub — a central hub that connects all your AI tools (Claude Desktop, VS Code, Raycast) and makes them work better together.
+You're about to install PromptHub — a central hub that connects all your AI tools (Claude Desktop, VS Code, Raycast) and makes them work better together.
 
 **Good news:** You don't need programming experience. This guide explains everything.
 
@@ -32,10 +32,10 @@ You're about to install AgentHub — a central hub that connects all your AI too
 ### What We're Installing
 
 1. **Homebrew** - macOS package manager (app installer)
-2. **Python 3.11** - Programming language AgentHub runs on
+2. **Python 3.11** - Programming language PromptHub runs on
 3. **Node.js 20** - JavaScript runtime for MCP servers
 4. **Ollama** - Local AI models for prompt enhancement
-5. **AgentHub** - The router software itself
+5. **PromptHub** - The router software itself
 
 ---
 
@@ -91,7 +91,7 @@ Think of it like the App Store, but for developer tools. It makes installing sof
 ### Step 3: Install Python
 
 **What is Python?**
-Python is a programming language. AgentHub is written in Python, so we need it to run the software.
+Python is a programming language. PromptHub is written in Python, so we need it to run the software.
 
 **Copy and paste this command:**
 
@@ -125,7 +125,7 @@ If you see this, Python is installed correctly! ✅
 ### Step 4: Install Node.js
 
 **What is Node.js?**
-Node.js runs JavaScript code. AgentHub's MCP servers (the tools it connects to) use Node.js.
+Node.js runs JavaScript code. PromptHub's MCP servers (the tools it connects to) use Node.js.
 
 **Copy and paste this command:**
 
@@ -151,34 +151,34 @@ If you see a version number starting with 20, Node.js is installed correctly! �
 
 ---
 
-## Phase 2: Install AgentHub (10 minutes)
+## Phase 2: Install PromptHub (10 minutes)
 
-### Step 1: Download AgentHub
+### Step 1: Download PromptHub
 
 **Option A: If you have the download file**
 1. Open Finder
 2. Navigate to your Downloads folder
-3. Find `agenthub.zip` or `agenthub-*.tar.gz`
+3. Find `prompthub.zip` or `prompthub-*.tar.gz`
 4. Double-click to extract it
 
 **Option B: If using git (advanced)**
 
 ```bash
 cd ~/.local/share
-git clone https://github.com/YOUR_ORG/agenthub.git
+git clone https://github.com/YOUR_ORG/prompthub.git
 ```
 
 For this guide, we'll assume you extracted to Downloads. Let's move it to the right place:
 
 ```bash
-# Create the directory where AgentHub will live
+# Create the directory where PromptHub will live
 mkdir -p ~/.local/share
 
-# Move AgentHub there
-mv ~/Downloads/agenthub ~/.local/share/
+# Move PromptHub there
+mv ~/Downloads/prompthub ~/.local/share/
 
 # Verify it's there
-ls ~/.local/share/agenthub
+ls ~/.local/share/prompthub
 ```
 
 **Expected output:**
@@ -186,19 +186,19 @@ You should see files like: `router/`, `mcps/`, `requirements.txt`, `.env.example
 
 ---
 
-### Step 2: Navigate to AgentHub Directory
+### Step 2: Navigate to PromptHub Directory
 
 **What does "navigate" mean?**
-In Terminal, you're always "in" a directory (folder). We need to move into the AgentHub folder.
+In Terminal, you're always "in" a directory (folder). We need to move into the PromptHub folder.
 
 ```bash
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 ```
 
 **What this means:**
 - `cd` = "change directory"
 - `~` = your home folder (e.g., `/Users/yourname`)
-- `.local/share/agenthub` = the path to AgentHub
+- `.local/share/prompthub` = the path to PromptHub
 
 **Verify you're in the right place:**
 
@@ -209,7 +209,7 @@ pwd
 **Expected output:**
 
 ```
-/Users/yourname/.local/share/agenthub
+/Users/yourname/.local/share/prompthub
 ```
 
 ---
@@ -244,7 +244,7 @@ source .venv/bin/activate
 **Your prompt should now look like:**
 
 ```
-(.venv) username@MacBook-Pro agenthub %
+(.venv) username@MacBook-Pro prompthub %
 ```
 
 The `(.venv)` means the environment is active! ✅
@@ -254,7 +254,7 @@ The `(.venv)` means the environment is active! ✅
 ### Step 4: Install Python Dependencies
 
 **What are dependencies?**
-Libraries (code packages) that AgentHub needs to run. Think of them like ingredients for a recipe.
+Libraries (code packages) that PromptHub needs to run. Think of them like ingredients for a recipe.
 
 ```bash
 pip install -r requirements.txt
@@ -278,7 +278,7 @@ Successfully installed fastapi-... uvicorn-... structlog-... (and many others)
 ### Step 5: Install MCP Server Packages
 
 **What are MCP servers?**
-Tools that AgentHub connects to:
+Tools that PromptHub connects to:
 - `filesystem` - Read/write files
 - `fetch` - Get content from websites
 - `brave-search` - Search the web
@@ -311,7 +311,7 @@ added XXX packages in Xs
 ### Step 6: Configure Environment Variables
 
 **What are environment variables?**
-Settings that AgentHub uses to know how to run. Think of them like preferences.
+Settings that PromptHub uses to know how to run. Think of them like preferences.
 
 ```bash
 # Copy the example configuration
@@ -321,7 +321,7 @@ cp .env.example .env
 **What's happening:**
 - `cp` = copy
 - `.env.example` = template file with example settings
-- `.env` = the file AgentHub actually reads
+- `.env` = the file PromptHub actually reads
 
 Now let's edit it. We'll use a simple text editor:
 
@@ -359,7 +359,7 @@ LOG_LEVEL=INFO        # INFO, DEBUG, WARNING, ERROR
 ## Phase 3: Install Ollama (10 minutes)
 
 **What is Ollama?**
-Ollama runs AI models locally on your Mac. AgentHub uses these to improve prompts before sending them to your AI clients.
+Ollama runs AI models locally on your Mac. PromptHub uses these to improve prompts before sending them to your AI clients.
 
 ### Step 1: Install Ollama
 
@@ -438,14 +438,14 @@ qwen2.5-coder:7b       4.7 GB
 
 ---
 
-## Phase 4: Start AgentHub (5 minutes)
+## Phase 4: Start PromptHub (5 minutes)
 
-Now we're ready to start AgentHub for the first time!
+Now we're ready to start PromptHub for the first time!
 
-### Step 1: Navigate to AgentHub Directory (if not already there)
+### Step 1: Navigate to PromptHub Directory (if not already there)
 
 ```bash
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 source .venv/bin/activate
 ```
 
@@ -460,8 +460,8 @@ uvicorn router.main:app --host 0.0.0.0 --port 9090
 ```
 
 **What's happening:**
-- `uvicorn` is the web server that runs AgentHub
-- `router.main:app` tells it where the AgentHub code is
+- `uvicorn` is the web server that runs PromptHub
+- `router.main:app` tells it where the PromptHub code is
 - `--host 0.0.0.0` makes it accessible from any network interface
 - `--port 9090` sets the port number
 
@@ -474,9 +474,9 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:9090
 ```
 
-**If you see this, AgentHub is running!** ✅
+**If you see this, PromptHub is running!** ✅
 
-**Important:** Leave this Terminal window open. AgentHub will stop if you close it (for now — we'll fix this in Phase 5).
+**Important:** Leave this Terminal window open. PromptHub will stop if you close it (for now — we'll fix this in Phase 5).
 
 ---
 
@@ -494,7 +494,7 @@ curl http://localhost:9090/health
 {"status":"healthy","timestamp":"2026-02-05T10:30:00Z","version":"0.1.0"}
 ```
 
-**Success!** AgentHub is responding! ✅
+**Success!** PromptHub is responding! ✅
 
 ---
 
@@ -507,7 +507,7 @@ http://localhost:9090/dashboard
 ```
 
 **You should see:**
-- AgentHub monitoring dashboard
+- PromptHub monitoring dashboard
 - List of MCP servers (filesystem, fetch, etc.)
 - Activity log (empty for now)
 - Circuit breaker status
@@ -518,9 +518,9 @@ If you see the dashboard, everything is working correctly! ✅
 
 ## Phase 5: Auto-Start Setup (Optional but Recommended)
 
-**The problem:** Right now, AgentHub only runs while that Terminal window is open. If you close it or restart your Mac, AgentHub stops.
+**The problem:** Right now, PromptHub only runs while that Terminal window is open. If you close it or restart your Mac, PromptHub stops.
 
-**The solution:** Create a LaunchAgent that starts AgentHub automatically when you log in.
+**The solution:** Create a LaunchAgent that starts PromptHub automatically when you log in.
 
 ### Step 1: Create LaunchAgent Configuration
 
@@ -530,35 +530,35 @@ A macOS system file that tells your Mac to run a program automatically.
 **Copy and paste this entire block:**
 
 ```bash
-cat > ~/Library/LaunchAgents/com.agenthub.router.plist << 'EOF'
+cat > ~/Library/LaunchAgents/com.prompthub.router.plist << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.agenthub.router</string>
+    <string>com.prompthub.router</string>
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
         <string>-c</string>
-        <string>cd ~/.local/share/agenthub && source .venv/bin/activate && uvicorn router.main:app --host 0.0.0.0 --port 9090</string>
+        <string>cd ~/.local/share/prompthub && source .venv/bin/activate && uvicorn router.main:app --host 0.0.0.0 --port 9090</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>~/Library/Logs/agenthub-router.log</string>
+    <string>~/Library/Logs/prompthub-router.log</string>
     <key>StandardErrorPath</key>
-    <string>~/Library/Logs/agenthub-router-error.log</string>
+    <string>~/Library/Logs/prompthub-router-error.log</string>
 </dict>
 </plist>
 EOF
 ```
 
 **What this does:**
-- Creates a file at `~/Library/LaunchAgents/com.agenthub.router.plist`
-- Tells macOS how to run AgentHub
+- Creates a file at `~/Library/LaunchAgents/com.prompthub.router.plist`
+- Tells macOS how to run PromptHub
 - Configures it to start on login (`RunAtLoad`)
 - Keeps it running (`KeepAlive`)
 - Saves logs for troubleshooting
@@ -568,7 +568,7 @@ EOF
 ### Step 2: Load the LaunchAgent
 
 ```bash
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 **What's happening:**
@@ -578,13 +578,13 @@ launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
 **Verify it's running:**
 
 ```bash
-launchctl list | grep com.agenthub.router
+launchctl list | grep com.prompthub.router
 ```
 
 **Expected output:**
 
 ```
-12345  0  com.agenthub.router
+12345  0  com.prompthub.router
 ```
 
 The first number is the process ID (PID). If you see this, the service is running! ✅
@@ -593,7 +593,7 @@ The first number is the process ID (PID). If you see this, the service is runnin
 
 ### Step 3: Test Auto-Start
 
-Now you can close the Terminal window where you manually started AgentHub. The LaunchAgent will keep it running.
+Now you can close the Terminal window where you manually started PromptHub. The LaunchAgent will keep it running.
 
 **Test the health endpoint again:**
 
@@ -607,13 +607,13 @@ curl http://localhost:9090/health
 {"status":"healthy"...}
 ```
 
-**Perfect!** AgentHub now starts automatically and runs in the background. ✅
+**Perfect!** PromptHub now starts automatically and runs in the background. ✅
 
 ---
 
 ## Phase 6: Connect Your Apps (10 minutes)
 
-Now let's connect your AI clients to AgentHub.
+Now let's connect your AI clients to PromptHub.
 
 **Choose one to start with** (you can add more later):
 - Claude Desktop
@@ -636,7 +636,7 @@ open -a TextEdit ~/Library/Application\ Support/Claude/claude_desktop_config.jso
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Enhance": "true",
@@ -648,7 +648,7 @@ open -a TextEdit ~/Library/Application\ Support/Claude/claude_desktop_config.jso
 ```
 
 **What this does:**
-- Tells Claude Desktop to connect to AgentHub at `localhost:9090`
+- Tells Claude Desktop to connect to PromptHub at `localhost:9090`
 - `X-Enhance: true` enables prompt enhancement
 - `X-Client-Name: claude-desktop` identifies this client
 
@@ -663,7 +663,7 @@ open -a TextEdit ~/Library/Application\ Support/Claude/claude_desktop_config.jso
 In Claude Desktop, ask:
 
 ```
-Am I connected to AgentHub?
+Am I connected to PromptHub?
 ```
 
 You should get a response confirming the connection! ✅
@@ -689,7 +689,7 @@ code ~/.vscode/settings.json
 ```json
 {
   "cline.mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Enhance": "true",
@@ -702,7 +702,7 @@ code ~/.vscode/settings.json
 
 **Step 4:** Restart VS Code
 
-**Step 5:** Open Cline sidebar and verify you see "Connected to agenthub"
+**Step 5:** Open Cline sidebar and verify you see "Connected to prompthub"
 
 ---
 
@@ -719,7 +719,7 @@ mkdir -p ~/Library/Application\ Support/com.raycast.macos
 ```bash
 cat > ~/Library/Application\ Support/com.raycast.macos/mcp_servers.json << 'EOF'
 {
-  "agenthub": {
+  "prompthub": {
     "url": "http://localhost:9090",
     "headers": {
       "X-Enhance": "true",
@@ -750,7 +750,7 @@ Before you finish, verify everything works:
 - [ ] Dashboard loads at `http://localhost:9090/dashboard`
 - [ ] At least one client (Claude/VS Code/Raycast) is connected
 - [ ] You can ask a question and get a response
-- [ ] LaunchAgent is loaded: `launchctl list | grep agenthub`
+- [ ] LaunchAgent is loaded: `launchctl list | grep prompthub`
 
 If all are checked, setup is complete! ✅
 

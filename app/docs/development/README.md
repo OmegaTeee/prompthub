@@ -1,8 +1,8 @@
 # Development Guides
 
-**Documentation for AgentHub contributors and developers**
+**Documentation for PromptHub contributors and developers**
 
-Technical guides for developing and extending AgentHub.
+Technical guides for developing and extending PromptHub.
 
 ## Available Guides
 
@@ -21,7 +21,7 @@ Technical guides for developing and extending AgentHub.
 
 ---
 
-**Audience:** Contributors, developers extending AgentHub
+**Audience:** Contributors, developers extending PromptHub
 **Related:**
 - [Architecture docs](../architecture/) - Design decisions
 - [Module docs](../modules/) - Implementation details

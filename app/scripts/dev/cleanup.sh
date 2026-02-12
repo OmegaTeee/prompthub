@@ -21,7 +21,7 @@ fi
 # Change to project root
 cd "$(dirname "$0")/../.."
 
-echo -e "${BLUE}🧹 AgentHub Cleanup Script${NC}\n"
+echo -e "${BLUE}🧹 PromptHub Cleanup Script${NC}\n"
 
 # Track stats
 TOTAL_FILES=0
@@ -110,14 +110,14 @@ echo ""
 
 # Old logs in /tmp
 echo -e "${YELLOW}Cleaning: temporary log files${NC}"
-if [[ -f "/tmp/agenthub-router.log" ]]; then
-    size=$(du -sk /tmp/agenthub-router.log 2>/dev/null | awk '{print $1}')
-    echo "  Found: /tmp/agenthub-router.log (${size}KB)"
+if [[ -f "/tmp/prompthub-router.log" ]]; then
+    size=$(du -sk /tmp/prompthub-router.log 2>/dev/null | awk '{print $1}')
+    echo "  Found: /tmp/prompthub-router.log (${size}KB)"
     TOTAL_SIZE=$((TOTAL_SIZE + size))
     TOTAL_FILES=$((TOTAL_FILES + 1))
 
     if [[ "$DRY_RUN" == false ]]; then
-        rm -f /tmp/agenthub-router.log
+        rm -f /tmp/prompthub-router.log
         echo -e "  ${GREEN}✓ Removed${NC}"
     fi
 else

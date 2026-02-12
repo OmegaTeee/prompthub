@@ -1,12 +1,12 @@
-# VS Code Integration with AgentHub
+# VS Code Integration with PromptHub
 
-> **Complete guide to connecting VS Code (Claude Code / Cline) to AgentHub for code-optimized MCP access**
+> **Complete guide to connecting VS Code (Claude Code / Cline) to PromptHub for code-optimized MCP access**
 
 ---
 
 ## Overview
 
-AgentHub provides **code-optimized MCP access** for VS Code extensions like Claude Code and Cline, with:
+PromptHub provides **code-optimized MCP access** for VS Code extensions like Claude Code and Cline, with:
 
 1. **Code-First Enhancement** - Prompts enhanced with Qwen3-Coder (specialized for coding)
 2. **Fast File Operations** - Desktop Commander for instant file access
@@ -28,7 +28,7 @@ AgentHub provides **code-optimized MCP access** for VS Code extensions like Clau
          │ HTTP JSON-RPC
          ▼
 ┌─────────────────────────────────┐
-│      AgentHub Router            │
+│      PromptHub Router            │
 │     localhost:9090              │
 │                                 │
 │  1. Code Enhancement            │
@@ -51,7 +51,7 @@ AgentHub provides **code-optimized MCP access** for VS Code extensions like Clau
 
 - [ ] **VS Code installed**: Version 1.85+ (with extension support)
 - [ ] **Claude Code or Cline extension**: Installed from marketplace
-- [ ] **AgentHub running**: `curl http://localhost:9090/health` → healthy
+- [ ] **PromptHub running**: `curl http://localhost:9090/health` → healthy
 - [ ] **Ollama with Qwen3-Coder**: `ollama pull qwen3-coder:latest`
 - [ ] **Node.js 18+**: For MCP proxy client
 
@@ -59,7 +59,7 @@ AgentHub provides **code-optimized MCP access** for VS Code extensions like Clau
 
 ## Example Configurations
 
-AgentHub provides example configurations in `clients/vscode/`:
+PromptHub provides example configurations in `clients/vscode/`:
 
 - **`vscode-settings.json.example`** - Minimal MCP settings for VS Code
 - **`vscode.json`** - Full workspace config with tasks and shortcuts
@@ -67,11 +67,11 @@ AgentHub provides example configurations in `clients/vscode/`:
 **Quick copy:**
 ```bash
 # Copy example to your workspace
-cp ~/.local/share/agenthub/clients/vscode/vscode-settings.json.example \
+cp ~/.local/share/prompthub/clients/vscode/vscode-settings.json.example \
    .vscode/settings.json
 
 # Or use globally
-cp ~/.local/share/agenthub/clients/vscode/vscode-settings.json.example \
+cp ~/.local/share/prompthub/clients/vscode/vscode-settings.json.example \
    ~/.vscode/settings.json
 ```
 
@@ -120,13 +120,13 @@ VS Code MCP configuration can be:
 code ~/.vscode/settings.json
 ```
 
-Add AgentHub configuration:
+Add PromptHub configuration:
 
 ```json
 {
   "claude.mcp.enabled": true,
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "transport": "http",
       "headers": {
@@ -148,12 +148,12 @@ mkdir -p .vscode
 code .vscode/settings.json
 ```
 
-Add AgentHub with project-specific settings:
+Add PromptHub with project-specific settings:
 
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "transport": "http",
       "headers": {
@@ -196,11 +196,11 @@ open -a "Visual Studio Code"
 
 1. Open **Command Palette** (`Cmd+Shift+P`)
 2. Type "Claude: Show MCP Status"
-3. Should show: `✅ Connected to AgentHub (7 tools)`
+3. Should show: `✅ Connected to PromptHub (7 tools)`
 
 **Alternative: Check via Settings UI**
 1. Settings → Extensions → Claude Code → MCP Servers
-2. Should list "agenthub" with green checkmark
+2. Should list "prompthub" with green checkmark
 
 ### Test 2: List Available MCP Tools
 
@@ -406,14 +406,14 @@ users.sort((a, b) => a.age - b.age);
 
 ### Workspace-Aware Configuration
 
-AgentHub supports **per-project MCP configuration**:
+PromptHub supports **per-project MCP configuration**:
 
 **Project A (React):**
 `.vscode/settings.json`:
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Client-Name": "vscode-react-project"
@@ -428,7 +428,7 @@ AgentHub supports **per-project MCP configuration**:
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Client-Name": "vscode-python-project"
@@ -474,7 +474,7 @@ Use context7: React useState hook  ← <50ms (cache hit)
 
 ### Common Issues
 
-For common AgentHub connection, health check, and MCP server issues, see:
+For common PromptHub connection, health check, and MCP server issues, see:
 - **[Common Troubleshooting Guide](../_shared/troubleshooting-common.md)** - Connection refused, router not responding, timeout errors
 - **[Health Checks Guide](../_shared/health-checks.md)** - Verification commands and status checks
 
@@ -492,7 +492,7 @@ For common AgentHub connection, health check, and MCP server issues, see:
 1. **Check VS Code settings file:**
    ```bash
    code ~/.vscode/settings.json
-   # Verify "claude.mcp.servers.agenthub.url": "http://localhost:9090"
+   # Verify "claude.mcp.servers.prompthub.url": "http://localhost:9090"
    ```
 
 2. **Reload VS Code window:**
@@ -526,14 +526,14 @@ For common AgentHub connection, health check, and MCP server issues, see:
 
 3. **Check enhancement rules for vscode:**
    ```bash
-   cat ~/.local/share/agenthub/configs/enhancement-rules.json | jq '.clients.vscode'
+   cat ~/.local/share/prompthub/configs/enhancement-rules.json | jq '.clients.vscode'
    ```
 
 4. **Verify X-Client-Name header is set:**
    ```json
    {
      "claude.mcp.servers": {
-       "agenthub": {
+       "prompthub": {
          "headers": {
            "X-Client-Name": "vscode"
          }
@@ -578,7 +578,7 @@ Override Qwen3-Coder with a different model:
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "headers": {
         "X-Client-Name": "vscode-custom",
         "X-Enhancement-Model": "codellama:13b"
@@ -606,7 +606,7 @@ Update `enhancement-rules.json`:
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "headers": {
         "X-Skip-Enhancement": "true"
       }
@@ -617,12 +617,12 @@ Update `enhancement-rules.json`:
 
 ### Multiple MCP Endpoints
 
-Combine AgentHub with direct MCP servers:
+Combine PromptHub with direct MCP servers:
 
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "transport": "http"
     },
@@ -641,7 +641,7 @@ Combine AgentHub with direct MCP servers:
 
 ### 1. Enable Workspace Caching
 
-AgentHub caches responses per workspace:
+PromptHub caches responses per workspace:
 
 ```bash
 # Check cache stats
@@ -700,7 +700,7 @@ ollama pull qwen3-coder:7b  # Instead of :latest (14b)
   List available MCP tools
 
 - `Cmd+Shift+P` → "Claude: Clear Cache"
-  Clear AgentHub cache
+  Clear PromptHub cache
 
 ### Custom Keybindings
 
@@ -727,7 +727,7 @@ Add to `keybindings.json`:
 
 - [app-configs.md](app-configs.md) - Quick config for all clients
 - [claude-desktop-integration.md](claude-desktop-integration.md) - Claude Desktop setup
-- [getting-started.md](getting-started.md) - AgentHub installation
+- [getting-started.md](getting-started.md) - PromptHub installation
 - [keychain-setup.md](keychain-setup.md) - Credential management
 
 ---
@@ -746,7 +746,7 @@ Add to `keybindings.json`:
 .vscode/settings.json
 ```
 
-### AgentHub Health Check
+### PromptHub Health Check
 ```bash
 curl http://localhost:9090/health
 ```

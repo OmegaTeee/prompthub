@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 ### Step 1: Configure Router to Access ComfyUI
 
-Edit `~/.agenthub/config.json`:
+Edit `~/.prompthub/config.json`:
 
 ```json
 {
@@ -58,7 +58,7 @@ Edit `~/.agenthub/config.json`:
       "enabled": true,
       "config": {
         "comfyui_url": "http://localhost:8188",
-        "workflows_dir": "~/.agenthub/comfyui-workflows",
+        "workflows_dir": "~/.prompthub/comfyui-workflows",
         "output_dir": "~/Desktop/ComfyUI-Output"
       }
     }
@@ -69,14 +69,14 @@ Edit `~/.agenthub/config.json`:
 ### Step 2: Create Workflow Directory
 
 ```bash
-mkdir -p ~/.agenthub/comfyui-workflows
+mkdir -p ~/.prompthub/comfyui-workflows
 mkdir -p ~/Desktop/ComfyUI-Output
 ```
 
 ### Step 3: Restart Router
 
 ```bash
-launchctl restart com.agenthub.service
+launchctl restart com.prompthub.service
 
 # Verify
 sleep 3

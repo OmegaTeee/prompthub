@@ -1,8 +1,8 @@
-# AgentHub Health Checks
+# PromptHub Health Checks
 
-**Purpose:** Centralized reference for verifying AgentHub is running correctly.
+**Purpose:** Centralized reference for verifying PromptHub is running correctly.
 
-> **What you'll learn:** How to check if AgentHub is healthy, diagnose common issues, and verify MCP server connectivity.
+> **What you'll learn:** How to check if PromptHub is healthy, diagnose common issues, and verify MCP server connectivity.
 
 ---
 
@@ -21,7 +21,7 @@ curl http://localhost:9090/health
 ```
 
 **What it means:**
-- ✅ AgentHub is running
+- ✅ PromptHub is running
 - ✅ HTTP server is responding
 - ✅ Port 9090 is accessible
 
@@ -29,7 +29,7 @@ curl http://localhost:9090/health
 
 ## Detailed Health Verification
 
-### 1. Check AgentHub Process
+### 1. Check PromptHub Process
 
 **macOS/Linux:**
 
@@ -44,7 +44,7 @@ user    12345  0.5  1.2  uvicorn router.main:app --host 0.0.0.0 --port 9090
 ```
 
 **What it means:**
-- ✅ AgentHub process is running
+- ✅ PromptHub process is running
 - Shows PID (12345 in example)
 - Shows resource usage (CPU 0.5%, Memory 1.2%)
 
@@ -66,7 +66,7 @@ Python    12345 user   6u  IPv4 0xabcd      0t0  TCP *:9090 (LISTEN)
 **What it means:**
 - ✅ Port 9090 is open and listening
 - Shows which process is using the port
-- Confirms AgentHub is bound to the port
+- Confirms PromptHub is bound to the port
 
 **If port is in use by another process:**
 
@@ -83,13 +83,13 @@ kill -9 <PID>
 ### 3. Check LaunchAgent Status (macOS)
 
 ```bash
-launchctl list | grep com.agenthub.router
+launchctl list | grep com.prompthub.router
 ```
 
 **Expected output:**
 
 ```
-12345  0  com.agenthub.router
+12345  0  com.prompthub.router
 ```
 
 **What it means:**
@@ -100,7 +100,7 @@ launchctl list | grep com.agenthub.router
 **Check LaunchAgent logs:**
 
 ```bash
-tail -f ~/Library/Logs/agenthub-router.log
+tail -f ~/Library/Logs/prompthub-router.log
 ```
 
 ---
@@ -114,14 +114,14 @@ http://localhost:9090/dashboard
 ```
 
 **What you should see:**
-- ✅ AgentHub monitoring dashboard
+- ✅ PromptHub monitoring dashboard
 - ✅ List of MCP servers
 - ✅ Recent activity log
 - ✅ Circuit breaker status
 
 **If dashboard doesn't load:**
 - Check browser console for errors
-- Verify AgentHub is running (`curl http://localhost:9090/health`)
+- Verify PromptHub is running (`curl http://localhost:9090/health`)
 - Check firewall settings
 
 ---
@@ -338,27 +338,27 @@ curl http://localhost:9090/health
 ```
 
 **Diagnosis:**
-- ❌ AgentHub is not running
+- ❌ PromptHub is not running
 
 **Solutions:**
-1. Start AgentHub manually:
+1. Start PromptHub manually:
 
    ```bash
-   cd ~/.local/share/agenthub
+   cd ~/.local/share/prompthub
    uvicorn router.main:app --host 0.0.0.0 --port 9090
    ```
 
 2. Check LaunchAgent status:
 
    ```bash
-   launchctl list | grep com.agenthub.router
+   launchctl list | grep com.prompthub.router
    ```
 
 3. Restart LaunchAgent:
 
    ```bash
-   launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-   launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+   launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+   launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
    ```
 
 ---
@@ -371,27 +371,27 @@ curl http://localhost:9090/health
 ```
 
 **Diagnosis:**
-- ⚠️ AgentHub started but crashed
+- ⚠️ PromptHub started but crashed
 - ⚠️ Python dependencies missing
 
 **Solutions:**
 1. Check logs:
 
    ```bash
-   tail -f ~/Library/Logs/agenthub-router.log
+   tail -f ~/Library/Logs/prompthub-router.log
    ```
 
 2. Reinstall dependencies:
 
    ```bash
-   cd ~/.local/share/agenthub
+   cd ~/.local/share/prompthub
    pip install -r requirements.txt
    ```
 
 3. Test manually:
 
    ```bash
-   cd ~/.local/share/agenthub
+   cd ~/.local/share/prompthub
    uvicorn router.main:app --reload --port 9090
    ```
 
@@ -418,7 +418,7 @@ curl http://localhost:9090/mcp/filesystem/list_allowed_directories
 2. Verify config file:
 
    ```bash
-   cat ~/.local/share/agenthub/configs/mcp-servers.json
+   cat ~/.local/share/prompthub/configs/mcp-servers.json
    ```
 
 3. Start server manually:
@@ -445,7 +445,7 @@ curl http://localhost:9090/mcp/filesystem/list_allowed_directories
 2. Check server logs for root cause:
 
    ```bash
-   tail -f ~/Library/Logs/agenthub-router.log
+   tail -f ~/Library/Logs/prompthub-router.log
    ```
 
 3. Restart MCP server:
@@ -507,16 +507,16 @@ ps aux | grep "uvicorn router.main:app" | awk '{print $4, $6}'
 
 ```bash
 #!/bin/bash
-# save as: ~/bin/check-agenthub.sh
+# save as: ~/bin/check-prompthub.sh
 
 HEALTH_URL="http://localhost:9090/health"
 RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null $HEALTH_URL)
 
 if [ "$RESPONSE" -eq 200 ]; then
-    echo "✅ AgentHub is healthy"
+    echo "✅ PromptHub is healthy"
     exit 0
 else
-    echo "❌ AgentHub is unhealthy (HTTP $RESPONSE)"
+    echo "❌ PromptHub is unhealthy (HTTP $RESPONSE)"
     exit 1
 fi
 ```
@@ -524,13 +524,13 @@ fi
 **Make it executable:**
 
 ```bash
-chmod +x ~/bin/check-agenthub.sh
+chmod +x ~/bin/check-prompthub.sh
 ```
 
 **Run it:**
 
 ```bash
-~/bin/check-agenthub.sh
+~/bin/check-prompthub.sh
 ```
 
 ---
@@ -545,18 +545,18 @@ Create a LaunchAgent for monitoring:
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.agenthub.healthcheck</string>
+    <string>com.prompthub.healthcheck</string>
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/YOUR_USERNAME/bin/check-agenthub.sh</string>
+        <string>/Users/YOUR_USERNAME/bin/check-prompthub.sh</string>
     </array>
     <key>StartInterval</key>
     <integer>300</integer> <!-- Check every 5 minutes -->
     <key>StandardOutPath</key>
-    <string>/Users/YOUR_USERNAME/Library/Logs/agenthub-healthcheck.log</string>
+    <string>/Users/YOUR_USERNAME/Library/Logs/prompthub-healthcheck.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/YOUR_USERNAME/Library/Logs/agenthub-healthcheck-error.log</string>
+    <string>/Users/YOUR_USERNAME/Library/Logs/prompthub-healthcheck-error.log</string>
 </dict>
 </plist>
 ```
@@ -567,7 +567,7 @@ Create a LaunchAgent for monitoring:
 
 - ✅ **Quick check:** `curl http://localhost:9090/health`
 - ✅ **Dashboard:** `http://localhost:9090/dashboard` for visual monitoring
-- ✅ **Process check:** `ps aux | grep uvicorn` to verify AgentHub is running
+- ✅ **Process check:** `ps aux | grep uvicorn` to verify PromptHub is running
 - ✅ **Port check:** `lsof -i :9090` to confirm port binding
 - ✅ **MCP servers:** `curl http://localhost:9090/servers` to list server status
 - ✅ **Circuit breaker:** Check dashboard for server health status

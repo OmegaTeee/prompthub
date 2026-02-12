@@ -1,12 +1,12 @@
 # LaunchAgent Setup Guide
 
-> **For**: Running the AgentHub router as a background service on macOS
+> **For**: Running the PromptHub router as a background service on macOS
 
 ---
 
 ## Overview
 
-A **LaunchAgent** makes the AgentHub router start automatically at login and keeps it running in the background.
+A **LaunchAgent** makes the PromptHub router start automatically at login and keeps it running in the background.
 
 **Without LaunchAgent:**
 - You manually start the router every time
@@ -25,20 +25,20 @@ A **LaunchAgent** makes the AgentHub router start automatically at login and kee
 
 The LaunchAgent plist is already created in this repository:
 
-**Template:** [`clients/launch_agents/com.agenthub.router.plist`](../clients/launch_agents/com.agenthub.router.plist)
+**Template:** [`clients/launch_agents/com.prompthub.router.plist`](../clients/launch_agents/com.prompthub.router.plist)
 
 ### Installation Steps
 
 ```bash
 # 1. Create logs directory
-mkdir -p ~/.local/share/agenthub/logs
+mkdir -p ~/.local/share/prompthub/logs
 
 # 2. Copy plist to LaunchAgents directory
-cp clients/launch_agents/com.agenthub.router.plist \
+cp clients/launch_agents/com.prompthub.router.plist \
    ~/Library/LaunchAgents/
 
 # 3. Load the LaunchAgent
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # 4. Verify it's running
 curl http://localhost:9090/health
@@ -54,7 +54,7 @@ The LaunchAgent plist configures:
 ```xml
 <key>ProgramArguments</key>
 <array>
-    <string>/Users/visualval/.local/share/agenthub/.venv/bin/uvicorn</string>
+    <string>/Users/visualval/.local/share/prompthub/.venv/bin/uvicorn</string>
     <string>router.main:app</string>
     <string>--host</string>
     <string>127.0.0.1</string>
@@ -67,7 +67,7 @@ The LaunchAgent plist configures:
 - **Command:** `uvicorn` from the virtual environment
 - **App:** `router.main:app` (FastAPI application)
 - **Host:** `127.0.0.1` (localhost only, secure)
-- **Port:** `9090` (AgentHub default)
+- **Port:** `9090` (PromptHub default)
 - **Reload:** Auto-reload on code changes
 
 ### Auto-Start & Resilience
@@ -94,15 +94,15 @@ The LaunchAgent plist configures:
 
 ```xml
 <key>StandardOutPath</key>
-<string>/Users/visualval/.local/share/agenthub/logs/router-stdout.log</string>
+<string>/Users/visualval/.local/share/prompthub/logs/router-stdout.log</string>
 
 <key>StandardErrorPath</key>
-<string>/Users/visualval/.local/share/agenthub/logs/router-stderr.log</string>
+<string>/Users/visualval/.local/share/prompthub/logs/router-stderr.log</string>
 ```
 
 Logs are written to:
-- **stdout:** `~/.local/share/agenthub/logs/router-stdout.log` (access logs, info)
-- **stderr:** `~/.local/share/agenthub/logs/router-stderr.log` (errors, warnings)
+- **stdout:** `~/.local/share/prompthub/logs/router-stdout.log` (access logs, info)
+- **stderr:** `~/.local/share/prompthub/logs/router-stderr.log` (errors, warnings)
 
 ### Environment
 
@@ -110,10 +110,10 @@ Logs are written to:
 <key>EnvironmentVariables</key>
 <dict>
     <key>PATH</key>
-    <string>/Users/visualval/.local/share/agenthub/.venv/bin:/opt/homebrew/bin:...</string>
+    <string>/Users/visualval/.local/share/prompthub/.venv/bin:/opt/homebrew/bin:...</string>
 
     <key>PYTHONPATH</key>
-    <string>/Users/visualval/.local/share/agenthub</string>
+    <string>/Users/visualval/.local/share/prompthub</string>
 </dict>
 ```
 
@@ -127,8 +127,8 @@ Logs are written to:
 ### Check Status
 
 ```bash
-# List all LaunchAgents (look for com.agenthub.router)
-launchctl list | grep agenthub
+# List all LaunchAgents (look for com.prompthub.router)
+launchctl list | grep prompthub
 
 # Check router health
 curl http://localhost:9090/health
@@ -137,41 +137,41 @@ curl http://localhost:9090/health
 ### Stop the Router
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ### Start the Router
 
 ```bash
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ### Restart the Router
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist && \
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist && \
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ### View Logs
 
 ```bash
 # Standard output (access logs, info)
-tail -f ~/.local/share/agenthub/logs/router-stdout.log
+tail -f ~/.local/share/prompthub/logs/router-stdout.log
 
 # Standard error (errors, warnings)
-tail -f ~/.local/share/agenthub/logs/router-stderr.log
+tail -f ~/.local/share/prompthub/logs/router-stderr.log
 
 # Last 50 lines of both
-tail -50 ~/.local/share/agenthub/logs/router-stderr.log
+tail -50 ~/.local/share/prompthub/logs/router-stderr.log
 ```
 
 ### Disable Auto-Start
 
 ```bash
 # Unload and remove
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-rm ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+rm ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -183,22 +183,22 @@ rm ~/Library/LaunchAgents/com.agenthub.router.plist
 **Check if it's loaded:**
 
 ```bash
-launchctl list | grep agenthub
-# Expected: 6992  0  com.agenthub.router
+launchctl list | grep prompthub
+# Expected: 6992  0  com.prompthub.router
 ```
 
 If not listed:
 
 ```bash
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ### "Label Already Exists"
 
 ```bash
 # Unload first, then reload
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ### Port 9090 Already in Use
@@ -211,8 +211,8 @@ lsof -i :9090
 kill <PID>
 
 # Then restart
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ### Router Crashes Repeatedly
@@ -220,15 +220,15 @@ launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
 **Check error logs:**
 
 ```bash
-tail -100 ~/.local/share/agenthub/logs/router-stderr.log
+tail -100 ~/.local/share/prompthub/logs/router-stderr.log
 ```
 
 **Common causes:**
 
 - **Ollama not running:** `brew install ollama && brew services start ollama`
-- **Python dependencies missing:** `cd ~/.local/share/agenthub && source .venv/bin/activate && pip install -r requirements.txt`
+- **Python dependencies missing:** `cd ~/.local/share/prompthub && source .venv/bin/activate && pip install -r requirements.txt`
 - **Port conflict:** See "Port 9090 Already in Use" above
-- **Permission issues:** `chmod 755 ~/.local/share/agenthub/logs`
+- **Permission issues:** `chmod 755 ~/.local/share/prompthub/logs`
 
 ### MCP Servers Not Starting
 
@@ -247,14 +247,14 @@ open http://localhost:9090/dashboard
 
 ```bash
 # Check log sizes
-du -sh ~/.local/share/agenthub/logs/*
+du -sh ~/.local/share/prompthub/logs/*
 
 # Rotate logs (keep last 1000 lines)
-tail -1000 ~/.local/share/agenthub/logs/router-stdout.log > /tmp/stdout.log
-mv /tmp/stdout.log ~/.local/share/agenthub/logs/router-stdout.log
+tail -1000 ~/.local/share/prompthub/logs/router-stdout.log > /tmp/stdout.log
+mv /tmp/stdout.log ~/.local/share/prompthub/logs/router-stdout.log
 
-tail -1000 ~/.local/share/agenthub/logs/router-stderr.log > /tmp/stderr.log
-mv /tmp/stderr.log ~/.local/share/agenthub/logs/router-stderr.log
+tail -1000 ~/.local/share/prompthub/logs/router-stderr.log > /tmp/stderr.log
+mv /tmp/stderr.log ~/.local/share/prompthub/logs/router-stderr.log
 ```
 
 ---
@@ -265,15 +265,15 @@ If you need to change the plist (e.g., update paths, change port):
 
 ```bash
 # 1. Edit the template
-nano clients/launch_agents/com.agenthub.router.plist
+nano clients/launch_agents/com.prompthub.router.plist
 
 # 2. Copy to LaunchAgents
-cp clients/launch_agents/com.agenthub.router.plist \
+cp clients/launch_agents/com.prompthub.router.plist \
    ~/Library/LaunchAgents/
 
 # 3. Reload
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -287,13 +287,13 @@ Once the LaunchAgent is running, Claude Desktop can connect via the MCP bridge:
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "node",
       "args": [
-        "/Users/visualval/.local/share/agenthub/mcps/agenthub-bridge.js"
+        "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
       ],
       "env": {
-        "AGENTHUB_URL": "http://localhost:9090",
+        "PROMPTHUB_URL": "http://localhost:9090",
         "CLIENT_NAME": "claude-desktop"
       }
     }
@@ -317,21 +317,21 @@ The bridge connects to the router at `localhost:9090` and exposes all 8 MCP serv
 
 ```bash
 # Status
-launchctl list | grep agenthub
+launchctl list | grep prompthub
 curl http://localhost:9090/health
 
 # Start
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # Stop
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # Restart
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist && \
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist && \
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # View logs
-tail -f ~/.local/share/agenthub/logs/router-stderr.log
+tail -f ~/.local/share/prompthub/logs/router-stderr.log
 
 # Dashboard
 open http://localhost:9090/dashboard

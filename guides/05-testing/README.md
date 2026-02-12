@@ -30,7 +30,7 @@ Comprehensive testing procedures and troubleshooting resources.
 Run these commands to verify your setup:
 
 ```bash
-# Check AgentHub health
+# Check PromptHub health
 curl http://localhost:9090/health
 
 # View dashboard

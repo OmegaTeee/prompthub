@@ -106,7 +106,7 @@ Change from bash wrapper to direct command with keyring env:
     "env": {
       "OBSIDIAN_API_KEY": {
         "source": "keyring",
-        "service": "agenthub",
+        "service": "prompthub",
         "key": "obsidian_api_key"
       },
       "OBSIDIAN_HOST": "https://127.0.0.1",
@@ -171,7 +171,7 @@ open http://localhost:9090/dashboard
 Output:
 
 ```
-AgentHub Keys (service: agenthub):
+PromptHub Keys (service: prompthub):
 --------------------------------------------------
 obsidian_api_key               ✓ SET
 github_api_key                 ✗ NOT SET
@@ -219,7 +219,7 @@ github_api_key                 ✗ NOT SET
     "env": {
       "API_KEY": {
         "source": "keyring",
-        "service": "agenthub",
+        "service": "prompthub",
         "key": "my_mcp_api_key"
       }
     }
@@ -237,12 +237,12 @@ github_api_key                 ✗ NOT SET
     "env": {
       "API_KEY": {
         "source": "keyring",
-        "service": "agenthub",
+        "service": "prompthub",
         "key": "complex_api_key"
       },
       "SECRET_TOKEN": {
         "source": "keyring",
-        "service": "agenthub",
+        "service": "prompthub",
         "key": "complex_token"
       },
       "STATIC_CONFIG": "https://api.example.com"
@@ -261,7 +261,7 @@ github_api_key                 ✗ NOT SET
     "env": {
       "PYTHON_API_KEY": {
         "source": "keyring",
-        "service": "agenthub",
+        "service": "prompthub",
         "key": "python_mcp_key"
       }
     }
@@ -339,7 +339,7 @@ During migration, you can support both approaches:
 - First access may prompt for keychain password
 
 ### Service Name
-- All keys stored under service: `agenthub`
+- All keys stored under service: `prompthub`
 - Keeps keys organized and separate from other apps
 - Can be changed in `keyring_manager.py`
 

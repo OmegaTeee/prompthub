@@ -2,7 +2,7 @@
 #
 # Audit Log Maintenance Script
 #
-# Provides utilities for managing AgentHub audit logs and activity database.
+# Provides utilities for managing PromptHub audit logs and activity database.
 #
 # Usage:
 #   ./scripts/audit-maintenance.sh [command]
@@ -17,8 +17,8 @@
 
 set -euo pipefail
 
-AUDIT_LOG="/tmp/agenthub/audit.log"
-ACTIVITY_DB="/tmp/agenthub/activity.db"
+AUDIT_LOG="/tmp/prompthub/audit.log"
+ACTIVITY_DB="/tmp/prompthub/activity.db"
 ROUTER_URL="http://localhost:9090"
 
 # Colors for output
@@ -112,7 +112,7 @@ function cmd_cleanup() {
 
 function cmd_backup() {
     TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-    BACKUP_DIR="/tmp/agenthub/backups"
+    BACKUP_DIR="/tmp/prompthub/backups"
     mkdir -p "${BACKUP_DIR}"
 
     log_info "Creating backup..."

@@ -31,7 +31,7 @@ The Figma MCP integration lets you:
 
 1. Go to **Figma Settings** → **Personal Access Tokens**
 2. Click **Create a new token**
-3. Name it: `agenthub`
+3. Name it: `prompthub`
 4. Copy the token (long string starting with `fig_`)
 
 **Save it securely:**
@@ -39,7 +39,7 @@ The Figma MCP integration lets you:
 ```bash
 # Store in Keychain (see keychain-setup.md)
 security add-generic-password \
-  -s "agenthub-figma" \
+  -s "prompthub-figma" \
   -a "default" \
   -w "fig_your-actual-token-here" \
   ~/Library/Keychains/login.keychain-db
@@ -51,7 +51,7 @@ security add-generic-password \
 
 ### Step 1: Add Figma MCP Server to Router
 
-Edit your router config at `~/.agenthub/config.json`:
+Edit your router config at `~/.prompthub/config.json`:
 
 ```json
 {
@@ -61,7 +61,7 @@ Edit your router config at `~/.agenthub/config.json`:
       "enabled": true,
       "config": {
         "api_token_keychain": {
-          "service": "agenthub-figma",
+          "service": "prompthub-figma",
           "account": "default"
         }
       }
@@ -73,7 +73,7 @@ Edit your router config at `~/.agenthub/config.json`:
 ### Step 2: Restart Router
 
 ```bash
-launchctl restart com.agenthub.service
+launchctl restart com.prompthub.service
 
 # Verify it's running
 sleep 3
@@ -155,7 +155,7 @@ Generate TypeScript components that match these designs:
 ```bash
 # Re-add the token
 security add-generic-password \
-  -s "agenthub-figma" \
+  -s "prompthub-figma" \
   -a "default" \
   -w "fig_your-token" \
   ~/Library/Keychains/login.keychain-db

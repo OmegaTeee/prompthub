@@ -1,8 +1,8 @@
 """
-AgentHub Client Configuration Generators.
+PromptHub Client Configuration Generators.
 
 Generates configuration files for various applications to connect
-to the AgentHub router.
+to the PromptHub router.
 """
 
 from router.clients.generators import (

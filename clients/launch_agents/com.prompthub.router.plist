@@ -4,12 +4,12 @@
 <dict>
     <!-- Service identification -->
     <key>Label</key>
-    <string>com.agenthub.router</string>
+    <string>com.prompthub.router</string>
 
     <!-- Program to run -->
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/visualval/.local/share/agenthub/.venv/bin/uvicorn</string>
+        <string>/Users/visualval/.local/share/prompthub/.venv/bin/uvicorn</string>
         <string>router.main:app</string>
         <string>--host</string>
         <string>127.0.0.1</string>
@@ -20,15 +20,15 @@
 
     <!-- Working directory -->
     <key>WorkingDirectory</key>
-    <string>/Users/visualval/.local/share/agenthub</string>
+    <string>/Users/visualval/.local/share/prompthub</string>
 
     <!-- Environment variables -->
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
-        <string>/Users/visualval/.local/share/agenthub/.venv/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <string>/Users/visualval/.local/share/prompthub/.venv/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
         <key>PYTHONPATH</key>
-        <string>/Users/visualval/.local/share/agenthub</string>
+        <string>/Users/visualval/.local/share/prompthub</string>
     </dict>
 
     <!-- Auto-start on login -->
@@ -48,10 +48,10 @@
 
     <!-- Logging -->
     <key>StandardOutPath</key>
-    <string>/Users/visualval/.local/share/agenthub/logs/router-stdout.log</string>
+    <string>/Users/visualval/.local/share/prompthub/logs/router-stdout.log</string>
 
     <key>StandardErrorPath</key>
-    <string>/Users/visualval/.local/share/agenthub/logs/router-stderr.log</string>
+    <string>/Users/visualval/.local/share/prompthub/logs/router-stderr.log</string>
 
     <!-- Process type -->
     <key>ProcessType</key>

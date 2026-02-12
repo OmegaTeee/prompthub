@@ -1,12 +1,12 @@
-# AgentHub User Guides
+# PromptHub User Guides
 
-> **Complete documentation for installing, configuring, and using AgentHub as your centralized MCP router**
+> **Complete documentation for installing, configuring, and using PromptHub as your centralized MCP router**
 
 ---
 
 ## Overview
 
-AgentHub is a **centralized MCP (Model Context Protocol) router** for macOS that provides:
+PromptHub is a **centralized MCP (Model Context Protocol) router** for macOS that provides:
 
 - **Unified Access** - Connect multiple desktop apps (Claude Desktop, VS Code, Raycast) to 7+ MCP servers through a single endpoint
 - **Prompt Enhancement** - Automatically improve prompts with Ollama (DeepSeek-R1, Qwen3-Coder)
@@ -18,10 +18,10 @@ AgentHub is a **centralized MCP (Model Context Protocol) router** for macOS that
 
 ## Quick Start
 
-**New to AgentHub?** Start here:
+**New to PromptHub?** Start here:
 
-1. **[Getting Started](getting-started.md)** - Install and verify AgentHub
-2. **[LaunchAgent Setup](launchagent-setup.md)** - Auto-start AgentHub on login
+1. **[Getting Started](getting-started.md)** - Install and verify PromptHub
+2. **[LaunchAgent Setup](launchagent-setup.md)** - Auto-start PromptHub on login
 3. **[Keychain Setup](keychain-setup.md)** - Secure credential storage
 
 **Then integrate your favorite apps:**
@@ -43,8 +43,8 @@ AgentHub is a **centralized MCP (Model Context Protocol) router** for macOS that
 | Guide | Description |
 |-------|-------------|
 | **[Getting Started](getting-started.md)** | Quick start guide, installation, and health checks |
-| **[Docker Guide](docker-guide.md)** | Running AgentHub with Docker Compose |
-| **[LaunchAgent Setup](launchagent-setup.md)** | Auto-start AgentHub on macOS login |
+| **[Docker Guide](docker-guide.md)** | Running PromptHub with Docker Compose |
+| **[LaunchAgent Setup](launchagent-setup.md)** | Auto-start PromptHub on macOS login |
 | **[Keychain Setup](keychain-setup.md)** | Secure credential management with macOS Keychain |
 | **[Keyring Migration](keyring-migration-guide.md)** | Migrate from security CLI to Python keyring |
 
@@ -74,7 +74,7 @@ AgentHub is a **centralized MCP (Model Context Protocol) router** for macOS that
 
 | Guide | Description |
 |-------|-------------|
-| **[Comparison Table](comparison-table.md)** | AgentHub vs alternatives, decision framework |
+| **[Comparison Table](comparison-table.md)** | PromptHub vs alternatives, decision framework |
 | **[Keyring vs Security CLI](keyring-vs-security-cli.md)** | Credential storage comparison |
 
 ---
@@ -87,8 +87,8 @@ AgentHub is a **centralized MCP (Model Context Protocol) router** for macOS that
 # Config location
 ~/Library/Application Support/Claude/claude_desktop_config.json
 
-# Add AgentHub
-jq '.mcpServers["agenthub"] = {
+# Add PromptHub
+jq '.mcpServers["prompthub"] = {
   "command": "curl",
   "args": [
     "-s",
@@ -109,7 +109,7 @@ osascript -e 'quit app "Claude"' && open -a "Claude"
 ```
 
 **Enhancement:** DeepSeek-R1:latest with structured reasoning
-**Note:** Uses curl to bridge stdio (Claude Desktop) to HTTP (AgentHub)
+**Note:** Uses curl to bridge stdio (Claude Desktop) to HTTP (PromptHub)
 
 ---
 
@@ -119,10 +119,10 @@ osascript -e 'quit app "Claude"' && open -a "Claude"
 # Config location
 ~/.vscode/settings.json
 
-# Add AgentHub
+# Add PromptHub
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "transport": "http",
       "headers": {"X-Client-Name": "vscode"}
@@ -144,11 +144,11 @@ Cmd+Shift+P → "Developer: Reload Window"
 # Config location
 ~/Library/Application Support/com.raycast.macos/mcp-servers.json
 
-# Add AgentHub
+# Add PromptHub
 {
   "servers": [{
-    "id": "agenthub",
-    "name": "AgentHub",
+    "id": "prompthub",
+    "name": "PromptHub",
     "url": "http://localhost:9090",
     "type": "http",
     "headers": {"X-Client-Name": "raycast"}
@@ -165,7 +165,7 @@ killall Raycast && open -a Raycast
 
 ## Available MCP Servers
 
-AgentHub provides access to **7 MCP servers** by default:
+PromptHub provides access to **7 MCP servers** by default:
 
 | Server | Description | Use Case |
 |--------|-------------|----------|
@@ -191,7 +191,7 @@ Each client gets **customized prompt enhancement**:
 | VS Code | Qwen3-Coder:latest | Code-first, minimal prose, file paths |
 | Raycast | DeepSeek-R1:latest | Action-oriented, CLI commands, <200 words |
 
-Configured in: `~/.local/share/agenthub/configs/enhancement-rules.json`
+Configured in: `~/.local/share/prompthub/configs/enhancement-rules.json`
 
 ### Response Caching
 
@@ -207,7 +207,7 @@ Configured in: `~/.local/share/agenthub/configs/enhancement-rules.json`
 
 ## Common Tasks
 
-### Check AgentHub Health
+### Check PromptHub Health
 
 ```bash
 curl http://localhost:9090/health
@@ -268,14 +268,14 @@ curl http://localhost:9090/audit/activity?limit=20 | jq
 **Solution:**
 
 ```bash
-# Check if AgentHub is running
+# Check if PromptHub is running
 lsof -i :9090
 
-# Start AgentHub
-launchctl start com.agenthub.router
+# Start PromptHub
+launchctl start com.prompthub.router
 
 # Or manually
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 uvicorn router.main:app --port 9090
 ```
 
@@ -339,13 +339,13 @@ View real-time status: `http://localhost:9090/dashboard`
 
 ```bash
 # Router logs
-tail -f ~/.local/share/agenthub/logs/router.log
+tail -f ~/.local/share/prompthub/logs/router.log
 
 # Audit logs
-sqlite3 ~/.local/share/agenthub/audit.db "SELECT * FROM audit_log ORDER BY timestamp DESC LIMIT 10"
+sqlite3 ~/.local/share/prompthub/audit.db "SELECT * FROM audit_log ORDER BY timestamp DESC LIMIT 10"
 
 # Activity logs
-sqlite3 ~/.local/share/agenthub/activity.db "SELECT * FROM activity ORDER BY timestamp DESC LIMIT 10"
+sqlite3 ~/.local/share/prompthub/activity.db "SELECT * FROM activity ORDER BY timestamp DESC LIMIT 10"
 ```
 
 ---
@@ -353,7 +353,7 @@ sqlite3 ~/.local/share/agenthub/activity.db "SELECT * FROM activity ORDER BY tim
 ## Next Steps
 
 1. **Complete Setup**
-   - [ ] Install AgentHub ([getting-started.md](getting-started.md))
+   - [ ] Install PromptHub ([getting-started.md](getting-started.md))
    - [ ] Configure LaunchAgent ([launchagent-setup.md](launchagent-setup.md))
    - [ ] Set up credentials ([keychain-setup.md](keychain-setup.md))
 

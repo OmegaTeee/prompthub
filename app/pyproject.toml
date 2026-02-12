@@ -12,7 +12,7 @@ pythonpath = ["."]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 markers = [
-    "integration: Integration tests (require AgentHub running)",
+    "integration: Integration tests (require PromptHub running)",
     "unit: Unit tests (no external dependencies)",
     "slow: Slow tests (may take >1 second)",
     "requires_ollama: Tests that require Ollama to be running",

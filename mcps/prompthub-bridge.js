@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * AgentHub Unified MCP Bridge
+ * PromptHub Unified MCP Bridge
  *
  * This MCP server acts as a bridge between Claude Desktop (stdio transport)
- * and AgentHub's HTTP endpoints, aggregating all 7 MCP servers into one
+ * and PromptHub's HTTP endpoints, aggregating all 7 MCP servers into one
  * unified interface.
  */
 
@@ -15,10 +15,10 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-const AGENTHUB_URL = process.env.AGENTHUB_URL || 'http://localhost:9090';
+const PROMPTHUB_URL = process.env.PROMPTHUB_URL || 'http://localhost:9090';
 const CLIENT_NAME = process.env.CLIENT_NAME || 'claude-desktop';
 
-// All 8 MCP servers available through AgentHub
+// All 8 MCP servers available through PromptHub
 const SERVERS = [
   'context7',
   'desktop-commander',
@@ -31,10 +31,10 @@ const SERVERS = [
 ];
 
 /**
- * Make HTTP request to AgentHub
+ * Make HTTP request to PromptHub
  */
-async function callAgentHub(serverName, jsonRpcRequest) {
-  const url = `${AGENTHUB_URL}/mcp/${serverName}/tools/call`;
+async function callPromptHub(serverName, jsonRpcRequest) {
+  const url = `${PROMPTHUB_URL}/mcp/${serverName}/tools/call`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -70,7 +70,7 @@ async function getAllTools() {
 
   for (const serverName of SERVERS) {
     try {
-      const response = await callAgentHub(serverName, {
+      const response = await callPromptHub(serverName, {
         jsonrpc: '2.0',
         method: 'tools/list',
         id: 1
@@ -106,7 +106,7 @@ async function callTool(toolName, args) {
     throw new Error(`Unknown server: ${serverName}`);
   }
 
-  const response = await callAgentHub(serverName, {
+  const response = await callPromptHub(serverName, {
     jsonrpc: '2.0',
     method: 'tools/call',
     params: {
@@ -129,7 +129,7 @@ async function callTool(toolName, args) {
 async function main() {
   const server = new Server(
     {
-      name: 'agenthub',
+      name: 'prompthub',
       version: '1.0.0',
     },
     {
@@ -177,8 +177,8 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error('AgentHub MCP Bridge started');
-  console.error(`Connected to: ${AGENTHUB_URL}`);
+  console.error('PromptHub MCP Bridge started');
+  console.error(`Connected to: ${PROMPTHUB_URL}`);
   console.error(`Client name: ${CLIENT_NAME}`);
   console.error(`Servers: ${SERVERS.join(', ')}`);
 }

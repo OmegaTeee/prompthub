@@ -110,7 +110,7 @@ docs/
 │
 ├── comparisons/                         # TECHNICAL COMPARISONS (NEW CATEGORY)
 │   ├── README.md
-│   ├── agenthub-vs-alternatives.md      # From guides/comparison-table.md
+│   ├── prompthub-vs-alternatives.md      # From guides/comparison-table.md
 │   └── keyring-vs-security-cli.md       # From guides/keyring-vs-security-cli.md
 │
 └── development/                         # DEVELOPMENT GUIDES (NEW CATEGORY)
@@ -189,7 +189,7 @@ docs/
 | New File | Source | Action |
 |----------|--------|--------|
 | `README.md` | New | Comparison overview |
-| `agenthub-vs-alternatives.md` | `guides/comparison-table.md` | Move + enhance |
+| `prompthub-vs-alternatives.md` | `guides/comparison-table.md` | Move + enhance |
 | `keyring-vs-security-cli.md` | `guides/keyring-vs-security-cli.md` | Move |
 
 #### docs/development/ (NEW)

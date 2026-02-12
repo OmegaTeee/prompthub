@@ -1,6 +1,6 @@
-# AgentHub Docker Guide
+# PromptHub Docker Guide
 
-Quick guide for running AgentHub in Docker.
+Quick guide for running PromptHub in Docker.
 
 ## Prerequisites
 
@@ -189,11 +189,11 @@ Healthy output shows `(healthy)` status.
 View build stages:
 ```bash
 # See all layers
-docker history agenthub-router:latest
+docker history prompthub-router:latest
 
 # Inspect specific stage
-docker build --target builder -t agenthub-builder .
-docker run --rm agenthub-builder ls -la /opt/venv
+docker build --target builder -t prompthub-builder .
+docker run --rm prompthub-builder ls -la /opt/venv
 ```
 
 ## Security
@@ -204,19 +204,19 @@ Scan for vulnerabilities:
 
 ```bash
 # Using Docker Scout
-docker scout cves agenthub-router:latest
+docker scout cves prompthub-router:latest
 
 # Using Trivy
-trivy image agenthub-router:latest
+trivy image prompthub-router:latest
 ```
 
 ### Non-Root User
 
-Container runs as user `agenthub` (UID 1000, GID 1000) for security.
+Container runs as user `prompthub` (UID 1000, GID 1000) for security.
 
 ### Network Isolation
 
-Services run in isolated `agenthub-network` bridge network.
+Services run in isolated `prompthub-network` bridge network.
 
 ## Production Deployment
 
@@ -271,8 +271,8 @@ docker compose down -v
 ### Remove Images
 
 ```bash
-# Remove AgentHub image
-docker rmi agenthub-router:latest
+# Remove PromptHub image
+docker rmi prompthub-router:latest
 
 # Remove all unused images
 docker image prune -a

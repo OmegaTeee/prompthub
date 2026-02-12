@@ -1,8 +1,8 @@
 # Common Troubleshooting Guide
 
-**Purpose:** Centralized solutions for issues that affect all AgentHub users, regardless of which client they're using.
+**Purpose:** Centralized solutions for issues that affect all PromptHub users, regardless of which client they're using.
 
-> **What you'll learn:** How to diagnose and fix the most common AgentHub problems, from connection failures to MCP server crashes.
+> **What you'll learn:** How to diagnose and fix the most common PromptHub problems, from connection failures to MCP server crashes.
 
 ---
 
@@ -11,7 +11,7 @@
 Before diving into specific issues, run these quick checks:
 
 ```bash
-# 1. Is AgentHub running?
+# 1. Is PromptHub running?
 curl http://localhost:9090/health
 
 # 2. Are MCP servers responding?
@@ -21,7 +21,7 @@ curl http://localhost:9090/servers
 curl http://localhost:11434/api/version
 
 # 4. Check recent logs
-tail -20 ~/Library/Logs/agenthub-router.log
+tail -20 ~/Library/Logs/prompthub-router.log
 ```
 
 If all four checks pass, your issue is likely client-specific. See the troubleshooting section in your client's integration guide.
@@ -30,7 +30,7 @@ If all four checks pass, your issue is likely client-specific. See the troublesh
 
 ## Connection Issues
 
-### Issue: "Cannot connect to AgentHub"
+### Issue: "Cannot connect to PromptHub"
 
 **Symptoms:**
 - Client shows "Connection refused" or "Network error"
@@ -40,7 +40,7 @@ If all four checks pass, your issue is likely client-specific. See the troublesh
 **Diagnosis:**
 
 ```bash
-# Check if AgentHub is running
+# Check if PromptHub is running
 ps aux | grep "uvicorn router.main:app"
 
 # Check if port 9090 is in use
@@ -49,10 +49,10 @@ lsof -i :9090
 
 **Solutions:**
 
-#### Solution 1: Start AgentHub manually
+#### Solution 1: Start PromptHub manually
 
 ```bash
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 source .venv/bin/activate
 uvicorn router.main:app --host 0.0.0.0 --port 9090
 ```
@@ -63,14 +63,14 @@ uvicorn router.main:app --host 0.0.0.0 --port 9090
 
 ```bash
 # Check LaunchAgent status
-launchctl list | grep com.agenthub.router
+launchctl list | grep com.prompthub.router
 
 # Restart LaunchAgent
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # Verify it started
-launchctl list | grep com.agenthub.router
+launchctl list | grep com.prompthub.router
 ```
 
 #### Solution 3: Check for port conflicts
@@ -83,13 +83,13 @@ lsof -i :9090
 # A) Kill that process (use with caution)
 kill -9 <PID>
 
-# B) Or change AgentHub's port in .env
-echo "PORT=9091" >> ~/.local/share/agenthub/.env
+# B) Or change PromptHub's port in .env
+echo "PORT=9091" >> ~/.local/share/prompthub/.env
 ```
 
 ---
 
-### Issue: "AgentHub starts then immediately stops"
+### Issue: "PromptHub starts then immediately stops"
 
 **Symptoms:**
 - Process appears briefly then disappears
@@ -100,10 +100,10 @@ echo "PORT=9091" >> ~/.local/share/agenthub/.env
 
 ```bash
 # Check recent logs for errors
-tail -50 ~/Library/Logs/agenthub-router.log
+tail -50 ~/Library/Logs/prompthub-router.log
 
 # Try starting manually to see error messages
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 source .venv/bin/activate
 uvicorn router.main:app --reload --port 9090
 ```
@@ -113,7 +113,7 @@ uvicorn router.main:app --reload --port 9090
 #### Cause 1: Missing Python dependencies
 
 ```bash
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -121,7 +121,7 @@ pip install -r requirements.txt
 #### Cause 2: Corrupted virtual environment
 
 ```bash
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 rm -rf .venv
 python3 -m venv .venv
 source .venv/bin/activate
@@ -185,14 +185,14 @@ ollama serve &
 #### Solution 3: Clear cache and restart
 
 ```bash
-# Stop AgentHub
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
+# Stop PromptHub
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # Clear cache (if using external cache)
 redis-cli FLUSHALL  # Only if using Redis
 
 # Restart
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -210,10 +210,10 @@ launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
 
 ```bash
 # Check configured servers
-cat ~/.local/share/agenthub/configs/mcp-servers.json
+cat ~/.local/share/prompthub/configs/mcp-servers.json
 
 # Verify MCP server packages are installed
-cd ~/.local/share/agenthub/mcps
+cd ~/.local/share/prompthub/mcps
 npm list
 ```
 
@@ -238,17 +238,17 @@ Edit `configs/mcp-servers.json`:
 #### Solution 2: Install missing MCP server packages
 
 ```bash
-cd ~/.local/share/agenthub/mcps
+cd ~/.local/share/prompthub/mcps
 npm install @modelcontextprotocol/server-filesystem
 npm install @modelcontextprotocol/server-fetch
 npm install @modelcontextprotocol/server-brave-search
 ```
 
-#### Solution 3: Restart AgentHub to reload config
+#### Solution 3: Restart PromptHub to reload config
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -264,7 +264,7 @@ launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
 
 ```bash
 # Check MCP server logs
-tail -100 ~/Library/Logs/agenthub-router.log | grep "MCP server"
+tail -100 ~/Library/Logs/prompthub-router.log | grep "MCP server"
 
 # Check server status
 curl http://localhost:9090/servers
@@ -279,15 +279,15 @@ curl -X POST http://localhost:9090/servers/filesystem/start
 
 ```bash
 # For brave-search server
-security find-generic-password -s "agenthub.brave_api_key" -w
+security find-generic-password -s "prompthub.brave_api_key" -w
 
 # For other API-key-requiring servers
-security find-generic-password -s "agenthub.CREDENTIAL_NAME" -w
+security find-generic-password -s "prompthub.CREDENTIAL_NAME" -w
 
 # If missing, add credentials
 security add-generic-password \
-  -s "agenthub.brave_api_key" \
-  -a "agenthub" \
+  -s "prompthub.brave_api_key" \
+  -a "prompthub" \
   -w "YOUR_API_KEY"
 ```
 
@@ -304,7 +304,7 @@ brew link node@20
 #### Solution 3: Rebuild MCP server
 
 ```bash
-cd ~/.local/share/agenthub/mcps/filesystem
+cd ~/.local/share/prompthub/mcps/filesystem
 npm install
 npm run build
 ```
@@ -325,7 +325,7 @@ npm run build
 open http://localhost:9090/dashboard
 
 # Check failure count in logs
-tail -100 ~/Library/Logs/agenthub-router.log | grep "circuit"
+tail -100 ~/Library/Logs/prompthub-router.log | grep "circuit"
 ```
 
 **Solutions:**
@@ -337,7 +337,7 @@ The circuit breaker will automatically attempt to recover after 30 seconds. Chec
 
 ```bash
 # Check what's causing failures
-tail -100 ~/Library/Logs/agenthub-router.log | grep "ERROR"
+tail -100 ~/Library/Logs/prompthub-router.log | grep "ERROR"
 
 # Common causes:
 # - Missing credentials
@@ -386,7 +386,7 @@ curl -X POST http://localhost:9090/ollama/enhance \
   -d '{"prompt": "test", "model": "llama3.2"}'
 
 # Check enhancement rules config
-cat ~/.local/share/agenthub/configs/enhancement-rules.json
+cat ~/.local/share/prompthub/configs/enhancement-rules.json
 ```
 
 **Solutions:**
@@ -412,7 +412,7 @@ For Claude Desktop, edit `~/Library/Application Support/Claude/claude_desktop_co
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Enhance": "true",
@@ -515,10 +515,10 @@ ollama serve &
 
 ```bash
 # Check if credential exists
-security find-generic-password -s "agenthub.brave_api_key" -w
+security find-generic-password -s "prompthub.brave_api_key" -w
 
-# List all AgentHub credentials
-security dump-keychain | grep agenthub
+# List all PromptHub credentials
+security dump-keychain | grep prompthub
 ```
 
 **Solutions:**
@@ -528,34 +528,34 @@ security dump-keychain | grep agenthub
 ```bash
 # Add API key to Keychain
 security add-generic-password \
-  -s "agenthub.brave_api_key" \
-  -a "agenthub" \
+  -s "prompthub.brave_api_key" \
+  -a "prompthub" \
   -w "YOUR_API_KEY_HERE"
 
 # Verify it was added
-security find-generic-password -s "agenthub.brave_api_key" -w
+security find-generic-password -s "prompthub.brave_api_key" -w
 ```
 
 #### Solution 2: Update existing credential
 
 ```bash
 # Delete old credential
-security delete-generic-password -s "agenthub.brave_api_key"
+security delete-generic-password -s "prompthub.brave_api_key"
 
 # Add new one
 security add-generic-password \
-  -s "agenthub.brave_api_key" \
-  -a "agenthub" \
+  -s "prompthub.brave_api_key" \
+  -a "prompthub" \
   -w "NEW_API_KEY_HERE"
 ```
 
 #### Solution 3: Check credential naming
-Ensure credential names follow the pattern: `agenthub.CREDENTIAL_NAME`
+Ensure credential names follow the pattern: `prompthub.CREDENTIAL_NAME`
 
 Common credential keys:
-- `agenthub.brave_api_key` - Brave Search API
-- `agenthub.openai_api_key` - OpenAI API (if using OpenAI mode)
-- `agenthub.anthropic_api_key` - Anthropic API (if needed)
+- `prompthub.brave_api_key` - Brave Search API
+- `prompthub.openai_api_key` - OpenAI API (if using OpenAI mode)
+- `prompthub.anthropic_api_key` - Anthropic API (if needed)
 
 ---
 
@@ -570,7 +570,7 @@ Common credential keys:
 
 ```bash
 # Check Keychain access
-security find-generic-password -s "agenthub.brave_api_key"
+security find-generic-password -s "prompthub.brave_api_key"
 
 # Check if Keychain is locked
 security show-keychain-info
@@ -590,13 +590,13 @@ open -a "Keychain Access"
 
 #### Solution 2: Grant Python access to Keychain
 1. Open **Keychain Access** app
-2. Find any "agenthub.*" credential
+2. Find any "prompthub.*" credential
 3. Right-click → **Get Info**
 4. Go to **Access Control** tab
 5. Click **+** and add `/usr/bin/python3`
 6. Click **Save Changes**
 
-#### Solution 3: Allow AgentHub always
+#### Solution 3: Allow PromptHub always
 In Keychain Access:
 1. Select credential
 2. **Access Control** → Choose "Allow all applications to access this item"
@@ -617,10 +617,10 @@ In Keychain Access:
 
 ```bash
 # Check log directory
-ls -la ~/Library/Logs/ | grep agenthub
+ls -la ~/Library/Logs/ | grep prompthub
 
 # Check LaunchAgent log configuration
-cat ~/Library/LaunchAgents/com.agenthub.router.plist | grep -A2 "Log"
+cat ~/Library/LaunchAgents/com.prompthub.router.plist | grep -A2 "Log"
 ```
 
 **Solutions:**
@@ -636,19 +636,19 @@ Ensure LaunchAgent plist has correct log paths:
 
 ```xml
 <key>StandardOutPath</key>
-<string>/Users/YOUR_USERNAME/Library/Logs/agenthub-router.log</string>
+<string>/Users/YOUR_USERNAME/Library/Logs/prompthub-router.log</string>
 <key>StandardErrorPath</key>
-<string>/Users/YOUR_USERNAME/Library/Logs/agenthub-router-error.log</string>
+<string>/Users/YOUR_USERNAME/Library/Logs/prompthub-router-error.log</string>
 ```
 
 #### Solution 3: Restart LaunchAgent to create logs
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # Verify logs are being written
-tail -f ~/Library/Logs/agenthub-router.log
+tail -f ~/Library/Logs/prompthub-router.log
 ```
 
 ---
@@ -667,10 +667,10 @@ tail -f ~/Library/Logs/agenthub-router.log
 curl http://localhost:9090/dashboard
 
 # Check if activity log database exists
-ls -la ~/.local/share/agenthub/data/
+ls -la ~/.local/share/prompthub/data/
 
 # Check dashboard logs
-tail -50 ~/Library/Logs/agenthub-router.log | grep dashboard
+tail -50 ~/Library/Logs/prompthub-router.log | grep dashboard
 ```
 
 **Solutions:**
@@ -678,22 +678,22 @@ tail -50 ~/Library/Logs/agenthub-router.log | grep dashboard
 #### Solution 1: Create data directory
 
 ```bash
-mkdir -p ~/.local/share/agenthub/data
+mkdir -p ~/.local/share/prompthub/data
 ```
 
 #### Solution 2: Initialize activity log database
 
 ```bash
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 source .venv/bin/activate
 python3 -c "from router.middleware.activity_logging import init_db; import asyncio; asyncio.run(init_db())"
 ```
 
-#### Solution 3: Restart AgentHub
+#### Solution 3: Restart PromptHub
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -711,13 +711,13 @@ launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
 
 ```bash
 # Check if config file has syntax errors
-python3 -m json.tool ~/.local/share/agenthub/configs/mcp-servers.json
+python3 -m json.tool ~/.local/share/prompthub/configs/mcp-servers.json
 
 # Check when config was last modified
-ls -la ~/.local/share/agenthub/configs/
+ls -la ~/.local/share/prompthub/configs/
 
-# Check if AgentHub is using correct config path
-cat ~/.local/share/agenthub/.env | grep CONFIG
+# Check if PromptHub is using correct config path
+cat ~/.local/share/prompthub/.env | grep CONFIG
 ```
 
 **Solutions:**
@@ -735,18 +735,18 @@ python3 -m json.tool configs/mcp-servers.json
 # - Missing quotes around strings
 ```
 
-#### Solution 2: Restart AgentHub to reload config
+#### Solution 2: Restart PromptHub to reload config
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 #### Solution 3: Verify config file path
 Check `.env`:
 
 ```bash
-cat ~/.local/share/agenthub/.env | grep CONFIG
+cat ~/.local/share/prompthub/.env | grep CONFIG
 
 # Should show:
 # MCP_SERVERS_CONFIG=configs/mcp-servers.json
@@ -765,12 +765,12 @@ Edit `.env`:
 LOG_LEVEL=DEBUG
 ```
 
-Restart AgentHub and check logs:
+Restart PromptHub and check logs:
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
-tail -f ~/Library/Logs/agenthub-router.log
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
+tail -f ~/Library/Logs/prompthub-router.log
 ```
 
 ---
@@ -781,7 +781,7 @@ Run this script to gather diagnostic info:
 
 ```bash
 #!/bin/bash
-echo "=== AgentHub Diagnostics ==="
+echo "=== PromptHub Diagnostics ==="
 echo ""
 echo "--- Health Check ---"
 curl -s http://localhost:9090/health || echo "Health check failed"
@@ -796,7 +796,7 @@ echo "--- Port Status ---"
 lsof -i :9090
 echo ""
 echo "--- Recent Logs ---"
-tail -20 ~/Library/Logs/agenthub-router.log
+tail -20 ~/Library/Logs/prompthub-router.log
 ```
 
 ---
@@ -805,10 +805,10 @@ tail -20 ~/Library/Logs/agenthub-router.log
 
 - ✅ **First step:** Always run the Quick Diagnostic Checklist at the top of this guide
 - ✅ **Health check:** `curl http://localhost:9090/health` is your best friend
-- ✅ **Check logs:** `tail -f ~/Library/Logs/agenthub-router.log` shows real-time errors
+- ✅ **Check logs:** `tail -f ~/Library/Logs/prompthub-router.log` shows real-time errors
 - ✅ **Restart fixes most issues:** `launchctl unload/load` resolves many problems
 - ✅ **Circuit breaker:** Wait 30 seconds for automatic recovery before manual intervention
-- ✅ **Credentials:** All API keys go in macOS Keychain with `agenthub.*` prefix
+- ✅ **Credentials:** All API keys go in macOS Keychain with `prompthub.*` prefix
 
 **Next steps:**
 - See [Health Checks](health-checks.md) for verification procedures

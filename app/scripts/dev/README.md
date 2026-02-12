@@ -1,11 +1,11 @@
 # Development Scripts
 
-Scripts for testing, building, and releasing AgentHub.
+Scripts for testing, building, and releasing PromptHub.
 
 ## Scripts
 
 ### `run-tests.sh`
-Runs the AgentHub test suite with comprehensive coverage.
+Runs the PromptHub test suite with comprehensive coverage.
 
 **Purpose:** Execute all tests and generate coverage reports for continuous integration.
 
@@ -34,7 +34,7 @@ scripts/dev/run-tests.sh --watch
 
 **Example output:**
 ```
-🧪 Running AgentHub Test Suite
+🧪 Running PromptHub Test Suite
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📦 Installing dependencies...
@@ -67,9 +67,9 @@ tests/e2e/test_client_workflow.py::test_claude_desktop_flow PASSED
 - `.coveragerc` - Coverage configuration
 
 ### `docker.sh`
-Manages Docker containers for AgentHub development and deployment.
+Manages Docker containers for PromptHub development and deployment.
 
-**Purpose:** Build, run, and manage AgentHub in Docker containers.
+**Purpose:** Build, run, and manage PromptHub in Docker containers.
 
 **Usage:**
 ```bash
@@ -99,13 +99,13 @@ scripts/dev/docker.sh shell
 ```
 
 **Docker images:**
-- **agenthub:dev** - Development image with hot reload
-- **agenthub:prod** - Production image (multi-stage build)
-- **agenthub:test** - Test image with test dependencies
+- **prompthub:dev** - Development image with hot reload
+- **prompthub:prod** - Production image (multi-stage build)
+- **prompthub:test** - Test image with test dependencies
 
 **Example output:**
 ```
-🐳 AgentHub Docker Manager
+🐳 PromptHub Docker Manager
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📦 Building development image...
@@ -113,25 +113,25 @@ scripts/dev/docker.sh shell
   Step 2/12 : WORKDIR /app
   ...
   Step 12/12 : CMD ["uvicorn", "router.main:app", "--reload"]
-  ✓ Built agenthub:dev (2m 34s)
+  ✓ Built prompthub:dev (2m 34s)
 
 🚀 Starting container...
   Container ID: abc123def456
   Port mapping: 9090:9090
-  Volume: /Users/user/.local/share/agenthub:/app
+  Volume: /Users/user/.local/share/prompthub:/app
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ AgentHub running at http://localhost:9090
+✅ PromptHub running at http://localhost:9090
 ```
 
 **Environment variables:**
-- `AGENTHUB_ENV` - Environment (dev/prod/test)
+- `PROMPTHUB_ENV` - Environment (dev/prod/test)
 - `ROUTER_PORT` - Port to expose (default: 9090)
 - `OLLAMA_HOST` - Ollama endpoint
 - `LOG_LEVEL` - Logging verbosity
 
 ### `release.sh`
-Automates the AgentHub release process.
+Automates the PromptHub release process.
 
 **Purpose:** Version bump, changelog generation, and deployment preparation.
 
@@ -164,7 +164,7 @@ scripts/dev/release.sh --skip-tests patch
 
 **Example output:**
 ```
-🚀 AgentHub Release Process
+🚀 PromptHub Release Process
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📊 Current version: 0.1.5
@@ -184,8 +184,8 @@ scripts/dev/release.sh --skip-tests patch
   ✓ Tagged as v0.2.0
 
 🐳 Building Docker images...
-  ✓ agenthub:0.2.0
-  ✓ agenthub:latest
+  ✓ prompthub:0.2.0
+  ✓ prompthub:latest
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Release 0.2.0 ready!
@@ -335,8 +335,8 @@ CMD ["uvicorn", "router.main:app", "--host", "0.0.0.0", "--port", "9090"]
 docker run -it --rm \
   -v "$(pwd):/app" \
   -p 9090:9090 \
-  -e AGENTHUB_ENV=dev \
-  agenthub:dev
+  -e PROMPTHUB_ENV=dev \
+  prompthub:dev
 ```
 
 ### Docker Compose
@@ -345,14 +345,14 @@ docker run -it --rm \
 # docker-compose.yml
 version: '3.8'
 services:
-  agenthub:
+  prompthub:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "9090:9090"
     environment:
-      - AGENTHUB_ENV=prod
+      - PROMPTHUB_ENV=prod
       - OLLAMA_HOST=http://ollama:11434
     volumes:
       - ./configs:/app/configs

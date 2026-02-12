@@ -118,7 +118,7 @@ class TestDashboardEndpoints:
 
             # Verify key content is present
             html = response.text
-            assert "AgentHub Dashboard" in html
+            assert "PromptHub Dashboard" in html
             assert "hx-get" in html  # HTMX attributes present
 
     @pytest.mark.asyncio

@@ -1,5 +1,5 @@
 """
-AgentHub Middleware.
+PromptHub Middleware.
 
 Request logging and activity tracking for the dashboard.
 """

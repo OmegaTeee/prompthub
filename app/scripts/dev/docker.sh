@@ -1,5 +1,5 @@
 #!/bin/bash
-# AgentHub Docker Helper Script
+# PromptHub Docker Helper Script
 # Quick commands for common Docker operations
 
 set -e
@@ -16,13 +16,13 @@ NC='\033[0m' # No Color
 
 function print_usage() {
     cat << EOF
-AgentHub Docker Helper
+PromptHub Docker Helper
 
 Usage: $0 <command> [options]
 
 Commands:
-    start           Start AgentHub in production mode
-    start-dev       Start AgentHub in development mode (hot reload)
+    start           Start PromptHub in production mode
+    start-dev       Start PromptHub in development mode (hot reload)
     stop            Stop all services
     restart         Restart all services
     logs            View logs (follow mode)
@@ -32,7 +32,7 @@ Commands:
     shell           Open shell in router container
     health          Check service health
     clean           Stop and remove containers, networks, volumes
-    clean-images    Remove AgentHub images
+    clean-images    Remove PromptHub images
     ps              Show running containers
     test            Run health check test
 
@@ -47,26 +47,26 @@ EOF
 }
 
 function start_prod() {
-    echo -e "${GREEN}Starting AgentHub in production mode...${NC}"
+    echo -e "${GREEN}Starting PromptHub in production mode...${NC}"
     docker compose -f "${COMPOSE_FILE}" up -d
-    echo -e "${GREEN}AgentHub started. Dashboard: http://localhost:9090/dashboard${NC}"
+    echo -e "${GREEN}PromptHub started. Dashboard: http://localhost:9090/dashboard${NC}"
 }
 
 function start_dev() {
-    echo -e "${YELLOW}Starting AgentHub in development mode (hot reload)...${NC}"
+    echo -e "${YELLOW}Starting PromptHub in development mode (hot reload)...${NC}"
     docker compose -f "${COMPOSE_FILE}" -f "${DEV_COMPOSE_FILE}" up
 }
 
 function stop_services() {
-    echo -e "${YELLOW}Stopping AgentHub...${NC}"
+    echo -e "${YELLOW}Stopping PromptHub...${NC}"
     docker compose -f "${COMPOSE_FILE}" down
-    echo -e "${GREEN}AgentHub stopped.${NC}"
+    echo -e "${GREEN}PromptHub stopped.${NC}"
 }
 
 function restart_services() {
-    echo -e "${YELLOW}Restarting AgentHub...${NC}"
+    echo -e "${YELLOW}Restarting PromptHub...${NC}"
     docker compose -f "${COMPOSE_FILE}" restart
-    echo -e "${GREEN}AgentHub restarted.${NC}"
+    echo -e "${GREEN}PromptHub restarted.${NC}"
 }
 
 function show_logs() {
@@ -118,11 +118,11 @@ function clean_all() {
 }
 
 function clean_images() {
-    echo -e "${RED}This will remove AgentHub Docker images.${NC}"
+    echo -e "${RED}This will remove PromptHub Docker images.${NC}"
     read -p "Are you sure? (y/N) " -n 1 -r
     echo
     if [[ ${REPLY} =~ ^[Yy]$ ]]; then
-        docker rmi agenthub-router:latest agenthub-router:dev || true
+        docker rmi prompthub-router:latest prompthub-router:dev || true
         echo -e "${GREEN}Images removed.${NC}"
     else
         echo "Cancelled."

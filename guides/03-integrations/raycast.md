@@ -1,12 +1,12 @@
-# Raycast Integration with AgentHub
+# Raycast Integration with PromptHub
 
-> **Complete guide to connecting Raycast to AgentHub for action-oriented AI assistance**
+> **Complete guide to connecting Raycast to PromptHub for action-oriented AI assistance**
 
 ---
 
 ## Overview
 
-AgentHub provides **action-oriented MCP access** for Raycast, optimized for:
+PromptHub provides **action-oriented MCP access** for Raycast, optimized for:
 
 1. **Quick Actions** - Fast, concise responses under 200 words
 2. **CLI Command Suggestions** - Terminal commands ready to copy-paste
@@ -27,7 +27,7 @@ AgentHub provides **action-oriented MCP access** for Raycast, optimized for:
          │ HTTP JSON-RPC
          ▼
 ┌─────────────────────────────────┐
-│      AgentHub Router            │
+│      PromptHub Router            │
 │     localhost:9090              │
 │                                 │
 │  1. Action Enhancement          │
@@ -50,21 +50,21 @@ AgentHub provides **action-oriented MCP access** for Raycast, optimized for:
 
 - [ ] **Raycast installed**: Version 1.50+ with AI commands support
 - [ ] **Raycast Pro subscription**: Required for AI features (or trial)
-- [ ] **AgentHub running**: `curl http://localhost:9090/health` → healthy
+- [ ] **PromptHub running**: `curl http://localhost:9090/health` → healthy
 - [ ] **Ollama with DeepSeek-R1**: `ollama pull deepseek-r1:latest`
 
 ---
 
 ## Example Configurations
 
-AgentHub provides example configurations in `clients/raycast/`:
+PromptHub provides example configurations in `clients/raycast/`:
 
 - **`raycast-mcp-servers.json.example`** - Example MCP server configuration for Raycast
 
 **Quick copy:**
 ```bash
 # Copy example to Raycast config directory
-cp ~/.local/share/agenthub/clients/raycast/raycast-mcp-servers.json.example \
+cp ~/.local/share/prompthub/clients/raycast/raycast-mcp-servers.json.example \
    ~/Library/Application\ Support/com.raycast.macos/mcp-servers.json
 ```
 
@@ -101,7 +101,7 @@ Raycast supports MCP via **Raycast AI Commands** extension.
 3. Navigate to: Settings → AI → MCP Servers
 4. Click "Add MCP Server"
 5. Fill in:
-   - **Name**: `AgentHub`
+   - **Name**: `PromptHub`
    - **URL**: `http://localhost:9090`
    - **Transport**: HTTP
    - **Headers**: `X-Client-Name: raycast`
@@ -120,8 +120,8 @@ cat > ~/Library/Application\ Support/com.raycast.macos/mcp-servers.json << 'EOF'
 {
   "servers": [
     {
-      "id": "agenthub",
-      "name": "AgentHub",
+      "id": "prompthub",
+      "name": "PromptHub",
       "url": "http://localhost:9090",
       "type": "http",
       "enabled": true,
@@ -160,8 +160,8 @@ cat > "$CONFIG_FILE" << 'EOF'
 {
   "servers": [
     {
-      "id": "agenthub",
-      "name": "AgentHub",
+      "id": "prompthub",
+      "name": "PromptHub",
       "url": "http://localhost:9090",
       "type": "http",
       "enabled": true,
@@ -175,7 +175,7 @@ cat > "$CONFIG_FILE" << 'EOF'
 }
 EOF
 
-echo "✅ AgentHub configured for Raycast"
+echo "✅ PromptHub configured for Raycast"
 echo "🔄 Restart Raycast to apply changes"
 SCRIPT
 
@@ -202,7 +202,7 @@ open -a Raycast
 1. Open Raycast (`Cmd+Space`)
 2. Type: "AI Settings"
 3. Navigate to: MCP Servers
-4. Verify "AgentHub" shows: `✅ Connected (7 tools)`
+4. Verify "PromptHub" shows: `✅ Connected (7 tools)`
 
 ### Test 2: Quick Documentation Lookup
 
@@ -394,7 +394,7 @@ Raycast tip: Use Raycast Git extension for visual branch switching
 
 ### Quick Commands Integration
 
-Create custom Raycast commands that use AgentHub MCP:
+Create custom Raycast commands that use PromptHub MCP:
 
 **Script Command: "Ask Context7"**
 
@@ -407,7 +407,7 @@ Create: `~/Library/Application Support/com.raycast.macos/scripts/ask-context7.sh
 # @raycast.schemaVersion 1
 # @raycast.title Ask Context7
 # @raycast.mode fullOutput
-# @raycast.packageName AgentHub
+# @raycast.packageName PromptHub
 # @raycast.icon 📚
 #
 # @raycast.argument1 { "type": "text", "placeholder": "Query" }
@@ -437,7 +437,7 @@ Create: `~/Library/Application Support/com.raycast.macos/scripts/mcp-status.sh`
 # @raycast.schemaVersion 1
 # @raycast.title MCP Server Status
 # @raycast.mode fullOutput
-# @raycast.packageName AgentHub
+# @raycast.packageName PromptHub
 # @raycast.icon 🔌
 
 curl -s http://localhost:9090/servers | jq -r '.[] | "\\(.name): \\(.status)"'
@@ -452,7 +452,7 @@ Raycast can automatically copy CLI commands to clipboard:
 {
   "servers": [
     {
-      "id": "agenthub",
+      "id": "prompthub",
       "autoCopyCommands": true,
       "commandPrefix": "$"
     }
@@ -460,7 +460,7 @@ Raycast can automatically copy CLI commands to clipboard:
 }
 ```
 
-When AgentHub returns a CLI command, Raycast auto-copies it.
+When PromptHub returns a CLI command, Raycast auto-copies it.
 
 ---
 
@@ -468,16 +468,16 @@ When AgentHub returns a CLI command, Raycast auto-copies it.
 
 ### Common Issues
 
-For common AgentHub connection, health check, and MCP server issues, see:
+For common PromptHub connection, health check, and MCP server issues, see:
 - **[Common Troubleshooting Guide](../_shared/troubleshooting-common.md)** - Connection refused, router not responding, timeout errors
 - **[Health Checks Guide](../_shared/health-checks.md)** - Verification commands and status checks
 
 ### Raycast-Specific Issues
 
-#### Issue: "AgentHub Not Listed in Raycast AI Settings"
+#### Issue: "PromptHub Not Listed in Raycast AI Settings"
 
 **Symptoms:**
-- AgentHub not showing in Raycast AI provider list
+- PromptHub not showing in Raycast AI provider list
 - No MCP tools available in AI commands
 
 **Solutions:**
@@ -495,7 +495,7 @@ For common AgentHub connection, health check, and MCP server issues, see:
 
 3. **Check Raycast AI settings:**
    - Raycast → Settings → AI
-   - Look for "AgentHub" under MCP Servers
+   - Look for "PromptHub" under MCP Servers
    - Verify status shows "Connected"
 
 #### Issue: "Responses Too Long for Quick Reference"
@@ -509,7 +509,7 @@ For common AgentHub connection, health check, and MCP server issues, see:
 
 1. **Verify enhancement rules for raycast:**
    ```bash
-   cat ~/.local/share/agenthub/configs/enhancement-rules.json | jq '.clients.raycast'
+   cat ~/.local/share/prompthub/configs/enhancement-rules.json | jq '.clients.raycast'
    ```
    Should have: `"Under 200 words"` in system prompt.
 
@@ -526,9 +526,9 @@ For common AgentHub connection, health check, and MCP server issues, see:
    }
    ```
 
-3. **Restart AgentHub after config change:**
+3. **Restart PromptHub after config change:**
    ```bash
-   launchctl restart com.agenthub.router
+   launchctl restart com.prompthub.router
    ```
 
 #### Issue: "CLI Commands Not Properly Formatted"
@@ -568,7 +568,7 @@ Create multiple Raycast profiles:
 ```json
 {
   "servers": [{
-    "id": "agenthub-work",
+    "id": "prompthub-work",
     "headers": {
       "X-Client-Name": "raycast-work"
     }
@@ -580,7 +580,7 @@ Create multiple Raycast profiles:
 ```json
 {
   "servers": [{
-    "id": "agenthub-personal",
+    "id": "prompthub-personal",
     "headers": {
       "X-Client-Name": "raycast-personal"
     }
@@ -604,7 +604,7 @@ Then customize enhancement rules:
 
 ### Integrate with Raycast Workflows
 
-Chain AgentHub with Raycast quicklinks:
+Chain PromptHub with Raycast quicklinks:
 
 **Quicklink: Search Docs**
 ```
@@ -624,7 +624,7 @@ Configure Raycast hotkeys:
 
 1. Raycast Settings → Extensions → AI
 2. Set hotkey for "AI Command" → `Cmd+Shift+A`
-3. Set hotkey for "Ask AgentHub" → `Cmd+Shift+M`
+3. Set hotkey for "Ask PromptHub" → `Cmd+Shift+M`
 
 ---
 
@@ -682,7 +682,7 @@ curl -X POST http://localhost:9090/mcp/context7/tools/call \
 
 ---
 
-## Raycast Extensions for AgentHub
+## Raycast Extensions for PromptHub
 
 ### Recommended Extensions
 
@@ -696,18 +696,18 @@ curl -X POST http://localhost:9090/mcp/context7/tools/call \
 
 **3. Clipboard History**
 - Store CLI commands for reuse
-- Quick access to previous AgentHub responses
+- Quick access to previous PromptHub responses
 
 **4. System Monitor**
-- Check if AgentHub is running
+- Check if PromptHub is running
 - View port 9090 status
 
 ### Creating Custom Extensions
 
-Build a Raycast extension for AgentHub:
+Build a Raycast extension for PromptHub:
 
 ```typescript
-// ~/Library/Application Support/com.raycast.macos/extensions/agenthub/src/index.tsx
+// ~/Library/Application Support/com.raycast.macos/extensions/prompthub/src/index.tsx
 
 import { Action, ActionPanel, List, showToast, Toast } from "@raycast/api";
 import { useState, useEffect } from "react";
@@ -719,7 +719,7 @@ export default function Command() {
     fetch("http://localhost:9090/servers")
       .then(res => res.json())
       .then(data => setServers(data))
-      .catch(err => showToast(Toast.Style.Failure, "AgentHub unreachable"));
+      .catch(err => showToast(Toast.Style.Failure, "PromptHub unreachable"));
   }, []);
 
   return (
@@ -749,7 +749,7 @@ export default function Command() {
 - [app-configs.md](app-configs.md) - Quick config for all clients
 - [claude-desktop-integration.md](claude-desktop-integration.md) - Claude Desktop setup
 - [vscode-integration.md](vscode-integration.md) - VS Code / Cline setup
-- [getting-started.md](getting-started.md) - AgentHub installation
+- [getting-started.md](getting-started.md) - PromptHub installation
 
 ---
 
@@ -760,7 +760,7 @@ export default function Command() {
 ~/Library/Application Support/com.raycast.macos/mcp-servers.json
 ```
 
-### AgentHub Health Check
+### PromptHub Health Check
 ```bash
 curl http://localhost:9090/health
 ```
@@ -777,7 +777,7 @@ killall Raycast && open -a Raycast
 
 ### Test MCP Connection
 ```
-Open Raycast → AI Settings → MCP Servers → AgentHub → ✅ Connected
+Open Raycast → AI Settings → MCP Servers → PromptHub → ✅ Connected
 ```
 
 ### Example Queries

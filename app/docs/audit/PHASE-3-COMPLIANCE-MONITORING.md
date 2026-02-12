@@ -68,7 +68,7 @@ class AuditIntegrityManager:
 
 - **Append-Only Validation**: Detects log truncation or deletion
 - **Modification Detection**: SHA256 mismatch indicates tampering
-- **Checksum History**: Stores baselines in `/tmp/agenthub/audit_checksums.json`
+- **Checksum History**: Stores baselines in `/tmp/prompthub/audit_checksums.json`
 - **Compliance Ready**: Meets SOC 2/HIPAA tamper-evident requirements
 
 ### Usage
@@ -85,7 +85,7 @@ curl http://localhost:9090/audit/integrity/verify
   "message": "Integrity verified successfully",
   "current_checksum": {
     "timestamp": "2026-01-29T01:32:08.383843",
-    "file_path": "/tmp/agenthub/audit.log",
+    "file_path": "/tmp/prompthub/audit.log",
     "file_size": 8788,
     "line_count": 26,
     "sha256": "206eff9c6f1d1813a55decc8976641324a5d0883cb837ceb9e9adfd9f8bd4e02",
@@ -293,9 +293,9 @@ Forwards audit logs to enterprise Security Information and Event Management (SIE
 
 ```bash
 #!/bin/bash
-# SIEM Log Forwarder for AgentHub
+# SIEM Log Forwarder for PromptHub
 
-AUDIT_LOG="/tmp/agenthub/audit.log"
+AUDIT_LOG="/tmp/prompthub/audit.log"
 
 # Splunk HTTP Event Collector (HEC)
 function forward_to_splunk() {
@@ -306,7 +306,7 @@ function forward_to_splunk() {
         curl -k -X POST "$HEC_URL" \
             -H "Authorization: Splunk $HEC_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"event\": $line, \"sourcetype\": \"agenthub:audit\"}" \
+            -d "{\"event\": $line, \"sourcetype\": \"prompthub:audit\"}" \
             --silent --show-error
     done < "$AUDIT_LOG"
 }
@@ -330,7 +330,7 @@ function forward_to_datadog() {
     DD_URL="https://http-intake.logs.datadoghq.com/v1/input"
 
     while IFS= read -r line; do
-        event=$(echo "$line" | jq -c ". + {\"ddsource\": \"agenthub\", \"service\": \"audit\", \"hostname\": \"$(hostname)\"}")
+        event=$(echo "$line" | jq -c ". + {\"ddsource\": \"prompthub\", \"service\": \"audit\", \"hostname\": \"$(hostname)\"}")
         curl -X POST "$DD_URL/$DD_API_KEY" \
             -H "Content-Type: application/json" \
             -d "$event" --silent --show-error
@@ -342,7 +342,7 @@ function forward_to_syslog() {
     SYSLOG_HOST="$1"
 
     while IFS= read -r line; do
-        logger -n "$SYSLOG_HOST" -P 514 -t agenthub "$line"
+        logger -n "$SYSLOG_HOST" -P 514 -t prompthub "$line"
     done < "$AUDIT_LOG"
 }
 ```
@@ -376,7 +376,7 @@ function forward_to_syslog() {
 # Forward to Elasticsearch
 ./scripts/siem-forwarder.sh elastic \
     https://elastic.example.com:9200 \
-    agenthub-audit
+    prompthub-audit
 
 # With authentication
 curl -u username:password https://elastic.example.com:9200/_bulk ...
@@ -389,7 +389,7 @@ curl -u username:password https://elastic.example.com:9200/_bulk ...
 ./scripts/siem-forwarder.sh datadog YOUR-DD-API-KEY
 
 # Logs appear in Datadog with:
-# - ddsource: agenthub
+# - ddsource: prompthub
 # - service: audit
 # - hostname: <current hostname>
 ```
@@ -407,9 +407,9 @@ For production, set up automated forwarding:
 
 ```bash
 # Create systemd service (Linux)
-cat > /etc/systemd/system/agenthub-siem.service <<EOF
+cat > /etc/systemd/system/prompthub-siem.service <<EOF
 [Unit]
-Description=AgentHub SIEM Forwarder
+Description=PromptHub SIEM Forwarder
 After=network.target
 
 [Service]
@@ -422,9 +422,9 @@ WantedBy=multi-user.target
 EOF
 
 # Create timer (every 5 minutes)
-cat > /etc/systemd/system/agenthub-siem.timer <<EOF
+cat > /etc/systemd/system/prompthub-siem.timer <<EOF
 [Unit]
-Description=AgentHub SIEM Forwarder Timer
+Description=PromptHub SIEM Forwarder Timer
 
 [Timer]
 OnBootSec=1min
@@ -434,7 +434,7 @@ OnUnitActiveSec=5min
 WantedBy=timers.target
 EOF
 
-sudo systemctl enable --now agenthub-siem.timer
+sudo systemctl enable --now prompthub-siem.timer
 ```
 
 ## 4. Testing Results

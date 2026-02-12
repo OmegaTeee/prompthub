@@ -1,18 +1,18 @@
-# AgentHub - Docker Compose Configuration
+# PromptHub - Docker Compose Configuration
 # For local development and testing
 
 version: '3.8'
 
 services:
   # =============================================================================
-  # AgentHub Router
+  # PromptHub Router
   # =============================================================================
   router:
     build:
       context: .
       dockerfile: Dockerfile
-    image: agenthub-router:latest
-    container_name: agenthub-router
+    image: prompthub-router:latest
+    container_name: prompthub-router
     ports:
       - "9090:9090"
     environment:
@@ -44,13 +44,13 @@ services:
       - ./configs:/app/configs:ro
       
       # Mount data directory for persistence (optional)
-      - agenthub-data:/app/data
+      - prompthub-data:/app/data
       
       # Mount logs for debugging
-      - agenthub-logs:/app/logs
+      - prompthub-logs:/app/logs
     
     networks:
-      - agenthub-network
+      - prompthub-network
     
     # Restart policy
     restart: unless-stopped
@@ -85,14 +85,14 @@ services:
 # =============================================================================
   # qdrant:
   #   image: qdrant/qdrant:latest
-  #   container_name: agenthub-qdrant
+  #   container_name: prompthub-qdrant
   #   ports:
   #     - "6333:6333"
   #     - "6334:6334"
   #   volumes:
   #     - qdrant-storage:/qdrant/storage
   #   networks:
-  #     - agenthub-network
+  #     - prompthub-network
   #   restart: unless-stopped
   #   deploy:
   #     resources:
@@ -104,9 +104,9 @@ services:
 # Volumes
 # =============================================================================
 volumes:
-  agenthub-data:
+  prompthub-data:
     driver: local
-  agenthub-logs:
+  prompthub-logs:
     driver: local
   # qdrant-storage:
   #   driver: local
@@ -115,5 +115,5 @@ volumes:
 # Networks
 # =============================================================================
 networks:
-  agenthub-network:
+  prompthub-network:
     driver: bridge

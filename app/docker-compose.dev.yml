@@ -1,4 +1,4 @@
-# AgentHub - Development Docker Compose Configuration
+# PromptHub - Development Docker Compose Configuration
 # Extends docker-compose.yml with development-specific settings
 
 version: '3.8'
@@ -10,18 +10,18 @@ services:
       dockerfile: Dockerfile
       # Cache build stages for faster rebuilds
       cache_from:
-        - agenthub-router:latest
+        - prompthub-router:latest
     
     # Override image name for dev
-    image: agenthub-router:dev
+    image: prompthub-router:dev
     
     # Bind mount source code for hot reload
     volumes:
       - ./router:/app/router:ro
       - ./configs:/app/configs:rw
       - ./templates:/app/templates:ro
-      - agenthub-data:/app/data
-      - agenthub-logs:/app/logs
+      - prompthub-data:/app/data
+      - prompthub-logs:/app/logs
     
     # Development environment variables
     environment:
@@ -48,11 +48,11 @@ services:
     restart: "no"
 
 volumes:
-  agenthub-data:
+  prompthub-data:
     driver: local
-  agenthub-logs:
+  prompthub-logs:
     driver: local
 
 networks:
-  agenthub-network:
+  prompthub-network:
     driver: bridge

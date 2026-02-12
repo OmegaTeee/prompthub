@@ -1,7 +1,7 @@
 {
-  "name": "agenthub-providers",
+  "name": "prompthub-providers",
   "version": "1.0.0",
-  "description": "Standalone MCP server providers for AgentHub — managed by the router or used independently.",
+  "description": "Standalone MCP server providers for PromptHub — managed by the router or used independently.",
   "type": "module",
   "private": true,
   "dependencies": {

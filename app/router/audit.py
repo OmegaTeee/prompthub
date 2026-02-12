@@ -1,5 +1,5 @@
 """
-Structured Audit Logging for AgentHub.
+Structured Audit Logging for PromptHub.
 
 Provides structured audit logging with JSON format for compliance
 and security monitoring. Audit events are logged separately from
@@ -58,7 +58,7 @@ def setup_audit_logging(
     Configure dual logging system.
 
     Sets up:
-    1. Audit logs -> JSON format, /var/log/agenthub/audit.log or stderr
+    1. Audit logs -> JSON format, /var/log/prompthub/audit.log or stderr
     2. Application logs -> human-readable, existing handlers
 
     Args:

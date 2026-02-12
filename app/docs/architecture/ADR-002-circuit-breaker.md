@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-AgentHub acts as a proxy between clients and multiple downstream services (MCP servers, Ollama). When downstream services fail or become slow, we need to:
+PromptHub acts as a proxy between clients and multiple downstream services (MCP servers, Ollama). When downstream services fail or become slow, we need to:
 
 1. Prevent cascading failures
 2. Fail fast instead of waiting for timeouts

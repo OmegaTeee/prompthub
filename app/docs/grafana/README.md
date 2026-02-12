@@ -1,14 +1,14 @@
-AgentHub Grafana Dashboard
+PromptHub Grafana Dashboard
 ==========================
 
-Import: Use Grafana >> Dashboards >> Import and upload `agenthub-enhancement-dashboard.json` or provision it.
+Import: Use Grafana >> Dashboards >> Import and upload `prompthub-enhancement-dashboard.json` or provision it.
 
 Prometheus datasource: Ensure you have a Prometheus datasource configured and select it when importing. The example uses Prometheus expressions:
 
-- `rate(agenthub_enhancement_calls_total[1m])` — calls per second
-- `rate(agenthub_enhancement_failures_total[5m])` — failures per second
-- `histogram_quantile(0.95, sum(rate(agenthub_enhancement_duration_seconds_bucket[5m])) by (le))` — p95 latency
-- `sum(rate(agenthub_enhancement_duration_seconds_sum[5m])) / sum(rate(agenthub_enhancement_duration_seconds_count[5m]))` — avg duration
+- `rate(prompthub_enhancement_calls_total[1m])` — calls per second
+- `rate(prompthub_enhancement_failures_total[5m])` — failures per second
+- `histogram_quantile(0.95, sum(rate(prompthub_enhancement_duration_seconds_bucket[5m])) by (le))` — p95 latency
+- `sum(rate(prompthub_enhancement_duration_seconds_sum[5m])) / sum(rate(prompthub_enhancement_duration_seconds_count[5m]))` — avg duration
 
 Recommendations for improving the dashboard and usability
 ---------------------------------------------------------
@@ -45,7 +45,7 @@ Quick commands
 Import via Grafana CLI (example):
 
 ```bash
-grafana-cli admin import-dashboard /path/to/agenthub-enhancement-dashboard.json
+grafana-cli admin import-dashboard /path/to/prompthub-enhancement-dashboard.json
 ```
 
 Provisioning (example): Add the JSON to Grafana provisioning directory and a YAML mapping file.

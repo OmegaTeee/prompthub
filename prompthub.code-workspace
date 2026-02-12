@@ -1,6 +1,10 @@
 {
   "folders": [
     {
+      "name": "workspace",
+      "path": ""
+    },
+    {
       "name": "app",
       "path": "app"
     },
@@ -15,10 +19,6 @@
     {
       "name": "mcps",
       "path": "mcps"
-    },
-    {
-      "name": "workspace",
-      "path": ""
     }
   ],
   "settings": {

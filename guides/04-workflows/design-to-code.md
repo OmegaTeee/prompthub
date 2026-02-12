@@ -1,6 +1,6 @@
 # Design-to-Code Workflow with Figma
 
-**Transform Figma designs into production-ready code using Figma + Claude Desktop + AgentHub**
+**Transform Figma designs into production-ready code using Figma + Claude Desktop + PromptHub**
 
 > **What you'll learn:** How to extract design specifications from Figma, generate component code, build design systems, and maintain design-code consistency.
 
@@ -18,7 +18,7 @@
 ### Prerequisites
 - ✅ Figma account with read access to designs
 - ✅ Claude Desktop installed
-- ✅ AgentHub running ([Quick check](../../_shared/health-checks.md))
+- ✅ PromptHub running ([Quick check](../../_shared/health-checks.md))
 - ✅ Figma plugin or screenshot workflow
 - ✅ Basic understanding of component frameworks (React, Vue, etc.)
 
@@ -38,7 +38,7 @@
 - ❌ Design changes don't propagate to code
 - ❌ Design system components drift from Figma
 
-**With AgentHub + AI assistance:**
+**With PromptHub + AI assistance:**
 - ✅ Automated design token extraction
 - ✅ Component generation matching design specs
 - ✅ Design system documentation sync
@@ -49,7 +49,7 @@
 ### How This Workflow Works
 
 ```
-Figma Design → Screenshot/Export → Claude Desktop + AgentHub → Generated Code
+Figma Design → Screenshot/Export → Claude Desktop + PromptHub → Generated Code
      ↓                                                              ↓
 Design Tokens ────────────────────────────────────────→ Code Tokens
      ↓                                                              ↓
@@ -89,7 +89,7 @@ Should contain:
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Enhance": "true",
@@ -657,4 +657,4 @@ Ensure Tailwind breakpoints match Figma's design"
 **Last Updated:** 2026-02-05
 **Workflow Difficulty:** Intermediate
 **Time to Master:** 3-5 design implementations
-**Prerequisites:** Figma access + Claude Desktop + AgentHub + Design system knowledge
+**Prerequisites:** Figma access + Claude Desktop + PromptHub + Design system knowledge

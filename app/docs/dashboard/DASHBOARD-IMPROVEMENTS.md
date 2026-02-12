@@ -1,7 +1,7 @@
 # Dashboard UX Improvements
 
 ## Overview
-Enhanced the AgentHub dashboard with visual feedback, loading indicators, and toast notifications to provide a more polished user experience.
+Enhanced the PromptHub dashboard with visual feedback, loading indicators, and toast notifications to provide a more polished user experience.
 
 ## Features Added
 

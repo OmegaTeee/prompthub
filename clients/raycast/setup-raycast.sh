@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Raycast AgentHub Setup Script
+# Raycast PromptHub Setup Script
 #
-# This script configures Raycast to use AgentHub as an MCP server.
+# This script configures Raycast to use PromptHub as an MCP server.
 #
 # Usage:
 #   ./setup-raycast.sh [--backup]
@@ -58,22 +58,22 @@ fi
 # Copy example config
 if [ -f "$EXAMPLE_CONFIG" ]; then
   cp "$EXAMPLE_CONFIG" "$CONFIG_FILE"
-  log_success "AgentHub configuration installed"
+  log_success "PromptHub configuration installed"
 else
   log_error "Example config not found: $EXAMPLE_CONFIG"
   exit 1
 fi
 
-# Verify AgentHub is running
+# Verify PromptHub is running
 if curl -s --max-time 2 http://localhost:9090/health > /dev/null 2>&1; then
-  log_success "AgentHub is running on localhost:9090"
+  log_success "PromptHub is running on localhost:9090"
 else
-  log_warning "AgentHub is not running or not reachable"
+  log_warning "PromptHub is not running or not reachable"
   echo ""
-  echo "Start AgentHub with:"
-  echo "  launchctl start com.agenthub.router"
+  echo "Start PromptHub with:"
+  echo "  launchctl start com.prompthub.router"
   echo "Or:"
-  echo "  cd ~/.local/share/agenthub && uvicorn router.main:app --port 9090"
+  echo "  cd ~/.local/share/prompthub && uvicorn router.main:app --port 9090"
 fi
 
 # Prompt to restart Raycast
@@ -89,10 +89,10 @@ echo ""
 echo "  2. Verify connection:"
 echo "     - Open Raycast (Cmd+Space)"
 echo "     - Type 'AI Settings'"
-echo "     - Check MCP Servers → AgentHub should show '✅ Connected'"
+echo "     - Check MCP Servers → PromptHub should show '✅ Connected'"
 echo ""
 echo "  3. Test it out:"
-echo "     - Use AI commands with AgentHub tools"
+echo "     - Use AI commands with PromptHub tools"
 echo "     - Try: 'context7: React hooks documentation'"
 echo ""
 

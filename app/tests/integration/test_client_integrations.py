@@ -22,7 +22,7 @@ class TestClaudeDesktopIntegration:
 
         This simulates what Claude Desktop does:
         1. Sends JSON-RPC to stdin
-        2. curl forwards to AgentHub HTTP endpoint
+        2. curl forwards to PromptHub HTTP endpoint
         3. Response returned via stdout
         """
         # Prepare JSON-RPC request (what Claude Desktop sends)
@@ -85,20 +85,20 @@ class TestClaudeDesktopIntegration:
 
         # Verify structure
         assert "mcpServers" in config
-        assert "agenthub" in config["mcpServers"]
+        assert "prompthub" in config["mcpServers"]
 
-        agenthub_config = config["mcpServers"]["agenthub"]
+        prompthub_config = config["mcpServers"]["prompthub"]
 
         # Verify uses curl
-        assert agenthub_config["command"] == "curl"
-        assert isinstance(agenthub_config["args"], list)
-        assert len(agenthub_config["args"]) > 0
+        assert prompthub_config["command"] == "curl"
+        assert isinstance(prompthub_config["args"], list)
+        assert len(prompthub_config["args"]) > 0
 
         # Verify key arguments
-        args = " ".join(agenthub_config["args"])
+        args = " ".join(prompthub_config["args"])
         assert "http://localhost:9090" in args
         assert "X-Client-Name: claude-desktop" in args
-        assert "@-" in agenthub_config["args"]  # Reads from stdin
+        assert "@-" in prompthub_config["args"]  # Reads from stdin
 
     @pytest.mark.asyncio
     async def test_client_name_header_routes_to_correct_enhancement(self):
@@ -166,14 +166,14 @@ class TestVSCodeIntegration:
 
         # Verify structure
         assert "claude.mcp.servers" in config
-        assert "agenthub" in config["claude.mcp.servers"]
+        assert "prompthub" in config["claude.mcp.servers"]
 
-        agenthub_config = config["claude.mcp.servers"]["agenthub"]
+        prompthub_config = config["claude.mcp.servers"]["prompthub"]
 
         # VS Code uses HTTP transport
-        assert agenthub_config["url"] == "http://localhost:9090"
-        assert agenthub_config["transport"] == "http"
-        assert agenthub_config["headers"]["X-Client-Name"] == "vscode"
+        assert prompthub_config["url"] == "http://localhost:9090"
+        assert prompthub_config["transport"] == "http"
+        assert prompthub_config["headers"]["X-Client-Name"] == "vscode"
 
 
 class TestRaycastIntegration:
@@ -213,11 +213,11 @@ class TestRaycastIntegration:
         assert isinstance(config["servers"], list)
         assert len(config["servers"]) > 0
 
-        agenthub_server = next(s for s in config["servers"] if s["id"] == "agenthub")
+        prompthub_server = next(s for s in config["servers"] if s["id"] == "prompthub")
 
-        assert agenthub_server["url"] == "http://localhost:9090"
-        assert agenthub_server["type"] == "http"
-        assert agenthub_server["headers"]["X-Client-Name"] == "raycast"
+        assert prompthub_server["url"] == "http://localhost:9090"
+        assert prompthub_server["type"] == "http"
+        assert prompthub_server["headers"]["X-Client-Name"] == "raycast"
 
 
 class TestCrossClientFeatures:
@@ -389,10 +389,10 @@ class TestConfigurationValidation:
         with open(config_path) as f:
             config = json.load(f)
 
-        agenthub_config = config["mcpServers"]["agenthub"]
+        prompthub_config = config["mcpServers"]["prompthub"]
 
         # Must use curl
-        assert agenthub_config["command"] == "curl", \
+        assert prompthub_config["command"] == "curl", \
             "Claude Desktop config should use curl, not npx"
 
         # Should NOT have npx anywhere

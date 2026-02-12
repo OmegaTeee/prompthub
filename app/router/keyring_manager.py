@@ -1,5 +1,5 @@
 """
-Keyring Manager for AgentHub
+Keyring Manager for PromptHub
 
 Handles secure credential retrieval for MCP servers.
 """
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class KeyringManager:
     """Manages secure credential retrieval from system keyring."""
 
-    def __init__(self, service_name: str = "agenthub"):
+    def __init__(self, service_name: str = "prompthub"):
         self.service_name = service_name
         self.enabled = KEYRING_AVAILABLE
 
@@ -164,7 +164,7 @@ class KeyringManager:
 
         Supports two formats:
         1. Simple string: {"KEY": "value"}
-        2. Keyring reference: {"KEY": {"source": "keyring", "service": "agenthub", "key": "api_key"}}
+        2. Keyring reference: {"KEY": {"source": "keyring", "service": "prompthub", "key": "api_key"}}
 
         Args:
             env_config: Environment configuration dictionary
@@ -222,7 +222,7 @@ class KeyringManager:
 _keyring_manager: KeyringManager | None = None
 
 
-def get_keyring_manager(service_name: str = "agenthub") -> KeyringManager:
+def get_keyring_manager(service_name: str = "prompthub") -> KeyringManager:
     """Get or create the global KeyringManager instance."""
     global _keyring_manager
     if _keyring_manager is None:

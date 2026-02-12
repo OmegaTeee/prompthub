@@ -115,12 +115,12 @@ Your document's implementation plan is completely achievable using only locally-
 
 ---
 
-## What are your thoughts on the refactoring scope and dashboard redesign for the local MCP-AgentHub?
+## What are your thoughts on the refactoring scope and dashboard redesign for the local MCP-PromptHub?
 
 ---
 
-What is AgentHub?
-AgentHub is a centralized MCP (Model Context Protocol) router for macOS that provides:
+What is PromptHub?
+PromptHub is a centralized MCP (Model Context Protocol) router for macOS that provides:
 
 - Unified Access - Connect multiple apps (Perplexity, Claude Desktop, VS Code, Raycast) to 7+ MCP servers
 - Prompt Enhancement - Automatically improve prompts with Ollama (DeepSeek-R1, Qwen3-Coder)
@@ -130,7 +130,7 @@ AgentHub is a centralized MCP (Model Context Protocol) router for macOS that pro
 
 My goal is to offer better inquiries and prompts that lead to improved outcomes from paid services.
 
-Based on your document and the AgentHub architecture you've described, I have some thoughts on the refactoring scope and strategic considerations:
+Based on your document and the PromptHub architecture you've described, I have some thoughts on the refactoring scope and strategic considerations:
 
 ## Scope Assessment: **Excellent and Well-Prioritized**
 
@@ -157,9 +157,9 @@ Your suggestion to move from in-memory to Redis-backed rate limiting is good for
 
 - Single macOS machine with 7 MCP servers → in-memory is sufficient
 - Redis adds operational overhead (another service to monitor)
-- **Consider deferring** until you're running AgentHub on multiple machines or seeing rate-limit state inconsistencies
+- **Consider deferring** until you're running PromptHub on multiple machines or seeing rate-limit state inconsistencies
 
-**Alternative:** If you add Redis, use it for **shared cache** too (not just rate limiting). Your "intelligent caching" could persist across AgentHub restarts and be shared if you ever run multiple instances.
+**Alternative:** If you add Redis, use it for **shared cache** too (not just rate limiting). Your "intelligent caching" could persist across PromptHub restarts and be shared if you ever run multiple instances.
 
 ### **Observability Depth: Tracing vs. Simplicity**
 
@@ -175,7 +175,7 @@ Your suggestion to move from in-memory to Redis-backed rate limiting is good for
 
 - Enhancement latency is inconsistent and metrics don't pinpoint bottlenecks
 - You're chaining multiple Ollama calls or complex MCP server interactions
-- You need to see exact request flow: Client → AgentHub → Ollama → MCP Server
+- You need to see exact request flow: Client → PromptHub → Ollama → MCP Server
 
 ### **Dashboard Specific Feedback**
 
@@ -203,7 +203,7 @@ deploy/
 ├── grafana/
 │   ├── provisioning/
 │   │   ├── dashboards/
-│   │   │   └── agenthub-dashboard.json
+│   │   │   └── prompthub-dashboard.json
 │   │   └── datasources/
 │   │       └── prometheus.yaml
 │   └── docker-compose.yml  # Grafana + Prometheus stack
@@ -224,7 +224,7 @@ echo "✅ Dashboard JSON is valid"
 
 ### **Metrics Labels: Cardinality Warning**
 
-Your caution about **high-cardinality labels** is critical. For AgentHub:
+Your caution about **high-cardinality labels** is critical. For PromptHub:
 
 **Safe labels** (low cardinality):
 
@@ -245,7 +245,7 @@ Your caution about **high-cardinality labels** is critical. For AgentHub:
 
 **SLOs \& Error Budgets** - You mention this briefly. Define them early:
 
-**Suggested SLOs for AgentHub:**
+**Suggested SLOs for PromptHub:**
 
 - **Availability:** 99.5% uptime (43 minutes downtime/month acceptable for local dev tool)
 - **Latency:** p95 enhancement < 500ms (Ollama on M3/M4 should be fast)
@@ -287,7 +287,7 @@ If I were prioritizing your refactor, I'd do this order:
 
 > "My goal is to offer better inquiries and prompts that lead to improved outcomes from paid services."
 
-**This changes the dashboard focus significantly.** You're not just monitoring AgentHub health—you're measuring **enhancement effectiveness**. Add these panels:
+**This changes the dashboard focus significantly.** You're not just monitoring PromptHub health—you're measuring **enhancement effectiveness**. Add these panels:
 
 **Enhancement Quality Metrics:**
 

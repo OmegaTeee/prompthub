@@ -76,7 +76,7 @@ jobs:
           context: ./app
           file: ./app/Dockerfile
           push: false
-          tags: agenthub:test
+          tags: prompthub:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
         continue-on-error: true

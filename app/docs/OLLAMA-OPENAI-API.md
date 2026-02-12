@@ -1,6 +1,6 @@
 # Ollama OpenAI-Compatible API Support
 
-AgentHub now supports **both** Ollama API formats:
+PromptHub now supports **both** Ollama API formats:
 - **Native Ollama API** (default): `/api/generate`, `/api/tags`
 - **OpenAI-Compatible API**: `/v1/chat/completions`, `/v1/models`
 
@@ -100,7 +100,7 @@ POST http://localhost:11434/v1/chat/completions
 
 ### Type Safety
 
-AgentHub uses Python's union types and `isinstance()` for type narrowing:
+PromptHub uses Python's union types and `isinstance()` for type narrowing:
 
 ```python
 class EnhancementService:
@@ -206,7 +206,7 @@ ollama pull llama3.2:3b
    cat .env | grep OLLAMA_API_MODE
    ```
 
-2. Restart AgentHub:
+2. Restart PromptHub:
    ```bash
    uvicorn router.main:app --reload --port 9090
    ```
@@ -244,7 +244,7 @@ Potential improvements:
 
 - [Ollama OpenAI Compatibility](https://github.com/ollama/ollama/blob/main/docs/openai.md)
 - [OpenAI Chat Completions API](https://platform.openai.com/docs/api-reference/chat)
-- [AgentHub Enhancement Architecture](./ENHANCEMENT.md)
+- [PromptHub Enhancement Architecture](./ENHANCEMENT.md)
 
 ---
 

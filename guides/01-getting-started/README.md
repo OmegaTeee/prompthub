@@ -1,8 +1,8 @@
-# Getting Started with AgentHub
+# Getting Started with PromptHub
 
-**Start here if you're new to AgentHub!**
+**Start here if you're new to PromptHub!**
 
-This section covers everything you need to install and verify AgentHub on your macOS system.
+This section covers everything you need to install and verify PromptHub on your macOS system.
 
 ---
 
@@ -51,7 +51,7 @@ This section covers everything you need to install and verify AgentHub on your m
 |-----------------|------------------|------|
 | I'm comfortable with Terminal | [Quick Start](quick-start.md) | 10 min |
 | I've never used Terminal | [Detailed Installation](detailed-installation.md) | 30-45 min |
-| I just installed AgentHub | [Verification Guide](verification.md) | 5-15 min |
+| I just installed PromptHub | [Verification Guide](verification.md) | 5-15 min |
 | Something isn't working | [Verification Guide](verification.md) → Troubleshooting | 5-15 min |
 
 ---
@@ -62,10 +62,10 @@ All paths install the same components:
 
 1. **Prerequisites**
    - Homebrew (macOS package manager)
-   - Python 3.11+ (runtime for AgentHub)
+   - Python 3.11+ (runtime for PromptHub)
    - Node.js 20+ (runtime for MCP servers)
 
-2. **AgentHub Core**
+2. **PromptHub Core**
    - Router software (FastAPI server)
    - MCP servers (filesystem, fetch, brave-search, etc.)
    - Configuration files
@@ -114,7 +114,7 @@ If you plan to use these services, have API keys ready:
 - OpenAI API (if using OpenAI mode)
 - Other service credentials
 
-**Don't have keys yet?** That's fine — you can add them later. AgentHub works without them.
+**Don't have keys yet?** That's fine — you can add them later. PromptHub works without them.
 
 ---
 
@@ -156,13 +156,13 @@ A: No! The [Detailed Installation](detailed-installation.md) guide is written fo
 A: 10 minutes (Quick Start) or 30-45 minutes (Detailed Installation)
 
 **Q: Can I use multiple AI clients?**
-A: Yes! Connect Claude Desktop, VS Code, Raycast, and more to the same AgentHub.
+A: Yes! Connect Claude Desktop, VS Code, Raycast, and more to the same PromptHub.
 
 **Q: Do I need to pay for API keys?**
-A: No. AgentHub works with local models (free). API keys are optional for services like Brave Search.
+A: No. PromptHub works with local models (free). API keys are optional for services like Brave Search.
 
 **Q: Will this slow down my Mac?**
-A: No. AgentHub uses < 200MB RAM without models, ~500MB with models.
+A: No. PromptHub uses < 200MB RAM without models, ~500MB with models.
 
 ---
 
@@ -173,7 +173,7 @@ A: No. AgentHub uses < 200MB RAM without models, ~500MB with models.
 ```
 Install Prerequisites (5 min)
      ↓
-Install AgentHub (3 min)
+Install PromptHub (3 min)
      ↓
 Verify Installation (2 min)
      ↓
@@ -185,11 +185,11 @@ Done! ✅
 ```
 Phase 1: Install Prerequisites (10 min)
      ↓
-Phase 2: Install AgentHub (10 min)
+Phase 2: Install PromptHub (10 min)
      ↓
 Phase 3: Install Ollama & Models (10 min)
      ↓
-Phase 4: Start AgentHub (5 min)
+Phase 4: Start PromptHub (5 min)
      ↓
 Phase 5: Auto-Start Setup (5 min - optional)
      ↓
@@ -208,7 +208,7 @@ After installation, you should be able to:
 - [ ] Open dashboard at `http://localhost:9090/dashboard`
 - [ ] See at least one client connected
 - [ ] Ask a question in your AI client and get a response
-- [ ] (Optional) AgentHub starts automatically after Mac restart
+- [ ] (Optional) PromptHub starts automatically after Mac restart
 
 If all checked, installation is successful! ✅
 

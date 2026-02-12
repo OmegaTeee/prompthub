@@ -1,6 +1,6 @@
 # Architecture Documentation
 
-Technical architecture and design decisions for AgentHub.
+Technical architecture and design decisions for PromptHub.
 
 ## Architecture Decision Records (ADRs)
 
@@ -20,7 +20,7 @@ ADRs document significant architectural decisions, the context behind them, and 
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Clients   │────▶│  AgentHub    │────▶│ MCP Servers │
+│   Clients   │────▶│  PromptHub    │────▶│ MCP Servers │
 │ (Claude,    │     │   Router     │     │ (stdio)     │
 │  VS Code,   │     │  :9090       │     │             │
 │  Raycast)   │     └──────┬───────┘     └─────────────┘
@@ -225,8 +225,8 @@ docker compose up -d
 
 ```bash
 # LaunchAgent for auto-start on login
-cp com.agenthub.router.plist ~/Library/LaunchAgents/
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+cp com.prompthub.router.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ## Scaling Considerations

@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Claude Desktop AgentHub Setup Script
+# Claude Desktop PromptHub Setup Script
 #
-# This script configures Claude Desktop to use AgentHub's unified MCP bridge.
+# This script configures Claude Desktop to use PromptHub's unified MCP bridge.
 #
 # Usage:
 #   ./setup-claude.sh [--backup]
@@ -83,14 +83,14 @@ if [[ -f "${CONFIG_FILE}" ]]; then
 else
   # No existing config, just copy example
   cp "${EXAMPLE_CONFIG}" "${CONFIG_FILE}"
-  log_success "AgentHub configuration installed"
+  log_success "PromptHub configuration installed"
 fi
 
-# Verify AgentHub is running
+# Verify PromptHub is running
 echo ""
-log_info "Verifying AgentHub connection..."
+log_info "Verifying PromptHub connection..."
 if curl -s --max-time 2 http://localhost:9090/health > /dev/null 2>&1; then
-  log_success "AgentHub is running on localhost:9090"
+  log_success "PromptHub is running on localhost:9090"
 
   # Check server count
   SERVER_COUNT=$(curl -s http://localhost:9090/servers | jq 'length' 2>/dev/null || echo "unknown")
@@ -98,12 +98,12 @@ if curl -s --max-time 2 http://localhost:9090/health > /dev/null 2>&1; then
     log_success "Found ${SERVER_COUNT} MCP servers"
   fi
 else
-  log_warning "AgentHub is not running or not reachable"
+  log_warning "PromptHub is not running or not reachable"
   echo ""
-  echo "Start AgentHub with:"
-  echo "  launchctl start com.agenthub.router"
+  echo "Start PromptHub with:"
+  echo "  launchctl start com.prompthub.router"
   echo "Or:"
-  echo "  cd ~/.local/share/agenthub && uvicorn router.main:app --port 9090"
+  echo "  cd ~/.local/share/prompthub && uvicorn router.main:app --port 9090"
 fi
 
 # Check if Node.js is available (required for the MCP bridge)
@@ -120,10 +120,10 @@ NODE_VERSION=$(node --version)
 log_success "Node.js found: ${NODE_VERSION}"
 
 # Verify MCP bridge script exists
-BRIDGE_SCRIPT="${HOME}/.local/share/agenthub/mcps/agenthub-bridge.js"
+BRIDGE_SCRIPT="${HOME}/.local/share/prompthub/mcps/prompthub-bridge.js"
 if [[ ! -f "${BRIDGE_SCRIPT}" ]]; then
   log_error "MCP bridge script not found: ${BRIDGE_SCRIPT}"
-  echo "Please ensure AgentHub is properly installed"
+  echo "Please ensure PromptHub is properly installed"
   exit 1
 fi
 
@@ -161,7 +161,7 @@ echo "     osascript -e 'quit app \"Claude\"' && open -a \"Claude\""
 echo ""
 echo "  2. Verify MCP connection:"
 echo "     - Open Claude Desktop"
-echo "     - Look for MCP badge at bottom: 🔌 agenthub"
+echo "     - Look for MCP badge at bottom: 🔌 prompthub"
 echo "     - Should show: '7 tools available'"
 echo ""
 echo "  3. Test MCP tools:"

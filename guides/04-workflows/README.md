@@ -1,8 +1,8 @@
 # Practical Workflows
 
-**Real-world usage patterns and best practices for maximizing productivity with AgentHub**
+**Real-world usage patterns and best practices for maximizing productivity with PromptHub**
 
-Learn how to combine AgentHub's features for productive workflows across different use cases.
+Learn how to combine PromptHub's features for productive workflows across different use cases.
 
 ---
 
@@ -39,7 +39,7 @@ Learn how to combine AgentHub's features for productive workflows across differe
 ---
 
 ### 3. [Quick Commands](quick-commands.md)
-**Raycast + AgentHub workflow for rapid productivity**
+**Raycast + PromptHub workflow for rapid productivity**
 
 - Lightning-fast documentation lookup
 - Command-line helpers and snippets
@@ -109,7 +109,7 @@ Many tasks benefit from multiple workflows:
 Before diving into workflows, ensure you've completed:
 
 ### 1. ✅ Core Setup
-- AgentHub installed and running
+- PromptHub installed and running
 - LaunchAgent configured for auto-start
 - Credentials stored in Keychain
 
@@ -149,7 +149,7 @@ ollama list
 
 ### 1. Configure Enhancement Per Client
 
-Edit `~/.local/share/agenthub/configs/enhancement-rules.json`:
+Edit `~/.local/share/prompthub/configs/enhancement-rules.json`:
 
 ```json
 {
@@ -212,17 +212,17 @@ Create project-specific context:
 
 Save frequently used prompts:
 
-**Create `~/.agenthub-prompts/`:**
+**Create `~/.prompthub-prompts/`:**
 
 ```bash
-mkdir -p ~/.agenthub-prompts
+mkdir -p ~/.prompthub-prompts
 
 # Save common prompts
-echo "Generate Jest test cases for this function" > ~/.agenthub-prompts/test-gen.txt
-echo "Review this code for security issues" > ~/.agenthub-prompts/security-review.txt
+echo "Generate Jest test cases for this function" > ~/.prompthub-prompts/test-gen.txt
+echo "Review this code for security issues" > ~/.prompthub-prompts/security-review.txt
 ```
 
-**Use with:** `cat ~/.agenthub-prompts/test-gen.txt` → paste in client
+**Use with:** `cat ~/.prompthub-prompts/test-gen.txt` → paste in client
 
 ---
 
@@ -239,14 +239,14 @@ curl http://localhost:9090/dashboard
 **Verify enhancement rules:**
 
 ```bash
-cat ~/.local/share/agenthub/configs/enhancement-rules.json
+cat ~/.local/share/prompthub/configs/enhancement-rules.json
 ```
 
-**Restart AgentHub:**
+**Restart PromptHub:**
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -299,7 +299,7 @@ curl -X POST http://localhost:9090/mcp/filesystem/list_allowed_directories \
 ## Additional Resources
 
 - [Common Troubleshooting](../_shared/troubleshooting-common.md) - Solutions for frequent issues
-- [Health Checks](../_shared/health-checks.md) - Verify AgentHub is running correctly
+- [Health Checks](../_shared/health-checks.md) - Verify PromptHub is running correctly
 - [Terminology](../_shared/terminology.md) - Standard terminology reference
 - [Integration Tests](../05-testing/integration-tests.md) - Comprehensive testing guide
 

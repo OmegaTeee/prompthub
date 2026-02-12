@@ -7,7 +7,7 @@ Scripts for system-level operations like audit log management and SIEM integrati
 ### `audit-maintenance.sh`
 Manages audit log rotation, compression, archival, and integrity verification.
 
-**Purpose:** Automated maintenance of AgentHub's audit logging system with tamper detection.
+**Purpose:** Automated maintenance of PromptHub's audit logging system with tamper detection.
 
 **Usage:**
 ```bash
@@ -42,7 +42,7 @@ scripts/system/audit-maintenance.sh --dry-run
 
 **Example output:**
 ```
-🗂️  AgentHub Audit Log Maintenance
+🗂️  PromptHub Audit Log Maintenance
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📊 Current Status:
@@ -80,7 +80,7 @@ Next run: 2024-01-31 00:00
 **Configuration:**
 ```bash
 # Environment variables
-export AUDIT_LOG_DIR="${HOME}/.local/share/agenthub/logs"
+export AUDIT_LOG_DIR="${HOME}/.local/share/prompthub/logs"
 export AUDIT_RETENTION_DAYS=30
 export AUDIT_MAX_SIZE_MB=100
 export AUDIT_COMPRESSION=true
@@ -90,10 +90,10 @@ export AUDIT_INTEGRITY_CHECK=true
 **Cron schedule:**
 ```cron
 # Run daily at midnight
-0 0 * * * /Users/user/.local/share/agenthub/scripts/system/audit-maintenance.sh
+0 0 * * * /Users/user/.local/share/prompthub/scripts/system/audit-maintenance.sh
 
 # Run weekly for deep verification
-0 2 * * 0 /Users/user/.local/share/agenthub/scripts/system/audit-maintenance.sh --verify
+0 2 * * 0 /Users/user/.local/share/prompthub/scripts/system/audit-maintenance.sh --verify
 ```
 
 **Dependencies:**
@@ -105,7 +105,7 @@ export AUDIT_INTEGRITY_CHECK=true
 ### `siem-forwarder.sh`
 Forwards audit events to SIEM systems (Splunk, ELK, Datadog, etc.) in real-time.
 
-**Purpose:** Stream AgentHub audit logs to external security information and event management systems.
+**Purpose:** Stream PromptHub audit logs to external security information and event management systems.
 
 **Usage:**
 ```bash
@@ -138,7 +138,7 @@ scripts/system/siem-forwarder.sh config --endpoint https://siem.company.com/inge
 
 **Example output:**
 ```
-🚀 SIEM Forwarder for AgentHub
+🚀 SIEM Forwarder for PromptHub
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📡 Configuration:
@@ -198,7 +198,7 @@ scripts/system/siem-forwarder.sh config --endpoint https://siem.company.com/inge
   "action": "get",
   "credential_key": "obsidian_api_key",
   "status": "success",
-  "source": "agenthub",
+  "source": "prompthub",
   "environment": "production"
 }
 ```
@@ -288,7 +288,7 @@ scripts/system/siem-forwarder.sh start
 cat > configs/siem-forwarder.json << EOF
 {
   "enabled": true,
-  "endpoint": "https://elasticsearch.company.com:9200/agenthub-audit/_doc",
+  "endpoint": "https://elasticsearch.company.com:9200/prompthub-audit/_doc",
   "format": "elk",
   "auth": {
     "type": "basic",
@@ -299,7 +299,7 @@ cat > configs/siem-forwarder.json << EOF
 EOF
 
 # 2. Create index template
-curl -X PUT "elasticsearch.company.com:9200/_index_template/agenthub-audit" \
+curl -X PUT "elasticsearch.company.com:9200/_index_template/prompthub-audit" \
   -H "Content-Type: application/json" \
   -d @configs/elasticsearch-template.json
 
@@ -321,7 +321,7 @@ cat > configs/siem-forwarder.json << EOF
     "token_keychain_key": "webhook_token"
   },
   "headers": {
-    "X-Source": "agenthub",
+    "X-Source": "prompthub",
     "X-Environment": "production"
   }
 }
@@ -365,14 +365,14 @@ df -h logs/ | awk 'NR==2 {if ($5+0 > 80) print "ALERT: Disk usage " $5}'
 ### LaunchAgent Monitoring
 
 ```xml
-<!-- ~/Library/LaunchAgents/com.agenthub.audit-monitor.plist -->
+<!-- ~/Library/LaunchAgents/com.prompthub.audit-monitor.plist -->
 <dict>
   <key>Label</key>
-  <string>com.agenthub.audit-monitor</string>
+  <string>com.prompthub.audit-monitor</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>/Users/user/.local/share/agenthub/scripts/system/audit-maintenance.sh</string>
+    <string>/Users/user/.local/share/prompthub/scripts/system/audit-maintenance.sh</string>
   </array>
   <key>StartCalendarInterval</key>
   <dict>

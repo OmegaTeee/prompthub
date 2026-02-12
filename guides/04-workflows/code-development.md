@@ -1,8 +1,8 @@
 # Code Development Workflow with VS Code
 
-**Master the VS Code + AgentHub + Qwen3-Coder workflow for context-aware software development**
+**Master the VS Code + PromptHub + Qwen3-Coder workflow for context-aware software development**
 
-> **What you'll learn:** How to leverage AgentHub's Qwen3-Coder enhancement for code generation, refactoring, debugging, and test-driven development in VS Code.
+> **What you'll learn:** How to leverage PromptHub's Qwen3-Coder enhancement for code generation, refactoring, debugging, and test-driven development in VS Code.
 
 ---
 
@@ -18,7 +18,7 @@
 
 ### Prerequisites
 - ✅ VS Code installed with Cline, Claude Code, or Continue extension
-- ✅ AgentHub running ([Quick check](../../_shared/health-checks.md))
+- ✅ PromptHub running ([Quick check](../../_shared/health-checks.md))
 - ✅ Qwen3-Coder model downloaded: `ollama pull qwen2.5-coder:7b`
 - ✅ Enhancement enabled in VS Code config
 
@@ -39,7 +39,7 @@ Qwen3-Coder is specifically trained for programming tasks and excels at:
 
 ### How Enhancement Works
 When you make a request in VS Code:
-1. **Your prompt** → Sent to AgentHub with `X-Enhance: true`
+1. **Your prompt** → Sent to PromptHub with `X-Enhance: true`
 2. **Qwen3-Coder** → Analyzes code context and improves prompt clarity
 3. **Enhanced prompt** → Forwarded to MCP servers (filesystem, etc.)
 4. **Better results** → More accurate, contextual code responses
@@ -58,7 +58,7 @@ When you make a request in VS Code:
 // ~/.vscode/settings.json or .vscode/settings.json (project-specific)
 {
   "cline.mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Enhance": "true",
@@ -79,7 +79,7 @@ When you make a request in VS Code:
 
 ### 2. Configure Enhancement Rules
 
-Edit `~/.local/share/agenthub/configs/enhancement-rules.json`:
+Edit `~/.local/share/prompthub/configs/enhancement-rules.json`:
 
 ```json
 {
@@ -93,11 +93,11 @@ Edit `~/.local/share/agenthub/configs/enhancement-rules.json`:
 }
 ```
 
-**Restart AgentHub:**
+**Restart PromptHub:**
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -621,4 +621,4 @@ See [Enhancement Rules](../../02-core-setup/enhancement-rules.md) for performanc
 **Last Updated:** 2026-02-05
 **Workflow Difficulty:** Intermediate
 **Time to Master:** 2-3 coding sessions
-**Prerequisites:** VS Code + AgentHub + Qwen3-Coder
+**Prerequisites:** VS Code + PromptHub + Qwen3-Coder

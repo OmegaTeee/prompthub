@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "curl",
       "args": [
         "-s",

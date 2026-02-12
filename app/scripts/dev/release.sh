@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Simple release helper for AgentHub
+# Simple release helper for PromptHub
 # Usage: ./scripts/release.sh 0.1.1 "Release notes summary"
 
 if [[ "$#" -lt 1 ]]; then
@@ -34,7 +34,7 @@ fi
 
 DATE=$(date -u +%Y-%m-%d)
 
-TMPFILE=$(mktemp -t agenthub_release)
+TMPFILE=$(mktemp -t prompthub_release)
 trap 'rm -f "$TMPFILE"' EXIT
 {
   echo "## [${NEW_VERSION}] - ${DATE}"

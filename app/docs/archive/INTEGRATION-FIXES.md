@@ -24,7 +24,7 @@ The integration guides recommended using a **non-existent npm package** called `
 
 ### Root Cause
 
-The documentation was written based on assumptions about how to bridge stdio (Claude Desktop's protocol) to HTTP (AgentHub's protocol), but the actual implementation uses `curl` as shown in `router/clients/generators.py`.
+The documentation was written based on assumptions about how to bridge stdio (Claude Desktop's protocol) to HTTP (PromptHub's protocol), but the actual implementation uses `curl` as shown in `router/clients/generators.py`.
 
 ---
 
@@ -35,7 +35,7 @@ The documentation was written based on assumptions about how to bridge stdio (Cl
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "curl",
       "args": [
         "-s",
@@ -73,7 +73,7 @@ The documentation was written based on assumptions about how to bridge stdio (Cl
 - Removed Step 4 (Install MCP Proxy Client) - not needed
 - Fixed Step 4 (was Step 5) - Restart Claude Desktop
 - Updated troubleshooting section
-- Changed all `agenthub-router` to `agenthub` for consistency
+- Changed all `prompthub-router` to `prompthub` for consistency
 - Fixed verification tests
 
 **Lines changed:** ~20 edits across the file
@@ -125,7 +125,7 @@ Created reference configuration files in `configs/`:
 
 ### Test Results
 
-✅ **Test 1: AgentHub Health**
+✅ **Test 1: PromptHub Health**
 ```bash
 curl http://localhost:9090/health
 ```
@@ -184,14 +184,14 @@ Claude Desktop communicates via **stdio** (standard input/output):
 1. Claude Desktop sends JSON-RPC → stdin of configured command
 2. Command processes and returns → stdout back to Claude Desktop
 
-AgentHub provides **HTTP endpoints**:
-1. AgentHub listens on http://localhost:9090
+PromptHub provides **HTTP endpoints**:
+1. PromptHub listens on http://localhost:9090
 2. Expects HTTP POST requests with JSON-RPC payloads
 
 **The Bridge:**
 ```bash
 curl -d @-  # Read from stdin (Claude's JSON-RPC)
-            # Send via HTTP POST to AgentHub
+            # Send via HTTP POST to PromptHub
             # Return response to stdout (back to Claude)
 ```
 
@@ -226,8 +226,8 @@ Only Claude Desktop needed the curl bridge because it requires stdio transport.
 
 ### Code
 1. ✅ Keep `router/clients/generators.py` as source of truth
-2. ⏭️  Add CLI command: `agenthub config generate --client=claude-desktop`
-3. ⏭️  Auto-generate configs on AgentHub startup
+2. ⏭️  Add CLI command: `prompthub config generate --client=claude-desktop`
+3. ⏭️  Auto-generate configs on PromptHub startup
 
 ---
 
@@ -272,7 +272,7 @@ echo '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}' | \
 
 **Verified by:** Claude Sonnet 4.5
 **Date:** 2026-01-30
-**AgentHub Version:** 1.0.0-beta
+**PromptHub Version:** 1.0.0-beta
 
 ---
 
@@ -469,5 +469,5 @@ Tests are production-ready and can be integrated into GitHub Actions:
 
 **Updated by:** Claude Sonnet 4.5
 **Last Update:** 2026-01-30
-**AgentHub Version:** 1.0.0-beta
+**PromptHub Version:** 1.0.0-beta
 **Test Suite Version:** 1.0.0

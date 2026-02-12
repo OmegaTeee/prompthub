@@ -1,6 +1,6 @@
-# Circuit Breaker Pattern in AgentHub
+# Circuit Breaker Pattern in PromptHub
 
-> **What you'll learn:** How AgentHub's circuit breaker protects against failing MCP servers and maintains system stability
+> **What you'll learn:** How PromptHub's circuit breaker protects against failing MCP servers and maintains system stability
 
 ---
 
@@ -14,7 +14,7 @@
 - Dashboard monitoring
 
 ### Prerequisites
-- ✅ AgentHub running with MCP servers configured
+- ✅ PromptHub running with MCP servers configured
 - ✅ Basic understanding of MCP server operations
 - ✅ Familiarity with dashboard at `http://localhost:9090/dashboard`
 
@@ -30,7 +30,7 @@
 
 Think of your home's electrical circuit breaker. When something goes wrong (short circuit, overload), the breaker **automatically opens** to prevent damage. You don't need to manually shut off power — it protects itself.
 
-AgentHub's circuit breaker works the same way:
+PromptHub's circuit breaker works the same way:
 - **Normal operation**: Circuit is CLOSED, requests flow through
 - **Failures detected**: Circuit OPENS, requests rejected immediately
 - **Recovery attempt**: Circuit goes HALF_OPEN to test if service recovered
@@ -40,23 +40,23 @@ AgentHub's circuit breaker works the same way:
 
 **Without circuit breaker:**
 ```
-User request → AgentHub → Slow/crashed MCP server (30s timeout) → Failure
-User request → AgentHub → Slow/crashed MCP server (30s timeout) → Failure
-User request → AgentHub → Slow/crashed MCP server (30s timeout) → Failure
+User request → PromptHub → Slow/crashed MCP server (30s timeout) → Failure
+User request → PromptHub → Slow/crashed MCP server (30s timeout) → Failure
+User request → PromptHub → Slow/crashed MCP server (30s timeout) → Failure
 [Each request waits full timeout, system becomes unresponsive]
 ```
 
 **With circuit breaker:**
 ```
-User request → AgentHub → Failed server → Circuit OPENS
-User request → AgentHub → Circuit OPEN → Fast failure (no wait)
-User request → AgentHub → Circuit OPEN → Fast failure (no wait)
+User request → PromptHub → Failed server → Circuit OPENS
+User request → PromptHub → Circuit OPEN → Fast failure (no wait)
+User request → PromptHub → Circuit OPEN → Fast failure (no wait)
 [After 30s] → Circuit tries HALF_OPEN → Test request → Success? → Circuit CLOSES
 ```
 
 **Benefits:**
 - ✅ Fast failures (milliseconds instead of 30-second timeouts)
-- ✅ Prevents cascade failures (one bad server doesn't bring down AgentHub)
+- ✅ Prevents cascade failures (one bad server doesn't bring down PromptHub)
 - ✅ Automatic recovery (circuit tests and reopens when server recovers)
 - ✅ Better user experience (immediate error messages, not hanging requests)
 
@@ -118,7 +118,7 @@ curl -X POST http://localhost:9090/mcp/filesystem/read_file \
 
 **Why this helps:**
 - User knows immediately something is wrong (not waiting 30s)
-- AgentHub continues serving other servers
+- PromptHub continues serving other servers
 - Gives failing server time to recover without constant hammering
 
 ---
@@ -382,7 +382,7 @@ CB_RECOVERY_TIMEOUT=15  # Instead of 30
 **Check:**
 ```bash
 # Verify circuit breaker is enabled
-cat ~/.local/share/agenthub/.env | grep CB_
+cat ~/.local/share/prompthub/.env | grep CB_
 
 # Check server logs for actual failures
 curl http://localhost:9090/dashboard/activity-partial | grep -A5 "error"

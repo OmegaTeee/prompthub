@@ -1,6 +1,6 @@
-# Awesome-Copilot Resources for AgentHub
+# Awesome-Copilot Resources for PromptHub
 
-Master index of awesome-copilot integration for AgentHub development.
+Master index of awesome-copilot integration for PromptHub development.
 
 ## Quick Navigation
 
@@ -156,7 +156,7 @@ See [instructions/AWESOME-COPILOT-INSTRUCTIONS.md](./instructions/AWESOME-COPILO
 
 ---
 
-## Recommended Collections for AgentHub
+## Recommended Collections for PromptHub
 
 ### Core Development
 

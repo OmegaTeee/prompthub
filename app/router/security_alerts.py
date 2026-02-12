@@ -1,5 +1,5 @@
 """
-Security Alert System for AgentHub.
+Security Alert System for PromptHub.
 
 Detects suspicious patterns in audit logs and generates alerts.
 Integrates with audit logging to provide real-time security monitoring.

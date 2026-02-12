@@ -1,6 +1,6 @@
-# AgentHub Terminology Guide
+# PromptHub Terminology Guide
 
-**Purpose:** Standardized terminology used throughout all AgentHub documentation.
+**Purpose:** Standardized terminology used throughout all PromptHub documentation.
 
 > **Why this matters:** Consistent terminology reduces confusion and makes documentation easier to search and understand.
 
@@ -8,14 +8,14 @@
 
 ## Core Terms
 
-### AgentHub
+### PromptHub
 **The correct name for this project.**
 
-✅ **Use:** "AgentHub"
+✅ **Use:** "PromptHub"
 ❌ **Don't use:** "router", "AI Agent Hub", "the hub", "agent-hub"
 
 **Example:**
-- ✅ "AgentHub provides a centralized MCP router"
+- ✅ "PromptHub provides a centralized MCP router"
 - ❌ "The router provides centralized MCP access"
 
 ---
@@ -30,12 +30,12 @@
 - ✅ "The filesystem MCP server provides file operations"
 - ❌ "The filesystem tool provides file operations"
 
-**Context:** MCP servers are the backend services (fetch, filesystem, brave-search, etc.) that AgentHub manages and routes requests to.
+**Context:** MCP servers are the backend services (fetch, filesystem, brave-search, etc.) that PromptHub manages and routes requests to.
 
 ---
 
 ### Client
-**An application that connects to AgentHub (Claude Desktop, VS Code, Raycast, etc.).**
+**An application that connects to PromptHub (Claude Desktop, VS Code, Raycast, etc.).**
 
 ✅ **Use:** "client"
 ❌ **Don't use:** "app", "application", "frontend", "user agent"
@@ -44,7 +44,7 @@
 - ✅ "Each client can have custom enhancement rules"
 - ❌ "Each application can have custom enhancement rules"
 
-**Context:** Clients are identified by the `X-Client-Name` header they send to AgentHub.
+**Context:** Clients are identified by the `X-Client-Name` header they send to PromptHub.
 
 ---
 
@@ -79,13 +79,13 @@
 ## Configuration Terms
 
 ### LaunchAgent
-**macOS system service that auto-starts AgentHub on login.**
+**macOS system service that auto-starts PromptHub on login.**
 
 ✅ **Use:** "LaunchAgent" (capitalized, no space)
 ❌ **Don't use:** "launch agent", "launchagent", "startup service", "daemon"
 
 **Example:**
-- ✅ "Install the LaunchAgent to start AgentHub automatically"
+- ✅ "Install the LaunchAgent to start PromptHub automatically"
 - ❌ "Install the launch agent for auto-start"
 
 ---
@@ -105,7 +105,7 @@
 ## Technical Terms
 
 ### Health Check
-**Endpoint or command to verify AgentHub is running.**
+**Endpoint or command to verify PromptHub is running.**
 
 ✅ **Use:** "health check" (two words)
 ❌ **Don't use:** "healthcheck", "health-check", "status check", "ping"
@@ -117,7 +117,7 @@
 ---
 
 ### Dashboard
-**Web UI for monitoring AgentHub at <http://localhost:9090/dashboard>**
+**Web UI for monitoring PromptHub at <http://localhost:9090/dashboard>**
 
 ✅ **Use:** "dashboard", "monitoring dashboard"
 ❌ **Don't use:** "web UI", "control panel", "admin panel", "console"
@@ -129,7 +129,7 @@
 ---
 
 ### Audit Log
-**Persistent record of all AgentHub operations for security and compliance.**
+**Persistent record of all PromptHub operations for security and compliance.**
 
 ✅ **Use:** "audit log" (two words, singular)
 ❌ **Don't use:** "audit-log", "audit logs" (when referring to the system), "activity log", "event log"
@@ -163,15 +163,15 @@
 ❌ **Don't use:** "JSONRPC", "json-rpc", "RPC", "JSON RPC"
 
 **Example:**
-- ✅ "AgentHub proxies JSON-RPC requests to MCP servers"
-- ❌ "AgentHub proxies RPC requests to servers"
+- ✅ "PromptHub proxies JSON-RPC requests to MCP servers"
+- ❌ "PromptHub proxies RPC requests to servers"
 
 ---
 
 ## File & Directory Terms
 
 ### Configuration File
-**JSON files that configure AgentHub behavior.**
+**JSON files that configure PromptHub behavior.**
 
 ✅ **Use:** "config file", "configuration file"
 ❌ **Don't use:** "settings file", "config", "setup file"
@@ -183,13 +183,13 @@
 ---
 
 ### Working Directory
-**The directory where AgentHub is installed (default: `~/.local/share/agenthub`).**
+**The directory where PromptHub is installed (default: `~/.local/share/prompthub`).**
 
-✅ **Use:** "working directory", "AgentHub directory"
+✅ **Use:** "working directory", "PromptHub directory"
 ❌ **Don't use:** "install directory", "project folder", "root directory"
 
 **Example:**
-- ✅ "Navigate to the working directory: `cd ~/.local/share/agenthub`"
+- ✅ "Navigate to the working directory: `cd ~/.local/share/prompthub`"
 - ❌ "Navigate to the install folder"
 
 ---
@@ -203,8 +203,8 @@
 ❌ **Don't use:** "active/inactive", "up/down", "online/offline", "started/halted"
 
 **Example:**
-- ✅ "Check if AgentHub is running"
-- ❌ "Check if AgentHub is online"
+- ✅ "Check if PromptHub is running"
+- ❌ "Check if PromptHub is online"
 
 ---
 
@@ -244,8 +244,8 @@
 ### Software Versions
 **How to refer to version numbers.**
 
-✅ **Use:** "Python 3.11+", "Node.js 20.x", "AgentHub v0.1.0"
-❌ **Don't use:** "Python 3.11 or higher", "Node version 20", "AgentHub 0.1.0"
+✅ **Use:** "Python 3.11+", "Node.js 20.x", "PromptHub v0.1.0"
+❌ **Don't use:** "Python 3.11 or higher", "Node version 20", "PromptHub 0.1.0"
 
 **Example:**
 - ✅ "Requires Python 3.11+"
@@ -259,7 +259,7 @@
 
 | ❌ Don't Say | ✅ Say Instead |
 |--------------|----------------|
-| "the router" | "AgentHub" |
+| "the router" | "PromptHub" |
 | "MCP tool" | "MCP server" |
 | "app" | "client" |
 | "auto-enhancement" | "enhancement" |
@@ -282,5 +282,5 @@ If you're unsure about terminology:
 ---
 
 **Last Updated:** 2026-02-05
-**Maintainer:** AgentHub Documentation Team
+**Maintainer:** PromptHub Documentation Team
 

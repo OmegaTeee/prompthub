@@ -2,7 +2,7 @@
 #
 # SIEM Log Forwarder
 #
-# Forwards AgentHub audit logs to SIEM platforms.
+# Forwards PromptHub audit logs to SIEM platforms.
 # Supports: Splunk, ELK/Elastic, Datadog, generic syslog
 #
 # Usage:
@@ -16,10 +16,10 @@
 
 set -euo pipefail
 
-AUDIT_LOG="/tmp/agenthub/audit.log"
+AUDIT_LOG="/tmp/prompthub/audit.log"
 
 function usage() {
-    echo "SIEM Log Forwarder for AgentHub"
+    echo "SIEM Log Forwarder for PromptHub"
     echo ""
     echo "Usage: $0 <platform> [options]"
     echo ""
@@ -31,7 +31,7 @@ function usage() {
     echo ""
     echo "Examples:"
     echo "  $0 splunk https://splunk.example.com:8088/services/collector ABC123"
-    echo "  $0 elastic https://elastic.example.com:9200 agenthub-audit"
+    echo "  $0 elastic https://elastic.example.com:9200 prompthub-audit"
     echo "  $0 datadog abc123def456"
     echo "  $0 syslog syslog.example.com:514"
 }
@@ -47,7 +47,7 @@ function forward_to_splunk() {
         curl -k -X POST "${HEC_URL}" \
             -H "Authorization: Splunk ${HEC_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "{\"event\": ${line}, \"sourcetype\": \"agenthub:audit\"}" \
+            -d "{\"event\": ${line}, \"sourcetype\": \"prompthub:audit\"}" \
             --silent --show-error
 
         echo "." # Progress indicator
@@ -86,7 +86,7 @@ function forward_to_datadog() {
     # Read audit log and send to Datadog
     while IFS= read -r line; do
         # Add hostname and service tags
-        event=$(echo "${line}" | jq -c ". + {\"ddsource\": \"agenthub\", \"service\": \"audit\", \"hostname\": \"$(hostname)\"}")
+        event=$(echo "${line}" | jq -c ". + {\"ddsource\": \"prompthub\", \"service\": \"audit\", \"hostname\": \"$(hostname)\"}")
 
         curl -X POST "${DD_URL}/${DD_API_KEY}" \
             -H "Content-Type: application/json" \
@@ -108,7 +108,7 @@ function forward_to_syslog() {
     # Use logger or netcat to send to syslog
     if command -v logger &> /dev/null; then
         while IFS= read -r line; do
-            logger -n "${SYSLOG_HOST}" -P 514 -t agenthub "${line}"
+            logger -n "${SYSLOG_HOST}" -P 514 -t prompthub "${line}"
         done < "${AUDIT_LOG}"
     else
         echo "[ERROR] logger command not found"

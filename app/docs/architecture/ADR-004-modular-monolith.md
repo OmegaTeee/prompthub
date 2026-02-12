@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-AgentHub needs an architecture that balances:
+PromptHub needs an architecture that balances:
 - **Simplicity**: Easy to understand, deploy, and debug
 - **Modularity**: Clear separation of concerns
 - **Performance**: Low latency, high throughput
@@ -261,7 +261,7 @@ CMD ["uvicorn", "router.main:app", "--host", "0.0.0.0", "--port", "9090"]
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.agenthub.router</string>
+    <string>com.prompthub.router</string>
     <key>ProgramArguments</key>
     <array>
         <string>/usr/local/bin/uvicorn</string>

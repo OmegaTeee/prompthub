@@ -26,7 +26,7 @@ Each app needs minimal configuration to connect to the router at `localhost:9090
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "curl",
       "args": [
         "-s",
@@ -59,7 +59,7 @@ cp ~/Library/Application\ Support/Claude/claude_desktop_config.json \
    ~/Library/Application\ Support/Claude/claude_desktop_config.json.backup
 
 # Use `jq` to merge new server (or edit manually)
-jq '.mcpServers.agenthub = {
+jq '.mcpServers.prompthub = {
   "command": "curl",
   "args": [
     "-s",
@@ -96,7 +96,7 @@ mv /tmp/config.json ~/Library/Application\ Support/Claude/claude_desktop_config.
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "command": "localhost:9090",
       "type": "http",
       "disabled": false
@@ -126,7 +126,7 @@ code .vscode/settings.json
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "command": "localhost:9090",
       "type": "http",
       "disabled": false
@@ -139,7 +139,7 @@ code .vscode/settings.json
 
 5. **Verify in Cline:**
    - Open Cline chat in sidebar
-   - Look for "Connected to agenthub" message
+   - Look for "Connected to prompthub" message
    - Try command: "Use context7: Node.js fs module documentation"
 
 ### Workspace Config
@@ -149,7 +149,7 @@ For project-specific MCP config, create `.vscode/settings.json`:
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "command": "localhost:9090",
       "type": "http"
     }
@@ -173,7 +173,7 @@ For project-specific MCP config, create `.vscode/settings.json`:
 {
   "servers": [
     {
-      "id": "agenthub",
+      "id": "prompthub",
       "name": "AI Agent Hub",
       "url": "http://localhost:9090",
       "type": "http",
@@ -208,7 +208,7 @@ cat > ~/Library/Preferences/com.raycast.macos/mcpServers.json << 'EOF'
 {
   "servers": [
     {
-      "id": "agenthub",
+      "id": "prompthub",
       "name": "AI Agent Hub",
       "url": "http://localhost:9090",
       "type": "http",
@@ -245,7 +245,7 @@ open -a Raycast
 ```json
 {
   "servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "type": "http",
       "enabled": true,
@@ -266,7 +266,7 @@ open -a Raycast
 
 2. **Configure MCP in settings:**
    - Settings → MCP → Add Server
-   - Name: "agenthub"
+   - Name: "prompthub"
    - URL: `http://localhost:9090`
    - Type: HTTP
    - Save
@@ -279,7 +279,7 @@ VAULT_PATH="$HOME/path/to/your/vault"
 cat > "$VAULT_PATH/.obsidian/mcp.json" << 'EOF'
 {
   "servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "type": "http",
       "enabled": true,
@@ -317,7 +317,7 @@ echo "=== AI Agent Hub Configuration Setup ==="
 echo "Configuring Claude Desktop..."
 CLAUDE_CONFIG="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 if [ -f "$CLAUDE_CONFIG" ]; then
-  jq '.mcpServers.agenthub = {
+  jq '.mcpServers.prompthub = {
     "command": "curl",
     "args": [
       "-s",
@@ -344,7 +344,7 @@ mkdir -p "$HOME/.vscode"
 if [ ! -f "$VSCODE_CONFIG" ]; then
   echo '{}' > "$VSCODE_CONFIG"
 fi
-jq '.claude.mcp.servers.agenthub = {
+jq '.claude.mcp.servers.prompthub = {
   "command": "localhost:9090",
   "type": "http",
   "disabled": false
@@ -359,7 +359,7 @@ cat > "$RAYCAST_DIR/mcpServers.json" << 'EOF'
 {
   "servers": [
     {
-      "id": "agenthub",
+      "id": "prompthub",
       "name": "AI Agent Hub",
       "url": "http://localhost:9090",
       "type": "http",
@@ -395,10 +395,10 @@ echo "Restart each app for changes to take effect"
 lsof -i :9090
 
 # Start router (or LaunchAgent)
-launchctl start com.agenthub.service
+launchctl start com.prompthub.service
 
 # Or manually start
-docker compose -f ~/.agenthub/docker-compose.yml up -d
+docker compose -f ~/.prompthub/docker-compose.yml up -d
 ```
 
 ### MCP Server Not Appearing in App
@@ -470,7 +470,7 @@ After configuring, verify each app:
 - [ ] **VS Code**
   - [ ] Cline extension installed
   - [ ] Can open Cline chat panel
-  - [ ] Cline shows "Connected to agenthub"
+  - [ ] Cline shows "Connected to prompthub"
 
 - [ ] **Raycast**
   - [ ] Raycast opens normally

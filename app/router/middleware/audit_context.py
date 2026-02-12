@@ -1,5 +1,5 @@
 """
-Audit Context Middleware for AgentHub.
+Audit Context Middleware for PromptHub.
 
 Captures and propagates audit context (request ID, client ID, client IP)
 through async calls using Python contextvars.

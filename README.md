@@ -1,10 +1,10 @@
-# AgentHub
+# PromptHub
 
 Lightweight local-first AI agent hub for macOS — central router, prompt enhancement, and desktop integrations.
 
 ## Overview
 
-AgentHub provides a single local router (`localhost:9090`) that:
+PromptHub provides a single local router (`localhost:9090`) that:
 - Manages MCP servers centrally (configure once, use everywhere)
 - Enhances prompts via Ollama before forwarding to AI services
 - Provides circuit breakers for graceful degradation
@@ -59,7 +59,7 @@ curl http://localhost:9090/health
 ## Project Structure
 
 ```
-agenthub/
+prompthub/
 ├── app/                    # Python FastAPI project
 │   ├── router/             # FastAPI application
 │   ├── tests/              # Pytest test suite
@@ -80,7 +80,7 @@ agenthub/
 ├── mcps/                   # Centralized MCP servers (Node.js)
 │   ├── package.json        # npm dependencies for MCP servers
 │   └── obsidian-mcp-tools/ # Obsidian vault integration
-└── mcp-agenthub.code-workspace
+└── mcp-prompthub.code-workspace
 ```
 
 ## Documentation
@@ -140,7 +140,7 @@ Features:
 
 ## MCP Servers
 
-AgentHub manages 7 MCP servers:
+PromptHub manages 7 MCP servers:
 
 | Server | Package | Auto-Start | Description |
 |--------|---------|------------|-------------|
@@ -226,7 +226,7 @@ Edit `app/configs/enhancement-rules.json` to customize per-client behavior.
 
 ## API Reference
 
-AgentHub provides REST APIs for MCP server management, prompt enhancement, and monitoring.
+PromptHub provides REST APIs for MCP server management, prompt enhancement, and monitoring.
 
 ### Base URL
 

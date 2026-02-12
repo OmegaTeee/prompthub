@@ -1,4 +1,4 @@
-# Awesome-Copilot Generators & Prompts for AgentHub
+# Awesome-Copilot Generators & Prompts for PromptHub
 
 Reference for using awesome-copilot generators and prompts to create documentation and code.
 
@@ -177,7 +177,7 @@ Reference for using awesome-copilot generators and prompts to create documentati
 - Improving Copilot integration
 - Onboarding new team members
 
-**Note:** For AgentHub, this is already maintained in `.github/copilot-instructions.md`.
+**Note:** For PromptHub, this is already maintained in `.github/copilot-instructions.md`.
 
 ---
 
@@ -278,7 +278,7 @@ Update project docs:
 
 ---
 
-## Integration with AgentHub
+## Integration with PromptHub
 
 ### Current Generated Documentation
 

@@ -1,6 +1,6 @@
 # Developer Documentation
 
-Technical documentation for AgentHub developers and maintainers.
+Technical documentation for PromptHub developers and maintainers.
 
 ## Documentation Structure
 

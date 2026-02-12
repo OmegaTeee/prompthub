@@ -1,6 +1,6 @@
-# Awesome-Copilot Instructions for AgentHub
+# Awesome-Copilot Instructions for PromptHub
 
-Reference for key awesome-copilot instructions integrated with AgentHub development.
+Reference for key awesome-copilot instructions integrated with PromptHub development.
 
 ## Python Development
 
@@ -18,7 +18,7 @@ Reference for key awesome-copilot instructions integrated with AgentHub developm
 - Lifespan context managers
 - HTTP servers with streamable transport
 
-**Relevance to AgentHub:**
+**Relevance to PromptHub:**
 
 - All new MCP servers must follow these patterns
 - Guides implementation of router extensions
@@ -51,7 +51,7 @@ def my_tool(param: str) -> str:
 - Edge case handling
 - Clear exception handling
 
-**Relevance to AgentHub:**
+**Relevance to PromptHub:**
 
 - Applied to all Python code in router and MCP servers
 - Ensures code quality and maintainability
@@ -75,9 +75,9 @@ def my_tool(param: str) -> str:
 - Resource limits and monitoring
 - Security scanning (hadolint, Trivy)
 
-**Relevance to AgentHub:**
+**Relevance to PromptHub:**
 
-- AgentHub Dockerfile uses multi-stage builds
+- PromptHub Dockerfile uses multi-stage builds
 - Add health checks to docker-compose.yml
 - Integrate security scanning into CI/CD
 - Optimize layer ordering for build speed
@@ -106,7 +106,7 @@ def my_tool(param: str) -> str:
 - Logging and monitoring
 - Dependency scanning
 
-**Relevance to AgentHub:**
+**Relevance to PromptHub:**
 
 - Keyring integration for secrets management
 - Input validation in router endpoints
@@ -117,7 +117,7 @@ def my_tool(param: str) -> str:
 
 ## Code Quality Standards
 
-### Apply These Instructions to All AgentHub Code
+### Apply These Instructions to All PromptHub Code
 
 1. **python.instructions.md** - All Python files
 2. **containerization-docker-best-practices.instructions.md** - Dockerfile and docker-compose

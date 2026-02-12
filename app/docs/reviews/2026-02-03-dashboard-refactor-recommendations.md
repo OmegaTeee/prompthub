@@ -5,15 +5,15 @@ Dashboard: Recommendations & Refactor Suggestions
 
 Summary
 -------
-- This document captures recommendations for improving the AgentHub enhancement monitoring dashboard and refactor suggestions for the UI and observability pipeline.
+- This document captures recommendations for improving the PromptHub enhancement monitoring dashboard and refactor suggestions for the UI and observability pipeline.
 
 High-priority Recommendations
 -----------------------------
 - **Templating / Variables:** Add variables for `env`, `instance`, `client` and `job` so operators can scope panels quickly (dev/stage/prod, instance, per-client).
 - **Alerts:** Implement alerting rules (Prometheus/Alertmanager) for:
-  - High failure rate: e.g., `rate(agenthub_enhancement_failures_total[5m]) > X`
+  - High failure rate: e.g., `rate(prompthub_enhancement_failures_total[5m]) > X`
   - Slow p95 latency: `histogram_quantile(0.95, ...) > SLA`
-  - Sudden call-rate spikes: anomalous increases in `rate(agenthub_enhancement_calls_total[1m])`
+  - Sudden call-rate spikes: anomalous increases in `rate(prompthub_enhancement_calls_total[1m])`
 - **Annotations:** Record deploys and config changes (e.g., toggles of `auto_enhance_mcp`) as annotations so incidents can be correlated with changes.
 - **Runbook Links:** Add direct runbook links and quick mitigation steps on the dashboard (clear cache, disable auto-enhancement, restart router). Keep the runbook in the repo and link to it.
 
@@ -48,7 +48,7 @@ Example Alerts (Prometheus Rule Snippets)
 
 ```yaml
 - alert: EnhancementFailuresHigh
-  expr: rate(agenthub_enhancement_failures_total[5m]) > 0.1
+  expr: rate(prompthub_enhancement_failures_total[5m]) > 0.1
   for: 5m
   labels:
     severity: page
@@ -57,7 +57,7 @@ Example Alerts (Prometheus Rule Snippets)
     description: "{{ $value }} failures/sec over 5m"
 
 - alert: EnhancementP95Slow
-  expr: histogram_quantile(0.95, sum(rate(agenthub_enhancement_duration_seconds_bucket[5m])) by (le)) > 0.5
+  expr: histogram_quantile(0.95, sum(rate(prompthub_enhancement_duration_seconds_bucket[5m])) by (le)) > 0.5
   for: 5m
   labels:
     severity: page

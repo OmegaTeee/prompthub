@@ -37,7 +37,7 @@ Successfully integrated Python `keyring` package for secure MCP server credentia
     "env": {
       "OBSIDIAN_API_KEY": {
         "source": "keyring",
-        "service": "agenthub",
+        "service": "prompthub",
         "key": "obsidian_api_key"
       },
       "OBSIDIAN_HOST": "https://127.0.0.1",
@@ -241,7 +241,7 @@ INFO: Started server obsidian with PID 12345
 If key is missing:
 ```
 ERROR: Failed to retrieve OBSIDIAN_API_KEY from keyring.
-       Set with: keyring.set_password('agenthub', 'obsidian_api_key', 'YOUR_VALUE')
+       Set with: keyring.set_password('prompthub', 'obsidian_api_key', 'YOUR_VALUE')
 ERROR: Failed to start server obsidian: [error details]
 ```
 

@@ -1,15 +1,15 @@
-# AgentHub Configuration Files
+# PromptHub Configuration Files
 
-This folder contains all configuration files for AgentHub and client integrations.
+This folder contains all configuration files for PromptHub and client integrations.
 
 ## Directory Structure
 
 ```
 configs/
 ├── README.md                              # This file
-├── enhancement-rules.json                 # AgentHub: Prompt enhancement rules
-├── mcp-servers.json                       # AgentHub: MCP server registry
-├── mcp-servers-keyring.json.example       # AgentHub: Credential management
+├── enhancement-rules.json                 # PromptHub: Prompt enhancement rules
+├── mcp-servers.json                       # PromptHub: MCP server registry
+├── mcp-servers-keyring.json.example       # PromptHub: Credential management
 ├── logrotate.conf                         # System: Log rotation (Linux)
 └── logrotate-macos.conf                   # System: Log rotation (macOS)
 ```
@@ -19,8 +19,8 @@ configs/
 
 ## Configuration Types
 
-### ⚙️ AgentHub Configurations
-Core AgentHub router settings:
+### ⚙️ PromptHub Configurations
+Core PromptHub router settings:
 - **`enhancement-rules.json`** - Per-client Ollama models and system prompts
 - **`mcp-servers.json`** - MCP server lifecycle (command, args, auto_start)
 - **`mcp-servers-keyring.json.example`** - Secure credential storage
@@ -91,18 +91,18 @@ vim configs/mcp-servers-keyring.json
 This organization separates:
 
 1. **Client concerns** (how apps connect) → top-level `clients/`
-2. **Router concerns** (how AgentHub behaves) → `app/configs/`
+2. **Router concerns** (how PromptHub behaves) → `app/configs/`
 3. **System concerns** (logging, OS integration) → `app/configs/`
 
 This makes it easy to:
-- ✅ Add new clients without touching AgentHub config
-- ✅ Modify AgentHub behavior without breaking clients
+- ✅ Add new clients without touching PromptHub config
+- ✅ Modify PromptHub behavior without breaking clients
 - ✅ Share client configs with team members
 - ✅ Version control client and router configs separately
 
 ## Environment Variables
 
-AgentHub supports environment variable overrides:
+PromptHub supports environment variable overrides:
 
 ```bash
 # Override router port
@@ -120,7 +120,7 @@ ENHANCEMENT_CONFIG_PATH=/custom/path/enhancement-rules.json uvicorn router.main:
 ### Version Control
 
 ```bash
-# Track AgentHub configs
+# Track PromptHub configs
 git add configs/enhancement-rules.json
 git add configs/mcp-servers.json
 
@@ -140,10 +140,10 @@ echo "configs/mcp-servers-keyring.json" >> .gitignore  # Actual secrets
 
 ```bash
 # Backup all configs
-tar -czf agenthub-configs-$(date +%Y%m%d).tar.gz configs/
+tar -czf prompthub-configs-$(date +%Y%m%d).tar.gz configs/
 
 # Restore
-tar -xzf agenthub-configs-20260130.tar.gz
+tar -xzf prompthub-configs-20260130.tar.gz
 ```
 
 ## Documentation

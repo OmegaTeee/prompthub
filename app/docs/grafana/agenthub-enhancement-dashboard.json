@@ -29,7 +29,7 @@
             "pluginVersion": "9.x",
             "targets": [
                 {
-                    "expr": "rate(agenthub_enhancement_calls_total[1m])",
+                    "expr": "rate(prompthub_enhancement_calls_total[1m])",
                     "legendFormat": "calls/sec",
                     "refId": "A"
                 }
@@ -55,7 +55,7 @@
             "id": 2,
             "targets": [
                 {
-                    "expr": "rate(agenthub_enhancement_failures_total[5m])",
+                    "expr": "rate(prompthub_enhancement_failures_total[5m])",
                     "legendFormat": "failures/sec",
                     "refId": "A"
                 }
@@ -81,12 +81,12 @@
             "id": 3,
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.95, sum(rate(agenthub_enhancement_duration_seconds_bucket[5m])) by (le))",
+                    "expr": "histogram_quantile(0.95, sum(rate(prompthub_enhancement_duration_seconds_bucket[5m])) by (le))",
                     "legendFormat": "p95 (s)",
                     "refId": "A"
                 },
                 {
-                    "expr": "histogram_quantile(0.50, sum(rate(agenthub_enhancement_duration_seconds_bucket[5m])) by (le))",
+                    "expr": "histogram_quantile(0.50, sum(rate(prompthub_enhancement_duration_seconds_bucket[5m])) by (le))",
                     "legendFormat": "p50 (s)",
                     "refId": "B"
                 }
@@ -112,7 +112,7 @@
             "id": 4,
             "targets": [
                 {
-                    "expr": "agenthub_enhancement_calls_total",
+                    "expr": "prompthub_enhancement_calls_total",
                     "legendFormat": "total_calls",
                     "refId": "A"
                 }
@@ -138,7 +138,7 @@
             "id": 5,
             "targets": [
                 {
-                    "expr": "sum(rate(agenthub_enhancement_duration_seconds_sum[5m])) / sum(rate(agenthub_enhancement_duration_seconds_count[5m]))",
+                    "expr": "sum(rate(prompthub_enhancement_duration_seconds_sum[5m])) / sum(rate(prompthub_enhancement_duration_seconds_count[5m]))",
                     "legendFormat": "avg_s",
                     "refId": "A"
                 }
@@ -150,7 +150,7 @@
     "schemaVersion": 36,
     "style": "dark",
     "tags": [
-        "agenthub",
+        "prompthub",
         "enhancement"
     ],
     "templating": {
@@ -162,7 +162,7 @@
     },
     "timepicker": {},
     "timezone": "browser",
-    "title": "AgentHub - Enhancement Metrics",
-    "uid": "agenthub-enhancement",
+    "title": "PromptHub - Enhancement Metrics",
+    "uid": "prompthub-enhancement",
     "version": 1
 }

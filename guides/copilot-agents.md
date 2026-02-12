@@ -13,7 +13,7 @@ The copilot-instructions.md file automatically provides context to Copilot when 
 
 | Agent    | Invoke With | Purpose                                                  |
 | -------- | ----------- | -------------------------------------------------------- |
-| AgentHub | @agenthub   | General development help, architecture questions         |
+| PromptHub | @prompthub   | General development help, architecture questions         |
 | Builder  | @builder    | Module-by-module implementation following BUILD-TASKS.md |
 | Reviewer | @reviewer   | Code review with project-specific checklist              |
 
@@ -28,7 +28,7 @@ The copilot-instructions.md file automatically provides context to Copilot when 
 In Copilot Chat:
 
 ```sh
-@agenthub How should I implement the circuit breaker?
+@prompthub How should I implement the circuit breaker?
 ```
 
 ```sh

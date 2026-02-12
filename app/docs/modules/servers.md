@@ -405,7 +405,7 @@ async def test_server_lifecycle():
 ### Server Won't Start
 ```python
 # Check logs
-tail -f /tmp/agenthub/audit.log
+tail -f /tmp/prompthub/audit.log
 
 # Check if command exists
 which npx

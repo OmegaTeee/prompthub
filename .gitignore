@@ -89,5 +89,6 @@ qdrant_data/
 # Claude Code agent specs (generated, not tracked)
 .claude/agents/kfc/
 .claude/settings.json
+.claude/settings.local.json
 .claude/settings/
 .claude/system-prompts/

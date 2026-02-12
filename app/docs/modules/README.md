@@ -1,6 +1,6 @@
 # Module Documentation
 
-Detailed documentation for AgentHub's core modules.
+Detailed documentation for PromptHub's core modules.
 
 ## Module Index
 

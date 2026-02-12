@@ -2,25 +2,25 @@
 #
 # MCP stdio Bridge for Claude Desktop
 #
-# This script bridges Claude Desktop's stdio transport to AgentHub's HTTP API.
+# This script bridges Claude Desktop's stdio transport to PromptHub's HTTP API.
 # It stays running and forwards JSON-RPC requests bidirectionally.
 #
 # Usage:
-#   mcp-stdio-bridge.sh <server-name> [agenthub-url]
+#   mcp-stdio-bridge.sh <server-name> [prompthub-url]
 #
 # Arguments:
 #   server-name: MCP server to connect to (e.g., "context7", "desktop-commander")
-#   agenthub-url: Optional AgentHub URL (default: http://localhost:9090)
+#   prompthub-url: Optional PromptHub URL (default: http://localhost:9090)
 #
 
 set -euo pipefail
 
 SERVER_NAME="${1:-}"
-AGENTHUB_URL="${2:-http://localhost:9090}"
+PROMPTHUB_URL="${2:-http://localhost:9090}"
 
 if [[ -z "${SERVER_NAME}" ]]; then
   echo "Error: SERVER_NAME required" >&2
-  echo "Usage: $0 <server-name> [agenthub-url]" >&2
+  echo "Usage: $0 <server-name> [prompthub-url]" >&2
   exit 1
 fi
 
@@ -30,9 +30,9 @@ log() {
 }
 
 log "Starting MCP stdio bridge for server: ${SERVER_NAME}"
-log "AgentHub URL: ${AGENTHUB_URL}"
+log "PromptHub URL: ${PROMPTHUB_URL}"
 
-# Read JSON-RPC from stdin line by line and forward to AgentHub
+# Read JSON-RPC from stdin line by line and forward to PromptHub
 while IFS= read -r line; do
   # Skip empty lines
   if [[ -z "${line}" ]]; then
@@ -41,22 +41,22 @@ while IFS= read -r line; do
 
   log "Received request: ${line:0:100}..."
 
-  # Forward to AgentHub via curl
+  # Forward to PromptHub via curl
   response=$(curl -s -X POST \
-    "${AGENTHUB_URL}/mcp/${SERVER_NAME}/tools/call" \
+    "${PROMPTHUB_URL}/mcp/${SERVER_NAME}/tools/call" \
     -H "Content-Type: application/json" \
     -H "X-Client-Name: claude-desktop" \
     -d "${line}" 2>&1) || {
     # If curl fails, return JSON-RPC error
     log "ERROR: curl failed with exit code ${?}"
-    echo '{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error: AgentHub connection failed"},"id":null}'
+    echo '{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error: PromptHub connection failed"},"id":null}'
     continue
   }
 
   log "Received response: ${response:0:100}..."
 
   # Transform FastAPI error responses to JSON-RPC format
-  # Claude Desktop expects JSON-RPC 2.0, but AgentHub may return FastAPI errors with "detail" field
+  # Claude Desktop expects JSON-RPC 2.0, but PromptHub may return FastAPI errors with "detail" field
   if echo "${response}" | grep -q '"detail"'; then
     log "Detected FastAPI error response, transforming to JSON-RPC format"
 

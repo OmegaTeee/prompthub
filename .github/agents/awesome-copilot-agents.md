@@ -1,6 +1,6 @@
-# Recommended Awesome-Copilot Agents for AgentHub
+# Recommended Awesome-Copilot Agents for PromptHub
 
-Quick reference for using awesome-copilot expert agents in AgentHub development.
+Quick reference for using awesome-copilot expert agents in PromptHub development.
 
 ## Core Development Agents
 
@@ -19,7 +19,7 @@ Quick reference for using awesome-copilot expert agents in AgentHub development.
 
 ```
 @python-mcp-expert: How should I implement a new tool for caching
-results in the AgentHub router?
+results in the PromptHub router?
 ```
 
 **Key Context:**
@@ -65,7 +65,7 @@ results in the AgentHub router?
 **Example Usage:**
 
 ```
-@task-planner: Break down the Qdrant L2 cache implementation for AgentHub,
+@task-planner: Break down the Qdrant L2 cache implementation for PromptHub,
 including circuit breaker integration and error handling.
 ```
 

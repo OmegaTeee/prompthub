@@ -2,7 +2,7 @@
 
 ## Summary
 
-Successfully implemented production-grade testing infrastructure for AgentHub with **100% test pass rate** (30/30 tests passing).
+Successfully implemented production-grade testing infrastructure for PromptHub with **100% test pass rate** (30/30 tests passing).
 
 ## What Was Implemented
 

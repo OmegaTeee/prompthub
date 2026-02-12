@@ -1,6 +1,6 @@
 # Client Configurations
 
-This folder contains client-specific configuration files for connecting various applications to AgentHub.
+This folder contains client-specific configuration files for connecting various applications to PromptHub.
 
 ## Structure
 
@@ -40,7 +40,7 @@ Each client folder contains:
 
 ## Architecture
 
-All clients connect to AgentHub's HTTP router at `http://localhost:9090`:
+All clients connect to PromptHub's HTTP router at `http://localhost:9090`:
 
 ```
 ┌─────────────────┐
@@ -48,7 +48,7 @@ All clients connect to AgentHub's HTTP router at `http://localhost:9090`:
 └─────────────────┘                              │
                                                  ▼
 ┌─────────────────┐                      ┌──────────────┐
-│ VS Code         │ ──HTTP───────────────> AgentHub     │
+│ VS Code         │ ──HTTP───────────────> PromptHub     │
 └─────────────────┘                      │ Router       │
                                          │ :9090        │
 ┌─────────────────┐                      └──────────────┘
@@ -82,9 +82,9 @@ Quick-access scripts for:
 - Server status
 - Common workflows
 
-## AgentHub Configuration
+## PromptHub Configuration
 
-Client-independent AgentHub settings are in the parent `configs/` folder:
+Client-independent PromptHub settings are in the parent `configs/` folder:
 
 - `enhancement-rules.json` - Per-client prompt enhancement
 - `mcp-servers.json` - MCP server registry
@@ -106,7 +106,7 @@ Client-independent AgentHub settings are in the parent `configs/` folder:
 ## Troubleshooting
 
 ### Connection Issues
-1. Verify AgentHub is running: `curl http://localhost:9090/health`
+1. Verify PromptHub is running: `curl http://localhost:9090/health`
 2. Check client logs for errors
 3. Confirm configuration paths are correct
 

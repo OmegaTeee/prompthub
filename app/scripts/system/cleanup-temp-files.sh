@@ -15,7 +15,7 @@ find . -name ".DS_Store" -delete 2>/dev/null
 
 # Temporary logs
 echo "Removing temporary logs..."
-rm -f /tmp/agenthub-router.log
+rm -f /tmp/prompthub-router.log
 
 # Node module logs
 echo "Removing node module setup logs..."

@@ -1,5 +1,5 @@
 """
-AgentHub Dashboard.
+PromptHub Dashboard.
 
 HTMX-powered dashboard for monitoring router health, activity, and stats.
 """

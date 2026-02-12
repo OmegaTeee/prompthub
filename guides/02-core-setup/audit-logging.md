@@ -1,6 +1,6 @@
 # Audit Logging and Security Monitoring
 
-> **What you'll learn:** How AgentHub tracks activity, detects anomalies, and maintains security audit trails
+> **What you'll learn:** How PromptHub tracks activity, detects anomalies, and maintains security audit trails
 
 ---
 
@@ -15,7 +15,7 @@
 - Compliance considerations
 
 ### Prerequisites
-- ✅ AgentHub running
+- ✅ PromptHub running
 - ✅ Basic understanding of audit concepts
 - ✅ Familiarity with dashboard at `http://localhost:9090/dashboard`
 
@@ -29,7 +29,7 @@
 
 ### Purpose
 
-AgentHub tracks **every significant action** to provide:
+PromptHub tracks **every significant action** to provide:
 1. **Security** - Detect unauthorized access or suspicious behavior
 2. **Debugging** - Understand what happened when things go wrong
 3. **Compliance** - Meet regulatory requirements (HIPAA, SOC 2, GDPR)
@@ -98,10 +98,10 @@ All logs are structured JSON via `structlog`:
 
 | Log Type | Path | Purpose |
 |----------|------|---------|
-| **Router logs** | `~/Library/Logs/agenthub-router.log` | Main application logs |
-| **Error logs** | `~/Library/Logs/agenthub-router-error.log` | Error-only logs |
-| **Activity DB** | `~/.local/share/agenthub/activity.db` | Persistent SQLite store |
-| **Audit trail** | `/var/log/agenthub/audit.log` | Compliance-focused audit trail |
+| **Router logs** | `~/Library/Logs/prompthub-router.log` | Main application logs |
+| **Error logs** | `~/Library/Logs/prompthub-router-error.log` | Error-only logs |
+| **Activity DB** | `~/.local/share/prompthub/activity.db` | Persistent SQLite store |
+| **Audit trail** | `/var/log/prompthub/audit.log` | Compliance-focused audit trail |
 
 ---
 
@@ -109,17 +109,17 @@ All logs are structured JSON via `structlog`:
 
 **Tail live logs:**
 ```bash
-tail -f ~/Library/Logs/agenthub-router.log
+tail -f ~/Library/Logs/prompthub-router.log
 ```
 
 **Filter for errors:**
 ```bash
-grep '"level":"error"' ~/Library/Logs/agenthub-router.log | jq .
+grep '"level":"error"' ~/Library/Logs/prompthub-router.log | jq .
 ```
 
 **Search by client:**
 ```bash
-grep '"client_id":"vscode"' ~/Library/Logs/agenthub-router.log | jq .
+grep '"client_id":"vscode"' ~/Library/Logs/prompthub-router.log | jq .
 ```
 
 ---
@@ -128,10 +128,10 @@ grep '"client_id":"vscode"' ~/Library/Logs/agenthub-router.log | jq .
 
 **Automatic rotation via logrotate:**
 
-Config: `~/.local/share/agenthub/configs/logrotate-macos.conf`
+Config: `~/.local/share/prompthub/configs/logrotate-macos.conf`
 
 ```
-/Users/username/Library/Logs/agenthub-router.log {
+/Users/username/Library/Logs/prompthub-router.log {
     daily
     rotate 7
     compress
@@ -150,9 +150,9 @@ Config: `~/.local/share/agenthub/configs/logrotate-macos.conf`
 
 ### SQLite Persistent Store
 
-AgentHub stores activity in SQLite database for queryable history:
+PromptHub stores activity in SQLite database for queryable history:
 
-**Location:** `~/.local/share/agenthub/activity.db`
+**Location:** `~/.local/share/prompthub/activity.db`
 
 **Schema:**
 ```sql
@@ -201,7 +201,7 @@ curl "http://localhost:9090/audit/activity?status_code=500"
 
 **Find slow requests (> 1s):**
 ```bash
-sqlite3 ~/.local/share/agenthub/activity.db \
+sqlite3 ~/.local/share/prompthub/activity.db \
   "SELECT timestamp, client_id, path, duration_ms
    FROM activity_log
    WHERE duration_ms > 1000
@@ -211,7 +211,7 @@ sqlite3 ~/.local/share/agenthub/activity.db \
 
 **Count requests by client:**
 ```bash
-sqlite3 ~/.local/share/agenthub/activity.db \
+sqlite3 ~/.local/share/prompthub/activity.db \
   "SELECT client_id, COUNT(*) as request_count
    FROM activity_log
    GROUP BY client_id;"
@@ -219,7 +219,7 @@ sqlite3 ~/.local/share/agenthub/activity.db \
 
 **Find errors in last 24 hours:**
 ```bash
-sqlite3 ~/.local/share/agenthub/activity.db \
+sqlite3 ~/.local/share/prompthub/activity.db \
   "SELECT timestamp, client_id, path, error_message
    FROM activity_log
    WHERE status_code >= 500
@@ -232,7 +232,7 @@ sqlite3 ~/.local/share/agenthub/activity.db \
 
 ### Real-Time Anomaly Detection
 
-AgentHub automatically detects suspicious patterns:
+PromptHub automatically detects suspicious patterns:
 
 **Alert types:**
 | Alert | Trigger | Action |
@@ -270,7 +270,7 @@ http://localhost:9090/dashboard → Security Alerts panel
 
 **Logs:**
 ```bash
-grep '"event":"security_alert"' ~/Library/Logs/agenthub-router.log | jq .
+grep '"event":"security_alert"' ~/Library/Logs/prompthub-router.log | jq .
 ```
 
 **API:**
@@ -302,7 +302,7 @@ curl http://localhost:9090/audit/security-alerts?limit=20
 
 ### Credential Access
 
-**Logged when AgentHub reads from Keychain:**
+**Logged when PromptHub reads from Keychain:**
 ```json
 {
   "event": "credential_access",
@@ -360,7 +360,7 @@ curl http://localhost:9090/audit/security-alerts?limit=20
 - ✅ Track who accessed what, when, and from where
 - ✅ Retain logs for 6 years
 
-**AgentHub provides:**
+**PromptHub provides:**
 - Structured JSON logs with client_id, client_ip, timestamp
 - SQLite persistence for long-term storage
 - Queryable activity history
@@ -368,13 +368,13 @@ curl http://localhost:9090/audit/security-alerts?limit=20
 **Additional steps:**
 1. **Backup activity.db regularly:**
    ```bash
-   sqlite3 ~/.local/share/agenthub/activity.db ".backup /path/to/backups/activity-$(date +%Y%m%d).db"
+   sqlite3 ~/.local/share/prompthub/activity.db ".backup /path/to/backups/activity-$(date +%Y%m%d).db"
    ```
 
 2. **Archive rotated logs:**
    ```bash
    # Copy to long-term storage
-   cp ~/Library/Logs/agenthub-router.log.*.gz /path/to/archive/
+   cp ~/Library/Logs/prompthub-router.log.*.gz /path/to/archive/
    ```
 
 ---
@@ -386,7 +386,7 @@ curl http://localhost:9090/audit/security-alerts?limit=20
 - ✅ Anomaly detection and alerting
 - ✅ Tamper-evident audit trails
 
-**AgentHub provides:**
+**PromptHub provides:**
 - Security alert system
 - Structured logging for SIEM integration
 - Activity database with checksums
@@ -401,7 +401,7 @@ curl http://localhost:9090/audit/security-alerts?limit=20
 2. **Export logs to SIEM:**
    ```bash
    # Forward logs to Splunk, Datadog, etc.
-   tail -f ~/Library/Logs/agenthub-router.log | your-siem-forwarder
+   tail -f ~/Library/Logs/prompthub-router.log | your-siem-forwarder
    ```
 
 ---
@@ -413,7 +413,7 @@ curl http://localhost:9090/audit/security-alerts?limit=20
 - ✅ Right to access personal data
 - ✅ Right to erasure
 
-**AgentHub privacy:**
+**PromptHub privacy:**
 - ❌ Does NOT log prompt content
 - ❌ Does NOT log response data
 - ✅ Only logs metadata (client_id, path, duration)
@@ -421,14 +421,14 @@ curl http://localhost:9090/audit/security-alerts?limit=20
 **For user data requests:**
 ```bash
 # Export all activity for a user's client_id
-sqlite3 ~/.local/share/agenthub/activity.db \
+sqlite3 ~/.local/share/prompthub/activity.db \
   "SELECT * FROM activity_log WHERE client_id = 'user-client-id';" > user_data.json
 ```
 
 **For erasure requests:**
 ```bash
 # Delete all activity for a user's client_id
-sqlite3 ~/.local/share/agenthub/activity.db \
+sqlite3 ~/.local/share/prompthub/activity.db \
   "DELETE FROM activity_log WHERE client_id = 'user-client-id';"
 ```
 
@@ -475,7 +475,7 @@ http://localhost:9090/dashboard → Security Alerts panel
 
 ### How Context Works
 
-AgentHub uses `contextvars` (not thread-local) to propagate audit context across async boundaries:
+PromptHub uses `contextvars` (not thread-local) to propagate audit context across async boundaries:
 
 ```python
 from router.audit import get_audit_context
@@ -528,7 +528,7 @@ Three middleware classes populate audit context:
 
 **Pruning old data:**
 ```bash
-sqlite3 ~/.local/share/agenthub/activity.db \
+sqlite3 ~/.local/share/prompthub/activity.db \
   "DELETE FROM activity_log WHERE timestamp < datetime('now', '-30 days');"
 ```
 
@@ -540,12 +540,12 @@ sqlite3 ~/.local/share/agenthub/activity.db \
 
 **Check log file exists:**
 ```bash
-ls -lah ~/Library/Logs/agenthub-router.log
+ls -lah ~/Library/Logs/prompthub-router.log
 ```
 
 **Check LaunchAgent output:**
 ```bash
-launchctl list | grep com.agenthub.router
+launchctl list | grep com.prompthub.router
 ```
 
 **Check log level:**
@@ -563,10 +563,10 @@ LOG_LEVEL=INFO  # Not DEBUG (too verbose) or ERROR (too minimal)
 **Solution:**
 ```bash
 # Check for open connections
-lsof ~/.local/share/agenthub/activity.db
+lsof ~/.local/share/prompthub/activity.db
 
-# Restart AgentHub
-launchctl restart com.agenthub.router
+# Restart PromptHub
+launchctl restart com.prompthub.router
 ```
 
 ---
@@ -589,7 +589,7 @@ launchctl restart com.agenthub.router
 
 3. **Prune activity database:**
    ```bash
-   sqlite3 ~/.local/share/agenthub/activity.db \
+   sqlite3 ~/.local/share/prompthub/activity.db \
      "DELETE FROM activity_log WHERE timestamp < datetime('now', '-7 days');"
    ```
 

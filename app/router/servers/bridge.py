@@ -239,7 +239,7 @@ class StdioBridge:
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
                 "clientInfo": {
-                    "name": "agenthub-router",
+                    "name": "prompthub-router",
                     "version": "0.1.0",
                 },
             },

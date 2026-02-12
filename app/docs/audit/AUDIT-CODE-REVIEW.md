@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-AgentHub's current audit implementation has **critical security and compliance gaps**. While basic logging exists for dashboard actions, the system lacks structured logging, audit context, proper persistence, and comprehensive coverage of security-sensitive operations.
+PromptHub's current audit implementation has **critical security and compliance gaps**. While basic logging exists for dashboard actions, the system lacks structured logging, audit context, proper persistence, and comprehensive coverage of security-sensitive operations.
 
 **Security Score:** 4/10
 **Compliance Readiness:** 2/10
@@ -326,11 +326,11 @@ import logging
 import logging.handlers
 from pathlib import Path
 
-def setup_logging(log_dir: Path = Path("/var/log/agenthub")):
+def setup_logging(log_dir: Path = Path("/var/log/prompthub")):
     """
     Configure dual logging:
-    1. Application logs -> /var/log/agenthub/app.log
-    2. Audit logs -> /var/log/agenthub/audit.log
+    1. Application logs -> /var/log/prompthub/app.log
+    2. Audit logs -> /var/log/prompthub/audit.log
     """
     log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -379,7 +379,7 @@ def setup_logging(log_dir: Path = Path("/var/log/agenthub")):
     app_logger.setLevel(logging.INFO)
 ```
 
-**Audit Log Output (`/var/log/agenthub/audit.log`):**
+**Audit Log Output (`/var/log/prompthub/audit.log`):**
 ```json
 {"timestamp": "2026-01-28T18:52:05.123Z", "level": "info", "event": "server_lifecycle_event", "action": "start", "server_name": "obsidian", "status": "success", "request_id": "...", "client_id": "dashboard", "client_ip": "127.0.0.1"}
 {"timestamp": "2026-01-28T18:52:10.456Z", "level": "warning", "event": "credential_accessed", "credential_key": "obsidian_api_key", "status": "success", "request_id": "...", "client_id": "dashboard", "client_ip": "127.0.0.1"}
@@ -419,7 +419,7 @@ from contextlib import asynccontextmanager
 class PersistentActivityLog:
     """Activity log with SQLite persistence."""
 
-    def __init__(self, db_path: Path = Path("/var/lib/agenthub/activity.db")):
+    def __init__(self, db_path: Path = Path("/var/lib/prompthub/activity.db")):
         self.db_path = db_path
         self._init_db()
 
@@ -592,7 +592,7 @@ Already shown in Issue 2 - using `contextvars` for request ID propagation.
 - [ ] **A1.3** Setup structured audit logger
   - File: `router/config/logging.py`
   - Configure structlog with JSON output
-  - Setup `/var/log/agenthub/audit.log`
+  - Setup `/var/log/prompthub/audit.log`
   - 90-day retention, 100MB rotation
 
 - [ ] **A1.4** Update dashboard action logging
@@ -610,7 +610,7 @@ Already shown in Issue 2 - using `contextvars` for request ID propagation.
 **Testing:**
 ```bash
 # Verify structured logs
-tail -f /var/log/agenthub/audit.log | jq .
+tail -f /var/log/prompthub/audit.log | jq .
 
 # Verify context propagation
 curl -H "X-Client-ID: test-user" http://localhost:9090/dashboard/actions/start/memory
@@ -630,7 +630,7 @@ curl -H "X-Client-ID: test-user" http://localhost:9090/dashboard/actions/start/m
   - Migrate existing in-memory log
 
 - [ ] **A2.2** Add log rotation monitoring
-  - Create `/var/log/agenthub/` directory
+  - Create `/var/log/prompthub/` directory
   - Setup logrotate config
   - Add disk space monitoring
 
@@ -710,7 +710,7 @@ curl "http://localhost:9090/audit/events?action=server_lifecycle_event&server_na
 ```python
 # router/audit/__init__.py
 """
-AgentHub Audit System.
+PromptHub Audit System.
 
 Provides structured audit logging for compliance and security.
 """

@@ -14,9 +14,9 @@
 - When to disable enhancement
 
 ### Prerequisites
-- ✅ AgentHub running with Ollama configured
+- ✅ PromptHub running with Ollama configured
 - ✅ At least one model installed (`ollama list`)
-- ✅ Basic understanding of how clients connect to AgentHub
+- ✅ Basic understanding of how clients connect to PromptHub
 
 ### Estimated Time
 - Reading: 15 minutes
@@ -37,12 +37,12 @@ But they all send generic prompts like "Explain React hooks" or "Create a button
 
 ### The Solution: Enhancement
 
-AgentHub **automatically improves** prompts before sending to AI using local Ollama models:
+PromptHub **automatically improves** prompts before sending to AI using local Ollama models:
 
 ```
 User → "Explain React hooks"
 
-AgentHub Enhancement:
+PromptHub Enhancement:
 ↓
 "You are helping with content creation. Provide a comprehensive explanation
 of React hooks with practical examples, use cases, and best practices.
@@ -62,7 +62,7 @@ Format response in clear markdown with code examples."
 ```
 Client Request
     ↓
-AgentHub receives request with X-Client-Name header
+PromptHub receives request with X-Client-Name header
     ↓
 Enhancement Rules lookup (enhancement-rules.json)
     ↓
@@ -75,7 +75,7 @@ Response returned to client
 
 ### Header-Based Routing
 
-AgentHub uses the `X-Client-Name` header to select the right model:
+PromptHub uses the `X-Client-Name` header to select the right model:
 
 ```bash
 # Claude Desktop
@@ -171,7 +171,7 @@ Undoes commit but keeps changes staged. Use `--hard` to discard changes.
 
 ### Default Configuration
 
-Location: `~/.local/share/agenthub/configs/enhancement-rules.json`
+Location: `~/.local/share/prompthub/configs/enhancement-rules.json`
 
 ```json
 {
@@ -281,13 +281,13 @@ Location: `~/.local/share/agenthub/configs/enhancement-rules.json`
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub-python": {
+    "prompthub-python": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Client-Name": "vscode-python"
       }
     },
-    "agenthub-rust": {
+    "prompthub-rust": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Client-Name": "vscode-rust"
@@ -414,7 +414,7 @@ curl -X POST http://localhost:9090/mcp/context7/query \
 ```json
 {
   "claude.mcp.servers": {
-    "agenthub-no-enhance": {
+    "prompthub-no-enhance": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Client-Name": "vscode-debug",
@@ -435,9 +435,9 @@ curl -X POST http://localhost:9090/mcp/context7/query \
 ENHANCEMENT_ENABLED=false
 ```
 
-**Restart AgentHub:**
+**Restart PromptHub:**
 ```bash
-launchctl restart com.agenthub.router
+launchctl restart com.prompthub.router
 ```
 
 ---
@@ -500,7 +500,7 @@ Compare response quality, length, and accuracy.
 
 ### Caching
 
-AgentHub caches enhanced prompts (LRU cache):
+PromptHub caches enhanced prompts (LRU cache):
 ```bash
 # Cache configuration in .env
 CACHE_MAX_SIZE=100
@@ -525,7 +525,7 @@ CACHE_SIMILARITY_THRESHOLD=0.85
 
 2. Check enhancement rules:
    ```bash
-   cat ~/.local/share/agenthub/configs/enhancement-rules.json | jq '.clients."claude-desktop"'
+   cat ~/.local/share/prompthub/configs/enhancement-rules.json | jq '.clients."claude-desktop"'
    ```
 
 3. Verify X-Client-Name header:
@@ -567,7 +567,7 @@ CACHE_SIMILARITY_THRESHOLD=0.85
 # In VS Code settings.json
 {
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "headers": {
         "X-Client-Name": "vscode"  // Must match enhancement-rules.json
       }

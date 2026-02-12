@@ -1,6 +1,6 @@
-# Awesome-Copilot Recommendations for AgentHub
+# Awesome-Copilot Recommendations for PromptHub
 
-This file references the best awesome-copilot resources for AgentHub development.
+This file references the best awesome-copilot resources for PromptHub development.
 For full details, see [docs/AWESOME-COPILOT-RESOURCES.md](../docs/AWESOME-COPILOT-RESOURCES.md).
 
 ## Recommended Collections
@@ -58,13 +58,13 @@ Run these generators in VS Code Copilot Chat:
 ### Planning Phase 2.1 (Qdrant Cache)
 
 ```
-@task-planner Break down the Qdrant L2 cache implementation for AgentHub
+@task-planner Break down the Qdrant L2 cache implementation for PromptHub
 ```
 
 ### Implementing a New MCP Server
 
 ```
-@python-mcp-expert How should I implement a new tool for X in AgentHub's router?
+@python-mcp-expert How should I implement a new tool for X in PromptHub's router?
 ```
 
 ### Security Review
@@ -112,7 +112,7 @@ From `python-mcp-server.instructions.md`:
 ```python
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("AgentHub Server")
+mcp = FastMCP("PromptHub Server")
 
 @mcp.tool()
 def my_tool(param: str) -> str:

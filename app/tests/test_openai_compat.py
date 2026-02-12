@@ -30,12 +30,12 @@ def sample_api_keys():
     """Sample API keys config data."""
     return {
         "keys": {
-            "sk-agenthub-test-abc123": {
+            "sk-prompthub-test-abc123": {
                 "client_name": "test-client",
                 "enhance": True,
                 "description": "Test client",
             },
-            "sk-agenthub-passthrough-def456": {
+            "sk-prompthub-passthrough-def456": {
                 "client_name": "passthrough",
                 "enhance": False,
                 "description": "No enhancement",
@@ -120,7 +120,7 @@ class TestApiKeyManager:
 
     def test_validate_known_token(self, api_key_manager):
         """Known token returns correct ApiKeyConfig."""
-        config = api_key_manager.validate_token("sk-agenthub-test-abc123")
+        config = api_key_manager.validate_token("sk-prompthub-test-abc123")
         assert config is not None
         assert config.client_name == "test-client"
         assert config.enhance is True
@@ -145,7 +145,7 @@ class TestApiKeyManager:
 
         assert api_key_manager.key_count == 1
         assert api_key_manager.validate_token("sk-new-key") is not None
-        assert api_key_manager.validate_token("sk-agenthub-test-abc123") is None
+        assert api_key_manager.validate_token("sk-prompthub-test-abc123") is None
 
     def test_missing_config_file(self, tmp_path):
         """Missing config file logs warning, zero keys loaded."""

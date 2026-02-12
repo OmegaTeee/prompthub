@@ -1,5 +1,5 @@
 """
-AgentHub Pipelines.
+PromptHub Pipelines.
 
 Pipelines chain multiple MCP servers and services together to accomplish
 complex workflows like documentation generation and learning capture.

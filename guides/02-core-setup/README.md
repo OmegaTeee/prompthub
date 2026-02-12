@@ -1,13 +1,13 @@
 # Core Setup
 
-**Essential configuration and advanced features for AgentHub**
+**Essential configuration and advanced features for PromptHub**
 
-Configure AgentHub to start automatically, store credentials securely, and leverage advanced resilience and enhancement features.
+Configure PromptHub to start automatically, store credentials securely, and leverage advanced resilience and enhancement features.
 
 ## Guides in This Section
 
 ### Essential Setup
-1. **[LaunchAgent](launchagent.md)** - Auto-start AgentHub on login (10 min)
+1. **[LaunchAgent](launchagent.md)** - Auto-start PromptHub on login (10 min)
    - macOS LaunchAgent configuration
    - Start/stop/status commands
    - Troubleshooting startup issues
@@ -18,7 +18,7 @@ Configure AgentHub to start automatically, store credentials securely, and lever
    - Access credentials from MCP servers
 
 ### Alternative Deployment
-3. **[Docker](docker.md)** - Run AgentHub in Docker (15 min)
+3. **[Docker](docker.md)** - Run PromptHub in Docker (15 min)
    - Docker Compose setup
    - Container configuration
    - Volume mounting for configs

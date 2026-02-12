@@ -10,7 +10,7 @@
         "_comment": "Router will retrieve these from keyring before spawning",
         "OBSIDIAN_API_KEY": {
           "source": "keyring",
-          "service": "agenthub",
+          "service": "prompthub",
           "key": "obsidian_api_key"
         },
         "OBSIDIAN_HOST": "https://127.0.0.1",
@@ -30,12 +30,12 @@
       "env": {
         "API_KEY": {
           "source": "keyring",
-          "service": "agenthub",
+          "service": "prompthub",
           "key": "example_api_key"
         },
         "SECRET_TOKEN": {
           "source": "keyring",
-          "service": "agenthub",
+          "service": "prompthub",
           "key": "example_token"
         },
         "STATIC_VALUE": "this-is-just-a-string"

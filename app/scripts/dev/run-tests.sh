@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Test Runner for AgentHub
+# Test Runner for PromptHub
 #
 # Usage:
 #   ./scripts/run-tests.sh               # Run all tests
@@ -16,7 +16,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo "🧪 AgentHub Test Runner"
+echo "🧪 PromptHub Test Runner"
 echo "======================="
 
 # Check if in virtual environment
@@ -39,19 +39,19 @@ case "${MODE}" in
         echo "Running integration tests..."
         echo ""
         echo -e "${YELLOW}Prerequisites:${NC}"
-        echo "  ✓ AgentHub must be running on localhost:9090"
+        echo "  ✓ PromptHub must be running on localhost:9090"
         echo "  ✓ All MCP servers should be started"
         echo "  ✓ Ollama should be running (for enhancement tests)"
         echo ""
 
-        # Check if AgentHub is running
+        # Check if PromptHub is running
         if ! curl -s http://localhost:9090/health > /dev/null 2>&1; then
-            echo -e "${RED}❌ AgentHub is not running!${NC}"
+            echo -e "${RED}❌ PromptHub is not running!${NC}"
             echo "   Start it with: uvicorn router.main:app --port 9090"
             exit 1
         fi
 
-        echo -e "${GREEN}✓ AgentHub is running${NC}"
+        echo -e "${GREEN}✓ PromptHub is running${NC}"
         echo ""
 
         pytest tests/integration/ -v --tb=short
@@ -74,12 +74,12 @@ case "${MODE}" in
         echo "Running all tests..."
         echo ""
 
-        # Check if AgentHub is running for integration tests
+        # Check if PromptHub is running for integration tests
         if curl -s http://localhost:9090/health > /dev/null 2>&1; then
-            echo -e "${GREEN}✓ AgentHub is running - will run integration tests${NC}"
+            echo -e "${GREEN}✓ PromptHub is running - will run integration tests${NC}"
             pytest tests/ -v --tb=short
         else
-            echo -e "${YELLOW}⚠️  AgentHub not running - skipping integration tests${NC}"
+            echo -e "${YELLOW}⚠️  PromptHub not running - skipping integration tests${NC}"
             pytest tests/ -v -m "not integration" --tb=short
         fi
         ;;

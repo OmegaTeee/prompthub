@@ -83,13 +83,13 @@ async def _enhance_field(container: dict, key: str, enhancement_service, client_
 
 # Prometheus metrics (module-level so tests can import/reset if needed)
 enhancement_calls = Counter(
-    "agenthub_enhancement_calls_total", "Total enhancement calls attempted"
+    "prompthub_enhancement_calls_total", "Total enhancement calls attempted"
 )
 enhancement_failures = Counter(
-    "agenthub_enhancement_failures_total", "Enhancement calls that raised an exception"
+    "prompthub_enhancement_failures_total", "Enhancement calls that raised an exception"
 )
 enhancement_duration_seconds = Histogram(
-    "agenthub_enhancement_duration_seconds", "Enhancement call duration (seconds)"
+    "prompthub_enhancement_duration_seconds", "Enhancement call duration (seconds)"
 )
 
 

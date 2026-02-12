@@ -1,6 +1,6 @@
-# AgentHub Scripts
+# PromptHub Scripts
 
-This directory contains utility scripts for AgentHub development, deployment, and operations.
+This directory contains utility scripts for PromptHub development, deployment, and operations.
 
 ## Directory Structure
 
@@ -34,12 +34,12 @@ scripts/
 ## Script Categories
 
 ### ⚙️ Router Scripts (`router/`)
-Scripts for managing AgentHub router and MCP servers.
+Scripts for managing PromptHub router and MCP servers.
 
 **Use when:** Restarting servers, validating configurations, troubleshooting MCP issues.
 
 ### 🔧 Development Scripts (`dev/`)
-Scripts for testing, building, and releasing AgentHub.
+Scripts for testing, building, and releasing PromptHub.
 
 **Use when:** Running tests, building Docker images, preparing releases.
 
@@ -111,7 +111,7 @@ if [[ -z "${OBSIDIAN_API_KEY}" ]]; then
 fi
 
 # Execute MCP server
-exec "${HOME}/.local/share/agenthub/mcps/obsidian-mcp-tools/bin/mcp-server" "$@"
+exec "${HOME}/.local/share/prompthub/mcps/obsidian-mcp-tools/bin/mcp-server" "$@"
 ```
 
 ## Security Best Practices
@@ -122,7 +122,7 @@ exec "${HOME}/.local/share/agenthub/mcps/obsidian-mcp-tools/bin/mcp-server" "$@"
 4. **Use exec**: Replace shell process to avoid sensitive data in memory
 5. **Audit access**: Use `scripts/system/audit-maintenance.sh` to track key usage
 
-## Integration with AgentHub
+## Integration with PromptHub
 
 Scripts reference configuration files:
 

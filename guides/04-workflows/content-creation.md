@@ -1,8 +1,8 @@
 # Content Creation Workflow with Claude Desktop
 
-**Master research, writing, and content refinement using Claude Desktop + AgentHub + DeepSeek-R1**
+**Master research, writing, and content refinement using Claude Desktop + PromptHub + DeepSeek-R1**
 
-> **What you'll learn:** How to leverage AgentHub's DeepSeek-R1 enhancement for research synthesis, long-form writing, fact-checking, and content refinement.
+> **What you'll learn:** How to leverage PromptHub's DeepSeek-R1 enhancement for research synthesis, long-form writing, fact-checking, and content refinement.
 
 ---
 
@@ -17,7 +17,7 @@
 
 ### Prerequisites
 - ✅ Claude Desktop app installed
-- ✅ AgentHub running ([Quick check](../../_shared/health-checks.md))
+- ✅ PromptHub running ([Quick check](../../_shared/health-checks.md))
 - ✅ DeepSeek-R1 model downloaded: `ollama pull deepseek-r1:7b`
 - ✅ Enhancement enabled in Claude Desktop config
 
@@ -38,7 +38,7 @@ DeepSeek-R1 excels at structured reasoning and is ideal for content creation bec
 
 ### How Enhancement Works for Content
 When you make a request in Claude Desktop:
-1. **Your prompt** → Sent to AgentHub with `X-Enhance: true`
+1. **Your prompt** → Sent to PromptHub with `X-Enhance: true`
 2. **DeepSeek-R1** → Structures the request, adds reasoning framework
 3. **Enhanced prompt** → Forwarded to MCP servers (fetch, brave-search, etc.)
 4. **Richer content** → More thoughtful, well-researched responses
@@ -62,7 +62,7 @@ cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Enhance": "true",
@@ -82,7 +82,7 @@ cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
 ### 2. Configure Enhancement Rules
 
-Edit `~/.local/share/agenthub/configs/enhancement-rules.json`:
+Edit `~/.local/share/prompthub/configs/enhancement-rules.json`:
 
 ```json
 {
@@ -96,11 +96,11 @@ Edit `~/.local/share/agenthub/configs/enhancement-rules.json`:
 }
 ```
 
-**Restart AgentHub:**
+**Restart PromptHub:**
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -677,4 +677,4 @@ Apply this guide to Section 2."
 **Last Updated:** 2026-02-05
 **Workflow Difficulty:** Beginner to Intermediate
 **Time to Master:** 3-4 writing sessions
-**Prerequisites:** Claude Desktop + AgentHub + DeepSeek-R1
+**Prerequisites:** Claude Desktop + PromptHub + DeepSeek-R1

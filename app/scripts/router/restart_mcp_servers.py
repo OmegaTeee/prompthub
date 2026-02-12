@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Restart and verify all AgentHub MCP servers.
+Restart and verify all PromptHub MCP servers.
 
 This script ensures all MCP servers have fresh stdio connections
 and are responding to requests properly.
@@ -85,7 +85,7 @@ def main():
     ]
 
     print("=" * 60)
-    print("AgentHub MCP Server Restart & Verification")
+    print("PromptHub MCP Server Restart & Verification")
     print("=" * 60)
     print()
 

@@ -1,5 +1,5 @@
 {
-  "//": "Full VS Code workspace configuration for AgentHub",
+  "//": "Full VS Code workspace configuration for PromptHub",
   "//": "Place this in .vscode/settings.json in your workspace root",
 
   "claude.mcp.enabled": true,
@@ -7,18 +7,18 @@
   "claude.mcp.cacheResponses": true,
 
   "claude.mcp.servers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "transport": "http",
       "headers": {
         "X-Client-Name": "vscode"
       },
       "timeout": 30000,
-      "description": "AgentHub unified MCP router (7+ servers)"
+      "description": "PromptHub unified MCP router (7+ servers)"
     }
   },
 
-  "//tasks": "See tasks.json for AgentHub-specific tasks",
+  "//tasks": "See tasks.json for PromptHub-specific tasks",
 
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
@@ -29,7 +29,7 @@
     "*.mcp.json": "jsonc"
   },
 
-  "//": "Recommended extensions for AgentHub development",
+  "//": "Recommended extensions for PromptHub development",
   "recommendations": [
     "anthropic.claude-code",
     "ms-python.python",

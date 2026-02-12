@@ -1,11 +1,11 @@
-# AgentHub Documentation Index
+# PromptHub Documentation Index
 
-Complete documentation overview for AgentHub.
+Complete documentation overview for PromptHub.
 
 ## 📚 Documentation Structure
 
 ```
-agenthub/
+prompthub/
 ├── README.md                    # Project overview, quick start, API reference
 ├── CLAUDE.md                    # Instructions for Claude Code
 ├── CHANGELOG.md                 # Version history
@@ -43,7 +43,7 @@ agenthub/
 ## 🎯 Documentation by Audience
 
 ### For Users
-Start here if you want to **use** AgentHub:
+Start here if you want to **use** PromptHub:
 
 1. **[README.md](../README.md)** - Project overview and quick start
 2. **[guides/getting-started.md](../guides/getting-started.md)** - Installation guide
@@ -54,7 +54,7 @@ Start here if you want to **use** AgentHub:
    - Figma, ComfyUI
 
 ### For Developers
-Start here if you want to **contribute** to AgentHub:
+Start here if you want to **contribute** to PromptHub:
 
 1. **[docs/README.md](README.md)** - Developer documentation index
 2. **[docs/architecture/](architecture/)** - System architecture and ADRs
@@ -63,7 +63,7 @@ Start here if you want to **contribute** to AgentHub:
 5. **[CLAUDE.md](../CLAUDE.md)** - Claude Code integration guide
 
 ### For Operators
-Start here if you want to **deploy** and **monitor** AgentHub:
+Start here if you want to **deploy** and **monitor** PromptHub:
 
 1. **[guides/docker-guide.md](../guides/docker-guide.md)** - Docker deployment
 2. **[guides/launchagent-setup.md](../guides/launchagent-setup.md)** - macOS LaunchAgent
@@ -117,7 +117,7 @@ Start here if you want to **deploy** and **monitor** AgentHub:
 - **API reference** → [api/](api/)
 
 ### By Use Case
-- **"How do I install AgentHub?"** → [guides/getting-started.md](../guides/getting-started.md)
+- **"How do I install PromptHub?"** → [guides/getting-started.md](../guides/getting-started.md)
 - **"How do I connect Claude Desktop?"** → [guides/claude-desktop-integration.md](../guides/claude-desktop-integration.md)
 - **"What's the API endpoint format?"** → [api/README.md](api/README.md)
 - **"Why use stdio instead of HTTP?"** → [ADR-001](architecture/ADR-001-stdio-transport.md)
@@ -256,4 +256,4 @@ Start here if you want to **deploy** and **monitor** AgentHub:
 
 **Last updated**: 2025-02-02
 **Documentation version**: 0.1.0
-**AgentHub version**: 0.1.0
+**PromptHub version**: 0.1.0

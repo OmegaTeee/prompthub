@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-AgentHub proxies requests to multiple I/O-bound services:
+PromptHub proxies requests to multiple I/O-bound services:
 - **MCP servers** via stdio (10-100ms latency)
 - **Ollama** via HTTP (200-2000ms latency)
 - **SQLite** for activity logs (1-10ms latency)

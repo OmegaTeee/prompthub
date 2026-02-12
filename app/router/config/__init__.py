@@ -1,4 +1,4 @@
-"""Configuration module for AgentHub Router."""
+"""Configuration module for PromptHub Router."""
 
 from router.config.settings import Settings, get_settings
 

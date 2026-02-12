@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Generate comprehensive Claude Desktop configuration for AgentHub.
+Generate comprehensive Claude Desktop configuration for PromptHub.
 
 This script creates a claude_desktop_config.json that gives Claude Desktop
-access to all MCP servers through the AgentHub router.
+access to all MCP servers through the PromptHub router.
 """
 
 import json
@@ -17,13 +17,13 @@ def generate_comprehensive_claude_config(
     output_path: str | None = None,
 ) -> dict:
     """
-    Generate Claude Desktop configuration with all AgentHub MCP servers.
+    Generate Claude Desktop configuration with all PromptHub MCP servers.
 
     Creates curl-based proxy configurations for each server, allowing
-    Claude Desktop to access all MCP tools through AgentHub's router.
+    Claude Desktop to access all MCP tools through PromptHub's router.
     """
 
-    # MCP servers available through AgentHub
+    # MCP servers available through PromptHub
     servers = {
         "context7": {
             "description": "Documentation fetching from libraries",
@@ -59,7 +59,7 @@ def generate_comprehensive_claude_config(
 
     # Generate curl-based proxy for each server
     for name, info in servers.items():
-        config["mcpServers"][f"agenthub-{name}"] = {
+        config["mcpServers"][f"prompthub-{name}"] = {
             "command": "curl",
             "args": [
                 "-s",

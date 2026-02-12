@@ -1,7 +1,7 @@
 {
   "servers": [
     {
-      "id": "agenthub",
+      "id": "prompthub",
       "url": "http://localhost:9090",
       "type": "http",
       "headers": {

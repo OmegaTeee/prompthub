@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-**For experienced developers who want to get AgentHub running in 10 minutes**
+**For experienced developers who want to get PromptHub running in 10 minutes**
 
 > **What you'll learn:** Minimal-explanation installation flow with commands only
 
@@ -38,16 +38,16 @@ node --version     # Should be 20.x
 
 ---
 
-### 2. Clone and Install AgentHub
+### 2. Clone and Install PromptHub
 
 ```bash
 # Clone repository (or navigate to downloaded source)
 cd ~/.local/share
-git clone https://github.com/YOUR_ORG/agenthub.git
-# Or: tar -xzf agenthub-*.tar.gz
+git clone https://github.com/YOUR_ORG/prompthub.git
+# Or: tar -xzf prompthub-*.tar.gz
 
 # Navigate to directory
-cd agenthub
+cd prompthub
 
 # Create Python virtual environment
 python3 -m venv .venv
@@ -104,11 +104,11 @@ ollama list
 
 ---
 
-### 5. Start AgentHub
+### 5. Start PromptHub
 
 ```bash
-# Navigate to AgentHub directory
-cd ~/.local/share/agenthub
+# Navigate to PromptHub directory
+cd ~/.local/share/prompthub
 source .venv/bin/activate
 
 # Start server
@@ -146,36 +146,36 @@ open http://localhost:9090/dashboard
 
 ```bash
 # Create plist file
-cat > ~/Library/LaunchAgents/com.agenthub.router.plist << 'EOF'
+cat > ~/Library/LaunchAgents/com.prompthub.router.plist << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.agenthub.router</string>
+    <string>com.prompthub.router</string>
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
         <string>-c</string>
-        <string>cd ~/.local/share/agenthub && source .venv/bin/activate && uvicorn router.main:app --host 0.0.0.0 --port 9090</string>
+        <string>cd ~/.local/share/prompthub && source .venv/bin/activate && uvicorn router.main:app --host 0.0.0.0 --port 9090</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>~/Library/Logs/agenthub-router.log</string>
+    <string>~/Library/Logs/prompthub-router.log</string>
     <key>StandardErrorPath</key>
-    <string>~/Library/Logs/agenthub-router-error.log</string>
+    <string>~/Library/Logs/prompthub-router-error.log</string>
 </dict>
 </plist>
 EOF
 
 # Load LaunchAgent
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # Verify
-launchctl list | grep com.agenthub.router
+launchctl list | grep com.prompthub.router
 ```
 
 ---
@@ -185,18 +185,18 @@ launchctl list | grep com.agenthub.router
 ```bash
 # Example: Brave Search API key
 security add-generic-password \
-  -s "agenthub.brave_api_key" \
-  -a "agenthub" \
+  -s "prompthub.brave_api_key" \
+  -a "prompthub" \
   -w "YOUR_API_KEY_HERE"
 
 # Example: OpenAI API key (if using OpenAI mode)
 security add-generic-password \
-  -s "agenthub.openai_api_key" \
-  -a "agenthub" \
+  -s "prompthub.openai_api_key" \
+  -a "prompthub" \
   -w "YOUR_OPENAI_KEY_HERE"
 
 # Verify credentials stored
-security find-generic-password -s "agenthub.brave_api_key" -w
+security find-generic-password -s "prompthub.brave_api_key" -w
 ```
 
 ---
@@ -212,7 +212,7 @@ code ~/Library/Application\ Support/Claude/claude_desktop_config.json
 # Add:
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Enhance": "true",
@@ -234,7 +234,7 @@ code ~/.vscode/settings.json
 # Add (or merge):
 {
   "cline.mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       "headers": {
         "X-Enhance": "true",
@@ -256,7 +256,7 @@ mkdir -p ~/Library/Application\ Support/com.raycast.macos
 # Create MCP config
 cat > ~/Library/Application\ Support/com.raycast.macos/mcp_servers.json << 'EOF'
 {
-  "agenthub": {
+  "prompthub": {
     "url": "http://localhost:9090",
     "headers": {
       "X-Enhance": "true",
@@ -274,19 +274,19 @@ EOF
 ### Common Commands
 
 ```bash
-# Start AgentHub manually
-cd ~/.local/share/agenthub && source .venv/bin/activate && uvicorn router.main:app --port 9090
+# Start PromptHub manually
+cd ~/.local/share/prompthub && source .venv/bin/activate && uvicorn router.main:app --port 9090
 
 # Stop LaunchAgent
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # Restart LaunchAgent
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 
 # View logs
-tail -f ~/Library/Logs/agenthub-router.log
-tail -f ~/Library/Logs/agenthub-router-error.log
+tail -f ~/Library/Logs/prompthub-router.log
+tail -f ~/Library/Logs/prompthub-router-error.log
 
 # Health check
 curl http://localhost:9090/health
@@ -312,7 +312,7 @@ ps aux | grep "uvicorn router.main:app"
 lsof -i :9090
 
 # Restart
-launchctl restart com.agenthub.router
+launchctl restart com.prompthub.router
 ```
 
 ---
@@ -326,8 +326,8 @@ lsof -i :9090
 # Kill it (use with caution)
 kill -9 <PID>
 
-# Or change AgentHub port in .env
-echo "PORT=9091" >> ~/.local/share/agenthub/.env
+# Or change PromptHub port in .env
+echo "PORT=9091" >> ~/.local/share/prompthub/.env
 ```
 
 ---
@@ -335,7 +335,7 @@ echo "PORT=9091" >> ~/.local/share/agenthub/.env
 ### Missing Python dependencies
 
 ```bash
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -346,20 +346,20 @@ pip install -r requirements.txt
 
 ```bash
 # Reinstall MCP packages
-cd ~/.local/share/agenthub/mcps
+cd ~/.local/share/prompthub/mcps
 rm -rf node_modules package-lock.json
 npm install
 cd ..
 
-# Restart AgentHub
-launchctl restart com.agenthub.router
+# Restart PromptHub
+launchctl restart com.prompthub.router
 ```
 
 ---
 
 ## Next Steps
 
-**You're done!** AgentHub is now running and auto-starts on login.
+**You're done!** PromptHub is now running and auto-starts on login.
 
 **Explore:**
 - [Detailed Installation Guide](detailed-installation.md) - If you need more explanation

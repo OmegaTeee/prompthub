@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-AgentHub's audit infrastructure has been completely transformed from basic string logging (Security Score 3.2/10) to production-grade, compliance-ready audit system (9.0/10) across three phases.
+PromptHub's audit infrastructure has been completely transformed from basic string logging (Security Score 3.2/10) to production-grade, compliance-ready audit system (9.0/10) across three phases.
 
 ## Implementation Timeline
 
@@ -16,7 +16,7 @@ AgentHub's audit infrastructure has been completely transformed from basic strin
 - ✅ Structured JSON audit logging with `structlog`
 - ✅ Audit context propagation (WHO, WHAT, WHEN, WHERE, CORRELATION)
 - ✅ Complete keyring credential access auditing
-- ✅ Dedicated audit log file (`/tmp/agenthub/audit.log`)
+- ✅ Dedicated audit log file (`/tmp/prompthub/audit.log`)
 
 **Files Modified:**
 - `router/middleware/audit_context.py` (115 lines) - Context middleware
@@ -195,7 +195,7 @@ Forward logs to enterprise security platforms:
 ./scripts/siem-forwarder.sh splunk https://splunk.example.com:8088 $HEC_TOKEN
 
 # Elasticsearch
-./scripts/siem-forwarder.sh elastic https://elastic.example.com:9200 agenthub-audit
+./scripts/siem-forwarder.sh elastic https://elastic.example.com:9200 prompthub-audit
 
 # Datadog
 ./scripts/siem-forwarder.sh datadog $DD_API_KEY
@@ -331,10 +331,10 @@ curl http://localhost:9090/security/alerts/stats | jq .
 - [ ] **Configure log rotation**
   ```bash
   # Linux
-  sudo cp configs/logrotate.conf /etc/logrotate.d/agenthub
+  sudo cp configs/logrotate.conf /etc/logrotate.d/prompthub
 
   # macOS
-  sudo cp configs/logrotate-macos.conf /etc/newsyslog.d/agenthub.conf
+  sudo cp configs/logrotate-macos.conf /etc/newsyslog.d/prompthub.conf
   ```
 
 - [ ] **Set up SIEM forwarding**
@@ -352,13 +352,13 @@ curl http://localhost:9090/security/alerts/stats | jq .
 
 - [ ] **Verify audit log directory permissions**
   ```bash
-  # Production should use /var/log/agenthub instead of /tmp
-  sudo mkdir -p /var/log/agenthub
-  sudo chown $(whoami):staff /var/log/agenthub
-  sudo chmod 750 /var/log/agenthub
+  # Production should use /var/log/prompthub instead of /tmp
+  sudo mkdir -p /var/log/prompthub
+  sudo chown $(whoami):staff /var/log/prompthub
+  sudo chmod 750 /var/log/prompthub
 
   # Update config in router/main.py:
-  log_dir = Path("/var/log/agenthub")
+  log_dir = Path("/var/log/prompthub")
   ```
 
 ### Recommended Steps
@@ -402,7 +402,7 @@ curl http://localhost:9090/security/alerts/stats | jq .
 ✅ **Real-time security monitoring**
 ✅ **Comprehensive testing and documentation**
 
-AgentHub now has **enterprise-grade audit infrastructure** suitable for production deployment in regulated environments.
+PromptHub now has **enterprise-grade audit infrastructure** suitable for production deployment in regulated environments.
 
 ---
 

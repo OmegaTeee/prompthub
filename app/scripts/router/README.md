@@ -1,11 +1,11 @@
 # Router Management Scripts
 
-Scripts for managing AgentHub router and MCP servers.
+Scripts for managing PromptHub router and MCP servers.
 
 ## Scripts
 
 ### `restart-mcp-servers.py`
-Restarts all or specific MCP servers via AgentHub API.
+Restarts all or specific MCP servers via PromptHub API.
 
 **Purpose:** Gracefully restart MCP servers without restarting the entire router.
 
@@ -68,7 +68,7 @@ python3 scripts/router/restart-mcp-servers.py --force
 **Dependencies:**
 - Python 3.8+
 - `requests` library
-- AgentHub running on `localhost:9090`
+- PromptHub running on `localhost:9090`
 
 ### `validate-mcp-servers.sh`
 Validates all configured MCP servers are correctly installed and configured.
@@ -172,7 +172,7 @@ python3 scripts/router/restart-mcp-servers.py --force obsidian
 # Restart all servers
 python3 scripts/router/restart-mcp-servers.py
 
-# Or use AgentHub API directly
+# Or use PromptHub API directly
 curl -X POST http://localhost:9090/servers/restart-all
 ```
 
@@ -185,8 +185,8 @@ scripts/router/validate-mcp-servers.sh
 # Fix common issues
 scripts/router/validate-mcp-servers.sh --fix
 
-# Start AgentHub after validation
-launchctl start com.agenthub.router
+# Start PromptHub after validation
+launchctl start com.prompthub.router
 ```
 
 ## Troubleshooting
@@ -198,7 +198,7 @@ launchctl start com.agenthub.router
 **Diagnosis:**
 ```bash
 # Check server logs
-tail -f ~/.local/share/agenthub/logs/router.log | grep -i "error\|fail"
+tail -f ~/.local/share/prompthub/logs/router.log | grep -i "error\|fail"
 
 # Validate configuration
 scripts/router/validate-mcp-servers.sh obsidian
@@ -227,7 +227,7 @@ security find-generic-password -a $USER -s obsidian_api_key -w
 
 1. **Missing Node.js packages:**
    ```bash
-   cd ~/.local/share/agenthub/mcps
+   cd ~/.local/share/prompthub/mcps
    npm install
    ```
 
@@ -260,14 +260,14 @@ python3 scripts/router/restart-mcp-servers.py --force
 ps aux | grep mcp-server
 kill -9 <pid>
 
-# Restart AgentHub router
-launchctl stop com.agenthub.router
-launchctl start com.agenthub.router
+# Restart PromptHub router
+launchctl stop com.prompthub.router
+launchctl start com.prompthub.router
 ```
 
-## Integration with AgentHub
+## Integration with PromptHub
 
-These scripts work with AgentHub's MCP server lifecycle management:
+These scripts work with PromptHub's MCP server lifecycle management:
 
 ```python
 # router/servers/lifecycle.py
@@ -283,7 +283,7 @@ async def restart_server(server_name: str):
 
 ### Circuit Breaker Integration
 
-When a server fails repeatedly, AgentHub's circuit breaker opens:
+When a server fails repeatedly, PromptHub's circuit breaker opens:
 - **CLOSED** → **OPEN** (3 failures in 30s)
 - **OPEN** → **HALF_OPEN** (after 30s cooldown)
 - **HALF_OPEN** → **CLOSED** (1 success)
@@ -301,10 +301,10 @@ Add to crontab for automated maintenance:
 
 ```cron
 # Validate MCP servers every 6 hours
-0 */6 * * * /Users/user/.local/share/agenthub/scripts/router/validate-mcp-servers.sh
+0 */6 * * * /Users/user/.local/share/prompthub/scripts/router/validate-mcp-servers.sh
 
 # Restart hung servers daily at 3 AM
-0 3 * * * /usr/bin/python3 /Users/user/.local/share/agenthub/scripts/router/restart-mcp-servers.py --force
+0 3 * * * /usr/bin/python3 /Users/user/.local/share/prompthub/scripts/router/restart-mcp-servers.py --force
 ```
 
 ### LaunchAgent
@@ -312,14 +312,14 @@ Add to crontab for automated maintenance:
 Use macOS LaunchAgent for automated restarts:
 
 ```xml
-<!-- ~/Library/LaunchAgents/com.agenthub.mcp-monitor.plist -->
+<!-- ~/Library/LaunchAgents/com.prompthub.mcp-monitor.plist -->
 <dict>
   <key>Label</key>
-  <string>com.agenthub.mcp-monitor</string>
+  <string>com.prompthub.mcp-monitor</string>
   <key>ProgramArguments</key>
   <array>
     <string>/usr/bin/python3</string>
-    <string>/Users/user/.local/share/agenthub/scripts/router/restart-mcp-servers.py</string>
+    <string>/Users/user/.local/share/prompthub/scripts/router/restart-mcp-servers.py</string>
     <string>--check-only</string>
   </array>
   <key>StartInterval</key>

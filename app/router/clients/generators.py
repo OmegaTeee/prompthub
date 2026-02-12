@@ -1,7 +1,7 @@
 """
 Client Configuration Generators.
 
-Generates configuration files for connecting applications to AgentHub:
+Generates configuration files for connecting applications to PromptHub:
 - Claude Desktop: claude_desktop_config.json
 - VS Code: .vscode/mcp.json and tasks.json
 - Raycast: Custom script for MCP queries
@@ -19,14 +19,14 @@ def generate_claude_desktop_config(
     output_path: str | None = None,
 ) -> dict[str, Any]:
     """
-    Generate Claude Desktop configuration for AgentHub.
+    Generate Claude Desktop configuration for PromptHub.
 
     This uses the curl-based proxy mode where Claude sends MCP requests
-    to curl, which forwards them to the AgentHub router.
+    to curl, which forwards them to the PromptHub router.
 
     Args:
-        router_host: AgentHub router host
-        router_port: AgentHub router port
+        router_host: PromptHub router host
+        router_port: PromptHub router port
         output_path: If provided, write config to this path
 
     Returns:
@@ -34,7 +34,7 @@ def generate_claude_desktop_config(
     """
     config = {
         "mcpServers": {
-            "agenthub": {
+            "prompthub": {
                 "command": "curl",
                 "args": [
                     "-s",
@@ -68,13 +68,13 @@ def generate_vscode_config(
     workspace_path: str | None = None,
 ) -> dict[str, Any]:
     """
-    Generate VS Code MCP configuration for AgentHub.
+    Generate VS Code MCP configuration for PromptHub.
 
     Creates .vscode/mcp.json in the specified workspace.
 
     Args:
-        router_host: AgentHub router host
-        router_port: AgentHub router port
+        router_host: PromptHub router host
+        router_port: PromptHub router port
         workspace_path: Workspace root (creates .vscode/mcp.json)
 
     Returns:
@@ -82,7 +82,7 @@ def generate_vscode_config(
     """
     config = {
         "mcp.servers": {
-            "agenthub": {
+            "prompthub": {
                 "type": "http",
                 "url": f"http://{router_host}:{router_port}",
                 "headers": {"X-Client-Name": "vscode"},
@@ -105,15 +105,15 @@ def generate_vscode_tasks(
     workspace_path: str | None = None,
 ) -> dict[str, Any]:
     """
-    Generate VS Code tasks.json for AgentHub pipelines.
+    Generate VS Code tasks.json for PromptHub pipelines.
 
     Creates tasks for:
     - Document Workspace: Generate docs for current project
     - MCP Query: Send a query to Sequential Thinking
 
     Args:
-        router_host: AgentHub router host
-        router_port: AgentHub router port
+        router_host: PromptHub router host
+        router_port: PromptHub router port
         workspace_path: Workspace root (creates .vscode/tasks.json)
 
     Returns:
@@ -123,7 +123,7 @@ def generate_vscode_tasks(
         "version": "2.0.0",
         "tasks": [
             {
-                "label": "AgentHub: Document Workspace",
+                "label": "PromptHub: Document Workspace",
                 "type": "shell",
                 "command": "curl",
                 "args": [
@@ -140,7 +140,7 @@ def generate_vscode_tasks(
                 "problemMatcher": [],
             },
             {
-                "label": "AgentHub: Health Check",
+                "label": "PromptHub: Health Check",
                 "type": "shell",
                 "command": "curl",
                 "args": [
@@ -155,7 +155,7 @@ def generate_vscode_tasks(
                 "problemMatcher": [],
             },
             {
-                "label": "AgentHub: List Servers",
+                "label": "PromptHub: List Servers",
                 "type": "shell",
                 "command": "curl",
                 "args": [
@@ -201,12 +201,12 @@ def generate_raycast_script(
     """
     Generate Raycast script for MCP queries.
 
-    Creates a Raycast script command that sends queries to AgentHub's
+    Creates a Raycast script command that sends queries to PromptHub's
     Sequential Thinking server.
 
     Args:
-        router_host: AgentHub router host
-        router_port: AgentHub router port
+        router_host: PromptHub router host
+        router_port: PromptHub router port
         output_path: Script output path (default: ~/.config/raycast/scripts/)
 
     Returns:
@@ -218,16 +218,16 @@ def generate_raycast_script(
 # @raycast.schemaVersion 1
 # @raycast.title MCP Query
 # @raycast.mode fullOutput
-# @raycast.packageName AgentHub
+# @raycast.packageName PromptHub
 # @raycast.icon brain
 
 # Optional parameters:
 # @raycast.argument1 {{ "type": "text", "placeholder": "Query" }}
 
 # Documentation:
-# @raycast.description Send a query to AgentHub Sequential Thinking
-# @raycast.author AgentHub
-# @raycast.authorURL https://github.com/yourusername/agenthub
+# @raycast.description Send a query to PromptHub Sequential Thinking
+# @raycast.author PromptHub
+# @raycast.authorURL https://github.com/yourusername/prompthub
 
 ROUTER_HOST="{router_host}"
 ROUTER_PORT="{router_port}"
@@ -295,8 +295,8 @@ def generate_obsidian_config(
     specific MCP plugin being used.
 
     Args:
-        router_host: AgentHub router host
-        router_port: AgentHub router port
+        router_host: PromptHub router host
+        router_port: PromptHub router port
         vault_path: Obsidian vault path
 
     Returns:

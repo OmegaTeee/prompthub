@@ -182,8 +182,8 @@ integrity_manager: AuditIntegrityManager | None = None
 
 
 def get_integrity_manager(
-    audit_log_path: Path = Path("/tmp/agenthub/audit.log"),
-    checksum_db: Path = Path("/tmp/agenthub/audit_checksums.json"),
+    audit_log_path: Path = Path("/tmp/prompthub/audit.log"),
+    checksum_db: Path = Path("/tmp/prompthub/audit_checksums.json"),
 ) -> AuditIntegrityManager:
     """Get or create global integrity manager."""
     global integrity_manager

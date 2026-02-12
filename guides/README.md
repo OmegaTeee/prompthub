@@ -1,10 +1,10 @@
-# AgentHub User Guides
+# PromptHub User Guides
 
-**Complete guide to installing, configuring, and using AgentHub as your centralized MCP router**
+**Complete guide to installing, configuring, and using PromptHub as your centralized MCP router**
 
 ## 🎯 Quick Start Path
 
-**New to AgentHub?** Choose your path:
+**New to PromptHub?** Choose your path:
 
 ### Fast Track (10 minutes)
 1. **[01-getting-started/quick-start](01-getting-started/quick-start.md)** → Commands-only installation
@@ -55,7 +55,7 @@
 ---
 
 ### 03 - Integrations
-**Connect your apps** to AgentHub.
+**Connect your apps** to PromptHub.
 
 #### Primary Clients
 - [Claude Desktop](03-integrations/claude-desktop.md) - Research & content creation
@@ -112,8 +112,8 @@
 
 | I want to...                | Go to...                                                                | Time   |
 | --------------------------- | ----------------------------------------------------------------------- | ------ |
-| Install AgentHub (fast)     | [quick-start.md](01-getting-started/quick-start.md)                     | 10 min |
-| Install AgentHub (detailed) | [detailed-installation.md](01-getting-started/detailed-installation.md) | 45 min |
+| Install PromptHub (fast)     | [quick-start.md](01-getting-started/quick-start.md)                     | 10 min |
+| Install PromptHub (detailed) | [detailed-installation.md](01-getting-started/detailed-installation.md) | 45 min |
 | Verify my installation      | [verification.md](01-getting-started/verification.md)                   | 15 min |
 | Connect Claude Desktop      | [claude-desktop.md](03-integrations/claude-desktop.md)                  | 10 min |
 | Use with VS Code            | [vscode.md](03-integrations/vscode.md)                                  | 10 min |
@@ -132,9 +132,9 @@
 
 ---
 
-## 🎓 What is AgentHub?
+## 🎓 What is PromptHub?
 
-AgentHub is a **centralized MCP (Model Context Protocol) router** for macOS that provides:
+PromptHub is a **centralized MCP (Model Context Protocol) router** for macOS that provides:
 
 - **Unified Access** - Connect multiple apps (Claude Desktop, VS Code, Raycast) to 7+ MCP servers
 - **Prompt Enhancement** - Automatically improve prompts with Ollama (DeepSeek-R1, Qwen3-Coder)
@@ -173,7 +173,7 @@ docs/                            # TECHNICAL/ENGINEERING
 ## 🆘 Getting Help
 
 ### Common Issues
-- **Can't connect to AgentHub** → Check `curl http://localhost:9090/health`
+- **Can't connect to PromptHub** → Check `curl http://localhost:9090/health`
 - **MCP server not found** → Verify `configs/mcp-servers.json`
 - **Credentials not working** → See [02-core-setup/keychain.md](02-core-setup/keychain.md)
 
@@ -191,7 +191,7 @@ Found an issue or want to improve a guide?
 
 1. **Report issues:** Document what you expected vs. what happened
 2. **Suggest improvements:** What was confusing or missing?
-3. **Share workflows:** How do you use AgentHub productively?
+3. **Share workflows:** How do you use PromptHub productively?
 
 These guides are living documents that improve with user feedback!
 
@@ -199,7 +199,7 @@ These guides are living documents that improve with user feedback!
 
 **Last Updated:** 2026-02-06
 **Guide Version:** 3.0.0 (Complete rewrite - Phase 1-6)
-**AgentHub Version:** 0.1.0
+**PromptHub Version:** 0.1.0
 
 ### What's New in 3.0.0
 - ✅ Split installation: Quick Start vs. Detailed paths

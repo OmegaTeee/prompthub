@@ -2,7 +2,7 @@
 
 **Upgrade guides and migration procedures**
 
-Instructions for migrating between different versions or configurations of AgentHub.
+Instructions for migrating between different versions or configurations of PromptHub.
 
 ## Available Guides
 
@@ -14,7 +14,7 @@ Instructions for migrating between different versions or configurations of Agent
 
 ## Future Migration Guides
 
-As AgentHub evolves, this section will include:
+As PromptHub evolves, this section will include:
 
 - Version upgrade guides (v0.1 → v0.2, etc.)
 - Configuration format migrations
@@ -23,7 +23,7 @@ As AgentHub evolves, this section will include:
 
 ## When to Use These Guides
 
-- Upgrading from an older version of AgentHub
+- Upgrading from an older version of PromptHub
 - Changing credential storage methods
 - Migrating configurations between machines
 - Adopting new features that require config changes
@@ -32,5 +32,5 @@ As AgentHub evolves, this section will include:
 
 **Estimated Time:** 10-20 minutes per migration
 **Difficulty:** Intermediate
-**Prerequisites:** Existing AgentHub installation
+**Prerequisites:** Existing PromptHub installation
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AgentHub is a centralized MCP (Model Context Protocol) router for macOS. It provides a single local endpoint (`localhost:9090`) that manages MCP servers, enhances prompts via Ollama, and provides resilience patterns.
+PromptHub is a centralized MCP (Model Context Protocol) router for macOS. It provides a single local endpoint (`localhost:9090`) that manages MCP servers, enhances prompts via Ollama, and provides resilience patterns.
 
 ## Workspace Structure
 

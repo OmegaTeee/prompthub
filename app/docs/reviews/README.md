@@ -1,6 +1,6 @@
 # Code Review Reports
 
-This directory contains automated and manual code review reports for AgentHub.
+This directory contains automated and manual code review reports for PromptHub.
 
 ## Latest Reviews
 

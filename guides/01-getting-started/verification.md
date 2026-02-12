@@ -1,6 +1,6 @@
 # Installation Verification Guide
 
-**Comprehensive testing to ensure AgentHub is working correctly**
+**Comprehensive testing to ensure PromptHub is working correctly**
 
 > **What you'll learn:** How to verify your installation, test all components, and troubleshoot common issues
 
@@ -18,7 +18,7 @@
 
 ### Prerequisites
 - ✅ Completed installation ([Quick Start](quick-start.md) or [Detailed Guide](detailed-installation.md))
-- ✅ AgentHub running (manually or via LaunchAgent)
+- ✅ PromptHub running (manually or via LaunchAgent)
 - ✅ At least one client configured
 
 ### Estimated Time
@@ -29,7 +29,7 @@
 
 ## Level 1: Basic Health Checks
 
-### Check 1: AgentHub is Running
+### Check 1: PromptHub is Running
 
 ```bash
 curl http://localhost:9090/health
@@ -52,21 +52,21 @@ curl: (7) Failed to connect to localhost port 9090: Connection refused
 ```
 
 **Solution:**
-1. Check if AgentHub process is running:
+1. Check if PromptHub process is running:
    ```bash
    ps aux | grep "uvicorn router.main:app"
    ```
 
 2. If not running, start it:
    ```bash
-   cd ~/.local/share/agenthub
+   cd ~/.local/share/prompthub
    source .venv/bin/activate
    uvicorn router.main:app --port 9090
    ```
 
 3. If LaunchAgent should be running:
    ```bash
-   launchctl list | grep com.agenthub.router
+   launchctl list | grep com.prompthub.router
    ```
 
 See [Common Troubleshooting](../_shared/troubleshooting-common.md#connection-refused) for more solutions.
@@ -88,7 +88,7 @@ http://localhost:9090/dashboard
 
 **❌ If it fails:** Browser shows "This site can't be reached"
 
-**Solution:** Same as Check 1 — ensure AgentHub is running.
+**Solution:** Same as Check 1 — ensure PromptHub is running.
 
 ---
 
@@ -97,12 +97,12 @@ http://localhost:9090/dashboard
 **If you set up LaunchAgent, verify it's loaded:**
 
 ```bash
-launchctl list | grep com.agenthub.router
+launchctl list | grep com.prompthub.router
 ```
 
 **Expected output:**
 ```
-12345  0  com.agenthub.router
+12345  0  com.prompthub.router
 ```
 
 **What the numbers mean:**
@@ -115,7 +115,7 @@ launchctl list | grep com.agenthub.router
 
 **Solution:**
 ```bash
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 ---
@@ -200,16 +200,16 @@ curl -X POST http://localhost:9090/mcp/filesystem/list_allowed_directories \
 **Solution:**
 1. Check MCP server config:
    ```bash
-   cat ~/.local/share/agenthub/configs/mcp-servers.json
+   cat ~/.local/share/prompthub/configs/mcp-servers.json
    ```
 
 2. Ensure MCP packages are installed:
    ```bash
-   cd ~/.local/share/agenthub/mcps
+   cd ~/.local/share/prompthub/mcps
    npm install
    ```
 
-3. Restart AgentHub
+3. Restart PromptHub
 
 ---
 
@@ -249,7 +249,7 @@ curl -X POST http://localhost:9090/mcp/fetch/fetch \
 
 **Method 1: Ask directly**
 1. Open Claude Desktop
-2. Ask: "Am I connected to AgentHub?"
+2. Ask: "Am I connected to PromptHub?"
 3. Should confirm connection
 
 **Method 2: Check config**
@@ -261,7 +261,7 @@ cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       ...
     }
@@ -278,7 +278,7 @@ cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
 **❌ If not connected:**
 1. Verify config file is correct
 2. Restart Claude Desktop (Cmd + Q, then reopen)
-3. Check AgentHub logs for connection attempts
+3. Check PromptHub logs for connection attempts
 
 ---
 
@@ -287,7 +287,7 @@ cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
 **Method 1: Cline sidebar**
 1. Open VS Code
 2. Open Cline sidebar
-3. Should show "Connected to agenthub"
+3. Should show "Connected to prompthub"
 
 **Method 2: Check settings**
 ```bash
@@ -298,7 +298,7 @@ code ~/.vscode/settings.json
 ```json
 {
   "cline.mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "url": "http://localhost:9090",
       ...
     }
@@ -327,7 +327,7 @@ code ~/.vscode/settings.json
 cat ~/Library/Application\ Support/com.raycast.macos/mcp_servers.json
 ```
 
-**Should contain agenthub configuration**
+**Should contain prompthub configuration**
 
 **✅ Pass criteria:** Raycast AI responds to queries
 
@@ -524,14 +524,14 @@ time ollama run llama3.2 "test"
 **Check:**
 ```bash
 # Verify credentials are stored
-security find-generic-password -s "agenthub.brave_api_key" -w
+security find-generic-password -s "prompthub.brave_api_key" -w
 ```
 
 **Solution:** If missing:
 ```bash
 security add-generic-password \
-  -s "agenthub.brave_api_key" \
-  -a "agenthub" \
+  -s "prompthub.brave_api_key" \
+  -a "prompthub" \
   -w "YOUR_API_KEY"
 ```
 
@@ -542,12 +542,12 @@ security add-generic-password \
 ### Starting Your Day
 
 **If using LaunchAgent:**
-- Nothing needed! AgentHub starts automatically when you log in
+- Nothing needed! PromptHub starts automatically when you log in
 - Just open your apps and go
 
 **If running manually:**
 ```bash
-cd ~/.local/share/agenthub
+cd ~/.local/share/prompthub
 source .venv/bin/activate
 uvicorn router.main:app --port 9090
 ```
@@ -572,8 +572,8 @@ curl http://localhost:9090/servers
 **Check for errors:**
 ```bash
 # If using LaunchAgent:
-tail -f ~/Library/Logs/agenthub-router.log
-tail -f ~/Library/Logs/agenthub-router-error.log
+tail -f ~/Library/Logs/prompthub-router.log
+tail -f ~/Library/Logs/prompthub-router-error.log
 
 # If running manually:
 # Logs appear in Terminal where you started it
@@ -581,12 +581,12 @@ tail -f ~/Library/Logs/agenthub-router-error.log
 
 ---
 
-### Restarting AgentHub
+### Restarting PromptHub
 
 **If using LaunchAgent:**
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.agenthub.router.plist
-launchctl load ~/Library/LaunchAgents/com.agenthub.router.plist
+launchctl unload ~/Library/LaunchAgents/com.prompthub.router.plist
+launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
 
 **If running manually:**

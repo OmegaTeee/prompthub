@@ -52,7 +52,7 @@ The router spawning bash scripts is causing failures. Moving credential retrieva
 │ http://localhost:9090/dashboard                 │
 │                                                  │
 │  1. Read config with keyring references         │
-│  2. keyring.get_password("agenthub", "key")     │
+│  2. keyring.get_password("prompthub", "key")     │
 │  3. Set environment variables                   │
 │  4. Spawn MCP server directly                   │
 └─────────────────┬───────────────────────────────┘

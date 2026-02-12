@@ -28,10 +28,10 @@ Keychain provides:
 
 | Credential              | Service             | Account              | Purpose                     |
 | ----------------------- | ------------------- | -------------------- | --------------------------- |
-| Context7 API Token      | `agenthub-context7` | `default`            | Library doc fetching        |
-| DeepSeek API Token      | `agenthub-deepseek` | `default`            | Local reasoning (if cloud)  |
-| Custom Integration Keys | `agenthub-custom`   | `{integration_name}` | User-defined MCP servers    |
-| Database Credentials    | `agenthub-db`       | `{database_name}`    | If using persistent storage |
+| Context7 API Token      | `prompthub-context7` | `default`            | Library doc fetching        |
+| DeepSeek API Token      | `prompthub-deepseek` | `default`            | Local reasoning (if cloud)  |
+| Custom Integration Keys | `prompthub-custom`   | `{integration_name}` | User-defined MCP servers    |
+| Database Credentials    | `prompthub-db`       | `{database_name}`    | If using persistent storage |
 
 ### App-Level Credentials
 
@@ -53,21 +53,21 @@ Use the `security` command to add items to Keychain:
 ```bash
 # Add Context7 API token
 security add-generic-password \
-  -s "agenthub-context7" \
+  -s "prompthub-context7" \
   -a "default" \
   -w "your-context7-api-key-here" \
   ~/Library/Keychains/login.keychain-db
 
 # Add custom integration token
 security add-generic-password \
-  -s "agenthub-custom" \
+  -s "prompthub-custom" \
   -a "my-integration" \
   -w "your-custom-token-here" \
   ~/Library/Keychains/login.keychain-db
 
 # Add database credentials
 security add-generic-password \
-  -s "agenthub-db" \
+  -s "prompthub-db" \
   -a "memory-store" \
   -w "db-password-here" \
   ~/Library/Keychains/login.keychain-db
@@ -97,25 +97,25 @@ def get_keychain_item(service: str, account: str) -> str:
     raise ValueError(f"Keychain item not found: {service}/{account}")
 
 # Usage
-context7_token = get_keychain_item("agenthub-context7", "default")
+context7_token = get_keychain_item("prompthub-context7", "default")
 ```
 
 ### Step 3: Reference in Router Config
 
-Router config file (`~/.agenthub/config.json`) references Keychain:
+Router config file (`~/.prompthub/config.json`) references Keychain:
 
 ```json
 {
   "credentials": {
     "context7": {
       "type": "keychain",
-      "service": "agenthub-context7",
+      "service": "prompthub-context7",
       "account": "default"
     },
     "custom_integrations": [
       {
         "type": "keychain",
-        "service": "agenthub-custom",
+        "service": "prompthub-custom",
         "account": "my-integration"
       }
     ]
@@ -131,7 +131,7 @@ Router config file (`~/.agenthub/config.json`) references Keychain:
 
 ```bash
 # Show all MCP-related Keychain entries
-security dump-keychain -d login | grep agenthub
+security dump-keychain -d login | grep prompthub
 ```
 
 ### Update a Credential
@@ -139,7 +139,7 @@ security dump-keychain -d login | grep agenthub
 ```bash
 # Update existing Context7 token
 security add-generic-password \
-  -s "agenthub-context7" \
+  -s "prompthub-context7" \
   -a "default" \
   -w "new-token-value" \
   -U \
@@ -151,7 +151,7 @@ security add-generic-password \
 ```bash
 # Remove a Keychain item
 security delete-generic-password \
-  -s "agenthub-context7" \
+  -s "prompthub-context7" \
   -a "default" \
   ~/Library/Keychains/login.keychain-db
 ```
@@ -161,7 +161,7 @@ security delete-generic-password \
 ```bash
 # Show Keychain Access GUI for manual inspection
 open /Applications/Utilities/Keychain\ Access.app
-# Search for "agenthub" to see all router credentials
+# Search for "prompthub" to see all router credentials
 ```
 
 ---
@@ -197,7 +197,7 @@ open /Applications/Utilities/Keychain\ Access.app
 ```bash
 # Check if item exists
 security find-generic-password \
-  -s "agenthub-context7" \
+  -s "prompthub-context7" \
   ~/Library/Keychains/login.keychain-db
 
 # If not found, add it with Step 1 commands above
@@ -224,7 +224,7 @@ security unlock-keychain ~/Library/Keychains/login.keychain-db
 
 1. Open Keychain Access (`/Applications/Utilities/`)
 2. Select "login" keychain
-3. Find `agenthub-*` items
+3. Find `prompthub-*` items
 4. Double-click each item → "Access Control" tab
 5. Set "Allow all applications to access this item"
 

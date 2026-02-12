@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: AgentHub Router API
+  title: PromptHub Router API
   version: 0.1.0
   description: |
     Centralized MCP router with server management, prompt enhancement, and caching.
@@ -15,8 +15,8 @@ info:
     - Audit logging and security alerts
 
   contact:
-    name: AgentHub Project
-    url: https://github.com/yourusername/agenthub
+    name: PromptHub Project
+    url: https://github.com/yourusername/prompthub
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT

@@ -1,12 +1,12 @@
-# Claude Desktop Integration with AgentHub
+# Claude Desktop Integration with PromptHub
 
-> **Complete guide to connecting Claude Desktop to AgentHub for unified MCP access**
+> **Complete guide to connecting Claude Desktop to PromptHub for unified MCP access**
 
 ---
 
 ## Overview
 
-AgentHub acts as a **centralized MCP proxy** for Claude Desktop, providing:
+PromptHub acts as a **centralized MCP proxy** for Claude Desktop, providing:
 
 1. **Unified Access** - Access all 7+ MCP servers through a single connection
 2. **Prompt Enhancement** - Automatically improve prompts with DeepSeek-R1 reasoning
@@ -26,7 +26,7 @@ AgentHub acts as a **centralized MCP proxy** for Claude Desktop, providing:
          │ JSON-RPC over stdio
          ▼
 ┌─────────────────────────────────┐
-│      AgentHub Router            │
+│      PromptHub Router            │
 │     localhost:9090              │
 │                                 │
 │  1. Prompt Enhancement          │
@@ -51,7 +51,7 @@ AgentHub acts as a **centralized MCP proxy** for Claude Desktop, providing:
 
 Before starting, ensure:
 
-- [ ] **AgentHub is running**: `curl http://localhost:9090/health` returns healthy
+- [ ] **PromptHub is running**: `curl http://localhost:9090/health` returns healthy
 - [ ] **Claude Desktop installed**: Version 1.0+ (with MCP support)
 - [ ] **Ollama running**: For prompt enhancement (optional but recommended)
 - [ ] **7+ MCP servers running**: Check via `curl http://localhost:9090/servers`
@@ -60,7 +60,7 @@ Before starting, ensure:
 
 ## Example Configurations
 
-AgentHub provides example configurations in `clients/claude/`:
+PromptHub provides example configurations in `clients/claude/`:
 
 - **`claude-desktop-unified.json`** - ⭐ **Recommended**: Unified MCP bridge (all 7 servers in one)
 - **`claude-desktop-config.json.example`** - Alternative curl-based approach
@@ -69,7 +69,7 @@ AgentHub provides example configurations in `clients/claude/`:
 **Quick copy:**
 ```bash
 # Use the unified bridge (recommended)
-cp ~/.local/share/agenthub/clients/claude/claude-desktop-unified.json \
+cp ~/.local/share/prompthub/clients/claude/claude-desktop-unified.json \
    ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```
 
@@ -105,9 +105,9 @@ cp "$HOME/Library/Application Support/Claude/claude_desktop_config.json" \
    "$HOME/Library/Application Support/Claude/claude_desktop_config.json.backup-$(date +%Y%m%d)"
 ```
 
-### Step 3: Add AgentHub MCP Server
+### Step 3: Add PromptHub MCP Server
 
-Claude Desktop expects MCP servers configured with `mcpServers` object. However, **AgentHub uses HTTP transport**, not stdio.
+Claude Desktop expects MCP servers configured with `mcpServers` object. However, **PromptHub uses HTTP transport**, not stdio.
 
 **Option A: Manual Edit** (Recommended)
 
@@ -117,12 +117,12 @@ Open the config file in your editor:
 code "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 ```
 
-Add the AgentHub server:
+Add the PromptHub server:
 
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "curl",
       "args": [
         "-s",
@@ -151,8 +151,8 @@ if [ ! -f "$CONFIG_PATH" ]; then
   echo '{"mcpServers": {}}' > "$CONFIG_PATH"
 fi
 
-# Add AgentHub server
-jq '.mcpServers["agenthub"] = {
+# Add PromptHub server
+jq '.mcpServers["prompthub"] = {
   "command": "curl",
   "args": [
     "-s",
@@ -169,7 +169,7 @@ jq '.mcpServers["agenthub"] = {
 }' "$CONFIG_PATH" > /tmp/claude_config.json
 
 mv /tmp/claude_config.json "$CONFIG_PATH"
-echo "✅ AgentHub added to Claude Desktop config"
+echo "✅ PromptHub added to Claude Desktop config"
 ```
 
 ### Step 4: Restart Claude Desktop
@@ -194,7 +194,7 @@ open -a "Claude"
 After restarting Claude Desktop:
 
 1. **Look for the MCP badge** at the bottom of the chat window
-2. It should show: `🔌 AgentHub (7 tools)` or similar
+2. It should show: `🔌 PromptHub (7 tools)` or similar
 
 ### Test 2: List Available Tools
 
@@ -206,7 +206,7 @@ Show me what MCP tools are available
 
 **Expected Response:**
 ```
-Available MCP Tools via AgentHub:
+Available MCP Tools via PromptHub:
 - context7: Fetch documentation (React, Node.js, etc.)
 - desktop-commander: File operations and terminal commands
 - sequential-thinking: Step-by-step reasoning
@@ -223,7 +223,7 @@ Use context7: How do I use React useState hook?
 ```
 
 **Expected Flow:**
-1. Prompt sent to AgentHub
+1. Prompt sent to PromptHub
 2. Enhanced by DeepSeek-R1 (adds structure/clarity)
 3. Routed to context7 MCP server
 4. Documentation fetched and returned
@@ -241,7 +241,7 @@ The useState hook is used for state management in functional components.
 ## Example
 [Code example with explanation]
 
-Source: context7 via AgentHub
+Source: context7 via PromptHub
 ```
 
 ### Test 4: Use Desktop Commander
@@ -349,7 +349,7 @@ open http://localhost:9090/dashboard
 
 ### Custom Instructions for Tool Usage
 
-To get the best experience with AgentHub's MCP tools, configure Claude Desktop's custom instructions:
+To get the best experience with PromptHub's MCP tools, configure Claude Desktop's custom instructions:
 
 **1. Open Claude Desktop Settings**
 - Click Settings (gear icon) → Custom Instructions
@@ -398,7 +398,7 @@ Here's what I found..."
 
 ### Common Issues
 
-For common AgentHub connection, health check, and MCP server issues, see:
+For common PromptHub connection, health check, and MCP server issues, see:
 - **[Common Troubleshooting Guide](../_shared/troubleshooting-common.md)** - Connection refused, router not responding, timeout errors
 - **[Health Checks Guide](../_shared/health-checks.md)** - Verification commands and status checks
 
@@ -450,14 +450,14 @@ For common AgentHub connection, health check, and MCP server issues, see:
 
 3. **Check enhancement rules for claude-desktop:**
    ```bash
-   cat ~/.local/share/agenthub/configs/enhancement-rules.json | jq '.clients."claude-desktop"'
+   cat ~/.local/share/prompthub/configs/enhancement-rules.json | jq '.clients."claude-desktop"'
    ```
 
 4. **Verify X-Client-Name header is set:**
    ```json
    {
      "mcpServers": {
-       "agenthub": {
+       "prompthub": {
          "args": ["-H", "X-Client-Name: claude-desktop"]
        }
      }
@@ -474,7 +474,7 @@ For common AgentHub connection, health check, and MCP server issues, see:
 
 1. **Grant always-allow in Keychain Access:**
    - Open Keychain Access app
-   - Search for "agenthub"
+   - Search for "prompthub"
    - Double-click entry → Access Control → Always Allow
 
 2. **Use LaunchAgent approach** (see `../02-core-setup/launchagent.md`)
@@ -485,12 +485,12 @@ For common AgentHub connection, health check, and MCP server issues, see:
 
 ### Multiple MCP Proxies
 
-You can configure multiple AgentHub instances or combine with direct MCP servers:
+You can configure multiple PromptHub instances or combine with direct MCP servers:
 
 ```json
 {
   "mcpServers": {
-    "agenthub": {
+    "prompthub": {
       "command": "curl",
       "args": [
         "-s",
@@ -561,7 +561,7 @@ Restrict which tools Claude Desktop can access:
 
 1. **Use local Ollama models** (vs cloud APIs)
 2. **Enable L1 cache** (already on by default)
-3. **Increase cache size** in AgentHub settings:
+3. **Increase cache size** in PromptHub settings:
    ```bash
    # Edit router/config/settings.py
    cache_max_size: int = 5000  # Increase from 1000
@@ -585,8 +585,8 @@ curl http://localhost:9090/dashboard/activity-partial
 ## See Also
 
 - [app-configs.md](app-configs.md) - Quick config reference for all clients
-- [getting-started.md](getting-started.md) - AgentHub setup guide
-- [launchagent-setup.md](launchagent-setup.md) - Auto-start AgentHub on login
+- [getting-started.md](getting-started.md) - PromptHub setup guide
+- [launchagent-setup.md](launchagent-setup.md) - Auto-start PromptHub on login
 - [keychain-setup.md](keychain-setup.md) - Credential management
 
 ---
@@ -598,7 +598,7 @@ curl http://localhost:9090/dashboard/activity-partial
 ~/Library/Application Support/Claude/claude_desktop_config.json
 ```
 
-### AgentHub Health Check
+### PromptHub Health Check
 ```bash
 curl http://localhost:9090/health
 ```
