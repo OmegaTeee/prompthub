@@ -30,7 +30,7 @@ Comprehensive audit logging and security monitoring implementation.
 - [SECURITY-FIXES.md](../SECURITY-FIXES.md) - Security improvements and fixes
 
 ### User Guides
-See [../guides/](../guides/) for user-facing documentation on setup, configuration, and integrations.
+User guides (setup, configuration, integrations) live in the Obsidian vault at `~/Vault/PromptHub/`.
 
 ## Contributing
 

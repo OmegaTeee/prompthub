@@ -122,8 +122,4 @@ Client-independent PromptHub settings are in the parent `configs/` folder:
 
 ## Documentation
 
-Full integration guides available:
-- [Claude Desktop Integration](../guides/claude-desktop-integration.md)
-- [VS Code Integration](../guides/vscode-integration.md)
-- [Raycast Integration](../guides/raycast-integration.md)
-- [Testing Integrations](../guides/testing-integrations.md)
+Full integration guides are in the Obsidian vault at `~/Vault/PromptHub/Integrations/`.

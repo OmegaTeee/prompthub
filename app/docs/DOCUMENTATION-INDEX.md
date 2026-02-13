@@ -10,13 +10,7 @@ prompthub/
 ├── CLAUDE.md                    # Instructions for Claude Code
 ├── CHANGELOG.md                 # Version history
 │
-├── guides/                      # User-facing documentation
-│   ├── index.md                 # Guide index
-│   ├── getting-started.md       # Installation and setup
-│   ├── claude-desktop-integration.md
-│   ├── vscode-integration.md
-│   ├── raycast-integration.md
-│   └── testing-integrations.md
+# User guides: ~/Vault/PromptHub/ (Obsidian vault)
 │
 └── docs/                        # Developer documentation
     ├── README.md                # Developer docs index
@@ -43,15 +37,7 @@ prompthub/
 ## 🎯 Documentation by Audience
 
 ### For Users
-Start here if you want to **use** PromptHub:
-
-1. **[README.md](../README.md)** - Project overview and quick start
-2. **[guides/getting-started.md](../guides/getting-started.md)** - Installation guide
-3. **[guides/](../guides/)** - Integration guides for:
-   - Claude Desktop
-   - VS Code / Cline / Claude Code
-   - Raycast
-   - Figma, ComfyUI
+User guides (installation, integrations, workflows) live in the **Obsidian vault** at `~/Vault/PromptHub/`.
 
 ### For Developers
 Start here if you want to **contribute** to PromptHub:
@@ -63,26 +49,14 @@ Start here if you want to **contribute** to PromptHub:
 5. **[CLAUDE.md](../CLAUDE.md)** - Claude Code integration guide
 
 ### For Operators
-Start here if you want to **deploy** and **monitor** PromptHub:
-
-1. **[guides/docker-guide.md](../guides/docker-guide.md)** - Docker deployment
-2. **[guides/launchagent-setup.md](../guides/launchagent-setup.md)** - macOS LaunchAgent
-3. **[docs/audit/](audit/)** - Audit logging and security monitoring
-4. **Dashboard**: `http://localhost:9090/dashboard` - Real-time monitoring
+1. **[docs/audit/](audit/)** - Audit logging and security monitoring
+2. **Dashboard**: `http://localhost:9090/dashboard` - Real-time monitoring
+3. Deployment guides (Docker, LaunchAgent) in Obsidian vault: `~/Vault/PromptHub/Core Setup/`
 
 ## 📖 Documentation Categories
 
-### Installation & Setup
-- [Getting Started](../guides/getting-started.md) - Installation, verification
-- [Docker Guide](../guides/docker-guide.md) - Container deployment
-- [LaunchAgent Setup](../guides/launchagent-setup.md) - Auto-start on login
-- [Keychain Setup](../guides/keychain-setup.md) - Secure credentials
-
-### Integration Guides
-- [Claude Desktop](../guides/claude-desktop-integration.md) - DeepSeek-R1 enhancement
-- [VS Code](../guides/vscode-integration.md) - Qwen3-Coder for code
-- [Raycast](../guides/raycast-integration.md) - Quick command launcher
-- [Testing Integrations](../guides/testing-integrations.md) - Comprehensive tests
+### Installation, Setup & Integration Guides
+See Obsidian vault: `~/Vault/PromptHub/`
 
 ### API Documentation
 - [API Overview](api/README.md) - REST endpoints, workflows

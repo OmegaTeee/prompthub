@@ -11,21 +11,21 @@ PromptHub is a centralized MCP (Model Context Protocol) router for macOS. It pro
 This is a **multi-root workspace** with clear separation between the Python project, client configs, user guides, and MCP servers:
 
 ```
-eoz/                              # Workspace root
+prompthub/                        # Workspace root
 ├── app/                          # Python project (FastAPI router)
 │   ├── router/                   # FastAPI application
 │   ├── tests/                    # Pytest suite
 │   ├── configs/                  # Runtime configs (mcp-servers.json, enhancement-rules.json)
 │   ├── templates/                # Jinja2 templates
 │   ├── scripts/                  # Shell scripts
-│   ├── docs/                     # Developer documentation
+│   ├── docs/                     # Developer/engineering documentation
 │   ├── pyproject.toml
 │   ├── requirements.txt
 │   └── Dockerfile
-├── clients/                      # Client setup (Claude Desktop, VS Code, Raycast)
-├── guides/                       # User guides (Obsidian vault)
+├── clients/                      # Client setup (Claude Desktop, VS Code, Raycast, Cursor)
 ├── mcps/                         # Node.js MCP servers
 └── .claude/ .github/ .vscode/    # Workspace-level configs
+# User guides live in Obsidian vault: ~/Vault/PromptHub/
 ```
 
 ## Development Commands
@@ -88,7 +88,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - **Async everywhere**: Use `httpx` (not `requests`), `asyncio` for I/O
 - **Circuit breaker**: 3 failures → OPEN, 30s → HALF_OPEN, success → CLOSED
 - **Stdio bridges**: MCP servers communicate via JSON-RPC over stdin/stdout
-- **workspace_root**: Cross-directory paths (mcps/, guides/) resolved via `Settings.workspace_root`
+- **workspace_root**: Cross-directory paths (mcps/) resolved via `Settings.workspace_root`
 
 ## Configuration Files
 
@@ -160,7 +160,7 @@ Query API: `GET /audit/activity?client_id=admin&limit=50`
 
 ### Documentation
 
-- **User Guides**: `guides/` - Setup, configuration, integrations
+- **User Guides**: Obsidian vault (`~/Vault/PromptHub/`) - Setup, configuration, integrations
 - **Developer Docs**: `app/docs/` - Architecture, audit system, security
 - **Audit Implementation**: `app/docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md`
 
