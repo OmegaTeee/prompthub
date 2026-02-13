@@ -53,6 +53,15 @@ class Settings(BaseSettings):
                 Path(__file__).resolve().parents[3]
             )
 
+        # Normalize ollama_host: strip scheme and port if present
+        # (handles OLLAMA_HOST=http://localhost:11434 from system env)
+        host = self.ollama_host
+        if "://" in host:
+            host = host.split("://", 1)[1]
+        if ":" in host:
+            host = host.split(":", 1)[0]
+        self.ollama_host = host
+
 
 @lru_cache
 def get_settings() -> Settings:

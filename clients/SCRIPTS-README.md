@@ -10,6 +10,7 @@ Generates Claude Desktop MCP configuration from PromptHub MCP server registry.
 **Purpose:** Automates creation of `claude_desktop_config.json` from `configs/mcp-servers.json`.
 
 **Usage:**
+
 ```bash
 python3 clients/generate-claude-config.py
 
@@ -29,6 +30,7 @@ python3 clients/generate-claude-config.py
 - `configs/mcp-servers.json` must exist
 
 **Example output:**
+
 ```json
 {
   "mcpServers": {
@@ -49,6 +51,7 @@ Bridges HTTP MCP requests to stdio-based MCP servers (legacy approach).
 **Purpose:** Allows Claude Desktop to communicate with PromptHub via stdio protocol.
 
 **Usage:**
+
 ```bash
 # Called by Claude Desktop config
 node /path/to/mcp-stdio-bridge.sh
@@ -89,6 +92,7 @@ See [Claude setup](claude/) for unified bridge setup.
 ## Comparison: Generated Config vs Unified Bridge
 
 **Generated Config (Individual Servers):**
+
 ```json
 {
   "mcpServers": {
@@ -99,12 +103,14 @@ See [Claude setup](claude/) for unified bridge setup.
   }
 }
 ```
+
 - 7+ separate MCP connections
 - No prompt enhancement
 - No audit logging
 - Direct server access
 
 **Unified Bridge (Single Connection):**
+
 ```json
 {
   "mcpServers": {
@@ -119,6 +125,7 @@ See [Claude setup](claude/) for unified bridge setup.
   }
 }
 ```
+
 - 1 MCP connection (aggregates all 7 servers)
 - Prompt enhancement with DeepSeek-R1
 - Full audit logging
@@ -130,17 +137,20 @@ See [Claude setup](claude/) for unified bridge setup.
 ### From Individual Servers → Unified Bridge
 
 1. **Backup current config:**
+
    ```bash
    cp ~/Library/Application\ Support/Claude/claude_desktop_config.json \
       ~/Library/Application\ Support/Claude/claude_desktop_config.json.backup
    ```
 
 2. **Use setup script:**
+
    ```bash
    clients/claude/setup-claude.sh
    ```
 
 3. **Restart Claude Desktop:**
+
    ```bash
    osascript -e 'quit app "Claude"' && open -a "Claude"
    ```
@@ -153,11 +163,13 @@ See [Claude setup](claude/) for unified bridge setup.
 ### From Unified Bridge → Individual Servers
 
 1. **Generate new config:**
+
    ```bash
    python3 clients/generate-claude-config.py
    ```
 
 2. **Restart Claude Desktop:**
+
    ```bash
    osascript -e 'quit app "Claude"' && open -a "Claude"
    ```
@@ -173,6 +185,7 @@ See [Claude setup](claude/) for unified bridge setup.
 **Problem:** `generate-claude-config.py` fails with "File not found"
 
 **Solution:**
+
 ```bash
 # Ensure MCP server registry exists
 ls -la configs/mcp-servers.json
@@ -185,6 +198,7 @@ python3 clients/generate-claude-config.py
 **Problem:** Generated config has missing servers
 
 **Solution:**
+
 ```bash
 # Validate MCP servers are configured
 scripts/router/validate-mcp-servers.sh
@@ -198,6 +212,7 @@ cat configs/mcp-servers.json | jq .
 **Problem:** `mcp-stdio-bridge.sh` returns "Connection refused"
 
 **Solution:**
+
 ```bash
 # Ensure PromptHub is running
 curl http://localhost:9090/health
@@ -209,6 +224,7 @@ launchctl start com.prompthub.router
 **Problem:** Responses are malformed
 
 **Solution:**
+
 ```bash
 # Check jq is installed
 which jq
