@@ -228,6 +228,8 @@ Edit `app/configs/enhancement-rules.json` to customize per-client behavior.
 
 PromptHub provides REST APIs for MCP server management, prompt enhancement, and monitoring.
 
+Full OpenAPI 3.0 specification: **[app/docs/api/openapi.yaml](app/docs/api/openapi.yaml)** (43 endpoints)
+
 ### Base URL
 
 ```
