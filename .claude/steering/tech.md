@@ -73,6 +73,10 @@ def create_dashboard_router(
 `CLOSED` (normal) → 3 failures → `OPEN` (reject all) → 30s → `HALF_OPEN` (test one) → success → `CLOSED`
 
 ### Audit Events
+Use `audit_event()` for generic logging; convenience wrappers exist for common cases:
+- `audit_admin_action(action, server_name, status)` — server start/stop/restart
+- `audit_credential_access(action, credential_key, status)` — keyring access
+
 ```python
 from router.audit import audit_event
 audit_event(

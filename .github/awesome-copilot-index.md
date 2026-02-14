@@ -208,7 +208,7 @@ For questions about awesome-copilot resources:
 
 ---
 
-**Last Updated:** February 3, 2026
+**Last Updated:** February 14, 2026
 
 **Documentation Structure:**
 

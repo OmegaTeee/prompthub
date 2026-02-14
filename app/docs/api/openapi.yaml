@@ -9,14 +9,14 @@ info:
     - MCP server lifecycle management (install, start, stop, monitor)
     - Unified MCP server access via JSON-RPC proxy
     - Prompt enhancement via Ollama with per-client routing
-    - Response caching (L1 memory, L2 semantic)
+    - Response caching (L1 in-memory; L2 semantic planned)
     - Circuit breaker resilience patterns
     - Real-time monitoring dashboard
     - Audit logging and security alerts
 
   contact:
     name: PromptHub Project
-    url: https://github.com/yourusername/prompthub
+    url: https://github.com/OmegaTeee/prompthub
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT

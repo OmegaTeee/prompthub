@@ -20,6 +20,7 @@ PromptHub provides a single local router (`localhost:9090`) that:
 | Phase 2.5 | **Complete** | MCP server management, stdio bridges |
 | Phase 3 | **Complete** | Desktop integration, config generators, documentation pipeline |
 | Phase 4 | **Complete** | HTMX dashboard with real-time monitoring |
+| Phase 5 | **Complete** | OpenAI-compatible API proxy for desktop apps |
 
 ## Quick Start
 
@@ -121,7 +122,7 @@ If an MCP server fails:
 
 ### Caching
 - **L1**: Exact match (SHA256 hash) - instant response
-- **L2**: Semantic similarity (Phase 2.1) - similar prompts hit cache
+- **L2**: Semantic similarity (planned; Phase 2.1) - similar prompts would hit cache
 
 ## Dashboard
 

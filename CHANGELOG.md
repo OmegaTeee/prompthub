@@ -6,24 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 
 ## [Unreleased]
 
+(No changes yet.)
+
+---
+
+## [0.1.4] - 2026-02-14
+
 ### Added
 - Steering documents for AI agents (`.claude/steering/product.md`, `tech.md`, `structure.md`)
 - Complete OpenAPI 3.0 spec coverage (43 endpoints, including `/v1/*` proxy)
 - Module coverage analysis (`app/docs/modules/COVERAGE-ANALYSIS.md`)
+
+### Changed
+- Documentation restructuring: fixed broken links, promoted completed features, archived stale docs
+- Established documentation lifecycle pattern (reviews → features → archive)
 
 ### Fixed
 - Stale `guides/` references across ~15 files updated to point to Obsidian vault
 
 ### Removed
 - `PROJECT.md` (content incorporated into `.claude/steering/product.md`)
-
----
-
-## [0.1.4] - 2026-02-14
-
-### Changed
-- Documentation restructuring: fixed broken links, promoted completed features, archived stale docs
-- Established documentation lifecycle pattern (reviews → features → archive)
 
 ## [0.1.3] - 2026-02-13
 
