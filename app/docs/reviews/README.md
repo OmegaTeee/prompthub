@@ -1,6 +1,6 @@
 # Code Review Reports
 
-This directory contains automated and manual code review reports for PromptHub.
+This directory contains **automated and manual code reviews, planning documents, and proposals** for PromptHub. Once a proposed feature is fully implemented, its documentation is moved to [docs/features/](../features/) with a completion summary.
 
 ## Latest Reviews
 
@@ -126,4 +126,12 @@ When adding new reviews:
 
 ---
 
-**Last Updated:** 2026-02-03
+**Last Updated:** 2026-02-12
+
+---
+
+## 📁 Completed Features (Moved to docs/features/)
+
+The following **proposed implementations have been completed** and moved from this folder to [docs/features/](../features/) with completion summaries:
+
+- **[OPENAI-PROXY-COMPLETE.md](../features/OPENAI-PROXY-COMPLETE.md)** (was: `2026-02-11-oai-proxy.md`) — Desktop app OpenAI-compatible API proxy integration ✅

@@ -79,27 +79,30 @@ See Obsidian vault: `~/Vault/PromptHub/`
 ### Audit & Security
 - [Audit Implementation](audit/AUDIT-IMPLEMENTATION-COMPLETE.md) - Security score: 9.0/10
 - [Keyring Integration](features/KEYRING-INTEGRATION-COMPLETE.md) - Credential management
+- [OpenAI-Compatible API Proxy](features/OPENAI-PROXY-COMPLETE.md) - Desktop app integration with router features
 - [Security Fixes](../SECURITY-FIXES.md) - Security improvements
 
 ## 🔍 Finding Documentation
 
 ### By Feature
 - **MCP server management** → [modules/servers.md](modules/servers.md)
+- **OpenAI-compatible API proxy** → [features/OPENAI-PROXY-COMPLETE.md](features/OPENAI-PROXY-COMPLETE.md)
 - **Prompt enhancement** → [ADR-003](architecture/ADR-003-per-client-enhancement.md)
 - **Circuit breakers** → [ADR-002](architecture/ADR-002-circuit-breaker.md)
 - **Audit logging** → [audit/](audit/)
 - **API reference** → [api/](api/)
 
 ### By Use Case
-- **"How do I install PromptHub?"** → [guides/getting-started.md](../guides/getting-started.md)
-- **"How do I connect Claude Desktop?"** → [guides/claude-desktop-integration.md](../guides/claude-desktop-integration.md)
+- **"How do I install PromptHub?"** → [Getting Started Guide](https://obsidian.md) (Obsidian vault: `~/Vault/PromptHub/01-Getting Started/`)
+- **"How do I connect Claude Desktop?"** → [Claude Desktop Integration](https://obsidian.md) (Obsidian vault: `~/Vault/PromptHub/03-Integrations/`)
+- **"How do I connect Cursor/Raycast/Obsidian apps?"** → [OpenAI-Compatible API Proxy](features/OPENAI-PROXY-COMPLETE.md)
 - **"What's the API endpoint format?"** → [api/README.md](api/README.md)
 - **"Why use stdio instead of HTTP?"** → [ADR-001](architecture/ADR-001-stdio-transport.md)
 - **"How does auto-restart work?"** → [modules/servers.md § Supervisor](modules/servers.md#supervisor)
 
 ### By Role
-- **First-time user** → [README.md](../README.md) → [guides/getting-started.md](../guides/getting-started.md)
-- **Claude Desktop user** → [guides/claude-desktop-integration.md](../guides/claude-desktop-integration.md)
+- **First-time user** → [README.md](../README.md) → [Obsidian vault: Getting Started](https://obsidian.md) (`~/Vault/PromptHub/01-Getting Started/`)
+- **Claude Desktop user** → [Obsidian vault: Integrations](https://obsidian.md) (`~/Vault/PromptHub/03-Integrations/`)
 - **Developer adding feature** → [architecture/](architecture/) → [modules/](modules/)
 - **Operator monitoring** → Dashboard → [audit/](audit/)
 - **API consumer** → [api/openapi.yaml](api/openapi.yaml)
@@ -125,6 +128,13 @@ See Obsidian vault: `~/Vault/PromptHub/`
 
 ## 🆕 What's New
 
+### Recently Added (2026-02-12)
+✅ **OpenAI-Compatible API Proxy**
+- Desktop apps (Cursor, Raycast, Obsidian) connect to localhost:9090/v1
+- Transparent enhancement pipeline, caching, circuit breaking, audit logging
+- Per-client API key configuration and enhancement rules
+- Complete implementation with 19 comprehensive tests
+
 ### Recently Added (2025-02-02)
 ✅ **API Documentation**
 - Complete OpenAPI 3.0 specification
@@ -147,7 +157,11 @@ See Obsidian vault: `~/Vault/PromptHub/`
 - Error handling guide
 
 ### Coming Soon
-- Additional module docs (enhancement, resilience, cache)
+- ⏳ **Module documentation** (10 modules pending)
+  - 🔴 HIGH: resilience/, enhancement/, audit.py, security_alerts.py
+  - 🟡 MEDIUM: middleware/, cache/, config/, dashboard/
+  - 🟠 LOW: pipelines/, clients/
+  - See [modules/COVERAGE-ANALYSIS.md](modules/COVERAGE-ANALYSIS.md) for prioritization
 - Performance optimization guide
 - Troubleshooting runbook
 - Migration guides (v0.1 → v0.2)
@@ -156,19 +170,24 @@ See Obsidian vault: `~/Vault/PromptHub/`
 
 ### Adding Documentation
 1. Choose appropriate location:
-   - User-facing → `guides/`
+   - User-facing guides → Obsidian vault (`~/Vault/PromptHub/`)
+   - Developer documentation → `docs/`
    - API reference → `docs/api/`
    - Architecture → `docs/architecture/`
    - Module details → `docs/modules/`
+   - Code reviews & planning → `docs/reviews/`
+   - Feature implementation → `docs/features/`
 
 2. Follow naming conventions:
-   - Guides: `feature-name.md`
+   - User guides (Obsidian): Task-oriented names (e.g., "04-Workflows/code-development.md")
    - ADRs: `ADR-NNN-decision-name.md`
    - Modules: `module-name.md`
+   - Reviews: `YYYY-MM-DD-feature-name-review.md`
 
 3. Update index files:
-   - Add to relevant README.md
-   - Update this index
+   - User guides: Update relevant Obsidian vault index
+   - Developer docs: Add to relevant `README.md` in docs/
+   - Update [DOCUMENTATION-INDEX.md](DOCUMENTATION-INDEX.md) if major feature
 
 ### Documentation Review Checklist
 - [ ] Clear, concise language
@@ -186,8 +205,8 @@ See Obsidian vault: `~/Vault/PromptHub/`
 - **Incorrect documentation**: Open PR with fix
 
 ### Quick Help
-- **Installation issues**: [guides/getting-started.md](../guides/getting-started.md)
-- **Integration issues**: [guides/testing-integrations.md](../guides/testing-integrations.md)
+- **Installation issues**: [Obsidian vault: Getting Started](https://obsidian.md) (`~/Vault/PromptHub/01-Getting Started/`)
+- **Integration issues**: [Obsidian vault: Integrations](https://obsidian.md) (`~/Vault/PromptHub/03-Integrations/`) and [Testing guide](https://obsidian.md) (`~/Vault/PromptHub/05-Testing/integration-tests.md`)
 - **API questions**: [api/README.md](api/README.md)
 - **Architecture questions**: [architecture/README.md](architecture/README.md)
 
@@ -198,9 +217,10 @@ See Obsidian vault: `~/Vault/PromptHub/`
 - ✅ **Integration**: Complete (3 main clients)
 - ✅ **API Reference**: Complete
 - ✅ **Architecture**: Complete (5 ADRs)
-- 🟡 **Modules**: Partial (1 of 11)
+- 🟡 **Modules**: Partial (1 of 11 documented — see [modules/COVERAGE-ANALYSIS.md](modules/COVERAGE-ANALYSIS.md))
 - ✅ **Testing**: Complete
 - ✅ **Audit/Security**: Complete
+- ✅ **Features**: 3 completed implementations documented
 
 ### Next Priorities
 1. Document remaining modules (enhancement, resilience, cache)

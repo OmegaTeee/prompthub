@@ -2,6 +2,8 @@
 
 Detailed documentation for PromptHub's core modules.
 
+**Coverage**: 1 of 11 modules fully documented (9.1%) — See [COVERAGE-ANALYSIS.md](COVERAGE-ANALYSIS.md)
+
 ## Module Index
 
 ### Core Modules

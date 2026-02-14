@@ -1,5 +1,15 @@
 # OpenAI-Compatible API Proxy for PromptHub Router
 
+**Status:** ✅ **COMPLETED** (2026-02-12)
+
+## Summary
+
+This feature is **fully implemented and integrated** into the production router. All 4 implementation phases (Foundation, Core Router, Integration, Tests) are complete. Desktop apps (Cursor, Raycast, Obsidian) can now connect to the router at `localhost:9090/v1/` instead of bypassing it at `localhost:11434/v1/`.
+
+**Key Achievement:** Desktop apps now transparently get enhancement pipeline, caching, circuit breaking, audit logging, and per-client model routing—all without configuration changes on the app side.
+
+---
+
 ## Context
 
 Desktop apps like Cursor, Raycast extensions, and Obsidian plugins only support OpenAI-compatible API endpoints (`/v1/chat/completions`). Currently, they must connect directly to Ollama at `localhost:11434/v1/`, bypassing the router's enhancement pipeline, caching, circuit breaking, and audit logging. This plan adds `/v1/` endpoints to the router so desktop apps point to `localhost:9090/v1/` and transparently get all router features.

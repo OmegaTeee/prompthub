@@ -25,9 +25,9 @@ Comprehensive audit logging and security monitoring implementation.
 - [CLAUDE.md](../CLAUDE.md) - Claude Code integration guide
 
 ### Implementation Guides
-- [KEYRING-INTEGRATION-COMPLETE.md](../KEYRING-INTEGRATION-COMPLETE.md) - Keyring credential management
-- [DASHBOARD-IMPROVEMENTS.md](../DASHBOARD-IMPROVEMENTS.md) - Dashboard enhancement documentation
-- [SECURITY-FIXES.md](../SECURITY-FIXES.md) - Security improvements and fixes
+- [KEYRING-INTEGRATION-COMPLETE.md](features/KEYRING-INTEGRATION-COMPLETE.md) - Keyring credential management
+- [DASHBOARD-IMPROVEMENTS.md](dashboard/DASHBOARD-IMPROVEMENTS.md) - Dashboard enhancement documentation
+- [SECURITY-FIXES.md](security/SECURITY-FIXES.md) - Security improvements and fixes
 
 ### User Guides
 User guides (setup, configuration, integrations) live in the Obsidian vault at `~/Vault/PromptHub/`.

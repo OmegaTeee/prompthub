@@ -13,7 +13,17 @@
     "sk-prompthub-raycast-dev001": {
       "client_name": "raycast",
       "enhance": true,
-      "description": "Raycast AI commands"
+      "description": "Raycast commands"
+    },
+    "sk-prompthub-perplexity-dev001": {
+      "client_name": "perplexity",
+      "enhance": true,
+      "description": "Perplexity assistant"
+    },
+    "sk-prompthub-code-dev001": {
+      "client_name": "vscode",
+      "enhance": true,
+      "description": "Visual Studio Code"
     }
   }
 }
