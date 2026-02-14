@@ -14,7 +14,7 @@
     },
     {
       "name": "guides",
-      "path": "guides"
+      "path": "../../../Vault/PromptHub"
     },
     {
       "name": "mcps",
