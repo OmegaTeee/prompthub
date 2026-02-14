@@ -1,30 +1,31 @@
-# Module Documentation Coverage Analysis (2026-02-13)
+# Module Documentation Coverage Analysis (2026-02-14)
 
-**Status**: 1 of 11 modules fully documented (9.1%)
+**Status**: 1 of 12 modules fully documented (8.3%)
 
 ## Documentation Inventory
 
-### ✅ Complete (1 module)
+### Complete (1 module)
 
 | Module | Document | LOC | Status |
 |--------|----------|-----|--------|
-| **servers/** | [servers.md](servers.md) | ~400 | ✅ Comprehensive lifecycle documentation |
+| **servers/** | [servers.md](servers.md) | ~400 | Complete lifecycle documentation |
 
-### ❌ Pending (10 modules)
+### Pending (11 modules)
 
 | Module | Purpose | Est. LOC | Priority | Notes |
 |--------|---------|----------|----------|-------|
-| **enhancement/** | Prompt enhancement via Ollama | ~800 | 🔴 HIGH | Used in all enhancement flows; candidate for separate service |
-| **resilience/** | Circuit breaker pattern | ~300 | 🔴 HIGH | In all request paths; critical for understanding resilience |
-| **cache/** | L1 in-memory LRU cache | ~250 | 🟡 MEDIUM | Performance optimization; clear caching strategy |
-| **middleware/** | Request/response processing | ~150 | 🟡 MEDIUM | Audit context, activity logging, persistent storage |
-| **config/** | Settings & configuration | ~200 | 🟡 MEDIUM | Pydantic settings, JSON config loading patterns |
-| **dashboard/** | HTMX monitoring UI | ~400 | 🟡 MEDIUM | HTMX templates, real-time stats |
-| **pipelines/** | Workflow orchestration | ~200 | 🟠 LOW | Less frequently used; documentation integration |
-| **clients/** | Config generators | ~150 | 🟠 LOW | Setup utilities for Claude Desktop, VS Code, Raycast |
-| **audit.py** | Structured audit logging | ~500 | 🔴 HIGH | Security/compliance critical; audit integration patterns |
-| **security_alerts.py** | Real-time anomaly detection | ~200 | 🔴 HIGH | Security-relevant; real-time monitoring patterns |
-| **keyring_manager.py** | Credential management | ~150 | 🟠 LOW | macOS Keychain integration; well-documented in code |
+| **openai_compat/** | OpenAI-compatible proxy /v1/* | ~350 | HIGH | Desktop app gateway; bearer auth, SSE streaming, enhancement |
+| **enhancement/** | Prompt enhancement via Ollama | ~800 | HIGH | Used in all enhancement flows; candidate for separate service |
+| **resilience/** | Circuit breaker pattern | ~300 | HIGH | In all request paths; critical for understanding resilience |
+| **audit.py** | Structured audit logging | ~500 | HIGH | Security/compliance critical; audit integration patterns |
+| **security_alerts.py** | Real-time anomaly detection | ~200 | HIGH | Security-relevant; real-time monitoring patterns |
+| **cache/** | L1 in-memory LRU cache | ~250 | MEDIUM | Performance optimization; clear caching strategy |
+| **middleware/** | Request/response processing | ~150 | MEDIUM | Audit context, activity logging, persistent storage |
+| **config/** | Settings & configuration | ~200 | MEDIUM | Pydantic settings, JSON config loading patterns |
+| **dashboard/** | HTMX monitoring UI | ~400 | MEDIUM | HTMX templates, real-time stats |
+| **pipelines/** | Workflow orchestration | ~200 | LOW | Less frequently used; documentation integration |
+| **clients/** | Config generators | ~150 | LOW | Setup utilities for Claude Desktop, VS Code, Raycast |
+| **keyring_manager.py** | Credential management | ~150 | LOW | macOS Keychain integration; well-documented in code |
 
 ## Documentation Gaps by Category
 

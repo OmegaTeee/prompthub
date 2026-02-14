@@ -475,6 +475,6 @@ scripts/dev/docker.sh build --no-cache
 
 ## Related Documentation
 
-- [Testing Guide](../../guides/testing-integrations.md)
+- Testing Guide: Obsidian vault at `~/Vault/PromptHub/Testing/`
 - [CI/CD Setup](../../.github/workflows/)
 - [Docker Deployment](../../docs/deployment.md)

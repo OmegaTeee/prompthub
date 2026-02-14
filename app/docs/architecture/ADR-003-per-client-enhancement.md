@@ -307,7 +307,7 @@ def test_client_routing():
 
 ## Related
 - [ADR-005: Async-First Architecture](ADR-005-async-first.md) - Enables concurrent enhancements
-- [guides/app-configs.md](../../guides/app-configs.md) - Client configuration examples
+- Client configuration examples: `app/configs/enhancement-rules.json`
 
 ## References
 - [Ollama API Documentation](https://ollama.ai/docs/api)

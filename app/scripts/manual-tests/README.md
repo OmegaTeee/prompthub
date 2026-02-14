@@ -25,7 +25,7 @@ python scripts/manual-tests/test_keyring_integration.py
 - MCP server config with keyring references
 
 **Prerequisites:**
-- API keys stored in macOS Keychain (see [guides/02-core-setup/keychain.md](../../guides/02-core-setup/keychain.md))
+- API keys stored in macOS Keychain (see Obsidian vault: `~/Vault/PromptHub/Core Setup/Keychain.md`)
 
 ---
 

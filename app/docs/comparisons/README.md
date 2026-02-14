@@ -25,4 +25,4 @@ This section contains detailed technical comparisons to help you make informed d
 ---
 
 **Audience:** Developers, system architects, technical decision-makers
-**Related:** See [guides/](../../guides/) for user-facing documentation
+**Related:** User-facing guides live in the Obsidian vault at `~/Vault/PromptHub/`

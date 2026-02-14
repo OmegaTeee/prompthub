@@ -90,4 +90,4 @@ Tool Usage Policy:
 - Prefer built-in tools for file operations, documentation lookup, and web requests
 ```
 
-See [guides/claude-desktop-integration.md](../../../guides/claude-desktop-integration.md) for full setup instructions.
+See the Obsidian vault (`~/Vault/PromptHub/Integrations/Claude Desktop.md`) for full setup instructions.

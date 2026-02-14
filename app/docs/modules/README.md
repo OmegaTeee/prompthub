@@ -322,4 +322,4 @@ audit_admin_action(
 - [Architecture Overview](../architecture/README.md)
 - [ADR Index](../architecture/README.md#architecture-decision-records-adrs)
 - [API Documentation](../api/README.md)
-- [User Guides](../../guides/)
+- User Guides: Obsidian vault at `~/Vault/PromptHub/`

@@ -133,11 +133,11 @@ LOG_LEVEL=info
 
 ## User Guides
 
-See `guides/` for integration guides:
+User guides live in the Obsidian vault at `~/Vault/PromptHub/`:
 
-- `getting-started.md` - Quick start
-- `keychain-setup.md` - macOS Keychain
-- `launchagent-setup.md` - Auto-start setup
+- Getting Started - Quick start and verification
+- Core Setup - Keychain, LaunchAgent, Docker
+- Integrations - Claude Desktop, VS Code, Cursor, Raycast
 
 ## Project Documentation
 
@@ -193,15 +193,11 @@ Reference these instructions from awesome-copilot when working on specific areas
 
 ## Copilot Workflow
 
-**Processing Files:**
-
-- `Copilot-Processing.md` - Root-level file (like `CLAUDE.md`) for tracking Copilot task processing and findings
-
 **Output Organization:**
 
-- **User-facing guides**: Save in `guides/` (integration instructions, setup tutorials, troubleshooting)
-- **Development documentation**: Save in `docs/` (architecture, design decisions, technical specifications)
-- **Findings & analysis**: Include in `Copilot-Processing.md` or appropriate guide/doc based on content type
+- **User-facing guides**: Obsidian vault at `~/Vault/PromptHub/`
+- **Development documentation**: Save in `app/docs/` (architecture, design decisions, technical specifications)
+- **Feature completions**: Save in `app/docs/features/` after implementation
 
 ## Common Tasks
 

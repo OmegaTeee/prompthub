@@ -76,7 +76,7 @@ cd ~/.local/share/prompthub/clients/vscode
 
 ## Setup
 
-VS Code connects to PromptHub via HTTP endpoints (not stdio). See the [VS Code integration guide](../../../guides/vscode-integration.md) for:
+VS Code connects to PromptHub via HTTP endpoints (not stdio). See the Obsidian vault (`~/Vault/PromptHub/Integrations/VS Code.md`) for:
 
 - Workspace configuration
 - Task definitions for PromptHub operations

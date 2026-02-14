@@ -148,7 +148,7 @@ tar -xzf prompthub-configs-20260130.tar.gz
 
 ## Documentation
 
-For detailed setup and usage:
-- [Integration Guides](../../guides/)
-- [Testing Integrations](../../guides/testing-integrations.md)
-- [Keyring Migration Guide](../../guides/keyring-migration-guide.md)
+For detailed setup and usage, see the Obsidian vault at `~/Vault/PromptHub/`:
+- Integrations: `~/Vault/PromptHub/Integrations/`
+- Testing: `~/Vault/PromptHub/Testing/`
+- Migration: `~/Vault/PromptHub/Migration/`

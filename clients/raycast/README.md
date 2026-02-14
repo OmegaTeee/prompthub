@@ -48,7 +48,7 @@ cd ~/.local/share/prompthub/clients/raycast
 
 ## Setup
 
-Raycast connects to PromptHub via HTTP endpoints. See the [Raycast integration guide](../../../guides/raycast-integration.md) for:
+Raycast connects to PromptHub via HTTP endpoints. See the Obsidian vault (`~/Vault/PromptHub/Integrations/Raycast.md`) for:
 
 - Custom script commands
 - MCP query shortcuts

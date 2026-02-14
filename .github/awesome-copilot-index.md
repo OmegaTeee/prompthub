@@ -191,9 +191,8 @@ See [instructions/AWESOME-COPILOT-INSTRUCTIONS.md](./instructions/AWESOME-COPILO
 ## Related Project Files
 
 - **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Project guidelines
-- **[Copilot-Processing.md](../Copilot-Processing.md)** - Task tracking
-- **[docs/](../docs/)** - Development documentation
-- **[guides/](../guides/)** - User-facing guides
+- **[docs/](../app/docs/)** - Development documentation
+- **Obsidian vault** (`~/Vault/PromptHub/`) - User-facing guides
 - **[README.md](../README.md)** - Project overview
 
 ---

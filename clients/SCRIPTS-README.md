@@ -259,6 +259,5 @@ echo '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"fetch_fetch","arg
 
 ## Related Documentation
 
-- [Claude Desktop Integration Guide](../guides/claude-desktop-integration.md)
 - [Unified MCP Bridge](claude/README.md)
-- [Testing Integrations](../guides/testing-integrations.md)
+- Integration guides: Obsidian vault at `~/Vault/PromptHub/Integrations/`

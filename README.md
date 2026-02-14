@@ -76,7 +76,7 @@ prompthub/
 │   ├── vscode/             # VS Code configuration
 │   ├── raycast/            # Raycast configuration
 │   └── launch_agents/      # macOS LaunchAgent plists
-├── guides/                 # User guides (Obsidian vault)
+├── .claude/steering/       # AI agent steering documents
 ├── mcps/                   # Centralized MCP servers (Node.js)
 │   ├── package.json        # npm dependencies for MCP servers
 │   └── obsidian-mcp-tools/ # Obsidian vault integration
@@ -86,13 +86,12 @@ prompthub/
 ## Documentation
 
 ### User Guides
-See **[guides/](guides/)** for user-facing documentation:
-- [Getting Started](guides/getting-started.md) - Quick start and verification
-- [Keychain Setup](guides/keychain-setup.md) - Secure credential storage
-- [LaunchAgent Setup](guides/launchagent-setup.md) - Background service setup
-- [App Configs](guides/app-configs.md) - Claude Desktop, VS Code, Raycast, Obsidian
-- [Figma Integration](guides/figma-integration.md) - Design-to-code workflows
-- [ComfyUI Integration](guides/comfyui-integration.md) - Image generation workflows
+User-facing guides (setup, integrations, workflows) live in the **Obsidian vault** at `~/Vault/PromptHub/`:
+- Getting Started - Quick start and verification
+- Keychain Setup - Secure credential storage
+- LaunchAgent Setup - Background service setup
+- Integrations - Claude Desktop, VS Code, Cursor, Raycast, Obsidian
+- Workflows - Design-to-code, content creation, code development
 
 ### Client Setup
 See **[clients/](clients/)** for client-specific configurations:
@@ -422,7 +421,7 @@ All endpoints follow JSON-RPC error format:
 Currently no authentication required (local-only deployment). For production:
 - Use API keys via `X-API-Key` header
 - Configure in `.env`: `API_KEY_REQUIRED=true`
-- See [guides/keychain-setup.md](guides/keychain-setup.md)
+- See Obsidian vault: `~/Vault/PromptHub/Core Setup/Keychain.md`
 
 ## Contributing
 

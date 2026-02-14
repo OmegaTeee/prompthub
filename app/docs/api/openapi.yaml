@@ -34,6 +34,8 @@ tags:
     description: JSON-RPC proxy to MCP servers
   - name: Enhancement
     description: Prompt enhancement via Ollama
+  - name: OpenAI Proxy
+    description: OpenAI-compatible API for desktop apps (Cursor, Raycast, Obsidian)
   - name: Circuit Breakers
     description: Resilience pattern management
   - name: Audit
@@ -475,6 +477,184 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /configs/claude-desktop:
+    get:
+      summary: Generate Claude Desktop config
+      description: Generate configuration for Claude Desktop integration
+      operationId: getClaudeDesktopConfig
+      tags:
+        - Configs
+      responses:
+        '200':
+          description: Claude Desktop configuration JSON
+
+  /configs/vscode:
+    get:
+      summary: Generate VS Code config
+      description: Generate MCP configuration for VS Code
+      operationId: getVscodeConfig
+      tags:
+        - Configs
+      responses:
+        '200':
+          description: VS Code configuration JSON
+
+  /configs/raycast:
+    get:
+      summary: Generate Raycast script
+      description: Generate shell script for Raycast integration
+      operationId: getRaycastScript
+      tags:
+        - Configs
+      responses:
+        '200':
+          description: Raycast shell script
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /v1/chat/completions:
+    post:
+      summary: Chat completion (OpenAI-compatible)
+      description: |
+        OpenAI-compatible chat completion endpoint for desktop apps. Authenticates via
+        bearer token, optionally enhances the last user message using the per-client
+        enhancement pipeline, and forwards to Ollama. Supports both streaming (SSE)
+        and non-streaming responses.
+
+        Enhancement behavior is controlled by the API key config:
+        - `enhance: true` — last user message is enhanced before forwarding
+        - `enhance: false` — request is forwarded as-is (pass-through)
+
+        System messages and conversation history are never modified.
+      operationId: chatCompletions
+      tags:
+        - OpenAI Proxy
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
+            example:
+              model: "llama3.2:latest"
+              messages:
+                - role: system
+                  content: "You are a helpful assistant."
+                - role: user
+                  content: "Explain circuit breakers in distributed systems"
+              temperature: 0.7
+              stream: false
+      responses:
+        '200':
+          description: Chat completion response (JSON if stream=false, SSE if stream=true)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
+            text/event-stream:
+              schema:
+                type: string
+                description: SSE stream of ChatCompletionChunk objects, ending with `data: [DONE]`
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIError'
+              example:
+                error:
+                  message: "Invalid API key"
+                  type: "invalid_request_error"
+        '502':
+          description: Ollama unreachable or returned an error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIError'
+        '503':
+          description: Circuit breaker open (Ollama temporarily unavailable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIError'
+              example:
+                error:
+                  message: "Service temporarily unavailable — Ollama circuit breaker open"
+                  type: "server_error"
+
+  /v1/models:
+    get:
+      summary: List available models
+      description: Returns available Ollama models in OpenAI-compatible format.
+      operationId: listModels
+      tags:
+        - OpenAI Proxy
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of models
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  object:
+                    type: string
+                    example: "list"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "llama3.2:latest"
+                        object:
+                          type: string
+                          example: "model"
+        '401':
+          description: Missing or invalid bearer token
+        '502':
+          description: Cannot reach Ollama
+
+  /v1/api-keys/reload:
+    post:
+      summary: Reload API keys
+      description: Hot-reload API key configuration from disk. Admin endpoint (no auth required).
+      operationId: reloadApiKeys
+      tags:
+        - OpenAI Proxy
+      responses:
+        '200':
+          description: Keys reloaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "API keys reloaded"
+                  count:
+                    type: integer
+                    example: 5
+
+  /ollama/reset:
+    post:
+      summary: Reset enhancement service
+      description: Reset the enhancement service cache and statistics
+      operationId: resetEnhancement
+      tags:
+        - Enhancement
+      responses:
+        '200':
+          description: Enhancement service reset
+
   /audit/activity:
     get:
       summary: Query activity log
@@ -522,7 +702,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityLogResponse'
-
     delete:
       summary: Clear activity log
       description: Delete all activity log entries
@@ -559,6 +738,68 @@ paths:
                     additionalProperties:
                       type: integer
 
+  /audit/activity/cleanup:
+    post:
+      summary: Clean up old activity entries
+      description: Delete activity log entries older than the specified number of days
+      operationId: cleanupActivity
+      tags:
+        - Audit
+      parameters:
+        - name: older_than_days
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Cleanup result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  deleted_count:
+                    type: integer
+
+  /audit/integrity/verify:
+    get:
+      summary: Verify audit integrity
+      description: Verify audit log integrity using SHA256 checksums
+      operationId: verifyAuditIntegrity
+      tags:
+        - Audit
+      responses:
+        '200':
+          description: Integrity verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrityVerification'
+
+  /audit/integrity/history:
+    get:
+      summary: Checksum history
+      description: Get the history of audit log integrity checksums
+      operationId: auditIntegrityHistory
+      tags:
+        - Audit
+      responses:
+        '200':
+          description: Checksum history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checksums:
+                    type: array
+                    items:
+                      type: object
+
   /security/alerts:
     get:
       summary: Get security alerts
@@ -592,57 +833,82 @@ paths:
                     items:
                       $ref: '#/components/schemas/SecurityAlert'
 
-  /audit/integrity/verify:
+  /security/alerts/stats:
     get:
-      summary: Verify audit integrity
-      description: Verify audit log integrity using SHA256 checksums
-      operationId: verifyAuditIntegrity
+      summary: Security alert statistics
+      description: Get aggregate statistics for security alerts
+      operationId: securityAlertStats
       tags:
         - Audit
       responses:
         '200':
-          description: Integrity verification result
+          description: Alert statistics
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IntegrityVerification'
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  by_severity:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                  by_type:
+                    type: object
+                    additionalProperties:
+                      type: integer
 
-  /configs/claude-desktop:
+  /configs/vscode-tasks:
     get:
-      summary: Generate Claude Desktop config
-      description: Generate configuration for Claude Desktop integration
-      operationId: getClaudeDesktopConfig
+      summary: Generate VS Code tasks
+      description: Generate VS Code tasks.json for PromptHub operations
+      operationId: getVscodeTasksConfig
       tags:
         - Configs
       responses:
         '200':
-          description: Claude Desktop configuration JSON
+          description: VS Code tasks configuration JSON
 
-  /configs/vscode:
-    get:
-      summary: Generate VS Code config
-      description: Generate MCP configuration for VS Code
-      operationId: getVscodeConfig
+  /pipelines/documentation:
+    post:
+      summary: Generate documentation
+      description: |
+        Multi-step documentation pipeline that enhances a prompt with Ollama,
+        structures output via Sequential Thinking MCP server, and writes to
+        the Obsidian vault using Desktop Commander.
+      operationId: generateDocumentation
       tags:
-        - Configs
+        - Enhancement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo_path
+              properties:
+                repo_path:
+                  type: string
+                  description: Path to the repository to document
+                output_path:
+                  type: string
+                  description: Output file path (defaults to Obsidian vault)
       responses:
         '200':
-          description: VS Code configuration JSON
-
-  /configs/raycast:
-    get:
-      summary: Generate Raycast script
-      description: Generate shell script for Raycast integration
-      operationId: getRaycastScript
-      tags:
-        - Configs
-      responses:
-        '200':
-          description: Raycast shell script
+          description: Documentation generated
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                type: object
+                properties:
+                  status:
+                    type: string
+                  output_path:
+                    type: string
+        '500':
+          description: Pipeline failed
 
   /dashboard:
     get:
@@ -656,6 +922,11 @@ paths:
           description: Dashboard HTML
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: API key from configs/api-keys.json (prefix sk-prompthub-{client}-*)
   schemas:
     HealthResponse:
       type: object
@@ -934,3 +1205,106 @@ components:
       properties:
         detail:
           type: string
+
+    ChatCompletionRequest:
+      type: object
+      required:
+        - model
+        - messages
+      properties:
+        model:
+          type: string
+          description: Ollama model name
+          example: "llama3.2:latest"
+        messages:
+          type: array
+          items:
+            type: object
+            required:
+              - role
+              - content
+            properties:
+              role:
+                type: string
+                enum: [system, user, assistant]
+              content:
+                type: string
+        temperature:
+          type: number
+          default: 0.7
+        max_tokens:
+          type: integer
+          nullable: true
+        stream:
+          type: boolean
+          default: false
+        top_p:
+          type: number
+          nullable: true
+        frequency_penalty:
+          type: number
+          nullable: true
+        presence_penalty:
+          type: number
+          nullable: true
+        stop:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          nullable: true
+        user:
+          type: string
+          nullable: true
+
+    ChatCompletionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          example: "chat.completion"
+        created:
+          type: integer
+        model:
+          type: string
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              index:
+                type: integer
+              message:
+                type: object
+                properties:
+                  role:
+                    type: string
+                  content:
+                    type: string
+              finish_reason:
+                type: string
+                enum: [stop, length, null]
+        usage:
+          type: object
+          properties:
+            prompt_tokens:
+              type: integer
+            completion_tokens:
+              type: integer
+            total_tokens:
+              type: integer
+
+    OpenAIError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              enum: [invalid_request_error, server_error]
