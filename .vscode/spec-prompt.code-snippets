@@ -1,0 +1,27 @@
+{
+  "Spec Skeleton Prompt": {
+    "prefix": "specskeleton",
+    "body": [
+      "You are helping me write a small, concrete spec for a coding task.",
+      "Keep it brief and practical, not corporate.",
+      "Use exactly these sections, with markdown headings:",
+      "",
+      "1. Problem / context",
+      "2. Goals and non-goals",
+      "3. User stories",
+      "4. Functional requirements",
+      "5. Non-functional requirements",
+      "6. Open questions / risks",
+      "",
+      "I will paste a rough description of what I want.",
+      "Transform it into this structure, filling gaps with sensible questions or suggestions, but mark your assumptions clearly.",
+      "",
+      "---",
+      "",
+      "Rough idea:",
+      "",
+      "$0"
+    ],
+    "description": "Prompt skeleton for generating structured specs with an AI"
+  }
+}

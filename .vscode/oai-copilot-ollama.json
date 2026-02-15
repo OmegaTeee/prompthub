@@ -1,0 +1,67 @@
+{
+  "version": "0.3.1",
+  "exportDate": "2026-02-03T17:39:40.227Z",
+  "baseUrl": "http://localhost:11434/v1",
+  "apiKey": "sk-prompthub-code-dev001",
+  "delay": 0,
+  "retry": {
+    "enabled": true,
+    "max_attempts": 3,
+    "interval_ms": 1000
+  },
+  "commitLanguage": "English",
+  "commitModel": "",
+  "models": [
+    {
+      "apiMode": "ollama",
+      "baseUrl": "http://localhost:11434/v1",
+      "id": "__provider__Ollama",
+      "owned_by": "Ollama"
+    },
+    {
+      "id": "llama3.2",
+      "owned_by": "Ollama",
+      "configId": "latest",
+      "baseUrl": "http://localhost:11434/v1",
+      "context_length": 128000,
+      "max_tokens": 4096,
+      "apiMode": "ollama",
+      "temperature": 0
+    },
+    {
+      "id": "llava",
+      "owned_by": "Ollama",
+      "configId": "latest",
+      "baseUrl": "http://localhost:11434/v1",
+      "context_length": 128000,
+      "max_tokens": 4096,
+      "vision": true,
+      "apiMode": "ollama",
+      "temperature": 0
+    },
+    {
+      "id": "qwen3-coder",
+      "owned_by": "Ollama",
+      "configId": "latest",
+      "baseUrl": "http://localhost:11434/v1",
+      "context_length": 131072,
+      "max_tokens": 8192,
+      "apiMode": "ollama",
+      "temperature": 0
+    },
+    {
+      "id": "deepseek-r1",
+      "owned_by": "Ollama",
+      "configId": "latest",
+      "baseUrl": "http://localhost:11434/v1",
+      "context_length": 128000,
+      "max_tokens": 4096,
+      "apiMode": "ollama",
+      "temperature": 0
+    }
+  ],
+  "readFileLines": 0,
+  "providerKeys": {
+    "Ollama": "ollama"
+  }
+}
