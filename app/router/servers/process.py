@@ -241,8 +241,9 @@ class ProcessManager:
             # Try to read stderr for error info
             if process.stderr:
                 try:
+                    # Increased timeout from 0.1s to 1.0s to capture full error output
                     stderr_bytes = await asyncio.wait_for(
-                        process.stderr.read(1024), timeout=0.1
+                        process.stderr.read(1024), timeout=1.0
                     )
                     stderr_output = stderr_bytes.decode("utf-8", errors="replace")
                 except (TimeoutError, Exception):

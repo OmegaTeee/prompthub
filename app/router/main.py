@@ -10,6 +10,7 @@ A centralized MCP router that provides:
 """
 
 import logging
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -30,7 +31,11 @@ from router.dashboard import create_dashboard_router
 from router.enhancement import EnhancementService
 from router.openai_compat import create_openai_compat_router
 from router.openai_compat.auth import ApiKeyManager
-from router.middleware import ActivityLoggingMiddleware, AuditContextMiddleware
+from router.middleware import (
+    ActivityLoggingMiddleware,
+    AuditContextMiddleware,
+    RequestTimeoutMiddleware,
+)
 from router.pipelines import DocumentationPipeline
 from router.resilience import CircuitBreakerError, CircuitBreakerRegistry
 from router.servers import (
@@ -82,7 +87,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize server management
     registry = ServerRegistry(settings.mcp_servers_config)
-    registry.load()
+    await registry.load_async()  # Use async file I/O
 
     process_manager = ProcessManager(registry)
     supervisor = Supervisor(registry, process_manager)
@@ -210,6 +215,10 @@ app.add_middleware(ActivityLoggingMiddleware)
 # Audit context middleware (sets request context for downstream middleware)
 app.add_middleware(AuditContextMiddleware)
 
+# Request timeout middleware (prevents slow clients from consuming workers indefinitely)
+# Must be added AFTER other middlewares so it wraps them (middleware is a stack)
+app.add_middleware(RequestTimeoutMiddleware, timeout=60.0)
+
 # Mount static files for dashboard CSS
 static_path = Path(__file__).parent.parent / "templates" / "css"
 app.mount("/static/css", StaticFiles(directory=str(static_path)), name="static")
@@ -220,8 +229,9 @@ app.mount("/static/css", StaticFiles(directory=str(static_path)), name="static")
 # =============================================================================
 
 
-def _get_health():
+async def _get_health():
     """Get health status for dashboard."""
+    # Made async for consistency with other dashboard helpers
     return supervisor.get_status_summary() if supervisor else {}
 
 
@@ -232,8 +242,9 @@ async def _get_stats():
     return {}
 
 
-def _get_servers():
+async def _get_servers():
     """Get server statuses for dashboard."""
+    # Made async for consistency with other dashboard helpers
     if not supervisor or not registry:
         return {"servers": {}}
 
@@ -624,12 +635,33 @@ async def mcp_proxy(server: str, path: str, request: Request):
     """
     Proxy JSON-RPC requests to MCP servers.
 
+    This endpoint forwards JSON-RPC calls to MCP servers via stdio bridges,
+    with configurable timeouts and circuit breaker protection.
+
     Args:
         server: Target MCP server name (e.g., "context7")
         path: MCP endpoint path (e.g., "tools/call")
+
+    Returns:
+        JSON-RPC response with metadata including timeout and elapsed time.
+
+    Timeout Behavior:
+        - Request timeout: 60s (via RequestTimeoutMiddleware)
+        - MCP bridge timeout: 30s (per request)
+        - If bridge timeout exceeded: returns JSON-RPC error with code -32603
+
+    Response Metadata:
+        - timeout_used: Configured timeout in seconds (30.0)
+        - elapsed_ms: Actual request processing time in milliseconds
     """
     if not supervisor or not registry or not circuit_breakers:
         raise HTTPException(503, "Services not initialized")
+
+    # Configure bridge timeout (30 seconds is the standard MCP timeout)
+    bridge_timeout = 30.0
+
+    # Record request start time for elapsed time calculation
+    start_time = time.time()
 
     # Get server config
     config = registry.get(server)
@@ -690,7 +722,8 @@ async def mcp_proxy(server: str, path: str, request: Request):
         params = body.get("params", {})
 
         # Send request through stdio bridge (stdin/stdout communication)
-        response = await bridge.send(method, params)
+        # with timeout protection
+        response = await bridge.send(method, params, timeout=bridge_timeout)
 
         # Normalize the response to fix common schema issues from MCP servers
         # This prevents client validation warnings from malformed schemas
@@ -699,6 +732,16 @@ async def mcp_proxy(server: str, path: str, request: Request):
         # Record success to reset circuit breaker failure count
         # After success_threshold successes, circuit transitions HALF_OPEN → CLOSED
         breaker.record_success()
+
+        # Add timeout metadata to response (for observability)
+        # Clients can use this to understand performance characteristics
+        if isinstance(response, dict):
+            if "metadata" not in response:
+                response["metadata"] = {}
+            elapsed_ms = (time.time() - start_time) * 1000
+            response["metadata"]["timeout_used"] = bridge_timeout
+            response["metadata"]["elapsed_ms"] = round(elapsed_ms, 2)
+
         return response
 
     except Exception as e:
@@ -711,7 +754,14 @@ async def mcp_proxy(server: str, path: str, request: Request):
         # Clients expect JSON-RPC format even for failures
         return {
             "jsonrpc": "2.0",
-            "error": {"code": -32603, "message": str(e)},
+            "error": {
+                "code": -32603,
+                "message": str(e),
+                "data": {
+                    "timeout_used": bridge_timeout,
+                    "elapsed_ms": round((time.time() - start_time) * 1000, 2),
+                },
+            },
             "id": body.get("id"),
         }
 

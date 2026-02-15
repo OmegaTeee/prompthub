@@ -97,9 +97,16 @@ class OllamaClient:
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
         if self._client is None or self._client.is_closed:
+            # Configure connection pool limits to prevent resource exhaustion
+            # under high load (adjustable based on scaling requirements)
+            limits = httpx.Limits(
+                max_keepalive_connections=20,  # Max persistent connections
+                max_connections=100,            # Max total connections
+            )
             self._client = httpx.AsyncClient(
                 base_url=self.config.base_url,
                 timeout=httpx.Timeout(self.config.timeout),
+                limits=limits,
             )
         return self._client
 

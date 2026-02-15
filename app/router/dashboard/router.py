@@ -70,7 +70,7 @@ def create_dashboard_router(
     async def health_partial(request: Request):
         """HTMX partial: Service health status."""
         # Get server statuses
-        servers_data = get_servers()
+        servers_data = await get_servers()
         servers = []
 
         for name, info in servers_data.get("servers", {}).items():
@@ -294,7 +294,7 @@ def create_dashboard_router(
                 content={"error": f"Failed to render guide: {str(e)}"}
             )
 
-    def _validate_server_name(server: str) -> tuple[bool, str | None]:
+    async def _validate_server_name(server: str) -> tuple[bool, str | None]:
         """
         Validate server name format and existence.
 
@@ -309,7 +309,7 @@ def create_dashboard_router(
             return False, "Invalid server name format"
 
         # Check if server exists in registry
-        servers_data = get_servers()
+        servers_data = await get_servers()
         if server not in servers_data.get("servers", {}):
             return False, f"Server '{server}' not found"
 
@@ -325,7 +325,7 @@ def create_dashboard_router(
     async def restart_server_action(server: str):
         """Restart an MCP server."""
         # Validate server name
-        is_valid, error_msg = _validate_server_name(server)
+        is_valid, error_msg = await _validate_server_name(server)
         if not is_valid:
             return JSONResponse(
                 status_code=400,
@@ -345,7 +345,7 @@ def create_dashboard_router(
     async def start_server_action(server: str):
         """Start an MCP server."""
         # Validate server name
-        is_valid, error_msg = _validate_server_name(server)
+        is_valid, error_msg = await _validate_server_name(server)
         if not is_valid:
             return JSONResponse(
                 status_code=400,
@@ -365,7 +365,7 @@ def create_dashboard_router(
     async def stop_server_action(server: str):
         """Stop an MCP server."""
         # Validate server name
-        is_valid, error_msg = _validate_server_name(server)
+        is_valid, error_msg = await _validate_server_name(server)
         if not is_valid:
             return JSONResponse(
                 status_code=400,

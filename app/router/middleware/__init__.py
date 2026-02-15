@@ -17,6 +17,7 @@ from router.middleware.audit_context import (
     set_request_id,
     set_session_id,
 )
+from router.middleware.timeout import RequestTimeoutMiddleware
 
 __all__ = [
     "ActivityLog",
@@ -28,4 +29,5 @@ __all__ = [
     "set_client_ip",
     "set_request_id",
     "set_session_id",
+    "RequestTimeoutMiddleware",
 ]

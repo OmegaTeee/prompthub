@@ -7,6 +7,7 @@ The registry:
 - Provides CRUD operations for server management
 """
 
+import aiofiles
 import json
 import logging
 from pathlib import Path
@@ -41,9 +42,54 @@ class ServerRegistry:
         self._servers: dict[str, ServerConfig] = {}
         self._processes: dict[str, ProcessInfo] = {}
 
+    async def load_async(self) -> None:
+        """
+        Load server configurations from JSON file asynchronously.
+
+        Creates empty config file if it doesn't exist.
+        Uses aiofiles for non-blocking I/O.
+        """
+        if not self.config_path.exists():
+            logger.warning(f"Config file not found: {self.config_path}, creating empty")
+            self.config_path.parent.mkdir(parents=True, exist_ok=True)
+            await self.save_async()
+            return
+
+        try:
+            # Use aiofiles for async file I/O
+            async with aiofiles.open(self.config_path) as f:
+                content = await f.read()
+                data = json.loads(content)
+
+            servers_data = data.get("servers", {})
+            for name, config_dict in servers_data.items():
+                try:
+                    # Add name to config dict if not present
+                    config_dict["name"] = name
+                    config = ServerConfig(**config_dict)
+                    self._servers[name] = config
+                    # Initialize process info as stopped
+                    self._processes[name] = ProcessInfo()
+                    logger.info(f"Loaded server config: {name}")
+                except Exception as e:
+                    logger.error(f"Failed to load server {name}: {e}")
+
+            logger.info(f"Loaded {len(self._servers)} server configurations")
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in config file: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Failed to load config file: {e}")
+            raise
+
+    # Backward compatibility: keep sync load() as wrapper
     def load(self) -> None:
         """
         Load server configurations from JSON file.
+
+        DEPRECATED: Use load_async() instead for non-blocking I/O.
+        This method blocks the event loop during file I/O.
 
         Creates empty config file if it doesn't exist.
         """
@@ -79,8 +125,35 @@ class ServerRegistry:
             logger.error(f"Failed to load config file: {e}")
             raise
 
+    async def save_async(self) -> None:
+        """Save server configurations to JSON file asynchronously."""
+        servers_data = {}
+        for name, config in self._servers.items():
+            # Convert to dict, excluding 'name' since it's the key
+            config_dict = config.model_dump(exclude={"name"})
+            # Convert enum to string
+            config_dict["transport"] = config.transport.value
+            servers_data[name] = config_dict
+
+        data = {"servers": servers_data}
+
+        try:
+            # Use aiofiles for async file I/O
+            async with aiofiles.open(self.config_path, "w") as f:
+                await f.write(json.dumps(data, indent=2))
+            logger.info(f"Saved {len(self._servers)} server configurations")
+        except Exception as e:
+            logger.error(f"Failed to save config file: {e}")
+            raise
+
+    # Backward compatibility: keep sync save() as wrapper
     def save(self) -> None:
-        """Save server configurations to JSON file."""
+        """
+        Save server configurations to JSON file.
+
+        DEPRECATED: Use save_async() instead for non-blocking I/O.
+        This method blocks the event loop during file I/O.
+        """
         servers_data = {}
         for name, config in self._servers.items():
             # Convert to dict, excluding 'name' since it's the key

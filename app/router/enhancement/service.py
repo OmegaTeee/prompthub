@@ -12,6 +12,7 @@ The service provides resilient prompt enhancement with automatic
 failover to returning the original prompt if enhancement fails.
 """
 
+import aiofiles
 import json
 import logging
 from pathlib import Path
@@ -150,9 +151,9 @@ class EnhancementService:
 
         Loads enhancement rules and checks Ollama health.
         """
-        # Load rules
+        # Load rules (now async to avoid blocking event loop on file I/O)
         if self.rules_path and self.rules_path.exists():
-            self._load_rules()
+            await self._load_rules_async()
         else:
             logger.warning("No enhancement rules file found, using defaults")
 
@@ -164,14 +165,16 @@ class EnhancementService:
 
         self._initialized = True
 
-    def _load_rules(self) -> None:
-        """Load enhancement rules from JSON file."""
+    async def _load_rules_async(self) -> None:
+        """Load enhancement rules from JSON file asynchronously."""
         if not self.rules_path:
             return
 
         try:
-            with open(self.rules_path) as f:
-                data = json.load(f)
+            # Use aiofiles for non-blocking file I/O
+            async with aiofiles.open(self.rules_path) as f:
+                content = await f.read()
+                data = json.loads(content)
 
             # Load default rule
             if "default" in data and isinstance(data["default"], dict):
