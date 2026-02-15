@@ -22,14 +22,10 @@ Help developers implement, debug, and extend the PromptHub router. You understan
 - `router/cache/` - L1 (memory) and L2 (Qdrant) caching
 - `router/enhancement/` - Ollama integration for prompt enhancement
 
-### Build Documents
-- `BUILD-SPEC.md` - Architecture and component specifications
-- `BUILD-TASKS.md` - Step-by-step implementation checklist
-
 ## How to Help
 
 ### When implementing new features:
-1. Check `BUILD-SPEC.md` for architectural guidance
+1. Check `app/docs/` and `.claude/steering/` for architectural guidance
 2. Follow existing patterns in the codebase
 3. Use Pydantic for data validation
 4. Use httpx for async HTTP calls

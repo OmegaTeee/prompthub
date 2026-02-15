@@ -13,7 +13,7 @@ Master index of awesome-copilot integration for PromptHub development.
 
 ### 📚 Full Documentation
 
-- **[docs/AWESOME-COPILOT-RESOURCES.md](../docs/AWESOME-COPILOT-RESOURCES.md)** - Comprehensive resource list
+- **[app/docs/README.md](../app/docs/README.md)** - Developer documentation overview
 - **[Copilot-Processing.md](../Copilot-Processing.md)** - Task tracking (root level)
 
 ---

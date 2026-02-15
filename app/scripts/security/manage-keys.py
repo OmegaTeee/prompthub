@@ -4,29 +4,29 @@ PromptHub Key Manager
 
 Manage API keys and credentials for MCP servers using system keyring.
 
-NOTE: Run with venv active: source .venv/bin/activate && python scripts/manage-keys.py
-Or use: .venv/bin/python scripts/manage-keys.py
+NOTE: Run with venv active: source .venv/bin/activate && python scripts/security/manage-keys.py
+Or use: .venv/bin/python scripts/security/manage-keys.py
 
 Usage:
-    ./scripts/manage-keys.py set <key_name>         # Prompt for value
-    ./scripts/manage-keys.py set <key_name> <value> # Set directly
-    ./scripts/manage-keys.py get <key_name>         # Retrieve value
-    ./scripts/manage-keys.py list                    # List all keys
-    ./scripts/manage-keys.py delete <key_name>      # Delete key
-    ./scripts/manage-keys.py migrate                 # Migrate from security CLI
+    ./scripts/security/manage-keys.py set <key_name>         # Prompt for value
+    ./scripts/security/manage-keys.py set <key_name> <value> # Set directly
+    ./scripts/security/manage-keys.py get <key_name>         # Retrieve value
+    ./scripts/security/manage-keys.py list                    # List all keys
+    ./scripts/security/manage-keys.py delete <key_name>      # Delete key
+    ./scripts/security/manage-keys.py migrate                 # Migrate from security CLI
 
 Examples:
     # Set API key (will prompt for value)
-    ./scripts/manage-keys.py set obsidian_api_key
+    ./scripts/security/manage-keys.py set obsidian_api_key
 
     # Set with value directly (less secure, shows in shell history)
-    ./scripts/manage-keys.py set obsidian_api_key YOUR_API_KEY
+    ./scripts/security/manage-keys.py set obsidian_api_key YOUR_API_KEY
 
     # Get API key
-    ./scripts/manage-keys.py get obsidian_api_key
+    ./scripts/security/manage-keys.py get obsidian_api_key
 
     # Migrate from macOS Keychain (security CLI)
-    ./scripts/manage-keys.py migrate obsidian_api_key
+    ./scripts/security/manage-keys.py migrate obsidian_api_key
 """
 
 import sys
@@ -95,7 +95,7 @@ def list_keys():
         print(f"{key_name:30s} {status}")
 
     print("-" * 50)
-    print(f"\nTo set a key: ./scripts/manage-keys.py set <key_name>")
+    print(f"\nTo set a key: ./scripts/security/manage-keys.py set <key_name>")
     return 0
 
 

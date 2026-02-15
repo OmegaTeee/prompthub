@@ -73,8 +73,6 @@ class CircuitBreaker:
 
 | File                             | Purpose                               |
 | -------------------------------- | ------------------------------------- |
-| `BUILD-SPEC.md`                  | Consolidated build specification      |
-| `BUILD-TASKS.md`                 | Step-by-step implementation checklist |
 | `router/main.py`                 | FastAPI application entry point       |
 | `configs/mcp-servers.json`       | MCP server registry                   |
 | `configs/enhancement-rules.json` | Per-client enhancement rules          |
@@ -152,9 +150,9 @@ See `docs/` for development and architecture documentation:
 
 PromptHub integrates with awesome-copilot collections for development guidance. See:
 
-- [docs/AWESOME-COPILOT-RESOURCES.md](../../docs/AWESOME-COPILOT-RESOURCES.md) - Comprehensive reference of all available collections, instructions, agents, and prompts
-- [.github/awesome-copilot-recommendations.md](.github/awesome-copilot-recommendations.md) - Quick reference guide for frequently used agents and generators
-- [.github/instructions/AWESOME-COPILOT-INSTRUCTIONS.md](instructions/AWESOME-COPILOT-INSTRUCTIONS.md) - Integration guide with key patterns and requirements
+- [awesome-copilot-index.md](awesome-copilot-index.md) - Master index of awesome-copilot collections, instructions, agents, and prompts
+- [awesome-copilot-recommendations.md](awesome-copilot-recommendations.md) - Quick reference guide for frequently used agents and generators
+- [instructions/awesome-copilot-instructions.md](instructions/awesome-copilot-instructions.md) - Integration guide with key patterns and requirements
 
 ### Key Expert Agents
 

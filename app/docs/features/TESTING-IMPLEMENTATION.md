@@ -91,11 +91,11 @@ Created `tests/conftest.py` with shared fixtures:
 | servers/registry.py | 11 | ✅ Full |
 | enhancement/service.py | 0 | ⏸️ Pending |
 
-## BUILD-SPEC.md Success Criteria Verification
+## Success Criteria Verification
 
 ### Phase 2 (MVP) - Testing Requirements ✅
 
-From BUILD-SPEC.md Section "Testing Requirements":
+Testing Requirements:
 
 ✅ **test_routing.py**: Registry loads, proxy forwards correctly, unknown servers return 404
 - ✅ `test_load_valid_config` - Registry loads configurations correctly

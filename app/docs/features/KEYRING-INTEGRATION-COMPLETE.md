@@ -7,30 +7,30 @@ Successfully integrated Python `keyring` package for secure MCP server credentia
 ## What Was Done
 
 ### 1. ✅ Installed keyring Package
-- Uncommented in [requirements.txt](requirements.txt:18)
+- Uncommented in [requirements.txt](../../requirements.txt)
 - Installed via pip: `keyring>=24.0.0`
 - Verified functionality
 
 ### 2. ✅ Created Keyring Manager Module
-- [router/keyring_manager.py](router/keyring_manager.py) - Core integration
+- [router/keyring_manager.py](../../router/keyring_manager.py) - Core integration
   - Retrieves credentials from system keyring
   - Processes environment configs with keyring references
   - Supports both string values and keyring references
   - Full error handling and logging
 
 ### 3. ✅ Integrated into Router
-- Updated [router/servers/models.py](router/servers/models.py)
+- Updated [router/servers/models.py](../../router/servers/models.py)
   - Changed `env: dict[str, str]` to `env: dict[str, str | dict]`
   - Supports keyring references in server configs
 
-- Updated [router/servers/process.py](router/servers/process.py)
+- Updated [router/servers/process.py](../../router/servers/process.py)
   - Added import for `get_keyring_manager`
   - Process environment config before spawning servers
   - Resolves keyring references to actual credentials
   - Logs credential retrieval status
 
 ### 4. ✅ Updated MCP Server Configuration
-- Changed [configs/mcp-servers.json](configs/mcp-servers.json)
+- Changed [configs/mcp-servers.json](../../configs/mcp-servers.json)
   - Obsidian server now spawns binary directly (no bash wrapper)
   - Uses keyring references for API key:
     ```json
@@ -46,23 +46,27 @@ Successfully integrated Python `keyring` package for secure MCP server credentia
     ```
 
 ### 5. ✅ Created Key Management CLI
-- [scripts/manage-keys.py](scripts/manage-keys.py)
-  - Set keys: `python scripts/manage-keys.py set <key>`
-  - Get keys: `python scripts/manage-keys.py get <key>`
-  - List keys: `python scripts/manage-keys.py list`
-  - Migrate from security CLI: `python scripts/manage-keys.py migrate <key>`
+
+- [scripts/security/manage-keys.py](../../scripts/security/manage-keys.py)
+  - Set keys: `python scripts/security/manage-keys.py set <key>`
+  - Get keys: `python scripts/security/manage-keys.py get <key>`
+  - List keys: `python scripts/security/manage-keys.py list`
+  - Migrate from security CLI: `python scripts/security/manage-keys.py migrate <key>`
 
 ### 6. ✅ Migrated Existing Keys
+
 - Migrated `obsidian_api_key` from security CLI to keyring
 - Verified retrieval works correctly
 
 ### 7. ✅ Created Documentation
+
 - [Obsidian vault: ~/Vault/PromptHub/Migration/Keyring Migration.md](Obsidian vault: ~/Vault/PromptHub/Migration/Keyring Migration.md) - Complete guide
 - [Obsidian vault: ~/Vault/PromptHub/Reference/](Obsidian vault: ~/Vault/PromptHub/Reference/) - Architecture comparison
-- [configs/mcp-servers-keyring.json.example](configs/mcp-servers-keyring.json.example) - Config examples
+- [configs/mcp-servers-keyring.json.example](../../configs/mcp-servers-keyring.json.example) - Config examples
 
 ### 8. ✅ Testing
-- Created [test_keyring_integration.py](test_keyring_integration.py)
+
+- Created [test_keyring_integration.py](../../tests/integration/test_keyring_integration.py)
 - All tests passed (3/3):
   - ✅ Basic keyring functionality
   - ✅ Environment config processing
@@ -73,6 +77,7 @@ Successfully integrated Python `keyring` package for secure MCP server credentia
 ## Architecture Changes
 
 ### Before (Bash + security CLI)
+
 ```
 Router → Bash Script → security CLI → Keychain
   ❌ Multiple process layers
@@ -81,6 +86,7 @@ Router → Bash Script → security CLI → Keychain
 ```
 
 ### After (Python + keyring)
+
 ```
 Router → keyring → Keychain
   ✅ Single process, reliable
@@ -125,12 +131,15 @@ Total: 3/3 passed
 ## Next Steps
 
 ### Immediate
+
 1. **Test router startup:**
+
    ```bash
    uvicorn router.main:app --reload --port 9090
    ```
 
 2. **Verify dashboard:**
+
    ```
    open http://localhost:9090/dashboard
    ```
@@ -141,11 +150,13 @@ Total: 3/3 passed
    - Should log: "Resolved 1 credential(s) from keyring"
 
 ### Future Enhancements
+
 1. **Migrate other servers** if they need API keys
 2. **Add more keys** to keyring as needed:
+
    ```bash
    source .venv/bin/activate
-   python scripts/manage-keys.py set github_api_key
+   python scripts/security/manage-keys.py set github_api_key
    ```
 
 3. **Remove bash wrappers** (keep for manual testing if desired)
@@ -155,18 +166,23 @@ Total: 3/3 passed
 ## Backward Compatibility
 
 ### ✅ Fully Backward Compatible
+
 - Bash wrapper scripts still exist in `scripts/`
 - Can be used for manual testing
 - Old-style string env vars still work
 - Gradual migration supported
 
 ### Rollback Plan
+
 If issues occur:
-1. Revert [configs/mcp-servers.json](configs/mcp-servers.json):
+
+1. Revert [configs/mcp-servers.json](../../configs/mcp-servers.json):
+
    ```json
    "command": "./scripts/obsidian-mcp-tools.sh",
    "env": {}
    ```
+
 2. Keys remain in keyring (safe to keep)
 3. Router code handles both formats
 
@@ -189,6 +205,7 @@ If issues occur:
 ## Files Modified
 
 ### Core Changes
+
 - `requirements.txt` - Enabled keyring
 - `router/keyring_manager.py` - NEW: Core module
 - `router/servers/models.py` - Updated env type
@@ -196,7 +213,8 @@ If issues occur:
 - `configs/mcp-servers.json` - Updated obsidian config
 
 ### Tools & Documentation
-- `scripts/manage-keys.py` - NEW: Key management CLI
+
+- `scripts/security/manage-keys.py` - NEW: Key management CLI
 - `test_keyring_integration.py` - NEW: Integration tests
 - `Obsidian vault: ~/Vault/PromptHub/Migration/Keyring Migration.md` - NEW: Migration guide
 - `Obsidian vault: ~/Vault/PromptHub/Reference/` - NEW: Architecture comparison
@@ -211,19 +229,19 @@ If issues occur:
 source .venv/bin/activate
 
 # List all keys
-python scripts/manage-keys.py list
+python scripts/security/manage-keys.py list
 
 # Set a new key (interactive)
-python scripts/manage-keys.py set my_api_key
+python scripts/security/manage-keys.py set my_api_key
 
 # Get a key
-python scripts/manage-keys.py get obsidian_api_key
+python scripts/security/manage-keys.py get obsidian_api_key
 
 # Migrate from security CLI
-python scripts/manage-keys.py migrate my_legacy_key
+python scripts/security/manage-keys.py migrate my_legacy_key
 
 # Delete a key
-python scripts/manage-keys.py delete old_key
+python scripts/security/manage-keys.py delete old_key
 ```
 
 ---
@@ -241,7 +259,7 @@ INFO: Started server obsidian with PID 12345
 If key is missing:
 ```
 ERROR: Failed to retrieve OBSIDIAN_API_KEY from keyring.
-       Set with: keyring.set_password('prompthub', 'obsidian_api_key', 'YOUR_VALUE')
+       Set with: python scripts/security/manage-keys.py set obsidian_api_key
 ERROR: Failed to start server obsidian: [error details]
 ```
 
@@ -265,10 +283,10 @@ The integration is successful when:
 ```bash
 # Verify key exists
 source .venv/bin/activate
-python scripts/manage-keys.py get obsidian_api_key
+python scripts/security/manage-keys.py get obsidian_api_key
 
 # Re-migrate if needed
-python scripts/manage-keys.py migrate obsidian_api_key
+python scripts/security/manage-keys.py migrate obsidian_api_key
 ```
 
 ### Router Can't Import keyring
@@ -290,5 +308,5 @@ security find-generic-password -a $USER -s obsidian_api_key -w
 
 For issues or questions about keyring integration:
 - See [Obsidian vault: ~/Vault/PromptHub/Migration/Keyring Migration.md](Obsidian vault: ~/Vault/PromptHub/Migration/Keyring Migration.md)
-- Check [test_keyring_integration.py](test_keyring_integration.py) for examples
-- Review [router/keyring_manager.py](router/keyring_manager.py) implementation
+- Check [test_keyring_integration.py](../../tests/integration/test_keyring_integration.py) for examples
+- Review [router/keyring_manager.py](../../router/keyring_manager.py) implementation

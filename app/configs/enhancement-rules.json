@@ -28,6 +28,10 @@
     "perplexity": {
       "model": "llama3.2:latest",
       "system_prompt": "Format in Markdown. Use [[wikilinks]] and #tags."
+    },
+    "cursor": {
+      "model": "deepseek-r1:latest",
+      "system_prompt": "Improve clarity and structure. Preserve intent. Return only the enhanced prompt."
     }
   },
   "fallback_chain": [

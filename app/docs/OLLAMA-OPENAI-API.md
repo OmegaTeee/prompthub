@@ -244,7 +244,7 @@ Potential improvements:
 
 - [Ollama OpenAI Compatibility](https://github.com/ollama/ollama/blob/main/docs/openai.md)
 - [OpenAI Chat Completions API](https://platform.openai.com/docs/api-reference/chat)
-- [PromptHub Enhancement Architecture](./ENHANCEMENT.md)
+- [PromptHub Enhancement Architecture](api/enhancement.md)
 
 ---
 

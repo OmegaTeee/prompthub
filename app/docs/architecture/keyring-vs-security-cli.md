@@ -130,10 +130,10 @@ Router spawns bash script
 pip install keyring
 
 # 2. Migrate one key
-./scripts/manage-keys.py migrate obsidian_api_key
+./scripts/security/manage-keys.py migrate obsidian_api_key
 
 # 3. Test retrieval
-./scripts/manage-keys.py get obsidian_api_key
+./scripts/security/manage-keys.py get obsidian_api_key
 
 # No changes to router yet - fully backward compatible
 ```
@@ -210,13 +210,13 @@ pip install keyring
 pip install keyring
 
 # 2. Test basic functionality (2 minutes)
-./scripts/manage-keys.py set test_key
-./scripts/manage-keys.py get test_key
-./scripts/manage-keys.py delete test_key
+./scripts/security/manage-keys.py set test_key
+./scripts/security/manage-keys.py get test_key
+./scripts/security/manage-keys.py delete test_key
 
 # 3. Migrate one real key (2 minutes)
-./scripts/manage-keys.py migrate obsidian_api_key
-./scripts/manage-keys.py list
+./scripts/security/manage-keys.py migrate obsidian_api_key
+./scripts/security/manage-keys.py list
 
 # 4. Test retrieval from Python (1 minute)
 python3 << 'EOF'

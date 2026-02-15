@@ -1,7 +1,7 @@
 """
-Integration tests for BUILD-SPEC.md API endpoints.
+Integration tests for API endpoints.
 
-Verifies all Phase 2-4 success criteria by testing actual API endpoints.
+Verifies Phase 2-4 success criteria by testing actual API endpoints.
 These are integration tests that require the router to be running.
 """
 
@@ -212,7 +212,7 @@ class TestCacheIntegration:
 
 
 class TestBuildSpecCriteria:
-    """Verify BUILD-SPEC.md Phase 2 success criteria."""
+    """Verify Phase 2 success criteria for API endpoints."""
 
     @pytest.mark.asyncio
     async def test_router_starts_successfully(self):
