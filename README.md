@@ -78,10 +78,9 @@ prompthub/
 │   ├── raycast/            # Raycast configuration
 │   └── launch_agents/      # macOS LaunchAgent plists
 ├── .claude/steering/       # AI agent steering documents
-├── mcps/                   # Centralized MCP servers (Node.js)
-│   ├── package.json        # npm dependencies for MCP servers
-│   └── obsidian-mcp-tools/ # Obsidian vault integration
-└── mcp-prompthub.code-workspace
+└── mcps/                   # Centralized MCP servers (Node.js)
+    ├── package.json        # npm dependencies for MCP servers
+    └── obsidian-mcp-tools/ # Obsidian vault integration
 ```
 
 ## Documentation
@@ -107,36 +106,37 @@ See **[app/docs/](app/docs/)** for technical documentation:
 ## Key Features
 
 ### Prompt Enhancement
-Each client (Claude, VS Code, Raycast) gets customized prompt enhancement:
-- **Claude Desktop**: deepseek-r1 for structured reasoning
-- **VS Code / Claude Code**: qwen3-coder for code-focused responses
-- **Raycast**: deepseek-r1 for action-oriented responses
-- **Obsidian**: deepseek-r1 with Markdown formatting
+
+Prompts pass through a local Ollama model before reaching the AI service. Each client gets a tailored system prompt and model:
+
+| Client | Model | Tuning |
+|--------|-------|--------|
+| Claude Desktop | deepseek-r1 | Structured reasoning, Markdown |
+| VS Code / Claude Code | qwen3-coder | Code-first, file paths, minimal prose |
+| Raycast | llama3.2 | Action-oriented, CLI commands, under 200 words |
+| Obsidian | llama3.2 | Markdown with `[[wikilinks]]` and `#tags` |
+
+Enhancement is optional per-client and fails gracefully — if Ollama is unreachable, the original prompt passes through unchanged. Configure models and system prompts in `app/configs/enhancement-rules.json`.
+
+### OpenAI-Compatible API Proxy
+
+Any app that speaks the OpenAI API can connect to local Ollama models through PromptHub's `/v1/` endpoints. Supports `POST /v1/chat/completions` (streaming and non-streaming) and `GET /v1/models`. Authenticated via bearer tokens, with optional prompt enhancement applied before forwarding.
+
+Use this to connect VS Code chat, Cursor, Raycast AI, or any OpenAI-compatible client to local models without changing their configuration beyond the base URL and API key.
 
 ### Circuit Breakers
-If an MCP server fails:
-1. Circuit opens after 3 consecutive failures
-2. Requests return fallback immediately (no hanging)
-3. Circuit tests recovery after 30 seconds
-4. Automatic restoration when service recovers
+
+Every MCP server and the Ollama service is wrapped in a circuit breaker. When a service fails 3 times, the circuit opens and requests return immediately with a fallback — no hanging, no timeouts piling up. After 30 seconds, one test request probes recovery. On success, full traffic resumes automatically.
+
+Monitor and reset breakers via `GET /circuit-breakers` and `POST /circuit-breakers/{name}/reset`.
 
 ### Caching
-- **L1**: Exact match (SHA256 hash) - instant response
-- **L2**: Semantic similarity (planned; Phase 2.1) - similar prompts would hit cache
 
-## Dashboard
+Enhanced prompts are cached in an in-memory LRU store (up to 1,000 entries, 1-hour TTL). Cache keys are SHA-256 hashes of the prompt content, providing exact-match deduplication. Repeated identical prompts return instantly without hitting Ollama.
 
-Access the monitoring dashboard at:
+### Dashboard
 
-```
-http://localhost:9090/dashboard
-```
-
-Features:
-- Service health status (auto-refresh every 5s)
-- Cache stats and Ollama status (auto-refresh every 10s)
-- Recent request activity (auto-refresh every 3s)
-- Quick actions: clear cache, restart servers
+HTMX-powered monitoring UI at `localhost:9090/dashboard` with auto-refreshing panels for service health (5s), cache and Ollama status (10s), and request activity (3s). Includes quick actions to clear cache and restart individual MCP servers.
 
 ## MCP Servers
 
@@ -335,8 +335,8 @@ POST /ollama/enhance
 # Headers:
 X-Client-Name: claude-desktop  # Routes to deepseek-r1
 X-Client-Name: vscode          # Routes to qwen3-coder
-X-Client-Name: raycast         # Routes to deepseek-r1
-X-Client-Name: obsidian        # Routes to deepseek-r1 with markdown
+X-Client-Name: raycast         # Routes to llama3.2
+X-Client-Name: obsidian        # Routes to llama3.2 with markdown
 ```
 
 **Example Response:**
