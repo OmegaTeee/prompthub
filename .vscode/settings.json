@@ -1,0 +1,66 @@
+{
+  // ── Python environment ──────────────────────────────────
+  // The project lives in app/ with its own venv
+  "python.defaultInterpreterPath": "${workspaceFolder}/app/.venv/bin/python",
+  "python.envFile": "${workspaceFolder}/app/.env",
+  "python-envs.pythonProjects": [
+    {
+      "path": "${workspaceFolder}/app/",
+      "envManager": "ms-python.python:venv",
+      "packageManager": "ms-python.python:pip"
+    }
+  ],
+  "python.terminal.activateEnvironment": true,
+
+  // ── Static analysis (Pylance) ───────────────────────────
+  "python.languageServer": "Pylance",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/app"
+  ],
+
+  // ── Testing (pytest) ────────────────────────────────────
+  // pytest runs from app/ where pyproject.toml lives
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.cwd": "${workspaceFolder}/app",
+  "python.testing.pytestPath": "${workspaceFolder}/app/.venv/bin/pytest",
+  "python.testing.pytestArgs": [
+    "tests",
+    "-q"
+  ],
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+
+  // ── Formatting & linting (ruff) ─────────────────────────
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "ruff.configuration": "${workspaceFolder}/app/pyproject.toml",
+  "ruff.cwd": "${workspaceFolder}/app",
+
+  // ── Editor preferences ──────────────────────────────────
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true
+  },
+
+  // ── Chat tool auto-approve ──────────────────────────────
+  "chat.tools.terminal.autoApprove": {
+    "/^python3 -m pytest -q$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^python3 -m pip install -r requirements\\.txt$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}

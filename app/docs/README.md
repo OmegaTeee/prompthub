@@ -22,7 +22,7 @@ Comprehensive audit logging and security monitoring implementation.
 ### Build & Development
 - [BUILD-SPEC.md](../BUILD-SPEC.md) - Build specifications and requirements
 - [BUILD-TASKS.md](../BUILD-TASKS.md) - Development task tracking
-- [CLAUDE.md](../CLAUDE.md) - Claude Code integration guide
+- [CLAUDE.md](.../../../../CLAUDE.md) - Claude Code integration guide
 
 ### Implementation Guides
 - [KEYRING-INTEGRATION-COMPLETE.md](features/KEYRING-INTEGRATION-COMPLETE.md) - Keyring credential management
@@ -34,4 +34,4 @@ User guides (setup, configuration, integrations) live in the Obsidian vault at `
 
 ## Contributing
 
-For development setup and contribution guidelines, see the main [README.md](../README.md).
+For development setup and contribution guidelines, see the main [README.md](../../README.md).

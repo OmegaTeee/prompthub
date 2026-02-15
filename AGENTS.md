@@ -4,11 +4,11 @@ Rules for AI agents (Claude Code, Cursor/Qwen, Copilot) contributing to this pro
 
 ## Roles
 
-| Agent | Role | Scope |
-|-------|------|-------|
-| **Claude Code** | Primary implementer | Structural changes, new features, bulk edits, commits |
-| **Cursor (Qwen)** | Reviewer / polish | Consistency checks, minor fixes, style alignment |
-| **Copilot** | Inline assist | Autocompletions, snippet generation within IDE |
+| Agent             | Role                | Scope                                                 |
+|-------------------|---------------------|-------------------------------------------------------|
+| **Claude Code**   | Primary implementer | Structural changes, new features, bulk edits, commits |
+| **Cursor (Qwen)** | Reviewer / polish   | Consistency checks, minor fixes, style alignment      |
+| **Copilot**       | Inline assist       | Autocompletions, snippet generation within IDE        |
 
 ## Workflow
 

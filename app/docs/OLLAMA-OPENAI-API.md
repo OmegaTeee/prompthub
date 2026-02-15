@@ -220,13 +220,13 @@ ollama pull llama3.2:3b
 
 ## When to Use Each API
 
-### Use Native API when:
+### Use Native API when
 - ✅ Default setup (no special requirements)
 - ✅ Ollama-specific features needed
 - ✅ Simpler response format preferred
 - ✅ Direct Ollama integration
 
-### Use OpenAI API when:
+### Use OpenAI API when
 - ✅ Migrating from OpenAI to Ollama
 - ✅ Tools expect OpenAI format
 - ✅ Standardized chat message format

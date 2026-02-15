@@ -1,0 +1,70 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "cwd": "${workspaceFolder}/app"
+  },
+  "tasks": [
+    {
+      "label": "PromptHub: All Tests",
+      "type": "shell",
+      "command": "${workspaceFolder}/app/.venv/bin/python",
+      "args": ["-m", "pytest", "tests", "-v"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "PromptHub: Unit Tests",
+      "type": "shell",
+      "command": "${workspaceFolder}/app/.venv/bin/python",
+      "args": ["-m", "pytest", "tests/unit", "-q"],
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "PromptHub: Type Check",
+      "type": "shell",
+      "command": "${workspaceFolder}/app/.venv/bin/python",
+      "args": ["-m", "mypy", "router/"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "PromptHub: Lint",
+      "type": "shell",
+      "command": "${workspaceFolder}/app/.venv/bin/python",
+      "args": ["-m", "ruff", "check", "router/"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "PromptHub: Health Check",
+      "type": "shell",
+      "command": "curl",
+      "args": ["-s", "http://localhost:9090/health"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

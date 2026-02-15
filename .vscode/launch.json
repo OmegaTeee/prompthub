@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PromptHub: Router",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "router.main:app",
+        "--host", "127.0.0.1",
+        "--port", "9090",
+        "--reload"
+      ],
+      "cwd": "${workspaceFolder}/app",
+      "envFile": "${workspaceFolder}/app/.env",
+      "jinja": true,
+      "justMyCode": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "PromptHub: All Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["tests", "-v"],
+      "cwd": "${workspaceFolder}/app",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "PromptHub: Unit Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["tests/unit", "-v"],
+      "cwd": "${workspaceFolder}/app",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "PromptHub: Current Test File",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${relativeFile}", "-v"],
+      "cwd": "${workspaceFolder}/app",
+      "console": "integratedTerminal"
+    }
+  ]
+}

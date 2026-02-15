@@ -11,5 +11,8 @@
     "@wonderwhy-er/desktop-commander": "0.2.35",
     "ddg-mcp-search": "1.1.0",
     "deepseek-reasoner-mcp": "1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3"
   }
 }
