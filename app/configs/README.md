@@ -70,7 +70,7 @@ vim configs/enhancement-rules.json
 # Modify client-specific model:
 {
   "vscode": {
-    "model": "qwen3-coder:latest",  # Change to your preferred model
+    "model": "qwen2.5-coder:latest",  # Change to your preferred model
     "system_prompt": "..."
   }
 }

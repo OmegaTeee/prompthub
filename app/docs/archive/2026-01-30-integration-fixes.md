@@ -133,7 +133,7 @@ curl http://localhost:9090/health
 
 ✅ **Test 2: Ollama Models**
 ```bash
-ollama list | grep -E "(deepseek-r1|qwen3-coder)"
+ollama list | grep -E "(deepseek-r1|qwen2.5-coder)"
 ```
 **Result:** Both models available
 

@@ -264,7 +264,7 @@ class TestCrossClientFeatures:
             # Test enhancement endpoint directly to verify model selection
             clients_and_expected_models = [
                 ("claude-desktop", "deepseek-r1"),
-                ("vscode", "qwen3-coder"),
+                ("vscode", "qwen2.5-coder"),
                 ("raycast", "deepseek-r1"),
             ]
 

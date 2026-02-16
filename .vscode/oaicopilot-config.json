@@ -1,0 +1,67 @@
+{
+  "version": "0.3.1",
+  "exportDate": "2026-02-16T12:54:57.564Z",
+  "baseUrl": "https://router.huggingface.co/v1",
+  "apiKey": "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",
+  "delay": 0,
+  "retry": {
+    "enabled": true,
+    "max_attempts": 3,
+    "interval_ms": 1000
+  },
+  "commitLanguage": "English",
+  "commitModel": "",
+  "models": [
+    {
+      "id": "__provider__router",
+      "owned_by": "router",
+      "apiMode": "openai",
+      "baseUrl": "http://localhost:9090/v1"
+    },
+    {
+      "id": "__provider__ollama",
+      "owned_by": "ollama",
+      "apiMode": "ollama",
+      "baseUrl": "http://localhost:11434"
+    },
+    {
+      "id": "qwen2.5-coder:32b",
+      "owned_by": "router",
+      "displayName": "qwen2.5-coder-oai",
+      "configId": "router",
+      "baseUrl": "http://localhost:9090/v1",
+      "family": "qwen2.5",
+      "context_length": 32768,
+      "max_tokens": 8192,
+      "apiMode": "openai",
+      "headers": {
+        "Authorization": "Bearer sk-prompthub-copilot-dev001"
+      },
+      "extra": {
+        "temperature": 0.7,
+        "top_p": 0.95,
+        "top_k": 40,
+        "min_p": 0.01
+      }
+    },
+    {
+      "id": "qwen2.5-coder:32b",
+      "owned_by": "ollama",
+      "displayName": "qwen2.5-coder",
+      "configId": "native",
+      "baseUrl": "http://localhost:11434",
+      "family": "qwen2.5",
+      "context_length": 32768,
+      "max_tokens": 8192,
+      "apiMode": "ollama",
+      "temperature": 0.75,
+      "top_p": 0.95,
+      "top_k": 40,
+      "min_p": 0.01
+    }
+  ],
+  "readFileLines": 0,
+  "providerKeys": {
+    "router": "sk-prompthub-copilot-dev001"
+  }
+}

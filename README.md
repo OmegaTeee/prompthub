@@ -112,7 +112,7 @@ Prompts pass through a local Ollama model before reaching the AI service. Each c
 | Client | Model | Tuning |
 |--------|-------|--------|
 | Claude Desktop | deepseek-r1 | Structured reasoning, Markdown |
-| VS Code / Claude Code | qwen3-coder | Code-first, file paths, minimal prose |
+| VS Code / Claude Code | qwen2.5-coder | Code-first, file paths, minimal prose |
 | Raycast | llama3.2 | Action-oriented, CLI commands, under 200 words |
 | Obsidian | llama3.2 | Markdown with `[[wikilinks]]` and `#tags` |
 
@@ -334,7 +334,7 @@ POST /ollama/enhance
 
 # Headers:
 X-Client-Name: claude-desktop  # Routes to deepseek-r1
-X-Client-Name: vscode          # Routes to qwen3-coder
+X-Client-Name: vscode          # Routes to qwen2.5-coder
 X-Client-Name: raycast         # Routes to llama3.2
 X-Client-Name: obsidian        # Routes to llama3.2 with markdown
 ```

@@ -372,7 +372,7 @@ paths:
       description: |
         Enhance a prompt using Ollama. Model selection is based on the X-Client-Name header:
         - `claude-desktop`: deepseek-r1 for structured reasoning
-        - `vscode`: qwen3-coder for code-focused responses
+        - `vscode`: qwen2.5-coder for code-focused responses
         - `raycast`: deepseek-r1 for action-oriented responses
         - `obsidian`: deepseek-r1 with markdown formatting
       operationId: enhancePrompt

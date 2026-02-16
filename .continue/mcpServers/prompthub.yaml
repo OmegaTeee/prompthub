@@ -1,0 +1,12 @@
+name: New MCP server
+version: 0.0.1
+schema: v1
+mcpServers:
+  - name: prompthub
+    command: node
+    args:
+      - /Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js
+    env: {
+        "CLIENT_NAME" : "continue-dev",
+        "PROMPTHUB_URL" : "http://localhost:9090"
+      }

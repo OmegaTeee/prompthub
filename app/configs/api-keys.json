@@ -23,7 +23,17 @@
     "sk-prompthub-code-dev001": {
       "client_name": "vscode",
       "enhance": true,
-      "description": "Visual Studio Code"
+      "description": "VS Code chat (enhanced)"
+    },
+    "sk-prompthub-copilot-dev001": {
+      "client_name": "vscode",
+      "enhance": false,
+      "description": "OAI Copilot extension (pass-through)"
+    },
+    "sk-prompthub-continue-dev001": {
+      "client_name": "continue",
+      "enhance": false,
+      "description": "Continue.dev extension (pass-through)"
     }
   }
 }

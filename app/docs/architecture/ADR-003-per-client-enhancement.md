@@ -230,7 +230,7 @@ POST /ollama/enhance/vscode
 ### 3. Environment Variables
 ```bash
 CLAUDE_DESKTOP_MODEL=deepseek-r1
-VSCODE_MODEL=qwen3-coder
+VSCODE_MODEL=qwen2.5-coder
 ```
 
 **Rejected** because:
@@ -259,7 +259,7 @@ def test_client_routing():
     result = await service.enhance("test", client_name="claude-desktop")
     assert result.model == "deepseek-r1:latest"
 
-    # VS Code gets qwen3-coder
+    # VS Code gets qwen2.5-coder
     result = await service.enhance("test", client_name="vscode")
     assert result.model == "qwen2.5-coder:7b"
 

@@ -26,7 +26,7 @@ class TestPromptEnhancement:
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
             clients_and_models = [
                 ("claude-desktop", "deepseek-r1:latest"),
-                ("vscode", "qwen3-coder:latest"),
+                ("vscode", "qwen2.5-coder:latest"),
                 ("raycast", "deepseek-r1:latest"),
             ]
 

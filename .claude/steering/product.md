@@ -20,7 +20,7 @@ macOS power users who work across multiple AI-powered editors and tools and want
 | Feature | Description |
 |---------|-------------|
 | MCP server management | Spawn, monitor, auto-restart stdio MCP servers from a central registry |
-| Per-client enhancement | Ollama model routing: Claude Desktop → deepseek-r1, VS Code → qwen3-coder, etc. |
+| Per-client enhancement | Ollama model routing: Claude Desktop → deepseek-r1, VS Code → qwen2.5-coder, etc. |
 | OpenAI-compatible proxy | `/v1/chat/completions` endpoint for desktop apps (Cursor, Raycast, Obsidian) |
 | Circuit breakers | 3 failures → OPEN → 30s → HALF_OPEN → recovery; per-server isolation |
 | Response caching | SHA256-keyed L1 in-memory LRU cache for enhanced prompts |

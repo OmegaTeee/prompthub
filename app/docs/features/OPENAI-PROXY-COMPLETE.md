@@ -214,4 +214,4 @@ Configure each app's OpenAI settings:
 - **API Key**: `sk-prompthub-cursor-dev001` (or the appropriate key from `api-keys.json`)
 - **Model**: Any Ollama model name (e.g., `llama3.2:latest`, `deepseek-r1:latest`)
 
-> ★ **The enhancement pipeline is invisible to desktop apps.** From Cursor's perspective, it's just talking to an OpenAI-compatible API. But behind the scenes, the router enhances the last user message using per-client rules (Cursor gets `qwen3-coder`, Obsidian gets pass-through), caches enhanced prompts (SHA-256 keyed LRU), checks the circuit breaker, and logs everything to the audit trail. The app never knows — it just gets better responses with resilience for free. 
+> ★ **The enhancement pipeline is invisible to desktop apps.** From Cursor's perspective, it's just talking to an OpenAI-compatible API. But behind the scenes, the router enhances the last user message using per-client rules (Cursor gets `qwen2.5-coder`, Obsidian gets pass-through), caches enhanced prompts (SHA-256 keyed LRU), checks the circuit breaker, and logs everything to the audit trail. The app never knows — it just gets better responses with resilience for free.

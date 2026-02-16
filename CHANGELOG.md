@@ -63,7 +63,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 ### Added
 - **Core router**: FastAPI application at `localhost:9090`
 - **MCP server management**: spawn, monitor, auto-restart stdio MCP servers
-- **Prompt enhancement**: per-client Ollama model routing (deepseek-r1, qwen3-coder)
+- **Prompt enhancement**: per-client Ollama model routing (deepseek-r1, qwen2.5-coder)
 - **OpenAI-compatible proxy**: `/v1/chat/completions` for desktop apps (Cursor, Raycast, Obsidian)
 - **Circuit breakers**: per-server resilience (CLOSED → OPEN → HALF_OPEN)
 - **Response caching**: SHA256-keyed L1 in-memory LRU cache
