@@ -8,11 +8,6 @@ This directory contains all local MCP (Model Context Protocol) servers.
 mcps/
 ├── package.json              # npm dependencies for Node.js MCP servers
 ├── node_modules/             # Installed npm packages (6 servers)
-├── obsidian-mcp-tools/       # Obsidian standalone binary
-│   ├── bin/mcp-server        # ARM64 compiled executable
-│   ├── manifest.json         # Version info
-│   ├── README.md             # Server documentation
-│   └── PYTHON-MCP-EXAMPLE.md # How to add Python MCP servers
 └── README.md                 # This file
 ```
 
@@ -49,15 +44,15 @@ Installed via `npm install` in this directory:
 
 1. **obsidian** - `obsidian-mcp-tools`
    - Semantic search, templates, file management for Obsidian vault
-   - Location: `obsidian-mcp-tools/bin/mcp-server`
+   - Location: `~/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server`
    - Auto-start: Yes
    - Requires: API key in macOS Keychain
 
 ## Configuration
 
-All servers are configured in [`../configs/mcp-servers.json`](../configs/mcp-servers.json).
+All servers are configured in [`../app/configs/mcp-servers.json`](../app/configs/mcp-servers.json).
 
-Servers requiring API keys use wrapper scripts in [`../scripts/`](../scripts/) that load credentials from macOS Keychain.
+Servers requiring API keys use wrapper scripts in [`../app/scripts/`](../app/scripts/) that load credentials from macOS Keychain.
 
 ## Adding New MCP Servers
 
@@ -103,7 +98,7 @@ Example configurations available in [`../configs/mcp-servers.json.examples`](../
 Run the validation script to verify all servers are installed:
 
 ```bash
-../scripts/validate-mcp-servers.sh
+../app/scripts/validate-mcp-servers.sh
 ```
 
 This checks:
@@ -122,15 +117,6 @@ cd mcps
 npm update <package-name>
 # or
 npm update  # update all
-```
-
-### Obsidian Binary
-1. Update plugin in Obsidian
-2. Copy new binary:
-
-```bash
-cp ~/Obsidian/.obsidian/plugins/mcp-tools/bin/mcp-server \
-   obsidian-mcp-tools/bin/
 ```
 
 ## References

@@ -5,12 +5,13 @@
     }
   ],
   "settings": {
-    "python-envs.pythonProjects": [
-      {
-        "path": "${workspaceFolder}/app/",
-        "envManager": "ms-python.python:venv",
-        "packageManager": "ms-python.python:pip"
-      }
-    ]
+    "markdown.links.openLocation": "currentGroup",
+    "markdown.preview.fontSize": 16,
+    "markdown.preview.lineHeight": 1.4,
+    "markdown.preview.securityLevel": "allowScriptsAndAllContent",
+    "markdown.styles": [
+      ".vscode/markdown.css"
+    ],
+    "markdownlint.configFile": ".vscode/.markdownlint-cli2.jsonc",
   }
 }
