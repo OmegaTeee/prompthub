@@ -1,253 +1,132 @@
-# Ollama OpenAI-Compatible API Support
+# Ollama API Modes & OpenAI Proxy
 
-PromptHub now supports **both** Ollama API formats:
-- **Native Ollama API** (default): `/api/generate`, `/api/tags`
-- **OpenAI-Compatible API**: `/v1/chat/completions`, `/v1/models`
+PromptHub uses Ollama in two distinct ways. Understanding the difference avoids configuration confusion.
 
-## Why Two API Formats?
+## Two Concepts
 
-Ollama exposes OpenAI-compatible endpoints at `/v1/*` allowing drop-in replacement of OpenAI clients. This is useful for:
+| | Enhancement Backend | Client Proxy |
+|---|---|---|
+| **What** | How PromptHub's enhancement service talks to Ollama | How external apps talk to PromptHub |
+| **Endpoints** | Ollama's `/api/generate` or `/v1/chat/completions` | PromptHub's `/v1/chat/completions`, `/v1/models` |
+| **Config** | `OLLAMA_API_MODE` in `.env` | `API_KEYS_CONFIG` in `.env` → `api-keys.json` |
+| **Auth** | None (local Ollama) | Bearer token required |
+| **Can disable?** | Switch between native/openai | Always active |
 
-1. **Compatibility**: Tools built for OpenAI can work with local Ollama
-2. **Standardization**: OpenAI format is widely supported
-3. **Migration**: Easy to switch between OpenAI and Ollama
-4. **Tooling**: Some libraries expect OpenAI format
+## Enhancement Backend (`OLLAMA_API_MODE`)
+
+Controls the API format the enhancement service uses when calling Ollama to improve prompts before forwarding them.
+
+```bash
+# .env
+OLLAMA_API_MODE=native   # Default: uses /api/generate
+OLLAMA_API_MODE=openai   # Alternative: uses /v1/chat/completions
+```
+
+Both modes produce identical results — the difference is the wire format. Use `native` unless you have a specific reason to use the OpenAI format (e.g., an Ollama-compatible proxy that only speaks OpenAI).
+
+The mode is selected at startup and logged:
+```
+INFO: Using native Ollama API
+# or
+INFO: Using OpenAI-compatible Ollama API
+```
+
+## Client Proxy (`/v1/` Endpoints)
+
+External apps connect to PromptHub as if it were an OpenAI API server. This is always active regardless of `OLLAMA_API_MODE`.
+
+**Endpoints:**
+- `POST /v1/chat/completions` — Chat completion (streaming and non-streaming)
+- `GET /v1/models` — List available Ollama models
+- `POST /v1/api-keys/reload` — Hot-reload bearer tokens without restart
+
+**Authentication:** Every request requires a bearer token from `api-keys.json`:
+
+```json
+{
+  "keys": {
+    "sk-prompthub-code-dev001": {
+      "client_name": "vscode",
+      "enhance": true,
+      "description": "VS Code chat"
+    }
+  }
+}
+```
+
+**Enhancement toggle:** Each token has an `enhance` flag. When `true`, the user's last message is enhanced via the enhancement service (using the model and system prompt from `enhancement-rules.json` for that `client_name`) before being forwarded to Ollama. When `false`, prompts pass through unchanged.
+
+**Request flow:**
+1. Bearer token validated → resolves `client_name`
+2. If `enhance: true` → enhancement service rewrites the last user message
+3. Request forwarded to Ollama's `/v1/chat/completions`
+4. Response streamed (or returned) to the client
 
 ## Configuration
 
-Set the API mode in your `.env` file:
+### `.env` variables
 
 ```bash
-# Use native Ollama API (default)
+# Enhancement backend
 OLLAMA_API_MODE=native
+OLLAMA_HOST=localhost
+OLLAMA_PORT=11434
+OLLAMA_MODEL=deepseek-r1:latest
+OLLAMA_TIMEOUT=30
 
-# Or use OpenAI-compatible API
-OLLAMA_API_MODE=openai
+# Client proxy
+API_KEYS_CONFIG=configs/api-keys.json
+ENHANCEMENT_RULES_CONFIG=configs/enhancement-rules.json
 ```
 
-## Implementation Details
+### Client setup (VS Code example)
 
-### Native API (default)
-
-```python
-# Uses /api/generate endpoint
-POST http://localhost:11434/api/generate
+In VS Code `settings.json`:
+```json
 {
-  "model": "llama3.2:3b",
-  "prompt": "Hello",
-  "system": "You are helpful",
-  "options": {
-    "temperature": 0.7
-  }
-}
-
-# Response
-{
-  "model": "llama3.2:3b",
-  "response": "Hi there!",
-  "done": true
-}
-```
-
-### OpenAI-Compatible API
-
-```python
-# Uses /v1/chat/completions endpoint
-POST http://localhost:11434/v1/chat/completions
-{
-  "model": "llama3.2:3b",
-  "messages": [
-    {"role": "system", "content": "You are helpful"},
-    {"role": "user", "content": "Hello"}
-  ],
-  "temperature": 0.7
-}
-
-# Response (OpenAI format)
-{
-  "id": "chatcmpl-123",
-  "object": "chat.completion",
-  "created": 1677652288,
-  "model": "llama3.2:3b",
-  "choices": [{
-    "index": 0,
-    "message": {
-      "role": "assistant",
-      "content": "Hi there!"
-    },
-    "finish_reason": "stop"
+  "chat.models": [{
+    "id": "deepseek-r1:latest",
+    "provider": "openaiCompatible",
+    "url": "http://localhost:9090/v1",
+    "apiKey": "sk-prompthub-code-dev001"
   }]
 }
 ```
 
-## Code Architecture
-
-### Files Modified/Created
-
-1. **`router/enhancement/ollama_openai.py`** (NEW)
-   - `OllamaOpenAIClient` - OpenAI-compatible async client
-   - `ChatCompletionResponse` - Response model
-   - `OpenAICompatConfig` - Configuration model
-   - Error classes: `OllamaOpenAIError`, `OllamaOpenAIConnectionError`
-
-2. **`router/enhancement/service.py`** (MODIFIED)
-   - Added dual client support with type narrowing
-   - Uses `isinstance()` checks for type-safe API dispatch
-   - Unified error handling for both API types
-
-3. **`router/config/settings.py`** (MODIFIED)
-   - Added `ollama_api_mode` setting (defaults to "native")
-
-### Type Safety
-
-PromptHub uses Python's union types and `isinstance()` for type narrowing:
-
-```python
-class EnhancementService:
-    _ollama: OllamaClient | OllamaOpenAIClient
-
-    def __init__(self, ...):
-        if settings.ollama_api_mode == "openai":
-            self._ollama = OllamaOpenAIClient(...)
-        else:
-            self._ollama = OllamaClient(...)
-
-    async def enhance(self, ...):
-        if isinstance(self._ollama, OllamaOpenAIClient):
-            # Type narrowed to OllamaOpenAIClient
-            enhanced = await self._ollama.generate_from_prompt(...)
-        else:
-            # Type narrowed to OllamaClient
-            response = await self._ollama.generate(...)
-            enhanced = response.response.strip()
-```
-
-## Switching Between APIs
-
-### At Startup
-
-Set environment variable:
-```bash
-export OLLAMA_API_MODE=openai
-uvicorn router.main:app --port 9090
-```
-
-### Runtime Behavior
-
-- Circuit breaker works with both APIs
-- Caching works identically for both
-- Error handling unified across both APIs
-- Performance characteristics similar
-
-## Performance Comparison
-
-Both APIs have similar performance:
-
-| Metric | Native API | OpenAI API |
-|--------|-----------|------------|
-| First request | ~2-3s | ~2-3s |
-| Cached request | <500ms | <500ms |
-| Network overhead | Minimal | Minimal |
-| Model loading | Same | Same |
-
-## Testing
-
-### Manual Testing
+## Quick Test
 
 ```bash
-# Test native API
-curl http://localhost:11434/api/generate \
-  -d '{"model":"llama3.2:3b","prompt":"Hello"}'
+# Test the client proxy (requires bearer token)
+curl -s http://localhost:9090/v1/models \
+  -H "Authorization: Bearer sk-prompthub-code-dev001" | python3 -m json.tool
 
-# Test OpenAI-compatible API
-curl http://localhost:11434/v1/chat/completions \
-  -d '{"model":"llama3.2:3b","messages":[{"role":"user","content":"Hello"}]}'
-```
+# Test a chat completion
+curl -s http://localhost:9090/v1/chat/completions \
+  -H "Authorization: Bearer sk-prompthub-code-dev001" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"deepseek-r1:latest","messages":[{"role":"user","content":"Hello"}]}'
 
-### Automated Testing
-
-```bash
-# Run integration tests (tests both modes if Ollama is running)
-./scripts/run-tests.sh integration
-
-# Or with pytest
-pytest tests/integration/test_enhancement_and_caching.py -v
+# Test enhancement backend directly (native mode)
+curl -s http://localhost:9090/ollama/enhance \
+  -H "X-Client-Name: vscode" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Explain JWT auth"}'
 ```
 
 ## Troubleshooting
 
-### Error: "Connection refused"
+**"Connection refused"** — Ensure Ollama is running: `ollama serve`
 
-Ensure Ollama is running:
-```bash
-ollama serve
-```
+**"Missing bearer token" (401)** — Add `Authorization: Bearer <token>` header. Tokens are in `api-keys.json`.
 
-### Error: "Model not found"
+**"Invalid API key" (401)** — Token not found in `api-keys.json`. Reload after edits: `POST /v1/api-keys/reload`
 
-List available models:
-```bash
-# Native API
-curl http://localhost:11434/api/tags
+**"Model not found"** — Pull the model: `ollama pull deepseek-r1:latest`
 
-# OpenAI API
-curl http://localhost:11434/v1/models
-```
-
-Pull the model if needed:
-```bash
-ollama pull llama3.2:3b
-```
-
-### Switching modes not working
-
-1. Check `.env` file:
-   ```bash
-   cat .env | grep OLLAMA_API_MODE
-   ```
-
-2. Restart PromptHub:
-   ```bash
-   uvicorn router.main:app --reload --port 9090
-   ```
-
-3. Verify in logs:
-   ```
-   INFO: Using OpenAI-compatible Ollama API
-   # or
-   INFO: Using native Ollama API
-   ```
-
-## When to Use Each API
-
-### Use Native API when
-- ✅ Default setup (no special requirements)
-- ✅ Ollama-specific features needed
-- ✅ Simpler response format preferred
-- ✅ Direct Ollama integration
-
-### Use OpenAI API when
-- ✅ Migrating from OpenAI to Ollama
-- ✅ Tools expect OpenAI format
-- ✅ Standardized chat message format
-- ✅ Cross-platform compatibility
-
-## Future Enhancements
-
-Potential improvements:
-- [ ] Add streaming support for both APIs
-- [ ] Per-client API mode selection
-- [ ] Auto-detect best API based on model
-- [ ] Performance benchmarking dashboard
+**Enhancement not working** — Check that `enhance: true` is set for the token in `api-keys.json` and the `client_name` has a matching entry in `enhancement-rules.json`.
 
 ## References
 
 - [Ollama OpenAI Compatibility](https://github.com/ollama/ollama/blob/main/docs/openai.md)
 - [OpenAI Chat Completions API](https://platform.openai.com/docs/api-reference/chat)
-- [PromptHub Enhancement Architecture](api/enhancement.md)
-
----
-
-**Added**: 2026-01-30
-**Version**: 1.0.0
-**Status**: ✅ Production Ready
+- [Enhancement API](api/enhancement.md)
