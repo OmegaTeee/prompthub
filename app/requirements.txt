@@ -32,6 +32,9 @@ markdown2>=2.4.0
 # Metrics (used by enhancement middleware)
 prometheus_client>=0.20.0
 
+# MCP protocol (FastMCP for stdio bridge and server composition)
+fastmcp>=2.0.0
+
 # Optional: Vector cache (Phase 2.1)
 # qdrant-client>=1.7.0
 

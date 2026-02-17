@@ -60,7 +60,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 | Module | Purpose |
 |--------|---------|
 | `config/` | Pydantic settings, JSON config loading |
-| `servers/` | MCP server lifecycle (spawn, monitor, restart stdio processes) |
+| `servers/` | MCP server lifecycle via FastMCP (spawn, monitor, restart stdio processes) |
 | `routing/` | MCP server registry, JSON-RPC proxy |
 | `resilience/` | Circuit breaker (CLOSED → OPEN → HALF_OPEN states) |
 | `cache/` | L1 in-memory LRU cache |
@@ -79,7 +79,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 1. Request arrives at `/mcp/{server}/{path}`
 2. Circuit breaker checked (reject if OPEN)
 3. Server auto-started if configured with `auto_start: true`
-4. JSON-RPC proxied via stdio bridge
+4. JSON-RPC proxied via FastMCP bridge (StdioTransport)
 5. Success/failure updates circuit breaker state
 
 ### Key Patterns
@@ -87,7 +87,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - **Pydantic Settings**: All config via `BaseSettings` with `.env` support
 - **Async everywhere**: Use `httpx` (not `requests`), `asyncio` for I/O
 - **Circuit breaker**: 3 failures → OPEN, 30s → HALF_OPEN, success → CLOSED
-- **Stdio bridges**: MCP servers communicate via JSON-RPC over stdin/stdout
+- **FastMCP bridges**: MCP servers communicate via FastMCP Client + StdioTransport
 - **workspace_root**: Cross-directory paths (mcps/) resolved via `Settings.workspace_root`
 
 ## Configuration Files
@@ -103,6 +103,7 @@ GET  /servers                   List all MCP servers
 POST /servers/{name}/start      Start server
 POST /servers/{name}/stop       Stop server
 POST /mcp/{server}/{path}       Proxy JSON-RPC to MCP server
+POST /mcp-direct/mcp            Streamable HTTP endpoint (FastMCP gateway)
 POST /ollama/enhance            Enhance prompt via Ollama (X-Client-Name header)
 GET  /dashboard                 HTMX monitoring dashboard
 POST /pipelines/documentation   Generate docs from codebase

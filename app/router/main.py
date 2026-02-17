@@ -39,13 +39,13 @@ from router.middleware import (
 from router.pipelines import DocumentationPipeline
 from router.resilience import CircuitBreakerError, CircuitBreakerRegistry
 from router.servers import (
-    ProcessManager,
     ServerConfig,
     ServerRegistry,
     ServerStatus,
     ServerTransport,
     Supervisor,
 )
+from router.servers.mcp_gateway import build_mcp_gateway
 
 # Configure logging
 logging.basicConfig(
@@ -56,7 +56,6 @@ logger = logging.getLogger(__name__)
 
 # Global service instances (initialized in lifespan)
 registry: ServerRegistry | None = None
-process_manager: ProcessManager | None = None
 supervisor: Supervisor | None = None
 enhancement_service: EnhancementService | None = None
 circuit_breakers: CircuitBreakerRegistry | None = None
@@ -67,7 +66,7 @@ persistent_activity_log = None  # Will be initialized in lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown."""
-    global registry, process_manager, supervisor, enhancement_service, circuit_breakers, documentation_pipeline, persistent_activity_log
+    global registry, supervisor, enhancement_service, circuit_breakers, documentation_pipeline, persistent_activity_log
 
     # Startup
     settings = get_settings()
@@ -89,11 +88,16 @@ async def lifespan(app: FastAPI):
     registry = ServerRegistry(settings.mcp_servers_config)
     await registry.load_async()  # Use async file I/O
 
-    process_manager = ProcessManager(registry)
-    supervisor = Supervisor(registry, process_manager)
+    supervisor = Supervisor(registry)
 
     # Start supervisor (will auto-start configured servers)
     await supervisor.start()
+
+    # Mount FastMCP gateway for Streamable HTTP access
+    # Clients can connect at /mcp-direct/mcp using standard MCP HTTP transport
+    mcp_gateway = build_mcp_gateway(supervisor)
+    app.mount("/mcp-direct", mcp_gateway.http_app(path="/mcp"))
+    logger.info("Mounted MCP gateway at /mcp-direct/mcp")
 
     # Initialize circuit breaker registry
     circuit_breakers = CircuitBreakerRegistry()

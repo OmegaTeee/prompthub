@@ -1,7 +1,7 @@
 # ADR-001: Stdio Transport for MCP Servers
 
 ## Status
-Accepted
+Accepted (Updated — implementation migrated to FastMCP, Feb 2026)
 
 ## Context
 MCP (Model Context Protocol) servers need a transport mechanism for communication with the router. Available options:
@@ -27,10 +27,10 @@ MCP (Model Context Protocol) servers need a transport mechanism for communicatio
 Use **stdio transport** as the primary and default transport mechanism.
 
 ### Implementation Details
-- Spawn MCP servers as subprocesses using `asyncio.subprocess`
-- Communicate via newline-delimited JSON (NDJSON)
-- Use `StdioBridge` to manage request/response matching
-- Support concurrent requests via request ID correlation
+- Spawn MCP servers as subprocesses via FastMCP's `StdioTransport`
+- Protocol handling (JSON-RPC framing, handshake) managed by FastMCP `Client`
+- `FastMCPBridge` adapter class provides backward-compatible `send()` interface
+- Typed dispatch: `tools/list` → `Client.list_tools_mcp()`, `tools/call` → `Client.call_tool_mcp()`, etc.
 
 ## Rationale
 
@@ -93,35 +93,44 @@ Use **stdio transport** as the primary and default transport mechanism.
 
 ## Implementation Notes
 
-### StdioBridge Pattern
+### FastMCPBridge Pattern (Current)
 
 ```python
-# Spawn process
-process = await asyncio.create_subprocess_exec(
-    "npx", "-y", "@upstash/context7-mcp",
-    stdin=asyncio.subprocess.PIPE,
-    stdout=asyncio.subprocess.PIPE,
-    stderr=asyncio.subprocess.PIPE,
+from router.servers.fastmcp_bridge import FastMCPBridge
+
+# Create bridge (owns its subprocess lifecycle)
+bridge = FastMCPBridge(
+    command="npx",
+    args=["-y", "@upstash/context7-mcp"],
+    env=resolved_env,
+    name="context7",
 )
+await bridge.start()  # Spawns subprocess + MCP handshake
 
-# Create bridge
-bridge = StdioBridge(process, "context7")
-await bridge.start()
-
-# Send request
+# Send request (dispatches to typed FastMCP Client methods)
 response = await bridge.send("tools/list", {})
+
+# Health check
+if bridge.is_connected:
+    await bridge.ping()
 ```
 
-### Request ID Matching
-- Router generates sequential request IDs
-- Bridge stores pending futures in dict by request ID
-- Background reader task matches responses to futures
-- Timeout cleanup prevents memory leaks
+### Dispatch Model
+- `FastMCPBridge.send()` routes by JSON-RPC method name to typed `Client` methods
+- `_mcp` variants (`list_tools_mcp`, `call_tool_mcp`) return raw Pydantic models
+- Results wrapped in JSON-RPC envelope: `{"jsonrpc": "2.0", "result": {...}, "id": 1}`
+- No manual request ID matching — FastMCP handles framing internally
 
 ### Error Handling
-- Process crash → Supervisor detects and restarts
-- Malformed JSON → Logged, response skipped
-- Request timeout → Future cancelled, request cleaned up
+- Process crash → `bridge.is_connected` returns False → Supervisor restarts
+- Timeout → `asyncio.wait_for()` raises `TimeoutError`
+- Bridge closed → `FastMCPBridgeError("Bridge is closed")` raised
+
+### Historical: StdioBridge (Removed)
+The original implementation used a custom `StdioBridge` class that managed
+raw JSON-RPC over stdin/stdout with manual request ID matching. This was
+replaced by `FastMCPBridge` in Feb 2026 to leverage FastMCP's built-in
+protocol handling, reducing ~560 lines of custom bridge + process code.
 
 ## Metrics
 - **Latency**: 10-50ms (process-to-process communication)
@@ -141,3 +150,4 @@ response = await bridge.send("tools/list", {})
 ## Revision History
 - 2025-01-15: Initial decision
 - 2025-02-02: Documented as ADR
+- 2026-02-17: Migrated from custom StdioBridge to FastMCPBridge (fastmcp>=2.0.0)

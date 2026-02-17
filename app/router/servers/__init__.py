@@ -1,6 +1,7 @@
 """MCP server lifecycle management module."""
 
-from router.servers.bridge import StdioBridge, StdioBridgeError
+from router.servers.fastmcp_bridge import FastMCPBridge, FastMCPBridgeError
+from router.servers.mcp_gateway import build_mcp_gateway
 from router.servers.models import (
     ProcessInfo,
     ServerConfig,
@@ -8,19 +9,18 @@ from router.servers.models import (
     ServerStatus,
     ServerTransport,
 )
-from router.servers.process import ProcessManager
 from router.servers.registry import ServerRegistry
 from router.servers.supervisor import Supervisor
 
 __all__ = [
+    "FastMCPBridge",
+    "FastMCPBridgeError",
     "ProcessInfo",
-    "ProcessManager",
     "ServerConfig",
     "ServerRegistry",
     "ServerState",
     "ServerStatus",
     "ServerTransport",
-    "StdioBridge",
-    "StdioBridgeError",
     "Supervisor",
+    "build_mcp_gateway",
 ]

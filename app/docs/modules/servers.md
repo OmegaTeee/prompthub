@@ -1,13 +1,13 @@
 # servers/ Module
 
-MCP server lifecycle management and stdio communication.
+MCP server lifecycle management via FastMCP.
 
 ## Overview
 
 The `servers/` module manages the full lifecycle of MCP (Model Context Protocol) servers:
-- Process spawning and termination
+- Subprocess spawning and termination via FastMCP `Client` + `StdioTransport`
 - Health monitoring and auto-restart
-- Stdio bridge for JSON-RPC communication
+- FastMCPBridge adapter for JSON-RPC dispatch
 - Configuration and state management
 
 ## Architecture
@@ -17,15 +17,17 @@ The `servers/` module manages the full lifecycle of MCP (Model Context Protocol)
 │  Supervisor  │  Orchestrates server lifecycle
 └──────┬───────┘
        │
-   ┌───▼────┐  ┌────────────┐
-   │Registry│  │ProcessMgr  │  Manages processes
-   └───┬────┘  └──────┬─────┘
-       │              │
-       └────┬─────────┘
-            │
-      ┌─────▼──────┐
-      │StdioBridge │  JSON-RPC over stdin/stdout
-      └────────────┘
+   ┌───▼────┐
+   │Registry│  Configuration + state tracking
+   └───┬────┘
+       │
+  ┌────▼──────────┐
+  │FastMCPBridge   │  Typed dispatch via FastMCP Client
+  └───────┬────────┘
+          │
+  ┌───────▼────────┐
+  │StdioTransport  │  Subprocess lifecycle (FastMCP)
+  └────────────────┘
 ```
 
 ## Components
@@ -71,9 +73,10 @@ class ServerRegistry:
 class ServerConfig(BaseModel):
     name: str                    # e.g., "context7"
     package: str                 # e.g., "@upstash/context7-mcp"
-    transport: ServerTransport   # STDIO, SSE, HTTP
+    transport: ServerTransport   # STDIO, HTTP
     command: str                 # e.g., "npx"
     args: list[str]              # e.g., ["-y", "@upstash/..."]
+    env: dict[str, str | dict]   # Supports keyring references
     auto_start: bool = False
     restart_on_failure: bool = True
     max_restarts: int = 3
@@ -86,57 +89,75 @@ class ProcessInfo(BaseModel):
     last_error: str | None = None
 ```
 
-### ProcessManager
-**File**: `servers/process.py`
+### FastMCPBridge
+**File**: `servers/fastmcp_bridge.py`
 
-Low-level process spawning and management.
+Adapter bridging PromptHub's JSON-RPC proxy to FastMCP's typed Client API.
 
 ```python
-class ProcessManager:
+class FastMCPBridge:
     """
-    Manages MCP server processes.
+    Bridges HTTP JSON-RPC to MCP servers via FastMCP Client.
 
-    Spawns processes using asyncio.subprocess, tracks PIDs,
-    handles graceful shutdown.
+    Owns its subprocess lifecycle (spawn on start, kill on close)
+    via FastMCP's StdioTransport.
     """
 
-    async def start(self, name: str) -> None:
-        """Start a server process"""
+    def __init__(
+        self,
+        command: str,
+        args: list[str],
+        env: dict[str, str] | None = None,
+        name: str = "unknown",
+    ):
+        """Create bridge with command/args/env — subprocess spawned on start()."""
 
-    async def stop(self, name: str, timeout: float = 5.0) -> None:
-        """Stop a server process (SIGTERM then SIGKILL)"""
+    async def start(self) -> None:
+        """Connect to MCP server (spawns subprocess + protocol handshake)."""
 
-    async def restart(self, name: str) -> None:
-        """Restart a server process"""
+    async def close(self) -> None:
+        """Disconnect and cleanup subprocess."""
 
-    def get_process(self, name: str) -> asyncio.subprocess.Process | None:
-        """Get process handle by name"""
+    async def send(
+        self,
+        method: str,
+        params: dict | None = None,
+        timeout: float = 30.0,
+    ) -> dict:
+        """Send JSON-RPC request — dispatches to typed FastMCP methods."""
 
-    def get_running_servers(self) -> list[str]:
-        """List all running server names"""
+    async def list_tools(self) -> list[dict]:
+        """List available tools from the MCP server."""
 
-    async def stop_all(self) -> None:
-        """Stop all managed processes"""
+    async def call_tool(self, name: str, arguments: dict) -> dict:
+        """Call a tool on the MCP server."""
+
+    @property
+    def is_connected(self) -> bool:
+        """Check if the client is currently connected."""
+
+    async def ping(self) -> bool:
+        """Send a ping to verify the server is responsive."""
 ```
 
 **Key Responsibilities**:
-- Spawn processes with `asyncio.create_subprocess_exec`
-- Configure stdin/stdout/stderr pipes
-- Track process handles by name
-- Graceful shutdown (SIGTERM → wait → SIGKILL)
-- Cleanup zombie processes
+- Own subprocess lifecycle via FastMCP `StdioTransport`
+- Dispatch JSON-RPC method names to typed FastMCP `Client` methods
+- Wrap results in JSON-RPC envelope format for proxy compatibility
+- Provide health check interface (`is_connected`, `ping()`)
 
-**Process Lifecycle**:
-```
-1. start() → asyncio.create_subprocess_exec
-2. Configure pipes (stdin=PIPE, stdout=PIPE, stderr=PIPE)
-3. Store process handle
-4. Update registry with pid and status=RUNNING
-5. stop() → SIGTERM → wait(5s) → SIGKILL if needed
-6. Close pipes
-7. Remove process handle
-8. Update registry with status=STOPPED
-```
+**Dispatch Table**:
+
+| JSON-RPC Method | FastMCP Client Method |
+|---|---|
+| `tools/list` | `client.list_tools_mcp()` |
+| `tools/call` | `client.call_tool_mcp(name, arguments)` |
+| `resources/list` | `client.list_resources_mcp()` |
+| `resources/read` | `client.read_resource_mcp(uri)` |
+| `prompts/list` | `client.list_prompts_mcp()` |
+| `prompts/get` | `client.get_prompt_mcp(name, arguments)` |
+| `initialize` | No-op (handled on connect) |
+| `ping` | `client.ping()` |
 
 ### Supervisor
 **File**: `servers/supervisor.py`
@@ -149,8 +170,11 @@ class Supervisor:
     Monitors server health and handles auto-restart.
 
     Runs background task to periodically check server health,
-    restarts crashed servers (if configured), manages stdio bridges.
+    restarts crashed servers (if configured), manages FastMCP bridges.
     """
+
+    def __init__(self, registry: ServerRegistry, check_interval: float = 10.0):
+        """Create supervisor with registry (no ProcessManager needed)."""
 
     async def start(self) -> None:
         """Start supervisor (auto-start servers + health check loop)"""
@@ -159,16 +183,16 @@ class Supervisor:
         """Stop supervisor and all servers"""
 
     async def start_server(self, name: str) -> None:
-        """Start server and initialize bridge"""
+        """Start server: resolve env, create FastMCPBridge, connect"""
 
     async def stop_server(self, name: str) -> None:
-        """Stop server and close bridge"""
+        """Stop server: close bridge, update registry"""
 
     async def restart_server(self, name: str) -> None:
         """Restart server"""
 
-    def get_bridge(self, name: str) -> StdioBridge | None:
-        """Get stdio bridge for server"""
+    def get_bridge(self, name: str) -> FastMCPBridge | None:
+        """Get FastMCP bridge for server"""
 
     def get_status_summary(self) -> dict:
         """Get counts: running, stopped, failed"""
@@ -177,110 +201,36 @@ class Supervisor:
 **Key Responsibilities**:
 - Auto-start servers on application startup
 - Periodic health checks (default: every 10 seconds)
-- Detect crashed processes
+- Detect disconnected servers via `bridge.is_connected`
 - Auto-restart (if `restart_on_failure=true`)
 - Respect `max_restarts` limit
-- Create and manage stdio bridges
-- Initialize MCP protocol handshake
+- Create FastMCPBridge with keyring-resolved env vars
+- Credential resolution via `resolve_server_env()` helper
 
 **Health Check Flow**:
 ```
 1. Timer fires (every 10s)
-2. Get list of running servers
+2. Iterate registered servers with RUNNING status
 3. For each server:
-   a. Check if process is alive (process.returncode)
-   b. If dead AND restart_on_failure:
+   a. Check bridge.is_connected
+   b. If disconnected AND restart_on_failure:
       - Increment restart_count
       - If restart_count <= max_restarts:
-        → Restart server
+        → Close old bridge, restart server
       - Else:
         → Mark as FAILED
-   c. If dead AND NOT restart_on_failure:
+   c. If disconnected AND NOT restart_on_failure:
       → Mark as STOPPED
 4. Log status changes
 ```
 
-### StdioBridge
-**File**: `servers/bridge.py`
-
-JSON-RPC communication over stdin/stdout.
-
+**Keyring Resolution**:
 ```python
-class StdioBridge:
-    """
-    Bridges HTTP JSON-RPC to stdio JSON-RPC.
-
-    Manages async read/write to subprocess stdin/stdout,
-    matches responses to requests by request ID.
-    """
-
-    async def start(self) -> None:
-        """Start background reader task"""
-
-    async def close(self) -> None:
-        """Close bridge and cancel pending requests"""
-
-    async def send(
-        self,
-        method: str,
-        params: dict | None = None,
-        timeout: float = 30.0,
-    ) -> dict:
-        """Send JSON-RPC request and wait for response"""
-
-    async def send_notification(
-        self,
-        method: str,
-        params: dict | None = None,
-    ) -> None:
-        """Send JSON-RPC notification (no response)"""
-
-    async def initialize(self) -> dict:
-        """Send MCP initialize request"""
-
-    async def list_tools(self) -> list[dict]:
-        """List available tools from server"""
-
-    async def call_tool(self, name: str, arguments: dict) -> dict:
-        """Call a tool on the server"""
+def resolve_server_env(config: ServerConfig) -> dict[str, str]:
+    """Resolve env vars, replacing keyring references with secrets."""
+    # {"API_KEY": {"source": "keyring", "service": "prompthub", "account": "api_key"}}
+    # → {"API_KEY": "<actual-secret-from-keychain>"}
 ```
-
-**Key Responsibilities**:
-- Serialize JSON-RPC requests to NDJSON (newline-delimited JSON)
-- Write to process stdin
-- Read from process stdout in background task
-- Parse NDJSON responses
-- Match responses to requests by `id` field
-- Handle timeouts and errors
-- MCP protocol handshake (`initialize`, `initialized`)
-
-**Request Flow**:
-```
-1. client calls send(method, params)
-2. Generate sequential request_id
-3. Build JSON-RPC request: {"jsonrpc": "2.0", "id": 1, "method": "...", "params": {...}}
-4. Serialize to JSON + newline
-5. Write to stdin
-6. Create Future for response
-7. Store Future in _pending dict
-8. Background reader reads stdout
-9. Parse JSON response
-10. Match response.id to pending request
-11. Set Future result
-12. Return response to caller
-```
-
-**Concurrency**:
-- Multiple concurrent requests supported
-- Each request gets unique ID
-- Responses matched by ID
-- Background reader task handles all responses
-
-**Error Handling**:
-- Timeout → Cancel Future, remove from pending
-- Malformed JSON → Log warning, skip line
-- Process crash → All pending Futures cancelled
-- EOF on stdout → Log warning, exit reader task
 
 ## Usage Examples
 
@@ -289,9 +239,7 @@ class StdioBridge:
 registry = ServerRegistry("configs/mcp-servers.json")
 registry.load()
 
-process_manager = ProcessManager(registry)
-supervisor = Supervisor(registry, process_manager)
-
+supervisor = Supervisor(registry)
 await supervisor.start()  # Auto-starts configured servers
 ```
 
@@ -318,13 +266,17 @@ summary = supervisor.get_status_summary()
 # Get specific server state
 state = registry.get_state("context7")
 print(f"Status: {state.process.status}")
-print(f"PID: {state.process.pid}")
 print(f"Restart count: {state.process.restart_count}")
+
+# Check bridge connectivity
+bridge = supervisor.get_bridge("context7")
+print(f"Connected: {bridge.is_connected}")
+print(f"Responsive: {await bridge.ping()}")
 ```
 
 ### Graceful Shutdown
 ```python
-await supervisor.stop()  # Stops all servers and closes bridges
+await supervisor.stop()  # Closes all bridges and subprocesses
 ```
 
 ## Configuration
@@ -348,6 +300,22 @@ await supervisor.stop()  # Stops all servers and closes bridges
 }
 ```
 
+### Environment with Keyring References
+```json
+{
+  "name": "obsidian",
+  "command": "npx",
+  "args": ["-y", "mcp-obsidian"],
+  "env": {
+    "OBSIDIAN_API_KEY": {
+      "source": "keyring",
+      "service": "prompthub",
+      "account": "obsidian_api_key"
+    }
+  }
+}
+```
+
 ## Testing
 
 ### Unit Tests
@@ -358,19 +326,21 @@ def test_registry_load():
     registry.load()
     assert "context7" in registry._servers
 
-# Test process manager
+# Test bridge dispatch
 @pytest.mark.asyncio
-async def test_process_start():
-    mgr = ProcessManager(registry)
-    await mgr.start("context7")
-    assert mgr.get_process("context7") is not None
+async def test_bridge_send():
+    bridge = FastMCPBridge("npx", ["-y", "some-mcp"], name="test")
+    await bridge.start()
+    response = await bridge.send("tools/list")
+    assert "result" in response
+    await bridge.close()
 ```
 
 ### Integration Tests
 ```python
 @pytest.mark.asyncio
 async def test_server_lifecycle():
-    supervisor = Supervisor(registry, process_manager)
+    supervisor = Supervisor(registry)
     await supervisor.start_server("context7")
 
     # Server running
@@ -390,20 +360,20 @@ async def test_server_lifecycle():
 ## Performance
 
 ### Metrics
-- **Startup time**: 50-200ms per server (Node.js process spawn)
-- **Request latency**: 10-50ms (stdio roundtrip)
+- **Startup time**: 50-200ms per server (Node.js process spawn via StdioTransport)
+- **Request latency**: 10-50ms (stdio roundtrip via FastMCP Client)
 - **Memory**: 10-50MB per server process
-- **Health check overhead**: <10ms (check if process alive)
+- **Health check overhead**: <1ms (`is_connected` property check)
 
 ### Optimization
 - Lazy start (auto_start=false for rarely used servers)
-- Connection pooling (reuse stdio bridges)
+- Bridge reuse (FastMCPBridge maintains persistent connection)
 - Batch health checks (check all servers in parallel)
 
 ## Troubleshooting
 
 ### Server Won't Start
-```python
+```bash
 # Check logs
 tail -f /tmp/prompthub/audit.log
 
@@ -438,9 +408,20 @@ response = await bridge.send(
 )
 ```
 
+### Bridge Disconnected
+```python
+# Check connection state
+bridge = supervisor.get_bridge("context7")
+if not bridge.is_connected:
+    # Supervisor will auto-restart if configured
+    # Or manually restart:
+    await supervisor.restart_server("context7")
+```
+
 ## Related
 
 - [ADR-001: Stdio Transport](../architecture/ADR-001-stdio-transport.md)
 - [MCP Specification](https://modelcontextprotocol.io/docs/specification)
-- [ProcessManager Source](../../router/servers/process.py)
+- [FastMCP Documentation](https://gofastmcp.com)
+- [FastMCPBridge Source](../../router/servers/fastmcp_bridge.py)
 - [Supervisor Source](../../router/servers/supervisor.py)
