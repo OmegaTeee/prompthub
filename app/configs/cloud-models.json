@@ -1,0 +1,382 @@
+{
+  "_description": "Curated cloud model catalog for potential multi-provider routing via OpenRouter. Each model maps to a local Ollama equivalent where available.",
+  "_source": "OpenRouter API (openrouter.ai) — extracted Feb 2026",
+  "_categories": ["coding", "reasoning", "general", "vision", "premium"],
+  "models": {
+    "coding": {
+      "description": "Code generation, completion, and agentic coding tasks",
+      "local_equivalent": "qwen2.5-coder:32b",
+      "models": {
+        "qwen/qwen-2.5-coder-32b-instruct": {
+          "name": "Qwen2.5 Coder 32B Instruct",
+          "params": "32B dense",
+          "context": 32768,
+          "input_price": 0.03,
+          "output_price": 0.11,
+          "free_tier": false,
+          "thinking": false,
+          "vision": false,
+          "notes": "Exact cloud match for local qwen2.5-coder:32b"
+        },
+        "qwen/qwen3-coder": {
+          "name": "Qwen3 Coder 480B A35B",
+          "params": "480B MoE (35B active)",
+          "context": 262144,
+          "input_price": 0.22,
+          "output_price": 0.95,
+          "free_tier": true,
+          "thinking": true,
+          "vision": false,
+          "notes": "Massive upgrade over local 32B — agentic tool calling, 262K context"
+        },
+        "qwen/qwen3-coder-30b-a3b-instruct": {
+          "name": "Qwen3 Coder 30B A3B Instruct",
+          "params": "30B MoE (3B active)",
+          "context": 160000,
+          "input_price": 0.07,
+          "output_price": 0.27,
+          "free_tier": false,
+          "thinking": false,
+          "vision": false,
+          "notes": "Efficient small MoE coder, instruction-tuned without thinking mode"
+        },
+        "mistralai/codestral-2508": {
+          "name": "Mistral Codestral 2508",
+          "params": "unknown",
+          "context": 256000,
+          "input_price": 0.30,
+          "output_price": 0.90,
+          "free_tier": false,
+          "thinking": false,
+          "vision": false,
+          "notes": "Specializes in FIM, code correction, test generation"
+        },
+        "mistralai/devstral-2512": {
+          "name": "Mistral Devstral 2 2512",
+          "params": "123B dense",
+          "context": 262144,
+          "input_price": 0.05,
+          "output_price": 0.22,
+          "free_tier": true,
+          "thinking": false,
+          "vision": false,
+          "notes": "Best value — 256K context, multi-file codebase exploration"
+        },
+        "mistralai/devstral-small": {
+          "name": "Mistral Devstral Small 1.1",
+          "params": "24B dense",
+          "context": 128000,
+          "input_price": 0.07,
+          "output_price": 0.28,
+          "free_tier": false,
+          "thinking": false,
+          "vision": false,
+          "notes": "53.6% SWE-Bench — runs on single 4090 or Apple Silicon"
+        },
+        "mistralai/devstral-medium": {
+          "name": "Mistral Devstral Medium",
+          "params": "unknown (API only)",
+          "context": 131072,
+          "input_price": 0.40,
+          "output_price": 2.00,
+          "free_tier": false,
+          "thinking": false,
+          "vision": false,
+          "notes": "61.6% SWE-Bench — beats Gemini 2.5 Pro and GPT-4.1 on code tasks"
+        },
+        "qwen/qwq-32b": {
+          "name": "Qwen QwQ 32B",
+          "params": "32B dense",
+          "context": 32768,
+          "input_price": 0.15,
+          "output_price": 0.40,
+          "free_tier": false,
+          "thinking": true,
+          "vision": false,
+          "notes": "Reasoning-first coder — competitive with DeepSeek R1, good for hard problems"
+        }
+      }
+    },
+    "reasoning": {
+      "description": "Deep reasoning, chain-of-thought, and prompt enhancement",
+      "local_equivalent": "deepseek-r1:latest",
+      "models": {
+        "deepseek/deepseek-r1-0528": {
+          "name": "DeepSeek R1 0528",
+          "params": "671B MoE (37B active)",
+          "context": 163840,
+          "input_price": 0.40,
+          "output_price": 1.75,
+          "free_tier": true,
+          "thinking": true,
+          "vision": false,
+          "notes": "Full R1 — local deepseek-r1:latest is 8B distill, this is 84x larger"
+        },
+        "deepseek/deepseek-r1-distill-qwen-32b": {
+          "name": "DeepSeek R1 Distill Qwen 32B",
+          "params": "32B dense",
+          "context": 131072,
+          "input_price": 0.27,
+          "output_price": 0.27,
+          "free_tier": false,
+          "thinking": true,
+          "vision": false,
+          "notes": "Best distill — outperforms o1-mini, runnable locally on 24GB VRAM"
+        },
+        "deepseek/deepseek-r1-distill-qwen-14b": {
+          "name": "DeepSeek R1 Distill Qwen 14B",
+          "params": "14B dense",
+          "context": 32768,
+          "input_price": 0.15,
+          "output_price": 0.15,
+          "free_tier": false,
+          "thinking": true,
+          "vision": false,
+          "notes": "Smaller distill — still beats o1-mini, could run locally on 16GB"
+        },
+        "deepseek/deepseek-v3.2": {
+          "name": "DeepSeek V3.2",
+          "params": "671B MoE",
+          "context": 163840,
+          "input_price": 0.25,
+          "output_price": 0.38,
+          "free_tier": false,
+          "thinking": true,
+          "vision": false,
+          "notes": "Hybrid reasoning — toggle thinking on/off, IMO/IOI gold medal results"
+        },
+        "deepseek/deepseek-chat-v3.1": {
+          "name": "DeepSeek V3.1",
+          "params": "671B MoE (37B active)",
+          "context": 32768,
+          "input_price": 0.15,
+          "output_price": 0.75,
+          "free_tier": false,
+          "thinking": true,
+          "vision": false,
+          "notes": "Chat-optimized with tool calling, code agents, search agents"
+        }
+      }
+    },
+    "general": {
+      "description": "General chat, instruction following, and lightweight tasks",
+      "local_equivalent": "llama3.2:latest",
+      "models": {
+        "meta-llama/llama-3.3-70b-instruct": {
+          "name": "Meta Llama 3.3 70B Instruct",
+          "params": "70B dense",
+          "context": 131072,
+          "input_price": 0.10,
+          "output_price": 0.32,
+          "free_tier": true,
+          "thinking": false,
+          "vision": false,
+          "notes": "Upgraded local llama3.2 — 8 languages, strong general performance"
+        },
+        "meta-llama/llama-4-maverick": {
+          "name": "Meta Llama 4 Maverick",
+          "params": "400B MoE (17B active)",
+          "context": 1048576,
+          "input_price": 0.15,
+          "output_price": 0.60,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "Latest Llama — 1M context, native multimodal, 128 experts"
+        },
+        "meta-llama/llama-4-scout": {
+          "name": "Meta Llama 4 Scout",
+          "params": "109B MoE (17B active)",
+          "context": 327680,
+          "input_price": 0.08,
+          "output_price": 0.30,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "Efficient Llama 4 — multimodal, 327K context, runs locally"
+        },
+        "mistralai/mistral-large-2512": {
+          "name": "Mistral Large 3 2512",
+          "params": "675B MoE (41B active)",
+          "context": 262144,
+          "input_price": 0.50,
+          "output_price": 1.50,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "Mistral flagship — Apache 2.0, multimodal, 262K context"
+        },
+        "mistralai/mistral-small-3.1-24b-instruct": {
+          "name": "Mistral Small 3.1 24B",
+          "params": "24B dense",
+          "context": 131072,
+          "input_price": 0.03,
+          "output_price": 0.11,
+          "free_tier": true,
+          "thinking": false,
+          "vision": true,
+          "notes": "Best value general model — multimodal, 128K context, $0.03/M input"
+        }
+      }
+    },
+    "vision": {
+      "description": "Image understanding, visual reasoning, and multimodal tasks",
+      "local_equivalent": null,
+      "models": {
+        "meta-llama/llama-3.2-11b-vision-instruct": {
+          "name": "Meta Llama 3.2 11B Vision",
+          "params": "11B dense",
+          "context": 131072,
+          "input_price": 0.049,
+          "output_price": 0.049,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "Cheapest vision — image captioning, VQA, same Llama 3.2 family as local"
+        },
+        "meta-llama/llama-3.2-90b-vision-instruct": {
+          "name": "Meta Llama 3.2 90B Vision",
+          "params": "90B dense",
+          "context": 32768,
+          "input_price": 0.35,
+          "output_price": 0.40,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "Top Llama vision — handles complex real-time visual analysis"
+        },
+        "qwen/qwen2.5-vl-32b-instruct": {
+          "name": "Qwen2.5 VL 32B Instruct",
+          "params": "32B dense",
+          "context": 16384,
+          "input_price": 0.05,
+          "output_price": 0.22,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "Same Qwen2.5 family as local coder — adds vision, OCR, video"
+        },
+        "qwen/qwen2.5-vl-72b-instruct": {
+          "name": "Qwen2.5 VL 72B Instruct",
+          "params": "72B dense",
+          "context": 32768,
+          "input_price": 0.15,
+          "output_price": 0.60,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "Flagship Qwen vision — charts, icons, graphics, layouts"
+        },
+        "qwen/qwen3-vl-32b-instruct": {
+          "name": "Qwen3 VL 32B Instruct",
+          "params": "32B dense",
+          "context": 262144,
+          "input_price": 0.50,
+          "output_price": 1.50,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "Next-gen Qwen vision — 262K context, OCR in 32 languages, agentic"
+        },
+        "google/gemini-2.5-flash": {
+          "name": "Google Gemini 2.5 Flash",
+          "params": "unknown",
+          "context": 1048576,
+          "input_price": 0.30,
+          "output_price": 2.50,
+          "free_tier": false,
+          "thinking": true,
+          "vision": true,
+          "notes": "1M context, thinking mode, prompt cache — best multimodal workhorse"
+        }
+      }
+    },
+    "premium": {
+      "description": "Frontier models for complex agentic workflows and maximum quality",
+      "local_equivalent": null,
+      "models": {
+        "anthropic/claude-sonnet-4.5": {
+          "name": "Anthropic Claude Sonnet 4.5",
+          "params": "unknown",
+          "context": 200000,
+          "input_price": 3.00,
+          "output_price": 15.00,
+          "free_tier": false,
+          "thinking": true,
+          "vision": true,
+          "notes": "SWE-bench leader, agentic tool orchestration, parallel execution"
+        },
+        "anthropic/claude-opus-4": {
+          "name": "Anthropic Claude Opus 4",
+          "params": "unknown",
+          "context": 200000,
+          "input_price": 15.00,
+          "output_price": 75.00,
+          "free_tier": false,
+          "thinking": true,
+          "vision": true,
+          "notes": "World's best coding model at release — hours of sustained agentic work"
+        },
+        "openai/gpt-4.1": {
+          "name": "OpenAI GPT-4.1",
+          "params": "unknown",
+          "context": 1047576,
+          "input_price": 2.00,
+          "output_price": 8.00,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "1M context, 54.6% SWE-bench, optimized for code diffs and agents"
+        },
+        "openai/gpt-4.1-mini": {
+          "name": "OpenAI GPT-4.1 Mini",
+          "params": "unknown",
+          "context": 1047576,
+          "input_price": 0.40,
+          "output_price": 1.60,
+          "free_tier": false,
+          "thinking": false,
+          "vision": true,
+          "notes": "Best value premium — GPT-4o performance at lower cost, 1M context"
+        },
+        "google/gemini-2.5-pro": {
+          "name": "Google Gemini 2.5 Pro",
+          "params": "unknown",
+          "context": 1048576,
+          "input_price": 1.25,
+          "output_price": 10.00,
+          "free_tier": false,
+          "thinking": true,
+          "vision": true,
+          "notes": "#1 LMArena — thinking mode, prompt cache, 1M context"
+        }
+      }
+    }
+  },
+  "free_models": [
+    "qwen/qwen3-coder:free",
+    "deepseek/deepseek-r1-0528:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "mistralai/devstral-2512:free",
+    "mistralai/mistral-small-3.1-24b-instruct:free"
+  ],
+  "local_models": {
+    "qwen2.5-coder:32b": {
+      "category": "coding",
+      "cloud_upgrade": "qwen/qwen3-coder",
+      "cloud_equivalent": "qwen/qwen-2.5-coder-32b-instruct"
+    },
+    "deepseek-r1:latest": {
+      "category": "reasoning",
+      "cloud_upgrade": "deepseek/deepseek-r1-0528",
+      "cloud_equivalent": "deepseek/deepseek-r1-distill-qwen-14b",
+      "note": "Local model is 8B distill — cloud equivalent is 14B distill, cloud upgrade is full 671B"
+    },
+    "llama3.2:latest": {
+      "category": "general",
+      "cloud_upgrade": "meta-llama/llama-3.3-70b-instruct",
+      "cloud_equivalent": null,
+      "note": "Local model is 3B — smallest cloud Llama is 70B, huge quality gap"
+    }
+  }
+}

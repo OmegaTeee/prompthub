@@ -29,13 +29,13 @@ Each client folder contains:
 ### VS Code (Claude Code / Cline)
 - **Transport:** HTTP
 - **Configuration:** Workspace `.vscode/settings.json`
-- **Enhancement Model:** Qwen3-Coder (code-first)
+- **Enhancement Model:** Qwen 2.5-Coder (code-first)
 - [Setup Guide](vscode/README.md)
 
 ### Raycast
 - **Transport:** HTTP (via curl scripts)
 - **Configuration:** Custom script commands
-- **Enhancement Model:** DeepSeek-R1 (action-oriented)
+- **Enhancement Model:** Llama 3.2 (action-oriented)
 - [Setup Guide](raycast/README.md)
 
 ## Architecture

@@ -18,7 +18,7 @@ This is a **modular monolith** built with FastAPI. The main package is `router/`
 | Module         | Purpose                                      |
 | -------------- | -------------------------------------------- |
 | `config/`      | Pydantic settings, JSON config loading       |
-| `secrets/`     | macOS Keychain integration                   |
+| `keyring_manager.py` | macOS Keychain integration via Python `keyring` module |
 | `routing/`     | MCP server registry, JSON-RPC proxy          |
 | `resilience/`  | Circuit breaker pattern                      |
 | `cache/`       | L1 in-memory LRU, L2 Qdrant (optional)       |
