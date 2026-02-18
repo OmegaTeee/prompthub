@@ -41,13 +41,17 @@ class FastMCPBridge:
         command: str,
         args: list[str],
         env: dict[str, str] | None = None,
+        cwd: str | None = None,
         name: str = "unknown",
     ):
         self.name = name
         self._command = command
         self._args = args
         self._env = env
-        self._transport = StdioTransport(command=command, args=args, env=env)
+        self._cwd = cwd
+        self._transport = StdioTransport(
+            command=command, args=args, env=env, cwd=cwd
+        )
         self._client = Client(self._transport)
         self._closed = False
 

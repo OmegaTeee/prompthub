@@ -187,10 +187,14 @@ class Supervisor:
                 resolved_env = resolve_server_env(config)
 
                 # Create and start FastMCP bridge
+                # cwd=workspace_root ensures relative paths (./mcps/...)
+                # resolve correctly regardless of where uvicorn was launched
+                settings = get_settings()
                 bridge = FastMCPBridge(
                     command=config.command,
                     args=config.args,
                     env=resolved_env,
+                    cwd=settings.workspace_root,
                     name=name,
                 )
                 await bridge.start()

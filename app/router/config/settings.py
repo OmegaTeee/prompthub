@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     cb_failure_threshold: int = 3
     cb_recovery_timeout: int = 30
 
+    # Enhancement middleware
+    max_enhancement_body_size: int = 1_048_576  # 1 MB
+
     # Paths
     mcp_servers_config: str = "configs/mcp-servers.json"
     enhancement_rules_config: str = "configs/enhancement-rules.json"
