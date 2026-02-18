@@ -257,15 +257,16 @@ class TestCrossClientFeatures:
         Test that different clients use different enhancement models.
 
         - Claude Desktop: DeepSeek-R1
-        - VS Code: Qwen3-Coder
-        - Raycast: DeepSeek-R1
+        - VS Code: Qwen2.5-Coder
+        - Raycast: Llama 3.2
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=30.0) as client:
             # Test enhancement endpoint directly to verify model selection
+            # Must match configs/enhancement-rules.json
             clients_and_expected_models = [
                 ("claude-desktop", "deepseek-r1"),
                 ("vscode", "qwen2.5-coder"),
-                ("raycast", "deepseek-r1"),
+                ("raycast", "llama3.2"),
             ]
 
             for client_name, expected_model_prefix in clients_and_expected_models:
@@ -306,7 +307,7 @@ class TestCrossClientFeatures:
             "sequential-thinking",
             "memory",
             "deepseek-reasoner",
-            "fetch",
+            "duckduckgo",
             "obsidian"
         ]
 

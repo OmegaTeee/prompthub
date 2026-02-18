@@ -2,10 +2,6 @@
   "folders": [
     {
       "path": "."
-    },
-    {
-      "name": ".cline",
-      "path": "/Users/visualval/.cline/"
     }
   ],
   "settings": {
@@ -20,14 +16,10 @@
       "**/*.{py,json}"
     ],
     "markdownlint.configFile": ".vscode/.markdownlint-cli2.jsonc",
-    //"markdown.copyFiles.destination": {},
     "terminal.integrated.env.osx": {
       "OBSIDIAN_VAULT": "file:///Users/visualval/Vault",
       "UV_TOOL_BIN": "${HOME}/.local/bin/uv"
-    },
-    "continue.enableConsole": true,
-    "continue.enableAutoStart": true,
-    "continue.disableQuickFix": false
+    }
   },
   "extensions": {
     "recommendations": []
