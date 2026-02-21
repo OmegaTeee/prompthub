@@ -19,15 +19,16 @@ class TestPromptEnhancement:
         """
         Test that different clients use different enhancement models.
 
-        - claude-desktop: DeepSeek-R1
-        - vscode: Qwen3-Coder
-        - raycast: DeepSeek-R1
+        Must match configs/enhancement-rules.json:
+        - claude-desktop: deepseek-r1:latest
+        - vscode: qwen2.5-coder:32b
+        - raycast: llama3.2:latest
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
             clients_and_models = [
-                ("claude-desktop", "deepseek-r1:latest"),
-                ("vscode", "qwen2.5-coder:latest"),
-                ("raycast", "deepseek-r1:latest"),
+                ("claude-desktop", "deepseek-r1"),
+                ("vscode", "qwen2.5-coder"),
+                ("raycast", "llama3.2"),
             ]
 
             for client_name, expected_model in clients_and_models:
@@ -40,8 +41,13 @@ class TestPromptEnhancement:
                 assert response.status_code == 200
                 data = response.json()
 
-                # Response should contain enhanced prompt
-                assert "enhanced_prompt" in data or "result" in data
+                assert "enhanced" in data, f"Response missing 'enhanced' key for {client_name}"
+                assert "original" in data, f"Response missing 'original' key for {client_name}"
+
+                actual_model = data.get("model")
+                assert actual_model is not None, f"Model should be set for {client_name}"
+                assert expected_model in actual_model.lower(), \
+                    f"{client_name} should use {expected_model}, got {actual_model}"
 
     @pytest.mark.asyncio
     @pytest.mark.skip(reason="Requires Ollama running")
@@ -49,7 +55,7 @@ class TestPromptEnhancement:
         """
         Test that VS Code enhancement is code-first.
 
-        Expected: Code examples before explanations.
+        Expected: Code examples before explanations (qwen2.5-coder system prompt).
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
             response = await client.post(
@@ -61,7 +67,8 @@ class TestPromptEnhancement:
             assert response.status_code == 200
             data = response.json()
 
-            enhanced = data.get("enhanced_prompt", data.get("result", ""))
+            enhanced = data.get("enhanced", "")
+            assert enhanced, "Enhanced prompt should not be empty"
 
             # Should contain code (backticks or specific keywords)
             assert "```" in enhanced or "function" in enhanced or "const" in enhanced
@@ -72,7 +79,7 @@ class TestPromptEnhancement:
         """
         Test that Raycast enhancement is action-oriented.
 
-        Expected: CLI commands, under 200 words.
+        Expected: CLI commands, under 200 words (llama3.2 system prompt).
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
             response = await client.post(
@@ -84,9 +91,10 @@ class TestPromptEnhancement:
             assert response.status_code == 200
             data = response.json()
 
-            enhanced = data.get("enhanced_prompt", data.get("result", ""))
+            enhanced = data.get("enhanced", "")
+            assert enhanced, "Enhanced prompt should not be empty"
 
-            # Should be relatively short (under 200 words)
+            # Should be relatively short (under 300 words for action-oriented)
             word_count = len(enhanced.split())
             assert word_count < 300, f"Raycast response too long: {word_count} words"
 
@@ -96,15 +104,15 @@ class TestPromptEnhancement:
     @pytest.mark.asyncio
     async def test_enhancement_fallback_when_ollama_down(self):
         """
-        Test that requests succeed even when Ollama is unavailable.
+        Test that the enhancement endpoint degrades gracefully.
 
-        Expected: 503 error OR original prompt returned unchanged depending on endpoint.
-        A timeout is also acceptable (Ollama running but slow/unresponsive).
+        The endpoint returns 200 with original prompt on Ollama failure,
+        503 only if the EnhancementService itself isn't initialized.
+        A client-side timeout is also acceptable.
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=15.0) as client:
             original_prompt = "test prompt for fallback behavior"
 
-            # Try enhancement endpoint
             try:
                 response = await client.post(
                     "/ollama/enhance",
@@ -112,36 +120,34 @@ class TestPromptEnhancement:
                     json={"prompt": original_prompt}
                 )
             except (httpx.ReadTimeout, httpx.ConnectTimeout):
-                # Timeout is valid fallback behavior — Ollama may be
-                # running but slow, or the router's Ollama timeout may
-                # exceed our client timeout
+                # Client-side timeout — Ollama may be running but slow,
+                # or router's Ollama timeout exceeds our client timeout
                 return
 
-            # When Ollama is down, we expect one of two behaviors:
-            # 1. 503 Service Unavailable (explicit failure)
-            # 2. 200 with original prompt (graceful fallback)
             assert response.status_code in [200, 503], \
                 f"Expected 200 or 503, got {response.status_code}"
 
-            if response.status_code == 200:
+            if response.status_code == 503:
+                # Enhancement service not initialized
                 data = response.json()
+                assert "detail" in data, "503 should include detail message"
+                return
 
-                # Check if enhancement was attempted
-                if "enhanced" in data or "enhanced_prompt" in data:
-                    # If Ollama was available, that's fine
-                    pass
-                elif "error" in data:
-                    # Error returned but with 200 status (soft failure)
-                    assert data["error"] is not None
-                else:
-                    # Original prompt should be returned
-                    # (Exact response format depends on implementation)
-                    pass
-            elif response.status_code == 503:
-                # Service unavailable is the expected behavior when Ollama is down
-                data = response.json()
-                assert "error" in data or "detail" in data, \
-                    "503 response should include error information"
+            # 200 — verify response structure
+            data = response.json()
+            assert "original" in data, "Response must include 'original'"
+            assert "enhanced" in data, "Response must include 'enhanced'"
+            assert data["original"] == original_prompt
+
+            if data.get("error"):
+                # Ollama was unreachable — graceful degradation
+                assert data["enhanced"] == original_prompt, \
+                    "On error, enhanced should equal original (no-op fallback)"
+                assert data.get("was_enhanced") is False
+            else:
+                # Ollama was available — enhancement succeeded
+                assert data.get("model") is not None, \
+                    "Successful enhancement should report model used"
 
     @pytest.mark.asyncio
     async def test_enhancement_endpoint_exists(self):
@@ -161,260 +167,234 @@ class TestPromptEnhancement:
 
 
 class TestCaching:
-    """Test response caching functionality."""
+    """
+    Integration tests for enhancement caching via /ollama/enhance.
+
+    Note: The MCP proxy (/mcp/{server}/{path}) has NO caching layer.
+    Caching only exists in the EnhancementService for /ollama/enhance.
+    Unit tests for MemoryCache internals are in test_cache.py.
+    """
 
     @pytest.mark.asyncio
-    async def test_cache_improves_response_time(self):
+    async def test_cache_hit_returns_identical_response(self):
         """
-        Test that cached responses are significantly faster.
+        Test that a cached enhancement returns the same result and is marked cached.
 
-        Expected:
-        - First request: ~2-3 seconds
-        - Second request (cached): <500ms
+        Expected: Second request returns cached=True with identical enhanced text.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
-            # Clear cache first
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
             await client.post("/dashboard/actions/clear-cache")
 
-            json_rpc = {
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "id": 1
-            }
+            prompt = "Explain list comprehensions in Python"
 
             # First request (cache miss)
-            start_time = time.time()
-            response1 = await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "test"},
-                json=json_rpc
-            )
-            first_request_time = time.time() - start_time
+            try:
+                response1 = await client.post(
+                    "/ollama/enhance",
+                    headers={"X-Client-Name": "claude-desktop"},
+                    json={"prompt": prompt}
+                )
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on first enhancement")
+
+            if response1.status_code == 503:
+                pytest.skip("Enhancement service not initialized")
 
             assert response1.status_code == 200
+            data1 = response1.json()
 
             # Second request (cache hit)
-            start_time = time.time()
             response2 = await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "test"},
-                json=json_rpc
+                "/ollama/enhance",
+                headers={"X-Client-Name": "claude-desktop"},
+                json={"prompt": prompt}
             )
-            second_request_time = time.time() - start_time
-
             assert response2.status_code == 200
-
-            # Both should return same data (ignoring ID which may be auto-incremented)
-            data1 = response1.json()
             data2 = response2.json()
 
-            # Compare results, not IDs (router may transform IDs)
-            assert data1.get("result") == data2.get("result")
-            assert data1.get("error") == data2.get("error")
+            # Enhanced text must be identical
+            assert data2["enhanced"] == data1["enhanced"], \
+                "Cached response should return identical enhanced text"
 
-            # Second request should be faster (at least 2x faster)
-            # Note: This might be flaky in CI, so we use a generous threshold
-            print(f"First request: {first_request_time:.3f}s")
-            print(f"Second request: {second_request_time:.3f}s")
-            print(f"Speedup: {first_request_time / second_request_time:.1f}x")
-
-            # Cache hit should be under 1 second (generous for CI)
-            assert second_request_time < 1.0, \
-                f"Cached request too slow: {second_request_time:.3f}s"
+            # If first request succeeded with a model, second should be cached
+            if data1.get("model"):
+                assert data2.get("cached") is True, \
+                    "Second identical request should come from cache"
 
     @pytest.mark.asyncio
-    async def test_cache_shared_across_clients(self):
+    async def test_cache_is_per_client(self):
         """
-        Test that cache is shared between different clients.
+        Test that cache entries are separated by client name.
 
-        Expected: Request from one client benefits subsequent requests from other clients.
+        The cache key includes client_name and model, so the same prompt
+        enhanced for claude-desktop (deepseek-r1) is stored separately
+        from the same prompt enhanced for vscode (qwen2.5-coder).
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+            await client.post("/dashboard/actions/clear-cache")
+
+            prompt = "What are Python generators"
+
+            # Enhance for claude-desktop
+            try:
+                resp_cd = await client.post(
+                    "/ollama/enhance",
+                    headers={"X-Client-Name": "claude-desktop"},
+                    json={"prompt": prompt}
+                )
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on claude-desktop enhancement")
+
+            if resp_cd.status_code == 503:
+                pytest.skip("Enhancement service not initialized")
+
+            assert resp_cd.status_code == 200
+            data_cd = resp_cd.json()
+
+            # Enhance for vscode (same prompt, different client → different cache key)
+            try:
+                resp_vs = await client.post(
+                    "/ollama/enhance",
+                    headers={"X-Client-Name": "vscode"},
+                    json={"prompt": prompt}
+                )
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on vscode enhancement (model swap)")
+            assert resp_vs.status_code == 200
+            data_vs = resp_vs.json()
+
+            # Neither should be marked cached on first call
+            # (unless Ollama failed and both got no-op fallback)
+            if data_cd.get("model") and data_vs.get("model"):
+                assert data_cd["model"] != data_vs["model"], \
+                    "Different clients should use different models"
+
+    @pytest.mark.asyncio
+    async def test_cache_stats_reflect_usage(self):
+        """
+        Test that cache stats reported in /health reflect actual usage.
+
+        Expected: After a miss + hit cycle, stats show at least 1 hit.
+        """
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+            await client.post("/dashboard/actions/clear-cache")
+
+            prompt = "Cache stats integration test prompt"
+
+            # Request 1 (miss)
+            try:
+                resp1 = await client.post(
+                    "/ollama/enhance",
+                    headers={"X-Client-Name": "test"},
+                    json={"prompt": prompt}
+                )
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on first enhancement")
+            if resp1.status_code == 503:
+                pytest.skip("Enhancement service not initialized")
+            assert resp1.status_code == 200
+
+            # Request 2 (hit)
+            resp2 = await client.post(
+                "/ollama/enhance",
+                headers={"X-Client-Name": "test"},
+                json={"prompt": prompt}
+            )
+            assert resp2.status_code == 200
+
+            # Check health endpoint for cache stats
+            health = await client.get("/health")
+            assert health.status_code == 200
+            health_data = health.json()
+
+            cache_info = health_data.get("services", {}).get("cache", {})
+            assert cache_info.get("status") == "up", "Cache should be reported as up"
+            assert cache_info.get("size", 0) >= 1, "Cache should have at least 1 entry"
+
+    @pytest.mark.asyncio
+    async def test_cache_clear_resets_state(self):
+        """
+        Test that clearing the cache removes entries and resets stats.
+
+        Expected: After clear, next request is not cached.
+        """
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+            prompt = "Cache clear integration test"
+
+            # Populate cache
+            try:
+                resp1 = await client.post(
+                    "/ollama/enhance",
+                    headers={"X-Client-Name": "test"},
+                    json={"prompt": prompt}
+                )
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on first enhancement")
+            if resp1.status_code == 503:
+                pytest.skip("Enhancement service not initialized")
+            assert resp1.status_code == 200
+
             # Clear cache
-            await client.post("/dashboard/actions/clear-cache")
+            clear_resp = await client.post("/dashboard/actions/clear-cache")
+            assert clear_resp.status_code in [200, 204]
 
-            json_rpc = {
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "id": 1
-            }
+            # Request again — should NOT be cached
+            try:
+                resp2 = await client.post(
+                    "/ollama/enhance",
+                    headers={"X-Client-Name": "test"},
+                    json={"prompt": prompt}
+                )
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on post-clear enhancement")
+            assert resp2.status_code == 200
+            data2 = resp2.json()
 
-            # Request 1: claude-desktop
-            response1 = await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "claude-desktop"},
-                json=json_rpc
-            )
-            assert response1.status_code == 200
-
-            # Request 2: vscode (should hit cache from claude-desktop)
-            start_time = time.time()
-            response2 = await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "vscode"},
-                json=json_rpc
-            )
-            vscode_time = time.time() - start_time
-
-            assert response2.status_code == 200
-
-            # Should be fast (cache hit)
-            assert vscode_time < 1.0
-
-            # Request 3: raycast (should also hit cache)
-            start_time = time.time()
-            response3 = await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "raycast"},
-                json=json_rpc
-            )
-            raycast_time = time.time() - start_time
-
-            assert response3.status_code == 200
-            assert raycast_time < 1.0
+            # If Ollama is available, this should be a fresh enhancement (not cached)
+            if data2.get("model"):
+                assert data2.get("cached") is not True, \
+                    "After cache clear, request should not return cached result"
 
     @pytest.mark.asyncio
-    async def test_cache_stats_tracking(self):
+    async def test_cache_bypass_skips_cache(self):
         """
-        Test that cache statistics are tracked correctly.
+        Test that bypass_cache=True skips cache lookup.
 
-        Expected: Cache hits/misses counted, hit rate calculated.
+        Expected: Even after caching, bypass returns a fresh result.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
-            # Clear cache and make some requests
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
             await client.post("/dashboard/actions/clear-cache")
 
-            json_rpc = {
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "id": 1
-            }
+            prompt = "Cache bypass test prompt"
 
-            # First request (miss)
-            await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "test"},
-                json=json_rpc
-            )
-
-            # Second request (hit)
-            await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "test"},
-                json=json_rpc
-            )
-
-            # Check stats
-            stats_response = await client.get("/dashboard/stats-partial")
-
-            if stats_response.status_code == 200:
-                # Stats should show at least 1 hit
-                stats_html = stats_response.text
-
-                # Should contain cache statistics
-                # (Exact format depends on dashboard implementation)
-
-    @pytest.mark.asyncio
-    async def test_cache_clear_works(self):
-        """Test that cache can be cleared."""
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
-            json_rpc = {
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "id": 1
-            }
-
-            # Make request to populate cache
-            await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "test"},
-                json=json_rpc
-            )
-
-            # Clear cache
-            clear_response = await client.post("/dashboard/actions/clear-cache")
-            assert clear_response.status_code in [200, 204]
-
-            # Next request should be slower (cache miss)
-            start_time = time.time()
-            await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "test"},
-                json=json_rpc
-            )
-            request_time = time.time() - start_time
-
-            # Should not be instant (cache was cleared)
-            # Note: This is a weak assertion as timing can vary
-            # In production, we'd check cache stats instead
-
-    @pytest.mark.asyncio
-    async def test_cache_lru_eviction(self):
-        """
-        Test that cache uses LRU eviction when full.
-
-        Expected: Least recently used items evicted when cache reaches max size.
-        """
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
-            # Clear cache first
-            await client.post("/dashboard/actions/clear-cache")
-
-            # Get cache stats to understand current size
-            stats_response = await client.get("/dashboard/stats-partial")
-
-            # We'll test LRU behavior by making unique requests
-            # The cache size is configured in the router (typically 500 for enhancement)
-            # For testing, we'll make a reasonable number of requests (e.g., 10)
-            # and verify the pattern rather than filling the entire cache
-
-            unique_requests = []
-            for i in range(10):
-                # Make unique JSON-RPC requests
-                json_rpc = {
-                    "jsonrpc": "2.0",
-                    "method": "tools/list",
-                    "id": i,
-                    "params": {"unique_param": f"test_value_{i}"}  # Make each request unique
-                }
-
-                response = await client.post(
-                    "/mcp/context7/tools/call",
+            # Populate cache
+            try:
+                resp1 = await client.post(
+                    "/ollama/enhance",
                     headers={"X-Client-Name": "test"},
-                    json=json_rpc
+                    json={"prompt": prompt}
                 )
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on first enhancement")
+            if resp1.status_code == 503:
+                pytest.skip("Enhancement service not initialized")
+            assert resp1.status_code == 200
 
-                if response.status_code == 200:
-                    unique_requests.append(json_rpc)
-
-            # Now re-request the FIRST item (should be in cache if LRU is working)
-            if len(unique_requests) > 0:
-                import time
-                start = time.time()
-                response = await client.post(
-                    "/mcp/context7/tools/call",
+            # Bypass cache — also needs fresh Ollama call
+            try:
+                resp2 = await client.post(
+                    "/ollama/enhance",
                     headers={"X-Client-Name": "test"},
-                    json=unique_requests[0]
+                    json={"prompt": prompt, "bypass_cache": True}
                 )
-                first_time = time.time() - start
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on bypass enhancement")
+            assert resp2.status_code == 200
+            data2 = resp2.json()
 
-                assert response.status_code == 200
-                # Should be fast (cached) - under 500ms
-                assert first_time < 0.5, \
-                    f"LRU cache should preserve recently accessed items, took {first_time:.3f}s"
-
-            # Re-request the LAST item (should also be in cache)
-            if len(unique_requests) > 1:
-                start = time.time()
-                response = await client.post(
-                    "/mcp/context7/tools/call",
-                    headers={"X-Client-Name": "test"},
-                    json=unique_requests[-1]
-                )
-                last_time = time.time() - start
-
-                assert response.status_code == 200
-                assert last_time < 0.5, \
-                    f"Most recent items should be in cache, took {last_time:.3f}s"
+            # Should NOT be marked as cached
+            assert data2.get("cached") is not True, \
+                "bypass_cache=True should skip cache lookup"
 
 
 class TestEnhancementAndCachingIntegration:
@@ -424,120 +404,115 @@ class TestEnhancementAndCachingIntegration:
     @pytest.mark.skip(reason="Requires Ollama running")
     async def test_enhanced_prompts_are_cached(self):
         """
-        Test that enhanced prompts are cached.
+        Test that Ollama-enhanced prompts are cached and replayed.
 
-        Expected: Same original prompt → same enhanced prompt from cache.
+        Expected: Same original prompt → identical enhanced text from cache,
+        with cached=True flag and faster response time.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
-            # Clear cache
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=30.0) as client:
             await client.post("/dashboard/actions/clear-cache")
 
             original_prompt = "Explain React hooks"
 
-            # First enhancement (cache miss)
+            # First enhancement (cache miss — hits Ollama)
             response1 = await client.post(
                 "/ollama/enhance",
                 headers={"X-Client-Name": "claude-desktop"},
                 json={"prompt": original_prompt}
             )
-
             assert response1.status_code == 200
-            enhanced1 = response1.json()
+            data1 = response1.json()
+            assert data1.get("model") is not None, "Ollama should be running for this test"
+            assert data1.get("cached") is not True
 
-            # Second enhancement (cache hit)
+            # Second enhancement (cache hit — skips Ollama)
             start_time = time.time()
             response2 = await client.post(
                 "/ollama/enhance",
                 headers={"X-Client-Name": "claude-desktop"},
                 json={"prompt": original_prompt}
             )
-            enhancement_time = time.time() - start_time
+            cache_time = time.time() - start_time
 
             assert response2.status_code == 200
-            enhanced2 = response2.json()
+            data2 = response2.json()
 
-            # Should return same enhanced prompt
-            assert enhanced1 == enhanced2
-
-            # Should be much faster (cached)
-            assert enhancement_time < 0.5
+            assert data2["enhanced"] == data1["enhanced"], \
+                "Cached response must return identical enhanced text"
+            assert data2.get("cached") is True, \
+                "Second request should be served from cache"
+            assert cache_time < 0.5, \
+                f"Cache hit should be fast, took {cache_time:.3f}s"
 
     @pytest.mark.asyncio
     async def test_cache_key_includes_client_name(self):
         """
         Test that cache key accounts for client-specific enhancements.
 
-        Expected: Same prompt from different clients → different cache entries
-        (because enhancement differs per client).
+        The enhancement cache keys include client_name so that the same prompt
+        enhanced for claude-desktop (deepseek-r1) is cached separately from the
+        same prompt enhanced for vscode (qwen2.5-coder).
+
+        When Ollama is running: verifies different models produce separate cache entries.
+        When Ollama is down: verifies each client gets its own error/fallback entry.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=30.0) as client:
-            # Clear cache first
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+            # Clear cache
             await client.post("/dashboard/actions/clear-cache")
 
-            # Use the same JSON-RPC request for different clients
-            json_rpc = {
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "id": 1
-            }
-
-            # Request 1: claude-desktop
-            response1 = await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "claude-desktop"},
-                json=json_rpc
-            )
-            assert response1.status_code == 200
-            data1 = response1.json()
-
-            # Request 2: vscode (same JSON-RPC request, different client)
-            response2 = await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "vscode"},
-                json=json_rpc
-            )
-            assert response2.status_code == 200
-            data2 = response2.json()
-
-            # Request 3: raycast (same JSON-RPC request, yet another client)
-            response3 = await client.post(
-                "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "raycast"},
-                json=json_rpc
-            )
-            assert response3.status_code == 200
-            data3 = response3.json()
-
-            # All three should get the same result (tools/list doesn't use enhancement)
-            # But if enhancement was involved, they would potentially get different results
-
-            # Now test with enhancement endpoint directly
             test_prompt = "Explain Python decorators"
 
-            # Clear cache again for enhancement test
-            await client.post("/dashboard/actions/clear-cache")
+            # Enhance with claude-desktop (deepseek-r1)
+            try:
+                enh1 = await client.post(
+                    "/ollama/enhance",
+                    headers={"X-Client-Name": "claude-desktop"},
+                    json={"prompt": test_prompt}
+                )
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on first enhancement")
 
-            # Request from claude-desktop
-            enh1 = await client.post(
+            if enh1.status_code == 503:
+                pytest.skip("Enhancement service not initialized")
+
+            assert enh1.status_code == 200
+            data1 = enh1.json()
+
+            # Enhance with vscode (qwen2.5-coder) — may be slow for large model
+            try:
+                enh2 = await client.post(
+                    "/ollama/enhance",
+                    headers={"X-Client-Name": "vscode"},
+                    json={"prompt": test_prompt}
+                )
+            except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                pytest.skip("Ollama timed out on second enhancement (model swap)")
+
+            assert enh2.status_code == 200
+            data2 = enh2.json()
+
+            # Verify both clients get responses with correct structure
+            assert "enhanced" in data1, "claude-desktop response missing 'enhanced'"
+            assert "enhanced" in data2, "vscode response missing 'enhanced'"
+
+            # If Ollama was available for both, they should use different models
+            if data1.get("model") and data2.get("model"):
+                assert data1["model"] != data2["model"], \
+                    f"Different clients should use different models, both got {data1['model']}"
+
+            # Re-request claude-desktop — should hit cache (same client + prompt)
+            enh1_again = await client.post(
                 "/ollama/enhance",
                 headers={"X-Client-Name": "claude-desktop"},
                 json={"prompt": test_prompt}
             )
+            assert enh1_again.status_code == 200
+            data1_again = enh1_again.json()
 
-            # Request from vscode
-            enh2 = await client.post(
-                "/ollama/enhance",
-                headers={"X-Client-Name": "vscode"},
-                json={"prompt": test_prompt}
-            )
-
-            # If Ollama is running, responses might differ due to different models
-            # If Ollama is not running, both will return 503 (which is fine)
-            # The important thing is that the cache key includes client_name
-            if enh1.status_code == 200 and enh2.status_code == 200:
-                # Both succeeded - enhancement models might produce different results
-                # But cache should be separate for each client
-                pass
-            elif enh1.status_code == 503 or enh2.status_code == 503:
-                # Ollama not running - test passes (routing layer working correctly)
-                pass
+            # Cached response should match original response
+            assert data1_again["enhanced"] == data1["enhanced"], \
+                "Same client + same prompt should return cached result"
+            # If Ollama was up for the first call, second should be cached
+            if data1.get("model"):
+                assert data1_again.get("cached") is True, \
+                    "Repeat request should come from cache"

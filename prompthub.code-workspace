@@ -3,25 +3,5 @@
     {
       "path": "."
     }
-  ],
-  "settings": {
-    "markdown.links.openLocation": "currentGroup",
-    "markdown.preview.fontSize": 16,
-    "markdown.preview.lineHeight": 1.4,
-    "markdown.preview.securityLevel": "allowScriptsAndAllContent",
-    "markdown.styles": [
-      ".vscode/markdown.css"
-    ],
-    "markdown.updateLinksOnFileMove.include": [
-      "**/*.{py,json}"
-    ],
-    "markdownlint.configFile": ".vscode/.markdownlint-cli2.jsonc",
-    "terminal.integrated.env.osx": {
-      "OBSIDIAN_VAULT": "file:///Users/visualval/Vault",
-      "UV_TOOL_BIN": "${HOME}/.local/bin/uv"
-    }
-  },
-  "extensions": {
-    "recommendations": []
-  }
+  ]
 }

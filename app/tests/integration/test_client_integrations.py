@@ -259,9 +259,11 @@ class TestCrossClientFeatures:
         - Claude Desktop: DeepSeek-R1
         - VS Code: Qwen2.5-Coder
         - Raycast: Llama 3.2
+
+        When Ollama is running: verifies model field matches expected model.
+        When Ollama is down: verifies graceful degradation (original prompt returned).
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=30.0) as client:
-            # Test enhancement endpoint directly to verify model selection
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
             # Must match configs/enhancement-rules.json
             clients_and_expected_models = [
                 ("claude-desktop", "deepseek-r1"),
@@ -270,33 +272,39 @@ class TestCrossClientFeatures:
             ]
 
             for client_name, expected_model_prefix in clients_and_expected_models:
-                # Test the enhancement endpoint
-                response = await client.post(
-                    "/ollama/enhance",
-                    headers={"X-Client-Name": client_name},
-                    json={"prompt": "test prompt for model routing"}
-                )
+                try:
+                    response = await client.post(
+                        "/ollama/enhance",
+                        headers={"X-Client-Name": client_name},
+                        json={"prompt": "test prompt for model routing"}
+                    )
+                except (httpx.ReadTimeout, httpx.ConnectTimeout):
+                    pytest.skip(f"Ollama timed out for {client_name} (model swap latency)")
 
-                # Response might be 200 (success) or 503 (Ollama not running)
-                # Both are acceptable - we're testing the routing logic
-                if response.status_code == 200:
-                    data = response.json()
+                if response.status_code == 503:
+                    # Enhancement service not initialized — acceptable
+                    continue
 
-                    # Check if model field is present in response
-                    if "model" in data:
-                        actual_model = data["model"].lower()
-                        assert expected_model_prefix in actual_model, \
-                            f"Client {client_name} should use {expected_model_prefix}, got {actual_model}"
-                    elif "error" in data:
-                        # Ollama might not be running or model not available
-                        # This is OK for testing the routing logic
-                        pass
-                elif response.status_code == 503:
-                    # Ollama not running - test passes (routing layer is working)
-                    # The important thing is that the endpoint responded with correct headers
-                    pass
+                assert response.status_code == 200, \
+                    f"Unexpected status {response.status_code} for {client_name}"
+
+                data = response.json()
+
+                # The endpoint always returns these fields
+                assert "original" in data
+                assert "enhanced" in data
+
+                actual_model = data.get("model")
+                if actual_model is not None:
+                    # Ollama responded — verify model routing
+                    assert expected_model_prefix in actual_model.lower(), \
+                        f"Client {client_name} should use {expected_model_prefix}, got {actual_model}"
                 else:
-                    pytest.fail(f"Unexpected status code for {client_name}: {response.status_code}")
+                    # Ollama down — verify graceful degradation
+                    assert data.get("error"), \
+                        f"Client {client_name}: model is null but no error reported"
+                    assert data["enhanced"] == data["original"], \
+                        f"Client {client_name}: failed enhancement should return original prompt"
 
     @pytest.mark.asyncio
     async def test_all_mcp_servers_accessible_from_all_clients(self):

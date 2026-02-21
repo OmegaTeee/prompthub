@@ -11,6 +11,7 @@ PromptHub's audit infrastructure has been completely transformed from basic stri
 ## Implementation Timeline
 
 ### Phase 1: Security & Compliance (COMPLETE)
+
 **Improvement:** 3.2/10 → 7.0/10 (+3.8 points)
 
 - ✅ Structured JSON audit logging with `structlog`
@@ -19,6 +20,7 @@ PromptHub's audit infrastructure has been completely transformed from basic stri
 - ✅ Dedicated audit log file (`/tmp/prompthub/audit.log`)
 
 **Files Modified:**
+
 - `router/middleware/audit_context.py` (115 lines) - Context middleware
 - `router/audit.py` (296 lines) - Structured logging framework
 - `router/main.py` - Integrated audit logging
@@ -28,6 +30,7 @@ PromptHub's audit infrastructure has been completely transformed from basic stri
 **Documentation:** [PHASE-1-AUDIT-IMPLEMENTATION.md](PHASE-1-AUDIT-IMPLEMENTATION.md)
 
 ### Phase 2: Operational Excellence (COMPLETE)
+
 **Improvement:** 7.0/10 → 8.5/10 (+1.5 points)
 
 - ✅ SQLite-backed persistent activity log
@@ -37,6 +40,7 @@ PromptHub's audit infrastructure has been completely transformed from basic stri
 - ✅ **Fixed:** Context propagation bug (middleware order)
 
 **Files Modified:**
+
 - `router/middleware/persistent_activity.py` (363 lines) - SQLite persistence
 - `router/middleware/activity.py` - Dual storage (memory + SQLite)
 - `router/main.py` - Query API endpoints
@@ -46,6 +50,7 @@ PromptHub's audit infrastructure has been completely transformed from basic stri
 - `requirements.txt` - Added aiosqlite>=0.22.0
 
 **Critical Bug Fixed:**
+
 - **Issue:** Activity log entries had null client_id/request_id despite context being set
 - **Root Cause:** Middleware execution order (LIFO stack - first added runs last)
 - **Fix:** Reversed middleware order so AuditContextMiddleware runs before ActivityLoggingMiddleware
@@ -54,6 +59,7 @@ PromptHub's audit infrastructure has been completely transformed from basic stri
 **Documentation:** Phase 2 implementation details in this file
 
 ### Phase 3: Compliance & Monitoring (COMPLETE)
+
 **Improvement:** 8.5/10 → 9.0/10 (+0.5 points)
 
 - ✅ Audit log integrity checking with SHA256 checksums
@@ -64,12 +70,14 @@ PromptHub's audit infrastructure has been completely transformed from basic stri
 - ✅ Complete documentation
 
 **Files Created:**
+
 - `router/audit_integrity.py` (183 lines) - Tamper detection
 - `router/security_alerts.py` (329 lines) - Anomaly detection
 - `scripts/siem-forwarder.sh` (121 lines) - SIEM integration
 - `test_security_alerts.py` (180 lines) - Test suite
 
 **Files Modified:**
+
 - `router/audit.py` - Integrated security alert checking
 - `router/main.py` - Phase 3 API endpoints
 
@@ -77,7 +85,7 @@ PromptHub's audit infrastructure has been completely transformed from basic stri
 
 ## Architecture Overview
 
-```
+```md
 ┌───────────────────────────────────────────────────────────────┐
 │                    HTTP Request                               │
 │                         ↓                                     │
@@ -216,7 +224,7 @@ Forward logs to enterprise security platforms:
 
 ### Security Alert System
 
-```
+```md
 TEST SUITE RESULTS:
 ✓ PASS - Repeated failures detection (3 failures → alert)
 ✓ PASS - Excessive credential access (5 accesses → alert)
@@ -230,7 +238,7 @@ ALERT STATISTICS:
 
 ### Audit Integrity
 
-```
+```md
 ✓ Initial checksum baseline created
 ✓ Integrity verification successful
 ✓ Append-only validation working
@@ -239,7 +247,7 @@ ALERT STATISTICS:
 
 ### SIEM Forwarder
 
-```
+```md
 ✓ Script syntax valid
 ✓ Help output correct
 ✓ All platforms supported (Splunk, Elastic, Datadog, Syslog)
@@ -329,6 +337,7 @@ curl http://localhost:9090/security/alerts/stats | jq .
 ### Required Steps
 
 - [ ] **Configure log rotation**
+
   ```bash
   # Linux
   sudo cp configs/logrotate.conf /etc/logrotate.d/prompthub
@@ -338,12 +347,14 @@ curl http://localhost:9090/security/alerts/stats | jq .
   ```
 
 - [ ] **Set up SIEM forwarding**
+
   ```bash
   # Create systemd timer (Linux) or LaunchAgent (macOS)
   # See PHASE-3-COMPLIANCE-MONITORING.md for examples
   ```
 
 - [ ] **Configure retention policies**
+
   ```bash
   # Set cleanup to run weekly
   crontab -e
@@ -351,6 +362,7 @@ curl http://localhost:9090/security/alerts/stats | jq .
   ```
 
 - [ ] **Verify audit log directory permissions**
+
   ```bash
   # Production should use /var/log/prompthub instead of /tmp
   sudo mkdir -p /var/log/prompthub
@@ -373,11 +385,13 @@ curl http://localhost:9090/security/alerts/stats | jq .
 ## Next Steps (Optional Enhancements)
 
 ### To reach 9.5/10
+
 1. **Audit Log Encryption** - Encrypt logs at rest with AES-256
 2. **Audit Log Signing** - Add GPG signatures for non-repudiation
 3. **Alert Dashboard** - Visualize security alerts in web UI
 
 ### To reach 10/10
+
 1. **RBAC for Audit APIs** - Role-based access control
 2. **Immutable Storage** - Archive to S3 Glacier, WORM storage
 3. **Automated Compliance Reports** - Generate SOC 2/GDPR/HIPAA reports

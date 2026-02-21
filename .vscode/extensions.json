@@ -1,12 +1,18 @@
 {
   "recommendations": [
+    "anthropic.claude-code",
+    "charliermarsh.ruff",
+    "dbaeumer.vscode-eslint",
+    "magicstack.magicpython",
+    "ms-azuretools.vscode-docker",
+    "ms-python.debugpy",
+    "ms-python.mypy-type-checker",
     "ms-python.python",
     "ms-python.vscode-pylance",
-    "ms-python.debugpy",
-    "charliermarsh.ruff",
-    "magicstack.magicpython"
+    "tamasfe.even-better-toml"
   ],
   "unwantedRecommendations": [
+    "ms-pyright.pyright",
     "ms-python.black-formatter",
     "ms-python.isort"
   ]
