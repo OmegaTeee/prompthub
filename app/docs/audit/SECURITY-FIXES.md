@@ -1,5 +1,9 @@
 # Security Fixes - Code Review Implementation
 
+> **Archival note (Feb 2026):** References to `router/servers/process.py`
+> are historical. That module was removed during the FastMCP migration;
+> the import fix it describes now applies to `supervisor.py`.
+
 ## Overview
 Implemented security enhancements and best practices based on code review findings.
 

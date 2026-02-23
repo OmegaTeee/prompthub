@@ -51,16 +51,16 @@ ADRs document significant architectural decisions, the context behind them, and 
 └──────┬──────┴─────┬───────┴───────┬───────────┘
        │            │               │
        ▼            ▼               ▼
-┌──────────┐  ┌─────────┐    ┌───────────┐
-│  Process │  │ Ollama  │    │ Resilience│
-│  Manager │  │ Client  │    │  Patterns │
-└────┬─────┘  └─────────┘    └───────────┘
-     │
-     ▼
-┌──────────────┐
-│ StdioBridge  │
-│  (JSON-RPC)  │
-└──────────────┘
+┌───────────────┐  ┌─────────┐  ┌───────────┐
+│ FastMCPBridge │  │ Ollama  │  │ Resilience│
+│  (per-server) │  │ Client  │  │  Patterns │
+└───────┬───────┘  └─────────┘  └───────────┘
+        │
+        ▼
+┌───────────────┐
+│ FastMCP Client│
+│ StdioTransport│
+└───────────────┘
 ```
 
 ## Design Principles
@@ -94,18 +94,30 @@ ADRs document significant architectural decisions, the context behind them, and 
 
 ## Data Flow
 
-### 1. MCP Request Flow
+### 1. MCP Proxy Request Flow (`/mcp/{server}/{path}`)
 
 ```
 Client → FastAPI → CircuitBreaker.check()
    ↓
 Server running? → Auto-start if configured
    ↓
-StdioBridge → Process stdin (JSON-RPC)
+FastMCPBridge._dispatch() → FastMCP Client methods
    ↓
-Process stdout → Parse response
+FastMCP Client → StdioTransport → subprocess stdin/stdout
    ↓
 CircuitBreaker.record_success() → Response
+```
+
+### 1b. MCP Gateway Request Flow (`/mcp-direct/mcp`)
+
+```
+Client → HTTP POST /mcp-direct/mcp → FastMCP Gateway
+   ↓
+FastMCPProxy → client_factory() → resolve bridge
+   ↓
+FastMCP Client → StdioTransport → subprocess stdin/stdout
+   ↓
+Response (tools namespaced: "server_tool")
 ```
 
 ### 2. Prompt Enhancement Flow
@@ -131,7 +143,7 @@ For each running server:
    ↓
 Process alive? → No → Should restart?
    ↓
-Yes → ProcessManager.restart() → Increment restart_count
+Yes → Supervisor.restart_server() → Increment restart_count
    ↓
 restart_count > max_restarts? → Mark as FAILED
 ```
@@ -166,13 +178,14 @@ CLOSED (normal) → OPEN (failing)
 - **Uvicorn** - ASGI server
 
 ### MCP Integration
-- **asyncio.subprocess** - Process management
+- **FastMCP Client** - MCP server lifecycle and communication
+- **StdioTransport** - Subprocess management via stdio
+- **FastMCPProxy** - Dynamic client factories for gateway
 - **JSON-RPC 2.0** - MCP protocol
-- **Stdio transport** - Newline-delimited JSON
 
 ### Resilience
 - **Circuit breakers** - Custom implementation
-- **LRU cache** - functools.lru_cache
+- **LRU cache** - Custom OrderedDict with TTL and async locks (cache/memory.py)
 - **Retry logic** - httpx built-in
 
 ### Observability
@@ -265,7 +278,7 @@ See [docs/audit/](../audit/) for detailed audit documentation.
 
 ### Unit Tests
 - **Services**: Enhancement, CircuitBreaker, Cache
-- **Managers**: ProcessManager, Supervisor, Registry
+- **Managers**: Supervisor, Registry, FastMCPBridge
 - **Utilities**: Audit, Security alerts, Integrity
 
 ### Integration Tests

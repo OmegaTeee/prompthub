@@ -164,23 +164,23 @@ Endpoints:
 1. **Unit tests**: `cd app && pytest tests/test_openai_compat.py -v`
 2. **Full test suite**: `cd app && pytest tests/ -v`
 3. **Manual — non-streaming**:
-    
+
     ```bash
     curl -X POST http://localhost:9090/v1/chat/completions \
       -H "Authorization: Bearer sk-prompthub-cursor-xxx" \
       -H "Content-Type: application/json" \
       -d '{"model": "llama3.2:latest", "messages": [{"role": "user", "content": "Hello"}]}'
     ```
-    
+
 4. **Manual — streaming**:
-    
+
     ```bash
     curl -N -X POST http://localhost:9090/v1/chat/completions \
       -H "Authorization: Bearer sk-prompthub-cursor-xxx" \
       -H "Content-Type: application/json" \
       -d '{"model": "llama3.2:latest", "messages": [{"role": "user", "content": "Hello"}], "stream": true}'
     ```
-    
+
 5. **Manual — models**: `curl -H "Authorization: Bearer sk-prompthub-cursor-xxx" http://localhost:9090/v1/models`
 6. **Auth rejection**: `curl -X POST http://localhost:9090/v1/chat/completions` → 401
 7. **Desktop app test**: Point Cursor's OpenAI base URL to `http://localhost:9090/v1` with the bearer token

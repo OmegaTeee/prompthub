@@ -95,7 +95,7 @@ async def lifespan(app: FastAPI):
 
     # Mount FastMCP gateway for Streamable HTTP access
     # Clients can connect at /mcp-direct/mcp using standard MCP HTTP transport
-    mcp_gateway = build_mcp_gateway(supervisor)
+    mcp_gateway = build_mcp_gateway(supervisor, registry)
     app.mount("/mcp-direct", mcp_gateway.http_app(path="/mcp"))
     logger.info("Mounted MCP gateway at /mcp-direct/mcp")
 
@@ -451,6 +451,30 @@ async def server_health(server: str):
 # =============================================================================
 
 
+def _rebuild_gateway():
+    """
+    Rebuild and remount the MCP gateway after topology changes.
+
+    Called after install/delete operations to ensure the gateway reflects
+    the current set of configured servers. Start/stop/restart do NOT need
+    this because the dynamic client factory handles bridge changes.
+    """
+    if not registry or not supervisor:
+        logger.warning("Cannot rebuild gateway: services not initialized")
+        return
+
+    # Remove existing /mcp-direct mount
+    app.router.routes = [
+        route for route in app.router.routes
+        if not (hasattr(route, "path") and route.path == "/mcp-direct")
+    ]
+
+    # Build and mount new gateway
+    new_gateway = build_mcp_gateway(supervisor, registry)
+    app.mount("/mcp-direct", new_gateway.http_app(path="/mcp"))
+    logger.info("Rebuilt MCP gateway after topology change")
+
+
 @app.get("/servers")
 async def list_servers():
     """List all configured MCP servers with their status."""
@@ -597,6 +621,7 @@ async def install_server(request: InstallServerRequest):
 
     try:
         registry.add(config)
+        _rebuild_gateway()
         return {
             "message": f"Server {name} installed",
             "name": name,
@@ -623,6 +648,7 @@ async def remove_server(name: str):
 
     try:
         registry.remove(name)
+        _rebuild_gateway()
         return {"message": f"Server {name} removed"}
     except Exception as e:
         logger.error(f"Failed to remove {name}: {e}")

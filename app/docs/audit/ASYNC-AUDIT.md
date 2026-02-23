@@ -1,6 +1,11 @@
 # Async/HTTP Audit Report
 
-**Date**: January 26, 2026  
+> **Archival note (Feb 2026):** This audit predates the FastMCP migration.
+> References to `process.py` (ProcessManager) and `bridge.py` (StdioBridge)
+> now correspond to `supervisor.py` (Supervisor) and `fastmcp_bridge.py`
+> (FastMCPBridge). The `routing/` module is empty; routing lives in `servers/`.
+
+**Date**: January 26, 2026
 **Scope**: `router/servers/`, `router/routing/`, `router/main.py`, `router/enhancement/`
 
 ---
@@ -13,8 +18,8 @@ Overall the codebase demonstrates good async patterns with several strengths:
 - ✅ No blocking HTTP libraries (`requests`, `urllib`)
 - ✅ Proper async/await usage in subprocess management
 
-**Critical Issues Found**: 2  
-**Major Issues Found**: 3  
+**Critical Issues Found**: 2
+**Major Issues Found**: 3
 **Minor Issues Found**: 4
 
 ---
@@ -22,15 +27,15 @@ Overall the codebase demonstrates good async patterns with several strengths:
 ## Critical Issues
 
 ### 🔴 C1: Missing HTTP timeout in MCP proxy endpoint
-**Location**: `router/main.py:527` (mcp_proxy function)  
-**Issue**: The stdio bridge call has a default 30s timeout, but this is not explicitly shown in the proxy endpoint.  
-**Risk**: Callers may hang indefinitely if bridge doesn't respond.  
+**Location**: `router/main.py:527` (mcp_proxy function)
+**Issue**: The stdio bridge call has a default 30s timeout, but this is not explicitly shown in the proxy endpoint.
+**Risk**: Callers may hang indefinitely if bridge doesn't respond.
 **Fix**: Make timeout configurable and expose in API response metadata.
 
 ### 🔴 C2: No circuit breaker on ollama calls in enhancement service
-**Location**: `router/enhancement/service.py` + ollama.py  
-**Issue**: While httpx has timeouts, there's no circuit breaker wrapping Ollama calls.  
-**Risk**: If Ollama becomes slow or unresponsive, requests will accumulate and timeout individually rather than failing fast.  
+**Location**: `router/enhancement/service.py` + ollama.py
+**Issue**: While httpx has timeouts, there's no circuit breaker wrapping Ollama calls.
+**Risk**: If Ollama becomes slow or unresponsive, requests will accumulate and timeout individually rather than failing fast.
 **Fix**: Wrap Ollama client in circuit breaker, similar to MCP servers.
 
 ---
@@ -40,12 +45,12 @@ Overall the codebase demonstrates good async patterns with several strengths:
 ### 🟠 M1: Blocking file I/O in synchronous contexts
 **Locations**:
 - `router/servers/registry.py:57` - `open()` for loading config
-- `router/servers/registry.py:95` - `open()` for saving config  
+- `router/servers/registry.py:95` - `open()` for saving config
 - `router/enhancement/service.py:142` - `open()` for loading rules
 - `router/clients/generators.py:59,96,181,190,279` - Multiple `open()` calls
 
-**Issue**: Using synchronous `open()`/`read()`/`write()` in async contexts will block the event loop.  
-**Risk**: Under load, file I/O will cause latency spikes for all concurrent requests.  
+**Issue**: Using synchronous `open()`/`read()`/`write()` in async contexts will block the event loop.
+**Risk**: Under load, file I/O will cause latency spikes for all concurrent requests.
 **Fix**: Use `aiofiles` library for async file operations:
 ```python
 import aiofiles
@@ -54,15 +59,15 @@ async with aiofiles.open(path) as f:
 ```
 
 ### 🟠 M2: MCP proxy doesn't enforce timeout at FastAPI level
-**Location**: `router/main.py:472-560`  
-**Issue**: While bridge.send() has a timeout, the FastAPI endpoint doesn't have request-level timeout middleware.  
-**Risk**: Slow clients or network issues could tie up workers indefinitely.  
+**Location**: `router/main.py:472-560`
+**Issue**: While bridge.send() has a timeout, the FastAPI endpoint doesn't have request-level timeout middleware.
+**Risk**: Slow clients or network issues could tie up workers indefinitely.
 **Fix**: Add timeout middleware or use `asyncio.wait_for()` wrapper around bridge calls.
 
 ### 🟠 M3: No validation that circuit breaker is called before operations
-**Locations**: Enhancement service, dashboard operations  
-**Issue**: Only MCP proxy explicitly checks circuit breaker; enhancement service calls Ollama without CB.  
-**Risk**: Inconsistent resilience patterns across the codebase.  
+**Locations**: Enhancement service, dashboard operations
+**Issue**: Only MCP proxy explicitly checks circuit breaker; enhancement service calls Ollama without CB.
+**Risk**: Inconsistent resilience patterns across the codebase.
 **Fix**: Add circuit breaker middleware or decorator pattern for consistency.
 
 ---
@@ -70,27 +75,27 @@ async with aiofiles.open(path) as f:
 ## Minor Issues
 
 ### 🟡 m1: Subprocess stderr read uses small timeout
-**Location**: `router/servers/process.py:243`  
-**Issue**: `timeout=0.1` for reading stderr is very short and may miss error output.  
-**Impact**: Minor - only affects error reporting quality.  
+**Location**: `router/servers/process.py:243`
+**Issue**: `timeout=0.1` for reading stderr is very short and may miss error output.
+**Impact**: Minor - only affects error reporting quality.
 **Fix**: Increase to 1.0 second or make configurable.
 
 ### 🟡 m2: No timeout on supervisor health check HTTP calls
-**Location**: `router/servers/supervisor.py`  
-**Issue**: Supervisor doesn't make HTTP calls currently, but if HTTP transport servers are added, health checks will need timeouts.  
-**Impact**: Minor - future proofing needed.  
+**Location**: `router/servers/supervisor.py`
+**Issue**: Supervisor doesn't make HTTP calls currently, but if HTTP transport servers are added, health checks will need timeouts.
+**Impact**: Minor - future proofing needed.
 **Fix**: Add timeout parameter when HTTP transport support is added.
 
 ### 🟡 m3: Dashboard router helpers not all async
-**Location**: `router/main.py:119-157`  
-**Issue**: `_get_health()` and `_get_servers()` are synchronous, while `_get_stats()` and actions are async.  
-**Impact**: Minor - currently these just read in-memory state, but mixing patterns is confusing.  
+**Location**: `router/main.py:119-157`
+**Issue**: `_get_health()` and `_get_servers()` are synchronous, while `_get_stats()` and actions are async.
+**Impact**: Minor - currently these just read in-memory state, but mixing patterns is confusing.
 **Fix**: Make all dashboard helpers consistently async for clarity.
 
 ### 🟡 m4: No connection pooling in httpx client
-**Location**: `router/enhancement/ollama.py:100`  
-**Issue**: Using default connection limits; under high load might need tuning.  
-**Impact**: Minor - unlikely to be an issue at current scale.  
+**Location**: `router/enhancement/ollama.py:100`
+**Issue**: Using default connection limits; under high load might need tuning.
+**Impact**: Minor - unlikely to be an issue at current scale.
 **Fix**: Add explicit limits if needed: `httpx.Limits(max_keepalive_connections=20, max_connections=100)`
 
 ---
@@ -164,7 +169,7 @@ async with aiofiles.open(path) as f:
    ```python
    # In enhancement/service.py
    self._circuit_breaker = CircuitBreaker("ollama", failure_threshold=3, recovery_timeout=30)
-   
+
    async def enhance(self, ...):
        self._circuit_breaker.check()  # Raises if open
        try:
@@ -186,7 +191,7 @@ async with aiofiles.open(path) as f:
 
 ### High Priority (Major)
 
-3. **Convert file I/O to async**:
+1. **Convert file I/O to async**:
    ```bash
    pip install aiofiles
    ```
@@ -197,26 +202,26 @@ async with aiofiles.open(path) as f:
        data = json.loads(content)
    ```
 
-4. **Add request timeout middleware**:
+2. **Add request timeout middleware**:
    ```python
    from starlette.middleware.base import BaseHTTPMiddleware
-   
+
    class TimeoutMiddleware(BaseHTTPMiddleware):
        async def dispatch(self, request, call_next):
            try:
                return await asyncio.wait_for(call_next(request), timeout=60.0)
            except asyncio.TimeoutError:
                return JSONResponse({"error": "Request timeout"}, status_code=504)
-   
+
    app.add_middleware(TimeoutMiddleware)
    ```
 
 ### Medium Priority (Minor)
 
-5. Increase stderr read timeout to 1.0s
-6. Make dashboard helpers consistently async
-7. Add connection pool limits to httpx client if scaling issues arise
-8. Add HTTP health check timeout when HTTP transport servers are supported
+1. Increase stderr read timeout to 1.0s
+2. Make dashboard helpers consistently async
+3. Add connection pool limits to httpx client if scaling issues arise
+4. Add HTTP health check timeout when HTTP transport servers are supported
 
 ---
 

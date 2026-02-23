@@ -61,7 +61,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 |--------|---------|
 | `config/` | Pydantic settings, JSON config loading |
 | `servers/` | MCP server lifecycle via FastMCP (spawn, monitor, restart stdio processes) |
-| `routing/` | MCP server registry, JSON-RPC proxy |
+| `routing/` | (empty — routing logic is in `servers/`) |
 | `resilience/` | Circuit breaker (CLOSED → OPEN → HALF_OPEN states) |
 | `cache/` | L1 in-memory LRU cache |
 | `enhancement/` | Ollama HTTP client, per-client prompt enhancement |

@@ -100,7 +100,14 @@ async function getAllTools() {
  */
 async function callTool(toolName, args) {
   // Tool name format: "server-name_tool-name"
-  const [serverName, actualToolName] = toolName.split('_', 2);
+  // Split on first underscore only — tool names may contain underscores
+  // (e.g., "desktop-commander_create_directory")
+  const idx = toolName.indexOf('_');
+  if (idx === -1) {
+    throw new Error(`Invalid tool name format: ${toolName} (expected "server_tool")`);
+  }
+  const serverName = toolName.substring(0, idx);
+  const actualToolName = toolName.substring(idx + 1);
 
   if (!SERVERS.includes(serverName)) {
     throw new Error(`Unknown server: ${serverName}`);

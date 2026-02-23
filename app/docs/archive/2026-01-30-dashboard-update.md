@@ -12,7 +12,7 @@ Added server control buttons to the dashboard health panel:
 - **Stop** button (yellow) - Shows when server is running
 - **Restart** button (grey) - Shows when server is running
 
-#### Files Modified:
+#### Files Modified
 - [router/main.py](router/main.py) - Added `_start_server()` and `_stop_server()` helper functions
 - [router/dashboard/router.py](router/dashboard/router.py) - Added `/actions/start/{server}` and `/actions/stop/{server}` endpoints
 - [templates/dashboard.html](templates/dashboard.html) - Added button CSS styles (btn-sm, btn-warning, btn-secondary)

@@ -1,5 +1,9 @@
 # ✅ Keyring Integration Complete
 
+> **Archival note (Feb 2026):** References to `router/servers/process.py`
+> are historical. That module was removed during the FastMCP migration;
+> keyring env resolution now lives in `supervisor.py` via `resolve_server_env()`.
+
 ## Summary
 
 Successfully integrated Python `keyring` package for secure MCP server credential management. This replaces the bash wrapper + `security` CLI approach with a more reliable, Python-native solution.

@@ -1,5 +1,9 @@
 # Async Audit Code Review - Action Items
 
+> **Archival note (Feb 2026):** References to `router/servers/process.py`
+> are historical. That module was removed during the FastMCP migration;
+> keyring env resolution now lives in `supervisor.py` via `resolve_server_env()`.
+
 ## Executive Summary
 
 PromptHub's current audit implementation has **critical security and compliance gaps**. While basic logging exists for dashboard actions, the system lacks structured logging, audit context, proper persistence, and comprehensive coverage of security-sensitive operations.

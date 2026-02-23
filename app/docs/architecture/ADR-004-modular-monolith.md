@@ -114,10 +114,8 @@ class Supervisor:
     def __init__(
         self,
         registry: ServerRegistry,
-        process_manager: ProcessManager,
     ):
         self.registry = registry
-        self.process_manager = process_manager
 
 # Bad: Import and instantiate directly
 class Supervisor:

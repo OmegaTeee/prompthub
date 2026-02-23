@@ -31,9 +31,9 @@ Detailed documentation for PromptHub's core modules.
 main.py
   ├── servers/
   │   ├── registry.py        # ServerRegistry
-  │   ├── process.py         # ProcessManager
   │   ├── supervisor.py      # Supervisor
-  │   └── bridge.py          # StdioBridge
+  │   ├── fastmcp_bridge.py  # FastMCPBridge
+  │   └── mcp_gateway.py     # build_mcp_gateway (Streamable HTTP)
   │
   ├── enhancement/
   │   ├── service.py         # EnhancementService
@@ -108,9 +108,9 @@ Test module interactions:
 ```python
 # tests/integration/test_server_flow.py
 async def test_server_lifecycle():
-    registry = ServerRegistry()
-    process_mgr = ProcessManager(registry)
-    supervisor = Supervisor(registry, process_mgr)
+    registry = ServerRegistry("configs/mcp-servers.json")
+    await registry.load_async()
+    supervisor = Supervisor(registry)
 
     # Test full lifecycle
     await supervisor.start_server("context7")
@@ -170,13 +170,13 @@ logger.info(f"Server {name} started", extra={
 Custom exceptions with context:
 
 ```python
-class StdioBridgeError(Exception):
-    """Error in stdio bridge communication."""
+class FastMCPBridgeError(Exception):
+    """Error in FastMCP bridge communication."""
     pass
 
 try:
     response = await bridge.send(method, params)
-except StdioBridgeError as e:
+except FastMCPBridgeError as e:
     logger.error(f"Bridge error: {e}")
     raise HTTPException(503, f"Bridge error: {e}") from e
 ```

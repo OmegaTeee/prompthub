@@ -6,7 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 
 ## [Unreleased]
 
-(No changes yet.)
+### Fixed
+- **MCP gateway stale client references**: Rewrote `mcp_gateway.py` to use dynamic `FastMCPProxy(client_factory=...)` instead of `FastMCP.as_proxy(bridge.client)` — servers now survive restarts and late starts without gateway rebuild
+- **Bridge.js tool name truncation**: Fixed `split('_', 2)` dropping tool name segments (e.g., `create_directory` → `create`); now uses `indexOf`/`substring` to split on first underscore only
+- **Gateway topology rebuild**: Added `_rebuild_gateway()` in `main.py` for `install_server` and `remove_server` endpoints — gateway re-mounts after topology changes
+
+### Added
+- `app/tests/test_mcp_gateway.py` — 8 unit tests for dynamic client factory and gateway construction
+- Gateway module docstring documenting the Streamable HTTP request path and dynamic factory pattern
+
+### Changed
+- `build_mcp_gateway()` now accepts `(supervisor, registry)` — mounts proxies for ALL configured servers, not just connected ones
+- Architecture README: corrected `StdioBridge`/`ProcessManager` references to `FastMCPBridge`/`Supervisor`
+- Modules README: updated dependency graph, integration test example, and error handling to reflect post-migration server module
+- ADR-004: updated `Supervisor` constructor example (no longer takes `ProcessManager`)
+- CLAUDE.md: corrected `routing/` module description (empty — routing is in `servers/`)
+- Annotated historical audit/feature docs (`ASYNC-AUDIT.md`, `AUDIT-CODE-REVIEW.md`, `SECURITY-FIXES.md`, `KEYRING-INTEGRATION-COMPLETE.md`) with archival notes for removed `process.py`/`bridge.py` references
 
 ---
 
