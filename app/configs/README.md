@@ -36,10 +36,10 @@ Infrastructure and logging:
 
 ## Quick Links
 
-### Setting Up a Client
-1. **Claude Desktop** → [clients/claude/README.md](../../clients/claude/README.md)
-2. **VS Code** → [clients/vscode/README.md](../../clients/vscode/README.md)
-3. **Raycast** → [clients/raycast/README.md](../../clients/raycast/README.md)
+// ### Setting Up a Client
+// 1. **Claude Desktop** → [clients/claude/README.md](../../clients/claude/README.md)
+// 2. **VS Code** → [clients/vscode/README.md](../../clients/vscode/README.md)
+// 3. **Raycast** → [clients/raycast/README.md](../../clients/raycast/README.md)
 
 ### Common Tasks
 

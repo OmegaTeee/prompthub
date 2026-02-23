@@ -48,24 +48,12 @@
   "files.exclude": {
     "**/__pycache__": true,
     "**/.pytest_cache": true,
-    "**/.mypy_cache": true
+    "**/.mypy_cache": true,
+    "clients": true
   },
-  // ── Chat tool auto-approve ──────────────────────────────
-  "chat.tools.terminal.autoApprove": {
-    "/^python -m pytest -q$/": {
-      "approve": true,
-      "matchCommandLine": true
-    },
-    "/^python -m pip install -r requirements\\.txt$/": {
-      "approve": true,
-      "matchCommandLine": true
-    }
-  },
-  // ── Markdown settings ───────────────────────────────────
-  "markdown.preview.fontSize": 16,
-  "markdown.preview.lineHeight": 1.4,
+  // ── Markdown settings ────────────────────────────----───
+  "markdownlint.configFile": ".vscode/.markdownlint-cli2.jsonc",
   "markdown.styles": [
     ".vscode/markdown.css"
-  ],
-  "markdownlint.configFile": ".vscode/.markdownlint-cli2.jsonc"
+  ]
 }

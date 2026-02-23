@@ -1,10 +1,10 @@
 # PromptHub
 
-Lightweight local-first AI agent hub for macOS — central router, prompt enhancement, and desktop integrations.
+Lightweight local-first service orchestration layer for macOS — central router, prompt enhancement, and desktop integrations.
 
 ## Overview
 
-PromptHub provides a single local router (`localhost:9090`) that:
+Service provides a single local router (`localhost:9090`) that:
 - Manages MCP servers centrally (configure once, use everywhere)
 - Enhances prompts via Ollama before forwarding to AI services
 - Provides circuit breakers for graceful degradation
