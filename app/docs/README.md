@@ -23,7 +23,7 @@ Technical documentation for PromptHub developers and maintainers.
 
 ## User Guides
 
-User-facing guides live in the Obsidian vault at `~/Vault/PromptHub/`.
+User-facing guides live in the Obsidian vault at `~/Vault`.
 
 ## Contributing
 

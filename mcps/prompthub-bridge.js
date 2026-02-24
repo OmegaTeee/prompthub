@@ -3,9 +3,9 @@
 /**
  * PromptHub Unified MCP Bridge
  *
- * This MCP server acts as a bridge between Claude Desktop (stdio transport)
- * and PromptHub's HTTP endpoints, aggregating all 7 MCP servers into one
- * unified interface.
+ * This MCP server acts as a bridge between MCP clients (stdio transport)
+ * and PromptHub's HTTP endpoints, dynamically aggregating all running
+ * MCP servers into one unified interface.
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -18,17 +18,45 @@ import {
 const PROMPTHUB_URL = process.env.PROMPTHUB_URL || 'http://localhost:9090';
 const CLIENT_NAME = process.env.CLIENT_NAME || 'claude-desktop';
 
-// All 8 MCP servers available through PromptHub
-const SERVERS = [
-  'context7',
-  'desktop-commander',
-  'sequential-thinking',
-  'memory',
-  'deepseek-reasoner',
-  'fetch',
-  'obsidian',
-  'duckduckgo'
-];
+// Optional: comma-separated list of servers to expose (empty = all running)
+const SERVERS_FILTER = process.env.SERVERS
+  ? process.env.SERVERS.split(',').map(s => s.trim()).filter(Boolean)
+  : [];
+
+// Optional: comma-separated prefixed tool names to exclude
+// e.g., "desktop-commander_get_config,desktop-commander_give_feedback_to_desktop_commander"
+const EXCLUDE_TOOLS = new Set(
+  process.env.EXCLUDE_TOOLS
+    ? process.env.EXCLUDE_TOOLS.split(',').map(s => s.trim()).filter(Boolean)
+    : []
+);
+
+// Cache of running server names (refreshed on each tools/list call)
+let cachedServers = [];
+
+/**
+ * Fetch the list of running servers from the router
+ */
+async function fetchRunningServers() {
+  try {
+    const response = await fetch(`${PROMPTHUB_URL}/servers`, {
+      headers: { 'X-Client-Name': CLIENT_NAME }
+    });
+    const data = await response.json();
+
+    if (data.servers) {
+      cachedServers = data.servers
+        .filter(s => s.status === 'running')
+        .map(s => s.name)
+        .filter(name => SERVERS_FILTER.length === 0 || SERVERS_FILTER.includes(name));
+    }
+  } catch (error) {
+    console.error('Failed to fetch server list from router:', error.message);
+    // Keep using cached list if router is temporarily unreachable
+  }
+
+  return cachedServers;
+}
 
 /**
  * Make HTTP request to PromptHub
@@ -66,9 +94,10 @@ async function callPromptHub(serverName, jsonRpcRequest) {
  * Fetch tools from all servers
  */
 async function getAllTools() {
+  const servers = await fetchRunningServers();
   const allTools = [];
 
-  for (const serverName of SERVERS) {
+  for (const serverName of servers) {
     try {
       const response = await callPromptHub(serverName, {
         jsonrpc: '2.0',
@@ -79,11 +108,13 @@ async function getAllTools() {
       if (response.result && response.result.tools) {
         // Prefix tool names with server name to avoid conflicts
         // Use underscore separator (MCP names can only contain: a-zA-Z0-9_-)
-        const prefixedTools = response.result.tools.map(tool => ({
-          ...tool,
-          name: `${serverName}_${tool.name}`,
-          description: `[${serverName}] ${tool.description}`
-        }));
+        const prefixedTools = response.result.tools
+          .map(tool => ({
+            ...tool,
+            name: `${serverName}_${tool.name}`,
+            description: `[${serverName}] ${tool.description}`
+          }))
+          .filter(tool => !EXCLUDE_TOOLS.has(tool.name));
 
         allTools.push(...prefixedTools);
       }
@@ -109,8 +140,8 @@ async function callTool(toolName, args) {
   const serverName = toolName.substring(0, idx);
   const actualToolName = toolName.substring(idx + 1);
 
-  if (!SERVERS.includes(serverName)) {
-    throw new Error(`Unknown server: ${serverName}`);
+  if (cachedServers.length > 0 && !cachedServers.includes(serverName)) {
+    throw new Error(`Unknown or stopped server: ${serverName}`);
   }
 
   const response = await callPromptHub(serverName, {
@@ -184,10 +215,13 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
+  // Fetch initial server list
+  const servers = await fetchRunningServers();
+
   console.error('PromptHub MCP Bridge started');
   console.error(`Connected to: ${PROMPTHUB_URL}`);
   console.error(`Client name: ${CLIENT_NAME}`);
-  console.error(`Servers: ${SERVERS.join(', ')}`);
+  console.error(`Running servers: ${servers.join(', ') || '(none — router may not be running)'}`);
 }
 
 main().catch((error) => {

@@ -1,10 +1,5 @@
 {
   "keys": {
-    "sk-prompthub-cursor-dev001": {
-      "client_name": "cursor",
-      "enhance": true,
-      "description": "Cursor IDE"
-    },
     "sk-prompthub-obsidian-dev001": {
       "client_name": "obsidian",
       "enhance": false,
@@ -17,7 +12,7 @@
     },
     "sk-prompthub-perplexity-dev001": {
       "client_name": "perplexity",
-      "enhance": true,
+      "enhance": false,
       "description": "Perplexity assistant"
     },
     "sk-prompthub-code-dev001": {
@@ -29,11 +24,6 @@
       "client_name": "vscode",
       "enhance": false,
       "description": "OAI Copilot extension (pass-through)"
-    },
-    "sk-prompthub-continue-dev001": {
-      "client_name": "continue",
-      "enhance": false,
-      "description": "Continue.dev extension (pass-through)"
     }
   }
 }
