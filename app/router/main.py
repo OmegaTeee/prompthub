@@ -11,8 +11,10 @@ A centralized MCP router that provides:
 
 import logging
 import time
+from collections.abc import Callable, Coroutine
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,6 +64,56 @@ circuit_breakers: CircuitBreakerRegistry | None = None
 documentation_pipeline: DocumentationPipeline | None = None
 persistent_activity_log = None  # Will be initialized in lifespan
 
+# Gateway lifespan management — tracks the async cleanup for the current
+# FastMCP gateway so we can tear it down and re-enter on topology changes.
+_gateway_exit: Callable[[], Coroutine[Any, Any, None]] | None = None
+
+
+async def _mount_gateway() -> None:
+    """
+    Mount (or remount) the MCP gateway with proper lifespan management.
+
+    FastMCP's StreamableHTTPSessionManager requires its lifespan to be
+    entered before it can handle requests. We manually enter the sub-app's
+    lifespan and store a cleanup handle so _rebuild_gateway can tear down
+    the old gateway and create a fresh one after topology changes.
+    """
+    global _gateway_exit
+
+    # Cleanup previous gateway lifespan if remounting
+    if _gateway_exit:
+        try:
+            await _gateway_exit()
+        except Exception as e:
+            logger.warning(f"Error closing previous gateway lifespan: {e}")
+        _gateway_exit = None
+
+    # Remove existing /mcp-direct mount
+    app.router.routes = [
+        r
+        for r in app.router.routes
+        if not (hasattr(r, "path") and r.path == "/mcp-direct")
+    ]
+
+    if not registry or not supervisor:
+        logger.warning("Cannot mount gateway: services not initialized")
+        return
+
+    gateway = build_mcp_gateway(supervisor, registry)
+    mcp_http_app = gateway.http_app(path="/mcp")
+
+    # Enter the FastMCP lifespan (initializes StreamableHTTPSessionManager)
+    ctx = mcp_http_app.lifespan(mcp_http_app)
+    await ctx.__aenter__()
+
+    async def _exit() -> None:
+        await ctx.__aexit__(None, None, None)
+
+    _gateway_exit = _exit
+
+    app.mount("/mcp-direct", mcp_http_app)
+    logger.info("Mounted MCP gateway at /mcp-direct/mcp (lifespan active)")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -95,9 +147,7 @@ async def lifespan(app: FastAPI):
 
     # Mount FastMCP gateway for Streamable HTTP access
     # Clients can connect at /mcp-direct/mcp using standard MCP HTTP transport
-    mcp_gateway = build_mcp_gateway(supervisor, registry)
-    app.mount("/mcp-direct", mcp_gateway.http_app(path="/mcp"))
-    logger.info("Mounted MCP gateway at /mcp-direct/mcp")
+    await _mount_gateway()
 
     # Initialize circuit breaker registry
     circuit_breakers = CircuitBreakerRegistry()
@@ -125,6 +175,13 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     logger.info("Shutting down PromptHub Router")
+
+    # Close gateway lifespan (stops StreamableHTTPSessionManager)
+    if _gateway_exit:
+        try:
+            await _gateway_exit()
+        except Exception as e:
+            logger.warning(f"Error closing gateway lifespan: {e}")
 
     if enhancement_service:
         await enhancement_service.close()
@@ -490,27 +547,18 @@ async def server_health(server: str):
 # =============================================================================
 
 
-def _rebuild_gateway():
+async def _rebuild_gateway() -> None:
     """
     Rebuild and remount the MCP gateway after topology changes.
 
     Called after install/delete operations to ensure the gateway reflects
     the current set of configured servers. Start/stop/restart do NOT need
     this because the dynamic client factory handles bridge changes.
+
+    This tears down the old gateway's lifespan (StreamableHTTPSessionManager)
+    and creates a fresh one with the updated server list.
     """
-    if not registry or not supervisor:
-        logger.warning("Cannot rebuild gateway: services not initialized")
-        return
-
-    # Remove existing /mcp-direct mount
-    app.router.routes = [
-        route for route in app.router.routes
-        if not (hasattr(route, "path") and route.path == "/mcp-direct")
-    ]
-
-    # Build and mount new gateway
-    new_gateway = build_mcp_gateway(supervisor, registry)
-    app.mount("/mcp-direct", new_gateway.http_app(path="/mcp"))
+    await _mount_gateway()
     logger.info("Rebuilt MCP gateway after topology change")
 
 
@@ -660,7 +708,7 @@ async def install_server(request: InstallServerRequest):
 
     try:
         registry.add(config)
-        _rebuild_gateway()
+        await _rebuild_gateway()
         return {
             "message": f"Server {name} installed",
             "name": name,
@@ -687,7 +735,7 @@ async def remove_server(name: str):
 
     try:
         registry.remove(name)
-        _rebuild_gateway()
+        await _rebuild_gateway()
         return {"message": f"Server {name} removed"}
     except Exception as e:
         logger.error(f"Failed to remove {name}: {e}")
