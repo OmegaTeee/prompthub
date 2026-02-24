@@ -28,7 +28,7 @@ from router.clients import (
 )
 from router.config import get_settings
 from router.dashboard import create_dashboard_router
-from router.enhancement import EnhancementService
+from router.enhancement import EnhancementService, OllamaConfig
 from router.openai_compat import create_openai_compat_router
 from router.openai_compat.auth import ApiKeyManager
 from router.middleware import (
@@ -102,9 +102,14 @@ async def lifespan(app: FastAPI):
     # Initialize circuit breaker registry
     circuit_breakers = CircuitBreakerRegistry()
 
-    # Initialize enhancement service
+    # Initialize enhancement service with Ollama config from .env
+    ollama_config = OllamaConfig(
+        base_url=f"http://{settings.ollama_host}:{settings.ollama_port}",
+        timeout=float(settings.ollama_timeout),
+    )
     enhancement_service = EnhancementService(
         rules_path=settings.enhancement_rules_config,
+        ollama_config=ollama_config,
         cache_max_size=500,
         cache_ttl=7200.0,
     )

@@ -18,13 +18,11 @@ Controls the API format the enhancement service uses when calling Ollama to impr
 
 ```bash
 # .env
-OLLAMA_API_MODE=native   # Default: uses /api/generate
-OLLAMA_API_MODE=openai   # Alternative: uses /v1/chat/completions
+OLLAMA_API_MODE=native   # Uses /api/generate
+OLLAMA_API_MODE=openai   # Uses /v1/chat/completions (current setting)
 ```
 
-Both modes produce identical results — the difference is the wire format. Use `native` unless you have a specific reason to use the OpenAI format (e.g., an Ollama-compatible proxy that only speaks OpenAI).
-
-The mode is selected at startup and logged:
+Both modes produce identical results — the difference is the wire format. The mode is selected at startup and logged:
 ```
 INFO: Using native Ollama API
 # or
@@ -48,7 +46,12 @@ External apps connect to PromptHub as if it were an OpenAI API server. This is a
     "sk-prompthub-code-dev001": {
       "client_name": "vscode",
       "enhance": true,
-      "description": "VS Code chat"
+      "description": "VS Code chat (enhanced)"
+    },
+    "sk-prompthub-copilot-dev001": {
+      "client_name": "vscode",
+      "enhance": false,
+      "description": "OAI Copilot extension (pass-through)"
     }
   }
 }
@@ -68,16 +71,36 @@ External apps connect to PromptHub as if it were an OpenAI API server. This is a
 
 ```bash
 # Enhancement backend
-OLLAMA_API_MODE=native
+OLLAMA_API_MODE=openai
 OLLAMA_HOST=localhost
 OLLAMA_PORT=11434
-OLLAMA_MODEL=deepseek-r1:latest
-OLLAMA_TIMEOUT=30
+OLLAMA_MODEL=llama3.2:latest
+OLLAMA_TIMEOUT=120
 
 # Client proxy
 API_KEYS_CONFIG=configs/api-keys.json
 ENHANCEMENT_RULES_CONFIG=configs/enhancement-rules.json
 ```
+
+### Enhancement rules (`enhancement-rules.json`)
+
+Each client maps to a model used for prompt enhancement. The enhancement model runs *before* the user's requested model. Using a lightweight model (`llama3.2`) for enhancement keeps it fast and avoids model swap overhead:
+
+```json
+{
+  "default": { "model": "llama3.2:latest" },
+  "clients": {
+    "vscode":  { "model": "llama3.2:latest" },
+    "raycast": { "model": "llama3.2:latest" },
+    "obsidian": { "model": "llama3.2:latest" }
+  }
+}
+```
+
+**Model swap warning:** If the enhancement model differs from the chat model, Ollama must
+swap models twice per request (load enhancement model → enhance → load chat model →
+respond). On single-GPU setups this adds significant latency. To avoid this, use the
+same model for both enhancement and chat, or set `"enhance": false` in `api-keys.json`.
 
 ### Client setup (VS Code example)
 
@@ -85,7 +108,7 @@ In VS Code `settings.json`:
 ```json
 {
   "chat.models": [{
-    "id": "deepseek-r1:latest",
+    "id": "qwen2.5-coder:32b",
     "provider": "openaiCompatible",
     "url": "http://localhost:9090/v1",
     "apiKey": "sk-prompthub-code-dev001"
@@ -96,13 +119,13 @@ In VS Code `settings.json`:
 ## Quick Test
 
 ```bash
-# Test the client proxy (requires bearer token)
+# 1. List available models
 curl -s http://localhost:9090/v1/models \
   -H "Authorization: Bearer sk-prompthub-copilot-dev001" | python3 -m json.tool
 ```
 
 ```bash
-# Test a chat completion
+# 2. Chat completion WITHOUT enhancement (pass-through token)
 curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-copilot-dev001" \
   -H "Content-Type: application/json" \
@@ -110,27 +133,48 @@ curl -s http://localhost:9090/v1/chat/completions \
 ```
 
 ```bash
-# Test enhancement backend directly (native mode)
-curl -s http://localhost:9090/ollama/enhance \
-  -H "X-Client-Name: vscode" \
+# 3. Chat completion WITH enhancement (enhanced token)
+#    The last user message is rewritten by the enhancement service
+#    before being forwarded to Ollama.
+curl -s http://localhost:9090/v1/chat/completions \
+  -H "Authorization: Bearer sk-prompthub-code-dev001" \
   -H "Content-Type: application/json" \
-  -d '{"prompt":"Explain JWT auth"}'
+  -d '{"model":"qwen2.5-coder:32b","messages":[{"role":"user","content":"Explain JWT auth"}]}'
+```
+
+```bash
+# 4. Test enhancement directly via /ollama/enhance
+curl -s -X POST http://localhost:9090/ollama/enhance \
+  -H "Content-Type: application/json" \
+  -H "X-Client-Name: vscode" \
+  -d '{"prompt":"Explain JWT auth"}' | python3 -m json.tool
+```
+
+```bash
+# 5. Reload API keys after editing api-keys.json
+curl -s -X POST http://localhost:9090/v1/api-keys/reload
 ```
 
 ## Troubleshooting
 
-**"Connection refused"** — Ensure Ollama is running: `ollama serve`
+**"Connection refused"** — Ensure Ollama is running: `ollama serve` or check `launchctl list | grep ollama`.
 
 **"Missing bearer token" (401)** — Add `Authorization: Bearer <token>` header. Tokens are in `api-keys.json`.
 
-**"Invalid API key" (401)** — Token not found in `api-keys.json`. Reload after edits: `POST /v1/api-keys/reload`
+**"Invalid API key" (401)** — Token not found in `api-keys.json`. Reload after edits: `POST /v1/api-keys/reload`.
 
-**"Model not found"** — Pull the model: `ollama pull deepseek-r1:latest`
+**"Method Not Allowed" (405)** — You're sending GET to a POST-only endpoint. Use `curl -X POST` or `-d '{...}'`.
 
-**Enhancement not working** — Check that `enhance: true` is set for the token in `api-keys.json` and the `client_name` has a matching entry in `enhancement-rules.json`.
+**"Model not found"** — Pull the model first: `ollama pull llama3.2:latest`. Check available models: `GET /v1/models`.
+
+**Enhancement slow or timing out** — The enhancement service has a 30-second timeout. Large models (`qwen2.5-coder:32b`, `deepseek-r1`) may exceed this if Ollama needs to swap models. Fixes:
+- Use the same model for enhancement and chat completion to avoid model swaps
+- Set `"enhance": false` for the token in `api-keys.json` to skip enhancement entirely
+- Check `tail logs/router-stderr.log` for `Ollama request timed out` warnings
+
+**Enhancement not working** — Verify: (1) `enhance: true` is set for the token in `api-keys.json`, (2) the token's `client_name` has a matching entry in `enhancement-rules.json`, (3) the enhancement model is pulled in Ollama.
 
 ## References
 
 - [Ollama OpenAI Compatibility](https://github.com/ollama/ollama/blob/main/docs/openai.md)
 - [OpenAI Chat Completions API](https://platform.openai.com/docs/api-reference/chat)
-- [Enhancement API](api/enhancement.md)

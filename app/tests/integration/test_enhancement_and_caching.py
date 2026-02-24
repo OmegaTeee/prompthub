@@ -226,11 +226,11 @@ class TestCaching:
         """
         Test that cache entries are separated by client name.
 
-        The cache key includes client_name and model, so the same prompt
-        enhanced for claude-desktop (deepseek-r1) is stored separately
-        from the same prompt enhanced for vscode (qwen2.5-coder).
+        The cache key includes client_name, so the same prompt enhanced for
+        claude-desktop is stored separately from vscode (different system
+        prompts produce different enhancements even with the same model).
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=120.0) as client:
             await client.post("/dashboard/actions/clear-cache")
 
             prompt = "What are Python generators"
@@ -259,15 +259,20 @@ class TestCaching:
                     json={"prompt": prompt}
                 )
             except (httpx.ReadTimeout, httpx.ConnectTimeout):
-                pytest.skip("Ollama timed out on vscode enhancement (model swap)")
+                pytest.skip("Ollama timed out on vscode enhancement")
             assert resp_vs.status_code == 200
             data_vs = resp_vs.json()
 
-            # Neither should be marked cached on first call
-            # (unless Ollama failed and both got no-op fallback)
+            # Both should use the same model (all clients use llama3.2)
             if data_cd.get("model") and data_vs.get("model"):
-                assert data_cd["model"] != data_vs["model"], \
-                    "Different clients should use different models"
+                assert data_cd["model"] == data_vs["model"], \
+                    "All clients should use the same enhancement model"
+
+            # Neither should be cached on first call
+            if data_cd.get("model"):
+                assert data_cd.get("cached") is not True
+            if data_vs.get("model"):
+                assert data_vs.get("cached") is not True
 
     @pytest.mark.asyncio
     async def test_cache_stats_reflect_usage(self):
@@ -450,19 +455,19 @@ class TestEnhancementAndCachingIntegration:
         Test that cache key accounts for client-specific enhancements.
 
         The enhancement cache keys include client_name so that the same prompt
-        enhanced for claude-desktop (deepseek-r1) is cached separately from the
-        same prompt enhanced for vscode (qwen2.5-coder).
+        enhanced for claude-desktop is cached separately from vscode, even
+        though both use the same model (different system prompts).
 
-        When Ollama is running: verifies different models produce separate cache entries.
+        When Ollama is running: verifies per-client cache isolation.
         When Ollama is down: verifies each client gets its own error/fallback entry.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=120.0) as client:
             # Clear cache
             await client.post("/dashboard/actions/clear-cache")
 
             test_prompt = "Explain Python decorators"
 
-            # Enhance with claude-desktop (deepseek-r1)
+            # Enhance with claude-desktop
             try:
                 enh1 = await client.post(
                     "/ollama/enhance",
@@ -478,7 +483,7 @@ class TestEnhancementAndCachingIntegration:
             assert enh1.status_code == 200
             data1 = enh1.json()
 
-            # Enhance with vscode (qwen2.5-coder) — may be slow for large model
+            # Enhance with vscode (same prompt, different client → different cache key)
             try:
                 enh2 = await client.post(
                     "/ollama/enhance",
@@ -486,7 +491,7 @@ class TestEnhancementAndCachingIntegration:
                     json={"prompt": test_prompt}
                 )
             except (httpx.ReadTimeout, httpx.ConnectTimeout):
-                pytest.skip("Ollama timed out on second enhancement (model swap)")
+                pytest.skip("Ollama timed out on second enhancement")
 
             assert enh2.status_code == 200
             data2 = enh2.json()
@@ -495,10 +500,10 @@ class TestEnhancementAndCachingIntegration:
             assert "enhanced" in data1, "claude-desktop response missing 'enhanced'"
             assert "enhanced" in data2, "vscode response missing 'enhanced'"
 
-            # If Ollama was available for both, they should use different models
+            # Both use the same model (all clients use llama3.2)
             if data1.get("model") and data2.get("model"):
-                assert data1["model"] != data2["model"], \
-                    f"Different clients should use different models, both got {data1['model']}"
+                assert data1["model"] == data2["model"], \
+                    "All clients should use the same enhancement model"
 
             # Re-request claude-desktop — should hit cache (same client + prompt)
             enh1_again = await client.post(

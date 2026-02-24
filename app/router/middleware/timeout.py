@@ -25,6 +25,7 @@ DEFAULT_REQUEST_TIMEOUT = 60.0
 EXTENDED_TIMEOUT_PATHS = {
     "/pipelines/documentation": 300.0,  # 5 minutes for long-running documentation processing
     "/v1/chat/completions": 180.0,  # 3 minutes for slow Ollama models (deepseek-r1, etc.)
+    "/ollama/enhance": 180.0,  # 3 minutes for cold model loads + enhancement
 }
 
 # Paths that should have no timeout

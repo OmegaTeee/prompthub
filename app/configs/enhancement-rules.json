@@ -10,11 +10,11 @@
       "system_prompt": "Provide structured responses with clear reasoning. Use Markdown."
     },
     "claude-code": {
-      "model": "qwen2.5-coder:32b",
+      "model": "llama3.2:latest",
       "system_prompt": "Code-first responses. Include file paths. Minimal prose."
     },
     "vscode": {
-      "model": "qwen2.5-coder:32b",
+      "model": "llama3.2:latest",
       "system_prompt": "Code-first responses. Include file paths. Minimal prose."
     },
     "raycast": {
