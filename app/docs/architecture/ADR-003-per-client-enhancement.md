@@ -1,7 +1,7 @@
 # ADR-003: Per-Client Prompt Enhancement Rules
 
 ## Status
-Accepted
+Accepted (model selection amended by [ADR-006](ADR-006-enhancement-timeout.md) — all clients now use llama3.2:latest)
 
 ## Context
 PromptHub routes prompts to Ollama for enhancement before sending to LLMs. Different clients (Claude Desktop, VS Code, Raycast, Obsidian) have different use cases and require different enhancement strategies.
@@ -317,3 +317,4 @@ def test_client_routing():
 ## Revision History
 - 2025-01-25: Initial implementation
 - 2025-02-02: Documented as ADR
+- 2026-02-24: Model selection unified to llama3.2:latest (see ADR-006). Per-client system prompts remain active.

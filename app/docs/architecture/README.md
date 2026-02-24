@@ -10,9 +10,10 @@ ADRs document significant architectural decisions, the context behind them, and 
 
 - [ADR-001: Stdio Transport for MCP Servers](ADR-001-stdio-transport.md)
 - [ADR-002: Circuit Breaker Pattern](ADR-002-circuit-breaker.md)
-- [ADR-003: Per-Client Prompt Enhancement](ADR-003-per-client-enhancement.md)
+- [ADR-003: Per-Client Prompt Enhancement](ADR-003-per-client-enhancement.md) (model selection amended by ADR-006)
 - [ADR-004: Modular Monolith Architecture](ADR-004-modular-monolith.md)
 - [ADR-005: Async-First Architecture](ADR-005-async-first.md)
+- [ADR-006: Enhancement Timeout & Unified Model](ADR-006-enhancement-timeout.md)
 
 ## System Architecture
 
@@ -37,12 +38,12 @@ ADRs document significant architectural decisions, the context behind them, and 
 ```
 ┌───────────────────────────────────────────────┐
 │              FastAPI Routes                   │
-│    /health  /servers  /mcp  /ollama /audit    │
+│  /health /servers /mcp /v1 /ollama /dashboard │
 └───────────────┬───────────────────────────────┘
                 │
 ┌───────────────▼───────────────────────────────┐
 │             Middleware Stack                  │
-│  AuditContext → ActivityLogging → CORS        │
+│  Timeout → AuditContext → ActivityLogging     │
 └───────────────┬───────────────────────────────┘
                 │
 ┌───────────────▼───────────────────────────────┐
@@ -125,14 +126,16 @@ Response (tools namespaced: "server_tool")
 ```
 Client → FastAPI → EnhancementService
    ↓
-Cache hit? → Return cached
+Cache hit? → Return cached (keyed by client_name + prompt + model)
    ↓
 CircuitBreaker.check() → Ollama available?
    ↓
-Select model by client (claude-desktop → deepseek-r1)
+Select system prompt by client (all clients use llama3.2:latest)
    ↓
-Ollama API → Enhanced prompt → Cache → Response
+Ollama OpenAI API (/v1/chat/completions) → Enhanced prompt → Cache → Response
 ```
+
+**Timeout chain**: httpx client (120s from .env) → middleware (180s for /ollama/enhance) → Ollama keep_alive (5min before model unload)
 
 ### 3. Health Check Flow
 
@@ -204,7 +207,8 @@ CLOSED (normal) → OPEN (failing)
 ### Latency
 - **Cache hit**: <1ms (in-memory lookup)
 - **MCP request**: 10-100ms (stdio overhead + server processing)
-- **Ollama enhancement**: 200-2000ms (depends on model + prompt length)
+- **Ollama enhancement (warm)**: 5-50s (model loaded in VRAM, depends on prompt + max_tokens)
+- **Ollama enhancement (cold)**: 30-60s (model must be loaded into VRAM first)
 - **Circuit breaker check**: <0.1ms (state check only)
 
 ### Throughput
