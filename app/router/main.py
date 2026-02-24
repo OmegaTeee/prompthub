@@ -348,6 +348,41 @@ def _get_circuit_breakers():
     return {}
 
 
+# Load API keys early so dashboard can display them
+_openai_settings = get_settings()
+_openai_api_key_manager = ApiKeyManager(config_path=_openai_settings.api_keys_config)
+_openai_api_key_manager.load()
+
+
+async def _get_ollama_info():
+    """Get Ollama models and API client summary for dashboard."""
+    import httpx
+
+    models = []
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(
+                f"http://{_openai_settings.ollama_host}:{_openai_settings.ollama_port}/v1/models"
+            )
+            if resp.status_code == 200:
+                models = resp.json().get("data", [])
+    except Exception:
+        pass  # Ollama unreachable — models will be empty
+
+    api_keys = [
+        {"client_name": cfg.client_name, "enhance": cfg.enhance, "description": cfg.description}
+        for cfg in _openai_api_key_manager._registry.keys.values()
+    ]
+
+    return {"models": models, "api_keys": api_keys}
+
+
+async def _reload_api_keys():
+    """Reload API keys from config for dashboard."""
+    _openai_api_key_manager.reload()
+    return _openai_api_key_manager.key_count
+
+
 # Register dashboard router
 dashboard_router = create_dashboard_router(
     get_health=_get_health,
@@ -358,14 +393,13 @@ dashboard_router = create_dashboard_router(
     start_server=_start_server,
     stop_server=_stop_server,
     get_circuit_breakers=_get_circuit_breakers,
+    get_ollama_info=_get_ollama_info,
+    reload_api_keys=_reload_api_keys,
 )
 app.include_router(dashboard_router)
 
 
-# Register OpenAI-compatible proxy router (uses getter callables like dashboard)
-_openai_settings = get_settings()
-_openai_api_key_manager = ApiKeyManager(config_path=_openai_settings.api_keys_config)
-_openai_api_key_manager.load()
+# Register OpenAI-compatible proxy router (reuses api_key_manager loaded above)
 
 openai_compat_router = create_openai_compat_router(
     enhancement_service=lambda: enhancement_service,

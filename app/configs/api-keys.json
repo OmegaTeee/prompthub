@@ -7,7 +7,7 @@
     },
     "sk-prompthub-raycast-dev001": {
       "client_name": "raycast",
-      "enhance": true,
+      "enhance": false,
       "description": "Raycast commands"
     },
     "sk-prompthub-perplexity-dev001": {

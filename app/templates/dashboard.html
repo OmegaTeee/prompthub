@@ -62,6 +62,16 @@
         >
           <div class="loading">Loading stats</div>
         </div>
+
+        <!-- Ollama & API Clients -->
+        <div
+          class="card"
+          hx-get="/dashboard/ollama-partial"
+          hx-trigger="load, every 30s"
+          hx-swap="innerHTML"
+        >
+          <div class="loading">Loading Ollama info</div>
+        </div>
       </div>
 
       <!-- Quick Actions -->

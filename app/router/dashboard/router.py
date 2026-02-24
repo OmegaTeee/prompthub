@@ -35,6 +35,8 @@ def create_dashboard_router(
     start_server: Callable[[str], Any],
     stop_server: Callable[[str], Any],
     get_circuit_breakers: Callable[[], dict[str, Any]],
+    get_ollama_info: Callable[[], Any] | None = None,
+    reload_api_keys: Callable[[], Any] | None = None,
 ) -> APIRouter:
     """
     Create the dashboard router with injected dependencies.
@@ -48,6 +50,8 @@ def create_dashboard_router(
         start_server: Function to start a server by name
         stop_server: Function to stop a server by name
         get_circuit_breakers: Function to get circuit breaker states
+        get_ollama_info: Function to get Ollama models and API keys summary
+        reload_api_keys: Function to reload API keys from config
 
     Returns:
         Configured APIRouter for dashboard endpoints
@@ -375,6 +379,39 @@ def create_dashboard_router(
         try:
             await stop_server(server)
             return {"status": "success", "message": f"{server} stopped"}
+        except Exception as e:
+            return JSONResponse(
+                status_code=500,
+                content={"status": "error", "message": str(e)}
+            )
+
+    @router.get("/ollama-partial", response_class=HTMLResponse)
+    async def ollama_partial(request: Request):
+        """HTMX partial: Ollama models and API clients."""
+        if not get_ollama_info:
+            return HTMLResponse("<p class='text-muted'>Ollama panel not configured</p>")
+
+        info = await get_ollama_info()
+        return templates.TemplateResponse(
+            "partials/ollama.html",
+            {
+                "request": request,
+                "models": info.get("models", []),
+                "api_keys": info.get("api_keys", []),
+            },
+        )
+
+    @router.post("/actions/reload-api-keys")
+    async def reload_api_keys_action():
+        """Reload API keys from config file."""
+        if not reload_api_keys:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "message": "API key reload not configured"}
+            )
+        try:
+            result = await reload_api_keys()
+            return {"status": "success", "message": f"API keys reloaded ({result} keys)"}
         except Exception as e:
             return JSONResponse(
                 status_code=500,

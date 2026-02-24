@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "prompthub": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${HOME}/.local/share/prompthub/mcps/prompthub-bridge.js"
+      ],
+      "env": {
+        "AGENTHUB_URL": "http://localhost:9090",
+        "AUTHORIZATION": "Bearer sk-prompthub-raycast",
+        "CLIENT_NAME": "raycast"
+      }
+    }
+  }
+}

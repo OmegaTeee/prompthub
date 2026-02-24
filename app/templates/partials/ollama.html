@@ -1,0 +1,61 @@
+<h3>&#x1F9E0; Ollama Models</h3>
+
+{% if models %}
+<table>
+    <tr>
+        <th>Model</th>
+        <th style="text-align: right;">Owner</th>
+    </tr>
+    {% for model in models %}
+    <tr>
+        <td><code>{{ model.id }}</code></td>
+        <td style="text-align: right;" class="text-muted">{{ model.owned_by }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p class="text-muted">No models available (Ollama may be down)</p>
+{% endif %}
+
+<h3 style="margin-top: 25px;">&#x1F511; API Clients</h3>
+
+{% if api_keys %}
+<table>
+    <tr>
+        <th>Client</th>
+        <th style="text-align: center;">Enhance</th>
+    </tr>
+    {% for key in api_keys %}
+    <tr>
+        <td><strong>{{ key.client_name }}</strong>
+            {% if key.description %}
+            <span class="text-muted">&mdash; {{ key.description }}</span>
+            {% endif %}
+        </td>
+        <td style="text-align: center;">
+            {% if key.enhance %}
+            <span class="badge badge-success">On</span>
+            {% else %}
+            <span class="badge badge-info">Off</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<div style="margin-top: 10px;">
+    <button
+        class="btn btn-sm btn-secondary"
+        hx-post="/dashboard/actions/reload-api-keys"
+        hx-swap="none"
+        hx-confirm="Reload API keys from config?">
+        &#x21BB; Reload Keys
+    </button>
+</div>
+{% else %}
+<p class="text-muted">No API keys configured</p>
+{% endif %}
+
+<div style="margin-top: 20px; display: flex; gap: 10px;">
+    <a href="/docs" target="_blank" class="btn btn-sm btn-secondary">OpenAPI Docs</a>
+    <a href="/openapi.json" target="_blank" class="btn btn-sm btn-secondary">openapi.json</a>
+</div>

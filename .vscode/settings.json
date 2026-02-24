@@ -1,7 +1,7 @@
 {
   // ── Python environment ──────────────────────────────────
   // The project lives in app/ with its own venv
-  "python.defaultInterpreterPath": "${workspaceFolder}/app/.venv/bin/python",
+  "python.defaultInterpreterPath": "/Users/visualval/.local/share/prompthub/app/.venv/bin/python",
   "python.envFile": "${workspaceFolder}/app/.env",
   "python-envs.pythonProjects": [
     {

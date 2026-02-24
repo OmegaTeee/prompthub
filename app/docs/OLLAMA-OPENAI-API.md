@@ -4,13 +4,13 @@ PromptHub uses Ollama in two distinct ways. Understanding the difference avoids 
 
 ## Two Concepts
 
-| | Enhancement Backend | Client Proxy |
-|---|---|---|
-| **What** | How PromptHub's enhancement service talks to Ollama | How external apps talk to PromptHub |
-| **Endpoints** | Ollama's `/api/generate` or `/v1/chat/completions` | PromptHub's `/v1/chat/completions`, `/v1/models` |
-| **Config** | `OLLAMA_API_MODE` in `.env` | `API_KEYS_CONFIG` in `.env` → `api-keys.json` |
-| **Auth** | None (local Ollama) | Bearer token required |
-| **Can disable?** | Switch between native/openai | Always active |
+|                  | Enhancement Backend                                 | Client Proxy                                     |
+| ---------------- | --------------------------------------------------- | ------------------------------------------------ |
+| **What**         | How PromptHub's enhancement service talks to Ollama | How external apps talk to PromptHub              |
+| **Endpoints**    | Ollama's `/api/generate` or `/v1/chat/completions`  | PromptHub's `/v1/chat/completions`, `/v1/models` |
+| **Config**       | `OLLAMA_API_MODE` in `.env`                         | `API_KEYS_CONFIG` in `.env` → `api-keys.json`    |
+| **Auth**         | None (local Ollama)                                 | Bearer token required                            |
+| **Can disable?** | Switch between native/openai                        | Always active                                    |
 
 ## Enhancement Backend (`OLLAMA_API_MODE`)
 
@@ -98,14 +98,18 @@ In VS Code `settings.json`:
 ```bash
 # Test the client proxy (requires bearer token)
 curl -s http://localhost:9090/v1/models \
-  -H "Authorization: Bearer sk-prompthub-code-dev001" | python3 -m json.tool
+  -H "Authorization: Bearer sk-prompthub-copilot-dev001" | python3 -m json.tool
+```
 
+```bash
 # Test a chat completion
 curl -s http://localhost:9090/v1/chat/completions \
-  -H "Authorization: Bearer sk-prompthub-code-dev001" \
+  -H "Authorization: Bearer sk-prompthub-copilot-dev001" \
   -H "Content-Type: application/json" \
-  -d '{"model":"deepseek-r1:latest","messages":[{"role":"user","content":"Hello"}]}'
+  -d '{"model":"llama3.2:latest","messages":[{"role":"user","content":"Hello"}]}'
+```
 
+```bash
 # Test enhancement backend directly (native mode)
 curl -s http://localhost:9090/ollama/enhance \
   -H "X-Client-Name: vscode" \
