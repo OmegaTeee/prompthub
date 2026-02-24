@@ -44,7 +44,7 @@ router (runtime)  ──────┘         │
 
 ## MCP Server Configuration
 
-Credentials are resolved at server startup via `process_env_config()`:
+Credentials are resolved at server startup via `resolve_server_env()` in `supervisor.py`:
 
 ```json
 {

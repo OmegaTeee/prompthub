@@ -91,6 +91,42 @@
       "max_restarts": 3,
       "health_check_interval": 30,
       "description": "DuckDuckGo web search with SafeSearch and region support"
+    },
+    "perplexity": {
+      "package": "@perplexity-ai/mcp-server",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/@perplexity-ai/mcp-server/dist/index.js"],
+      "env": {
+        "PERPLEXITY_API_KEY": {
+          "source": "keyring",
+          "service": "prompthub",
+          "key": "perplexity_api_key"
+        }
+      },
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Perplexity AI search, reasoning, and deep research via Sonar models"
+    },
+    "brave-search": {
+      "package": "@brave/brave-search-mcp-server",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/@brave/brave-search-mcp-server/dist/index.js"],
+      "env": {
+        "BRAVE_API_KEY": {
+          "source": "keyring",
+          "service": "prompthub",
+          "key": "brave_api_key"
+        }
+      },
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Brave Search API with web, image, video, news, and AI summary support"
     }
   }
 }

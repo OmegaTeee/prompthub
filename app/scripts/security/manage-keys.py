@@ -29,23 +29,29 @@ Examples:
     ./scripts/security/manage-keys.py migrate obsidian_api_key
 """
 
+import logging
 import sys
 import getpass
 import subprocess
 from pathlib import Path
 
-# Add router to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add app/ to path so `from router.keyring_manager` resolves
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+# Suppress audit log JSON output for CLI usage
+logging.getLogger("audit").setLevel(logging.CRITICAL)
+logging.getLogger("router").setLevel(logging.CRITICAL)
 
 from router.keyring_manager import get_keyring_manager
 
 SERVICE_NAME = "prompthub"
 
-# Known keys for PromptHub
+# Known keys for PromptHub (must match mcp-servers.json keyring references)
 KNOWN_KEYS = [
     "obsidian_api_key",
     "github_api_key",
-    # Add more as needed
+    "perplexity_api_key",
+    "brave_api_key",
 ]
 
 
