@@ -6,22 +6,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 
 ## [Unreleased]
 
-### Fixed
-- **MCP gateway stale client references**: Rewrote `mcp_gateway.py` to use dynamic `FastMCPProxy(client_factory=...)` instead of `FastMCP.as_proxy(bridge.client)` — servers now survive restarts and late starts without gateway rebuild
-- **Bridge.js tool name truncation**: Fixed `split('_', 2)` dropping tool name segments (e.g., `create_directory` → `create`); now uses `indexOf`/`substring` to split on first underscore only
-- **Gateway topology rebuild**: Added `_rebuild_gateway()` in `main.py` for `install_server` and `remove_server` endpoints — gateway re-mounts after topology changes
-
 ### Added
+- **Cloud enhancement fallback (Path D)**: When Ollama is unavailable, clients with `free_ok` or `any` privacy level fall back to OpenRouter free-tier models (e.g., `deepseek/deepseek-r1-0528:free`). `local_only` clients never leave localhost. Separate circuit breaker for OpenRouter (2 failures/60s).
+- **Privacy boundary system (Path C)**: `PrivacyLevel` enum (`local_only`, `free_ok`, `any`) on per-client enhancement rules. `X-Privacy-Level` header can downgrade (more restrictive) but never upgrade. Perplexity and Raycast set to `free_ok`; all others default to `local_only`.
+- **Persistent write-through cache (Path B)**: L1 in-memory + L2 SQLite hybrid cache. L2 survives restarts, L1 warmup on startup. Controlled via `CACHE_PERSISTENT=true` setting.
+- **Client config .example files (Path A)**: `claude-desktop-config.json.example`, `vscode-settings.json.example`, `raycast-mcp-servers.json.example` for integration test contracts
+- `app/tests/test_cloud_fallback.py` — 28 tests for cloud fallback flow, privacy gating, model mapping
+- `app/tests/test_privacy_level.py` — 20 tests for privacy enum, downgrade-only semantics, config loading
+- `app/tests/test_persistent_cache.py` — 24 tests for write-through cache, L2 persistence, warmup
+- `extra_headers` field on `OpenAICompatConfig` — makes `OllamaOpenAIClient` reusable for any OpenAI-compatible provider
+- `provider` field on `EnhancementResult` — tracks `"ollama"` or `"openrouter"` for observability
+- Cloud model mapping from `cloud-models.json` (`local_models` → free-tier cloud equivalents)
+- 5 new settings: `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_TIMEOUT`, `OPENROUTER_DEFAULT_MODEL`
 - `app/tests/test_mcp_gateway.py` — 8 unit tests for dynamic client factory and gateway construction
 - Gateway module docstring documenting the Streamable HTTP request path and dynamic factory pattern
 
 ### Changed
+- Enhancement service `enhance()` now attempts cloud fallback on all Ollama error paths
+- `/ollama/enhance` response includes `privacy_level` and `provider` fields
 - `build_mcp_gateway()` now accepts `(supervisor, registry)` — mounts proxies for ALL configured servers, not just connected ones
 - Architecture README: corrected `StdioBridge`/`ProcessManager` references to `FastMCPBridge`/`Supervisor`
 - Modules README: updated dependency graph, integration test example, and error handling to reflect post-migration server module
 - ADR-004: updated `Supervisor` constructor example (no longer takes `ProcessManager`)
 - CLAUDE.md: corrected `routing/` module description (empty — routing is in `servers/`)
 - Annotated historical audit/feature docs (`ASYNC-AUDIT.md`, `AUDIT-CODE-REVIEW.md`, `SECURITY-FIXES.md`, `KEYRING-INTEGRATION-COMPLETE.md`) with archival notes for removed `process.py`/`bridge.py` references
+- Test suite: 153 → 225 passed (12 skipped)
+
+### Fixed
+- **MCP gateway stale client references**: Rewrote `mcp_gateway.py` to use dynamic `FastMCPProxy(client_factory=...)` instead of `FastMCP.as_proxy(bridge.client)` — servers now survive restarts and late starts without gateway rebuild
+- **Bridge.js tool name truncation**: Fixed `split('_', 2)` dropping tool name segments (e.g., `create_directory` → `create`); now uses `indexOf`/`substring` to split on first underscore only
+- **Gateway topology rebuild**: Added `_rebuild_gateway()` in `main.py` for `install_server` and `remove_server` endpoints — gateway re-mounts after topology changes
+
+### Documentation TODO
+- [ ] **CLAUDE.md**: Add `X-Privacy-Level` header, `provider` response field, `OPENROUTER_*` env vars
+- [ ] **ADR-007**: Cloud fallback decision — why OpenRouter free-tier, why not Together/Groq/direct DeepSeek API
+- [ ] **Privacy & cloud fallback guide** (`app/docs/features/`): Privacy levels, per-client assignment, downgrade-only headers, cloud fallback flow, model mapping
+- [ ] **`.env.example`**: Add `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_TIMEOUT`, `OPENROUTER_DEFAULT_MODEL`
+- [ ] **Obsidian vault** (`~/Vault/PromptHub/`): User guide for getting OpenRouter API key and enabling cloud fallback
+- [ ] **`app/docs/modules/`**: Update enhancement module docs with privacy boundary and cloud client
 
 ---
 
