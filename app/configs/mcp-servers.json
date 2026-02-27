@@ -74,7 +74,7 @@
         "OBSIDIAN_HOST": "https://127.0.0.1",
         "OBSIDIAN_PORT": "27124"
       },
-      "auto_start": true,
+      "auto_start": false,
       "restart_on_failure": true,
       "max_restarts": 3,
       "health_check_interval": 30,

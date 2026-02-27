@@ -24,6 +24,11 @@
       "client_name": "vscode",
       "enhance": false,
       "description": "OAI Copilot extension (pass-through)"
+    },
+    "sk-prompthub-claude-desktop": {
+      "client_name": "claude-desktop",
+      "enhance": false,
+      "description": "Claude.ai desktop integration"
     }
   }
 }

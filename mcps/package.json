@@ -15,6 +15,6 @@
     "deepseek-reasoner-mcp": "1.0.2"
   },
   "devDependencies": {
-    "@types/node": "^25.3.0"
+    "@types/node": "^25.3.2"
   }
 }
