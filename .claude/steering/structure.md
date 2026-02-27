@@ -6,30 +6,30 @@
 prompthub/
 ├── app/                          # Python project (FastAPI router)
 │   ├── router/                   # FastAPI application package
-│   │   ├── main.py               # App entry point, lifespan, 30 direct endpoints
+│   │   ├── main.py               # App factory (~505 lines: globals, lifespan, middleware, dashboard helpers, router wiring)
+│   │   ├── routes/               # Route handlers extracted from main.py (7 modules, factory pattern)
 │   │   ├── audit.py              # Structured JSON audit logging
 │   │   ├── audit_integrity.py    # SHA256 tamper detection
 │   │   ├── security_alerts.py    # Real-time anomaly detection
 │   │   ├── keyring_manager.py    # macOS Keychain integration
-│   │   ├── cache/                # L1 in-memory LRU cache
+│   │   ├── cache/                # L1 in-memory LRU + L2 SQLite persistent cache
 │   │   ├── clients/              # Config generators (Claude, VS Code, Raycast)
 │   │   ├── config/               # Pydantic Settings, JSON config loading
 │   │   ├── dashboard/            # HTMX monitoring UI (factory router)
-│   │   ├── enhancement/          # Ollama HTTP clients, per-client rules
+│   │   ├── enhancement/          # Ollama HTTP clients, per-client rules, cloud fallback (OpenRouter)
 │   │   ├── middleware/            # Audit context, activity logging
+│   │   ├── memory/               # Session memory (SQLite-backed facts, blocks, MCP sync)
 │   │   ├── openai_compat/        # OpenAI proxy /v1/* (factory router)
 │   │   ├── pipelines/            # Documentation generation workflow
 │   │   ├── resilience/           # Circuit breaker (CLOSED→OPEN→HALF_OPEN)
-│   │   ├── routing/              # (empty — routing logic is in servers/)
-│   │   ├── secrets/              # (empty — secrets logic is in keyring_manager.py)
 │   │   └── servers/              # MCP server lifecycle (bridge, process, registry, supervisor)
-│   ├── tests/                    # Pytest suite (14 test files)
+│   ├── tests/                    # Pytest suite (19 test files, 225 passing)
 │   ├── configs/                  # Runtime configs (mcp-servers.json, enhancement-rules.json, api-keys.json)
 │   ├── templates/                # Jinja2 templates (dashboard HTML)
 │   ├── scripts/                  # Shell scripts (dev, manual tests)
 │   ├── docs/                     # Developer documentation
 │   │   ├── api/                  # OpenAPI spec + API overview
-│   │   ├── architecture/         # 5 ADRs
+│   │   ├── architecture/         # 7 ADRs
 │   │   ├── modules/              # Module docs (servers/ + coverage analysis)
 │   │   ├── features/             # Completed feature docs
 │   │   ├── audit/                # 3-phase audit implementation

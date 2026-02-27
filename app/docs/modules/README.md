@@ -8,13 +8,13 @@ Detailed documentation for PromptHub's core modules.
 
 ### Core Modules
 - [servers/](servers.md) - MCP server lifecycle management
-- [enhancement/](enhancement.md) - Prompt enhancement via Ollama
+- [enhancement/](enhancement.md) - Prompt enhancement via Ollama (+ OpenRouter cloud fallback)
 - [resilience/](resilience.md) - Circuit breaker pattern
-- [routing/](routing.md) - Request routing (deprecated)
+- [routes/](#routes-package) - Route handlers extracted from main.py
 
 ### Support Modules
 - [config/](config.md) - Settings and configuration management
-- [cache/](cache.md) - Response caching (L1 memory)
+- [cache/](cache.md) - Response caching (L1 memory + L2 SQLite persistent)
 - [memory/](../features/MEMORY-SYSTEM-COMPLETE.md) - Session memory and context management (SQLite)
 - [middleware/](middleware.md) - Request/response processing
 - [dashboard/](dashboard.md) - HTMX monitoring UI
@@ -29,38 +29,67 @@ Detailed documentation for PromptHub's core modules.
 ## Module Dependency Graph
 
 ```
-main.py
+main.py (~505 lines: globals, lifespan, middleware, dashboard helpers, router wiring)
+  │
+  ├── routes/                     # Route handlers (factory pattern)
+  │   ├── health.py               # /health, /circuit-breakers
+  │   ├── servers.py              # /servers/* CRUD + start/stop/restart
+  │   ├── mcp_proxy.py            # /mcp/{server}/{path} + normalize helpers
+  │   ├── enhancement.py          # /ollama/enhance, /ollama/stats, /ollama/reset
+  │   ├── audit.py                # /audit/activity*, /audit/integrity*, /security/alerts*
+  │   ├── pipelines.py            # /pipelines/documentation
+  │   └── client_configs.py       # /configs/claude-desktop, /vscode, /raycast
+  │
   ├── servers/
-  │   ├── registry.py        # ServerRegistry
-  │   ├── supervisor.py      # Supervisor
-  │   ├── fastmcp_bridge.py  # FastMCPBridge
-  │   └── mcp_gateway.py     # build_mcp_gateway (Streamable HTTP)
+  │   ├── registry.py             # ServerRegistry
+  │   ├── supervisor.py           # Supervisor
+  │   ├── fastmcp_bridge.py       # FastMCPBridge
+  │   └── mcp_gateway.py          # build_mcp_gateway (Streamable HTTP)
   │
   ├── enhancement/
-  │   ├── service.py         # EnhancementService
-  │   ├── ollama.py          # OllamaClient
-  │   └── ollama_openai.py   # OllamaOpenAIClient
+  │   ├── service.py              # EnhancementService (Ollama + cloud fallback)
+  │   ├── ollama.py               # OllamaClient (native API)
+  │   └── ollama_openai.py        # OllamaOpenAIClient (OpenAI-compat, reused for OpenRouter)
   │
   ├── resilience/
-  │   └── circuit_breaker.py # CircuitBreaker, CircuitBreakerRegistry
+  │   └── circuit_breaker.py      # CircuitBreaker, CircuitBreakerRegistry
   │
   ├── middleware/
-  │   ├── audit_context.py   # AuditContextMiddleware
-  │   ├── activity.py        # ActivityLoggingMiddleware
-  │   └── persistent_activity.py # PersistentActivityLog
+  │   ├── audit_context.py        # AuditContextMiddleware
+  │   ├── activity.py             # ActivityLoggingMiddleware
+  │   └── persistent_activity.py  # PersistentActivityLog
   │
   ├── memory/
-  │   ├── storage.py          # SessionStorage (aiosqlite)
-  │   ├── mcp_client.py       # MemoryMCPClient (optional sync)
-  │   ├── models.py           # Pydantic schemas
-  │   └── router.py           # create_memory_router
+  │   ├── storage.py              # SessionStorage (aiosqlite)
+  │   ├── mcp_client.py           # MemoryMCPClient (optional sync)
+  │   ├── models.py               # Pydantic schemas
+  │   └── router.py               # create_memory_router
   │
   ├── dashboard/
-  │   └── router.py          # create_dashboard_router
+  │   └── router.py               # create_dashboard_router
   │
   └── config/
-      └── settings.py        # Settings (Pydantic BaseSettings)
+      └── settings.py             # Settings (Pydantic BaseSettings)
 ```
+
+## Routes Package
+
+The `routes/` package contains route handlers extracted from main.py. Each module exports a `create_X_router()` factory that returns an `APIRouter`:
+
+```python
+# Example: routes/health.py
+def create_health_router(
+    get_supervisor: Callable[[], Any],    # lambda: supervisor
+    get_registry: Callable[[], Any],
+    get_enhancement_service: Callable[[], Any],
+    get_circuit_breakers: Callable[[], Any],
+) -> APIRouter:
+    router = APIRouter(tags=["health"])
+    # ... endpoints close over getter callables
+    return router
+```
+
+**Why getter callables?** Module-level globals are `None` at import time and only populated during `lifespan()`. Passing `lambda: supervisor` defers evaluation to call-time, when globals are initialized. This is the same pattern used by `openai_compat/`, `dashboard/`, and `memory/` routers.
 
 ## Module Boundaries
 

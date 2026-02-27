@@ -62,11 +62,12 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 
 | Module | Purpose |
 |--------|---------|
+| `routes/` | Route handlers extracted from main.py (health, servers, mcp_proxy, enhancement, audit, pipelines, client_configs) |
 | `config/` | Pydantic settings, JSON config loading |
 | `servers/` | MCP server lifecycle via FastMCP (spawn, monitor, restart stdio processes) |
 | `resilience/` | Circuit breaker (CLOSED → OPEN → HALF_OPEN states) |
-| `cache/` | L1 in-memory LRU cache |
-| `enhancement/` | Ollama HTTP client (native + OpenAI-compat), per-client prompt enhancement |
+| `cache/` | L1 in-memory LRU + L2 SQLite persistent write-through cache |
+| `enhancement/` | Ollama HTTP client (native + OpenAI-compat), per-client prompt enhancement, cloud fallback via OpenRouter |
 | `openai_compat/` | OpenAI-compatible `/v1/` proxy with bearer auth and optional enhancement |
 | `memory/` | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync) |
 | `dashboard/` | HTMX observability UI (servers, cache, circuit breakers, Ollama, memory panels) |
@@ -92,16 +93,20 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - **Async everywhere**: Use `httpx` (not `requests`), `asyncio` for I/O
 - **Circuit breaker**: 3 failures → OPEN, 30s → HALF_OPEN, success → CLOSED
 - **FastMCP bridges**: MCP servers communicate via FastMCP Client + StdioTransport
+- **Factory-with-getter-callables**: Route modules use `create_X_router(get_service=lambda: service)` to defer global resolution past lifespan init
 - **Tiered timeouts**: httpx client (120s) → middleware (60s default, 180s for slow paths) → Ollama keep_alive (5min)
 - **Unified enhancement model**: All clients use `llama3.2:latest` to avoid Ollama model swap thrashing (see ADR-006)
+- **Privacy boundary**: `PrivacyLevel` enum (`local_only`, `free_ok`, `any`) controls whether prompts leave localhost (see ADR-007)
+- **Cloud fallback**: When Ollama fails, `free_ok`/`any` clients fall back to OpenRouter free-tier; `local_only` never leaves localhost
 
 ## Configuration Files
 
 - `app/configs/mcp-servers.json` - MCP server registry (command, args, env, auto_start, restart_on_failure)
-- `app/configs/enhancement-rules.json` - Per-client enhancement system prompts (all use llama3.2:latest)
+- `app/configs/enhancement-rules.json` - Per-client enhancement system prompts, privacy_level, model (all use llama3.2:latest)
 - `app/configs/api-keys.json` - Bearer tokens for OpenAI-compatible proxy (client_name, enhance flag)
+- `app/configs/cloud-models.json` - Cloud fallback model mapping (local models → free-tier cloud equivalents)
 - `app/configs/perplexity-mcp.json` - Perplexity bridge config (servers, excluded tools)
-- `app/.env` - Runtime settings (OLLAMA_TIMEOUT=120, OLLAMA_API_MODE=openai, etc.)
+- `app/.env` - Runtime settings (OLLAMA_TIMEOUT=120, OPENROUTER_ENABLED, OPENROUTER_API_KEY, etc.)
 
 ## API Endpoints
 
@@ -112,7 +117,8 @@ POST /servers/{name}/start      Start server
 POST /servers/{name}/stop       Stop server
 POST /mcp/{server}/{path}       Proxy JSON-RPC to MCP server
 POST /mcp-direct/mcp            Streamable HTTP endpoint (FastMCP gateway)
-POST /ollama/enhance            Enhance prompt via Ollama (X-Client-Name header)
+POST /ollama/enhance            Enhance prompt via Ollama (X-Client-Name, X-Privacy-Level headers)
+                                Response includes: provider ("ollama"|"openrouter"), privacy_level
 POST /sessions                  Create session (memory system)
 GET  /sessions/{id}/context     Full session context (facts + blocks + MCP graph)
 GET  /dashboard                 HTMX monitoring dashboard (servers, cache, Ollama, memory panels)
@@ -121,6 +127,7 @@ POST /v1/chat/completions       OpenAI-compatible proxy → Ollama (bearer auth,
 GET  /v1/models                 List Ollama models (OpenAI format)
 GET  /audit/activity            Query persistent activity log
 GET  /security/alerts           Recent security alerts
+GET  /configs/claude-desktop    Generate Claude Desktop config for PromptHub
 ```
 
 ## Code Style

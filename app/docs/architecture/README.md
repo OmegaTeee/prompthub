@@ -10,10 +10,11 @@ ADRs document significant architectural decisions, the context behind them, and 
 
 - [ADR-001: Stdio Transport for MCP Servers](ADR-001-stdio-transport.md)
 - [ADR-002: Circuit Breaker Pattern](ADR-002-circuit-breaker.md)
-- [ADR-003: Per-Client Prompt Enhancement](ADR-003-per-client-enhancement.md) (model selection amended by ADR-006)
+- [ADR-003: Per-Client Prompt Enhancement](ADR-003-per-client-enhancement.md) (model selection amended by ADR-006, privacy levels added by ADR-007)
 - [ADR-004: Modular Monolith Architecture](ADR-004-modular-monolith.md)
 - [ADR-005: Async-First Architecture](ADR-005-async-first.md)
 - [ADR-006: Enhancement Timeout & Unified Model](ADR-006-enhancement-timeout.md)
+- [ADR-007: Cloud Fallback via OpenRouter](ADR-007-cloud-fallback.md)
 
 ## System Architecture
 
@@ -133,7 +134,11 @@ CircuitBreaker.check() → Ollama available?
 Select system prompt by client (all clients use llama3.2:latest)
    ↓
 Ollama OpenAI API (/v1/chat/completions) → Enhanced prompt → Cache → Response
+   ↓ (on failure, if privacy allows)
+Cloud fallback → OpenRouter free tier → Enhanced prompt (provider="openrouter")
 ```
+
+**Privacy gating**: `local_only` clients never hit cloud. `free_ok`/`any` clients fall back to OpenRouter when Ollama fails. See [ADR-007](ADR-007-cloud-fallback.md).
 
 **Timeout chain**: httpx client (120s from .env) → middleware (180s for /ollama/enhance) → Ollama keep_alive (5min before model unload)
 

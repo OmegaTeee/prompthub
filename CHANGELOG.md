@@ -22,13 +22,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - Gateway module docstring documenting the Streamable HTTP request path and dynamic factory pattern
 
 ### Changed
+- **main.py split (Path E)**: Reduced main.py from 1,421 → 505 lines by extracting 30+ route handlers into 7 focused modules under `router/routes/` (health, servers, mcp_proxy, enhancement, audit, pipelines, client_configs). Uses existing factory-with-getter-callables DI pattern.
 - Enhancement service `enhance()` now attempts cloud fallback on all Ollama error paths
 - `/ollama/enhance` response includes `privacy_level` and `provider` fields
 - `build_mcp_gateway()` now accepts `(supervisor, registry)` — mounts proxies for ALL configured servers, not just connected ones
 - Architecture README: corrected `StdioBridge`/`ProcessManager` references to `FastMCPBridge`/`Supervisor`
 - Modules README: updated dependency graph, integration test example, and error handling to reflect post-migration server module
 - ADR-004: updated `Supervisor` constructor example (no longer takes `ProcessManager`)
-- CLAUDE.md: corrected `routing/` module description (empty — routing is in `servers/`)
+- CLAUDE.md: updated with `routes/` module, privacy boundary, cloud fallback, `X-Privacy-Level` header, `OPENROUTER_*` env vars, `cloud-models.json` config
 - Annotated historical audit/feature docs (`ASYNC-AUDIT.md`, `AUDIT-CODE-REVIEW.md`, `SECURITY-FIXES.md`, `KEYRING-INTEGRATION-COMPLETE.md`) with archival notes for removed `process.py`/`bridge.py` references
 - Test suite: 153 → 225 passed (12 skipped)
 
@@ -38,12 +39,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - **Gateway topology rebuild**: Added `_rebuild_gateway()` in `main.py` for `install_server` and `remove_server` endpoints — gateway re-mounts after topology changes
 
 ### Documentation TODO
-- [ ] **CLAUDE.md**: Add `X-Privacy-Level` header, `provider` response field, `OPENROUTER_*` env vars
-- [ ] **ADR-007**: Cloud fallback decision — why OpenRouter free-tier, why not Together/Groq/direct DeepSeek API
+- [x] **CLAUDE.md**: Add `X-Privacy-Level` header, `provider` response field, `OPENROUTER_*` env vars, `routes/` module, privacy/cloud patterns
+- [x] **ADR-007**: Cloud fallback decision — why OpenRouter free-tier, why not Together/Groq/direct DeepSeek API
+- [x] **`.env.example`**: Add `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_TIMEOUT`, `OPENROUTER_DEFAULT_MODEL`, `CACHE_PERSISTENT`, `CACHE_DB_PATH`
+- [x] **`app/docs/modules/`**: Update modules README with `routes/` package, enhancement privacy/cloud info
+- [x] **`structure.md`**: Update steering doc with `routes/` package and updated line counts
 - [ ] **Privacy & cloud fallback guide** (`app/docs/features/`): Privacy levels, per-client assignment, downgrade-only headers, cloud fallback flow, model mapping
-- [ ] **`.env.example`**: Add `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_TIMEOUT`, `OPENROUTER_DEFAULT_MODEL`
 - [ ] **Obsidian vault** (`~/Vault/PromptHub/`): User guide for getting OpenRouter API key and enabling cloud fallback
-- [ ] **`app/docs/modules/`**: Update enhancement module docs with privacy boundary and cloud client
 
 ---
 
