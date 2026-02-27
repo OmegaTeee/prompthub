@@ -1,0 +1,12 @@
+{
+  "servers": [
+    {
+      "id": "prompthub",
+      "type": "http",
+      "url": "http://localhost:9090",
+      "headers": {
+        "X-Client-Name": "raycast"
+      }
+    }
+  ]
+}
