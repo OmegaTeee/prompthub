@@ -22,7 +22,10 @@ prompthub/                        # Workspace root
 │   ├── pyproject.toml
 │   ├── requirements.txt
 │   └── Dockerfile
-├── clients/                      # Client setup (Claude Desktop, VS Code, Raycast, Cursor)
+├── mcps/                         # MCP servers (Node.js bridge) + client configs
+│   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
+│   ├── configs/                  # Desktop client configs (Claude, Raycast, Inspector)
+│   └── package.json              # npm dependencies
 ├── logs/                         # LaunchAgent stdout/stderr logs
 └── .claude/ .github/ .vscode/    # Workspace-level configs
 # User guides live in Obsidian vault: ~/Vault/PromptHub/
@@ -72,7 +75,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 | `memory/` | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync) |
 | `dashboard/` | HTMX observability UI (servers, cache, circuit breakers, Ollama, memory panels) |
 | `pipelines/` | Workflow orchestration (documentation generation) |
-| `clients/` | Config generators for Claude Desktop, VS Code, Raycast |
+| `clients/` | Config generators for Claude Desktop, VS Code, Raycast (Python module in `router/clients/`) |
 | `middleware/` | Audit context, activity logging, request timeout, persistent storage |
 | `audit.py` | Structured audit logging with security alerts |
 | `security_alerts.py` | Real-time anomaly detection and alerting |

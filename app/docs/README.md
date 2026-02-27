@@ -4,17 +4,17 @@ Technical documentation for PromptHub developers and maintainers.
 
 ## Folders
 
-| Folder | Contents |
-|--------|----------|
-| **[api/](api/)** | OpenAPI spec, endpoint reference, enhancement API |
-| **[architecture/](architecture/)** | ADRs (stdio, circuit breaker, async-first, etc.) and comparison docs |
-| **[audit/](audit/)** | Audit phases, async audit, security fixes (Score: 9.0/10) |
-| **[features/](features/)** | Feature completion docs (keyring, OpenAI proxy, memory system, testing, CSS) |
-| **[guides/](guides/)** | Developer guides (auto-enhancement) |
-| **[modules/](modules/)** | Module documentation and coverage tracking |
-| **[archive/](archive/)** | Completed reviews, superseded docs (date-prefixed) |
+| Folder                             | Contents                                                                     |
+| ---------------------------------- | ---------------------------------------------------------------------------- |
+| **[api/](api/)**                   | OpenAPI spec, endpoint reference, enhancement API                            |
+| **[architecture/](architecture/)** | ADRs (stdio, circuit breaker, async-first, etc.) and comparison docs         |
+| **[audit/](audit/)**               | Audit phases, async audit, security fixes (Score: 9.0/10)                    |
+| **[features/](features/)**         | Feature completion docs (keyring, OpenAI proxy, memory system, testing, CSS) |
+| **[guides/](guides/)**             | Developer guides (auto-enhancement)                                          |
+| **[modules/](modules/)**           | Module documentation and coverage tracking                                   |
+| **[archive/](archive/)**           | Completed reviews, superseded docs (date-prefixed)                           |
 
-## Key References
+### Key References
 
 - **[OLLAMA-OPENAI-API.md](OLLAMA-OPENAI-API.md)** — Dual API support (native Ollama + OpenAI-compatible)
 - **[api/openapi.yaml](api/openapi.yaml)** — Full OpenAPI 3.0 spec (43 endpoints)
@@ -22,10 +22,10 @@ Technical documentation for PromptHub developers and maintainers.
 - **[modules/servers.md](modules/servers.md)** — Server lifecycle and stdio bridge documentation
 - **[features/MEMORY-SYSTEM-COMPLETE.md](features/MEMORY-SYSTEM-COMPLETE.md)** — Session memory and context management
 
-## User Guides
+#### User Guides
 
 User-facing guides live in the Obsidian vault at `~/Vault`.
 
-## Contributing
+##### Contributing
 
 See the project [README.md](../../README.md) and [CLAUDE.md](../../CLAUDE.md).

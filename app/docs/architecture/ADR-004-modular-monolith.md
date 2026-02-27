@@ -30,7 +30,7 @@ router/
 ├── cache/           # Response caching
 ├── enhancement/     # Ollama prompt enhancement
 ├── pipelines/       # Workflow orchestration
-├── clients/         # Config generators
+├── clients/         # Config generators (Python)
 ├── dashboard/       # HTMX monitoring UI
 ├── middleware/      # Request/response processing
 ├── audit.py         # Audit logging

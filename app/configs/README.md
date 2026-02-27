@@ -14,8 +14,8 @@ configs/
 └── logrotate-macos.conf                   # System: Log rotation (macOS)
 ```
 
-> **Note:** Client configurations (Claude Desktop, VS Code, Raycast) live in the
-> top-level [`clients/`](../../clients/) directory, separate from the Python project.
+> **Note:** Desktop client configurations (Claude Desktop, Raycast, MCP Inspector) live in
+> [`mcps/configs/`](../../mcps/configs/README.md), co-located with the MCP bridge.
 
 ## Configuration Types
 
@@ -33,13 +33,6 @@ Infrastructure and logging:
 - **`logrotate-macos.conf`** - macOS-specific log rotation
 
 **When to modify:** Adjusting log retention policies or disk space management.
-
-## Quick Links
-
-// ### Setting Up a Client
-// 1. **Claude Desktop** → [clients/claude/README.md](../../clients/claude/README.md)
-// 2. **VS Code** → [clients/vscode/README.md](../../clients/vscode/README.md)
-// 3. **Raycast** → [clients/raycast/README.md](../../clients/raycast/README.md)
 
 ### Common Tasks
 
@@ -90,7 +83,7 @@ vim configs/mcp-servers-keyring.json
 
 This organization separates:
 
-1. **Client concerns** (how apps connect) → top-level `clients/`
+1. **Client concerns** (how apps connect) → `mcps/configs/`
 2. **Router concerns** (how PromptHub behaves) → `app/configs/`
 3. **System concerns** (logging, OS integration) → `app/configs/`
 

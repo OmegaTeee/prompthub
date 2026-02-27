@@ -19,7 +19,7 @@ Detailed documentation for PromptHub's core modules.
 - [middleware/](middleware.md) - Request/response processing
 - [dashboard/](dashboard.md) - HTMX monitoring UI
 - [pipelines/](pipelines.md) - Workflow orchestration
-- [clients/](clients.md) - Config generators
+- [clients/](clients.md) - Config generators (Python module: `router/clients/`)
 
 ### Utilities
 - [audit.py](audit.md) - Structured audit logging

@@ -38,10 +38,10 @@ prompthub/
 │   ├── pyproject.toml
 │   ├── requirements.txt
 │   └── Dockerfile
-├── clients/                      # Client setup (Claude Desktop, VS Code, Raycast, Obsidian)
-├── mcps/                         # Node.js MCP servers + unified bridge
+├── mcps/                         # Node.js MCP servers + unified bridge + client configs
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
-│   └── package.json              # npm dependencies (6 MCP packages)
+│   ├── configs/                  # Desktop client configs (Claude, Raycast, Inspector)
+│   └── package.json              # npm dependencies (8 MCP packages)
 ├── .claude/                      # Claude Code configuration
 │   ├── steering/                 # AI agent steering docs (product, tech, structure)
 │   └── plans/                    # Implementation plans
@@ -76,7 +76,7 @@ prompthub/
 | `dashboard/` | HTMX templates, real-time partials | servers/, cache/, enhancement/ |
 | `middleware/` | Audit context propagation, activity logging | — |
 | `pipelines/` | Multi-step documentation workflow | enhancement/, servers/ |
-| `clients/` | Config generators for desktop apps | config/, servers/ |
+| `clients/` | Config generators for desktop apps (Python: `router/clients/`) | config/, servers/ |
 
 ## Documentation Split
 

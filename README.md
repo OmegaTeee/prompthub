@@ -72,15 +72,12 @@ prompthub/
 │   ├── docs/               # Developer documentation
 │   ├── Dockerfile
 │   └── pyproject.toml
-├── clients/                # Client setup configs and scripts
-│   ├── claude/             # Claude Desktop configuration
-│   ├── vscode/             # VS Code configuration
-│   ├── raycast/            # Raycast configuration
-│   └── launch_agents/      # macOS LaunchAgent plists
-├── .claude/steering/       # AI agent steering documents
-└── mcps/                   # Centralized MCP servers (Node.js)
-    ├── package.json        # npm dependencies for MCP servers
-    └── obsidian-mcp-tools/ # Obsidian vault integration
+├── mcps/                   # MCP servers (Node.js) + client configs
+│   ├── prompthub-bridge.js # Stdio bridge aggregating all servers
+│   ├── configs/            # Desktop client configs (Claude, Raycast, Inspector)
+│   ├── package.json        # npm dependencies for MCP servers
+│   └── obsidian-mcp-tools/ # Obsidian vault integration
+└── .claude/steering/       # AI agent steering documents
 ```
 
 ## Documentation
@@ -94,10 +91,10 @@ User-facing guides (setup, integrations, workflows) live in the **Obsidian vault
 - Workflows - Design-to-code, content creation, code development
 
 ### Client Setup
-See **[clients/](clients/)** for client-specific configurations:
-- [Claude Desktop](clients/claude/) - Config files and setup script
-- [VS Code](clients/vscode/) - Settings and tasks config
-- [Raycast](clients/raycast/) - MCP server config
+See **[mcps/configs/](mcps/configs/)** for desktop client configurations:
+- [Claude Desktop](mcps/configs/claude_desktop_config.json) - Config (symlink to active config)
+- [Raycast](mcps/configs/raycast.json) - MCP server config
+- [MCP Inspector](mcps/configs/mcp-inspector.json) - Inspector testing config
 
 ### Developer Documentation
 See **[app/docs/](app/docs/)** for technical documentation:
