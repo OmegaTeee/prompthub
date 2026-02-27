@@ -9,13 +9,16 @@
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+// import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-const PROMPTHUB_URL = process.env.PROMPTHUB_URL || 'http://localhost:9090';
+// Explicit IPv4 to avoid DNS resolution, IPv6 issues, and ensure consistency
+// across different platforms (especially Windows and containerized environments)
+const PROMPTHUB_URL = process.env.PROMPTHUB_URL || 'http://127.0.0.1:9090';
 const CLIENT_NAME = process.env.CLIENT_NAME || 'claude-desktop';
 
 // Optional: comma-separated list of servers to expose (empty = all running)
