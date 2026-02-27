@@ -176,6 +176,12 @@ async def lifespan(app: FastAPI):
         cache_ttl=7200.0,
         cache_persistent=settings.cache_persistent,
         cache_db_path=settings.cache_db_path,
+        openrouter_enabled=settings.openrouter_enabled,
+        openrouter_api_key=settings.openrouter_api_key,
+        openrouter_base_url=settings.openrouter_base_url,
+        openrouter_timeout=float(settings.openrouter_timeout),
+        openrouter_default_model=settings.openrouter_default_model,
+        cloud_models_path="configs/cloud-models.json",
     )
     await enhancement_service.initialize()
 
@@ -982,6 +988,7 @@ async def enhance_prompt(
         "cached": result.cached,
         "was_enhanced": result.was_enhanced,
         "privacy_level": result.privacy_level,
+        "provider": result.provider,
         "error": result.error,
     }
 

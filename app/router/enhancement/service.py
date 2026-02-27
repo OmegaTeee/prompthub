@@ -99,6 +99,7 @@ class EnhancementResult(BaseModel):
     enhanced_by_llm: bool = False
     error: str | None = None
     privacy_level: PrivacyLevel = PrivacyLevel.LOCAL_ONLY
+    provider: str | None = None  # "ollama" or "openrouter"
 
     @property
     def was_enhanced(self) -> bool:
@@ -138,6 +139,12 @@ class EnhancementService:
         cache_ttl: float = 7200.0,
         cache_persistent: bool = True,
         cache_db_path: str = "/tmp/prompthub/cache.db",
+        openrouter_enabled: bool = False,
+        openrouter_api_key: str = "",
+        openrouter_base_url: str = "https://openrouter.ai/api/v1",
+        openrouter_timeout: float = 30.0,
+        openrouter_default_model: str = "deepseek/deepseek-r1-0528:free",
+        cloud_models_path: str | Path | None = None,
     ):
         """
         Initialize the enhancement service.
@@ -149,6 +156,12 @@ class EnhancementService:
             cache_ttl: Cache entry TTL in seconds
             cache_persistent: Use SQLite-backed persistent cache
             cache_db_path: Path for persistent cache database
+            openrouter_enabled: Enable OpenRouter cloud fallback
+            openrouter_api_key: OpenRouter API key
+            openrouter_base_url: OpenRouter API base URL
+            openrouter_timeout: Timeout for OpenRouter requests
+            openrouter_default_model: Default cloud model when no mapping exists
+            cloud_models_path: Path to cloud-models.json for local→cloud mapping
         """
         self.rules_path = Path(rules_path) if rules_path else None
         self._rules: dict[str, EnhancementRule] = {}
@@ -196,6 +209,39 @@ class EnhancementService:
                 half_open_max_calls=1,
             ),
         )
+
+        # Cloud fallback (OpenRouter)
+        self._cloud_client: OllamaOpenAIClient | None = None
+        self._default_cloud_model = openrouter_default_model
+        self._cloud_model_map: dict[str, str] = {}
+
+        if openrouter_enabled and openrouter_api_key:
+            cloud_config = OpenAICompatConfig(
+                base_url=openrouter_base_url,
+                timeout=openrouter_timeout,
+                max_retries=1,
+                retry_delay=0.5,
+                extra_headers={"Authorization": f"Bearer {openrouter_api_key}"},
+            )
+            self._cloud_client = OllamaOpenAIClient(cloud_config)
+            logger.info("OpenRouter cloud fallback enabled")
+        elif openrouter_enabled:
+            logger.warning("OpenRouter enabled but no API key provided")
+
+        self._cloud_circuit_breaker = CircuitBreaker(
+            "openrouter",
+            CircuitBreakerConfig(
+                failure_threshold=2,
+                recovery_timeout=60.0,
+                half_open_max_calls=1,
+            ),
+        )
+
+        # Load cloud model mapping
+        if cloud_models_path:
+            self._cloud_model_map = self._load_cloud_model_map(
+                Path(cloud_models_path),
+            )
 
         self._initialized = False
 
@@ -272,6 +318,118 @@ class EnhancementService:
             return self._rules[client_name]
         return self._rules.get("default", self._default_rule)
 
+    @staticmethod
+    def _load_cloud_model_map(path: Path) -> dict[str, str]:
+        """Load local→cloud model mapping from cloud-models.json.
+
+        Builds a dict like {"llama3.2:latest": "meta-llama/llama-3.3-70b-instruct:free"}
+        using the cloud_upgrade field from local_models, with :free suffix.
+        """
+        if not path.exists():
+            logger.warning(f"Cloud models config not found: {path}")
+            return {}
+
+        try:
+            data = json.loads(path.read_text())
+            local_models = data.get("local_models", {})
+            free_models = set(data.get("free_models", []))
+            mapping: dict[str, str] = {}
+
+            for local_name, info in local_models.items():
+                cloud_upgrade = info.get("cloud_upgrade")
+                if not cloud_upgrade:
+                    continue
+                # Prefer the :free variant if it exists in free_models list
+                free_variant = f"{cloud_upgrade}:free"
+                if free_variant in free_models:
+                    mapping[local_name] = free_variant
+                else:
+                    mapping[local_name] = cloud_upgrade
+
+            logger.info(f"Loaded {len(mapping)} cloud model mappings")
+            return mapping
+
+        except Exception as e:
+            logger.error(f"Failed to load cloud model map: {e}")
+            return {}
+
+    async def _try_cloud_fallback(
+        self,
+        prompt: str,
+        rule: EnhancementRule,
+        effective_privacy: PrivacyLevel,
+        client_name: str | None,
+        ollama_error: str,
+    ) -> EnhancementResult:
+        """Attempt cloud enhancement when Ollama fails.
+
+        Only proceeds if privacy level permits cloud processing
+        and the cloud client is available and healthy.
+        """
+        # Gate: privacy must allow cloud
+        if effective_privacy == PrivacyLevel.LOCAL_ONLY:
+            return EnhancementResult(
+                original=prompt, enhanced=prompt,
+                error=ollama_error, privacy_level=effective_privacy,
+            )
+
+        # Gate: cloud client must exist
+        if not self._cloud_client:
+            return EnhancementResult(
+                original=prompt, enhanced=prompt,
+                error=ollama_error, privacy_level=effective_privacy,
+            )
+
+        # Gate: cloud circuit breaker
+        try:
+            self._cloud_circuit_breaker.check()
+        except CircuitBreakerError as e:
+            return EnhancementResult(
+                original=prompt, enhanced=prompt,
+                error=f"{ollama_error}; cloud breaker open ({e.retry_after:.0f}s)",
+                privacy_level=effective_privacy,
+            )
+
+        # Map local model → cloud model
+        cloud_model = self._cloud_model_map.get(
+            rule.model, self._default_cloud_model,
+        )
+
+        try:
+            enhanced = await self._cloud_client.generate_from_prompt(
+                model=cloud_model,
+                prompt=prompt,
+                system=rule.system_prompt,
+                temperature=rule.temperature,
+                max_tokens=rule.max_tokens,
+            )
+            self._cloud_circuit_breaker.record_success()
+
+            # Cache cloud result too
+            await self._cache.set_enhanced(
+                prompt=prompt, enhanced=enhanced,
+                client_name=client_name, model=cloud_model,
+            )
+
+            logger.info(
+                "Cloud fallback enhanced prompt with %s for client=%s",
+                cloud_model, client_name,
+            )
+            return EnhancementResult(
+                original=prompt, enhanced=enhanced, model=cloud_model,
+                enhanced_by_llm=True, privacy_level=effective_privacy,
+                provider="openrouter",
+            )
+
+        except Exception as e:
+            self._cloud_circuit_breaker.record_failure(e)
+            logger.warning(f"Cloud fallback failed: {e}")
+            return EnhancementResult(
+                original=prompt, enhanced=prompt,
+                error=f"{ollama_error}; cloud fallback failed: {e}",
+                privacy_level=effective_privacy,
+            )
+
     async def enhance(
         self,
         prompt: str,
@@ -338,11 +496,9 @@ class EnhancementService:
             self._circuit_breaker.check()
         except CircuitBreakerError as e:
             logger.warning(f"Circuit breaker open: {e}")
-            return EnhancementResult(
-                original=prompt,
-                enhanced=prompt,
-                error=f"Ollama circuit breaker open, retry in {e.retry_after:.0f}s",
-                privacy_level=effective_privacy,
+            return await self._try_cloud_fallback(
+                prompt, rule, effective_privacy, client_name,
+                f"Ollama circuit breaker open, retry in {e.retry_after:.0f}s",
             )
 
         # Call Ollama
@@ -386,36 +542,28 @@ class EnhancementService:
                 model=rule.model,
                 enhanced_by_llm=True,
                 privacy_level=effective_privacy,
+                provider="ollama",
             )
 
         except (OllamaConnectionError, OllamaOpenAIConnectionError) as e:
             self._circuit_breaker.record_failure(e)
             logger.warning(f"Ollama connection failed: {e}")
-            return EnhancementResult(
-                original=prompt,
-                enhanced=prompt,
-                error=str(e),
-                privacy_level=effective_privacy,
+            return await self._try_cloud_fallback(
+                prompt, rule, effective_privacy, client_name, str(e),
             )
 
         except (OllamaError, OllamaOpenAIError) as e:
             self._circuit_breaker.record_failure(e)
             logger.error(f"Ollama error: {e}")
-            return EnhancementResult(
-                original=prompt,
-                enhanced=prompt,
-                error=str(e),
-                privacy_level=effective_privacy,
+            return await self._try_cloud_fallback(
+                prompt, rule, effective_privacy, client_name, str(e),
             )
 
         except Exception as e:
             self._circuit_breaker.record_failure(e)
             logger.exception(f"Unexpected error during enhancement: {e}")
-            return EnhancementResult(
-                original=prompt,
-                enhanced=prompt,
-                error=str(e),
-                privacy_level=effective_privacy,
+            return await self._try_cloud_fallback(
+                prompt, rule, effective_privacy, client_name, str(e),
             )
 
     async def get_stats(self) -> dict[str, Any]:
@@ -425,11 +573,18 @@ class EnhancementService:
         Returns:
             Dictionary with cache and circuit breaker stats
         """
-        return {
+        stats: dict[str, Any] = {
             "cache": self._cache.stats().model_dump(),
             "circuit_breaker": self._circuit_breaker.stats.model_dump(),
             "ollama_healthy": await self._ollama.is_healthy(),
         }
+        if self._cloud_client:
+            stats["cloud_circuit_breaker"] = (
+                self._cloud_circuit_breaker.stats.model_dump()
+            )
+            stats["cloud_healthy"] = await self._cloud_client.is_healthy()
+            stats["cloud_model_map"] = self._cloud_model_map
+        return stats
 
     async def reset_circuit_breaker(self) -> None:
         """Reset the Ollama circuit breaker."""
@@ -444,5 +599,7 @@ class EnhancementService:
     async def close(self) -> None:
         """Clean up resources."""
         await self._ollama.close()
+        if self._cloud_client:
+            await self._cloud_client.close()
         if hasattr(self._cache, "close"):
             await self._cache.close()

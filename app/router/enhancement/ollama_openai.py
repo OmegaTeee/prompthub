@@ -24,6 +24,7 @@ class OpenAICompatConfig(BaseModel):
     timeout: float = 30.0
     max_retries: int = 2
     retry_delay: float = 1.0
+    extra_headers: dict[str, str] = {}
 
 
 class ChatMessage(BaseModel):
@@ -108,6 +109,7 @@ class OllamaOpenAIClient:
             self._client = httpx.AsyncClient(
                 base_url=self.config.base_url,
                 timeout=httpx.Timeout(self.config.timeout),
+                headers=self.config.extra_headers or {},
             )
         return self._client
 

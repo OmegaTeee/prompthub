@@ -32,6 +32,13 @@ class Settings(BaseSettings):
     cache_persistent: bool = True
     cache_db_path: str = "/tmp/prompthub/cache.db"
 
+    # OpenRouter (cloud fallback)
+    openrouter_enabled: bool = False
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    openrouter_api_key: str = ""
+    openrouter_timeout: int = 30
+    openrouter_default_model: str = "deepseek/deepseek-r1-0528:free"
+
     # Circuit Breaker
     cb_failure_threshold: int = 3
     cb_recovery_timeout: int = 30
