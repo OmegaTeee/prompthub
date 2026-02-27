@@ -12,6 +12,8 @@ from router.enhancement.service import (
     EnhancementResult,
     EnhancementRule,
     EnhancementService,
+    PrivacyLevel,
+    resolve_privacy_level,
 )
 
 __all__ = [
@@ -24,4 +26,6 @@ __all__ = [
     "OllamaError",
     "OllamaModelError",
     "OllamaResponse",
+    "PrivacyLevel",
+    "resolve_privacy_level",
 ]

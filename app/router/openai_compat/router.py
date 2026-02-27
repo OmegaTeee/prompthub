@@ -9,7 +9,7 @@ and forwarded to Ollama with circuit breaker protection.
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -106,6 +106,7 @@ def create_openai_compat_router(
     @router.post("/chat/completions")
     async def chat_completions(
         body: ChatCompletionRequest,
+        request: Request,
         api_key: ApiKeyConfig = Depends(authenticate),
     ):
         """OpenAI-compatible chat completion endpoint.
@@ -155,6 +156,18 @@ def create_openai_compat_router(
 
         svc = enhancement_service() if api_key.enhance else None
         if svc:
+            # Parse privacy header override
+            privacy_override = None
+            raw_privacy = request.headers.get("X-Privacy-Level")
+            if raw_privacy:
+                try:
+                    from router.enhancement import PrivacyLevel
+                    privacy_override = PrivacyLevel(raw_privacy)
+                except ValueError:
+                    logger.warning(
+                        "Invalid X-Privacy-Level: %s", raw_privacy,
+                    )
+
             last_user_idx = _find_last_user_message(messages)
             if last_user_idx is not None:
                 original = messages[last_user_idx]["content"]
@@ -162,6 +175,7 @@ def create_openai_compat_router(
                     result = await svc.enhance(
                         prompt=original,
                         client_name=client_name,
+                        privacy_override=privacy_override,
                     )
                     if result.was_enhanced:
                         messages[last_user_idx] = {

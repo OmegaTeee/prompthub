@@ -30,7 +30,7 @@ from router.clients import (
 )
 from router.config import get_settings
 from router.dashboard import create_dashboard_router
-from router.enhancement import EnhancementService, OllamaConfig
+from router.enhancement import EnhancementService, OllamaConfig, PrivacyLevel
 from router.memory import MemoryMCPClient, create_memory_router, get_session_storage
 from router.openai_compat import create_openai_compat_router
 from router.openai_compat.auth import ApiKeyManager
@@ -932,12 +932,16 @@ class EnhanceRequest(BaseModel):
 async def enhance_prompt(
     body: EnhanceRequest,
     x_client_name: str | None = Header(None, alias="X-Client-Name"),
+    x_privacy_level: str | None = Header(
+        None, alias="X-Privacy-Level",
+    ),
 ):
     """
     Enhance a prompt via Ollama.
 
     Headers:
         X-Client-Name: Client identifier for rule selection
+        X-Privacy-Level: Privacy override (can only downgrade)
 
     Body:
         prompt: The prompt to enhance
@@ -948,15 +952,27 @@ async def enhance_prompt(
         enhanced: The enhanced prompt (or original if enhancement failed)
         model: The model used for enhancement
         cached: Whether the result came from cache
+        privacy_level: Effective privacy boundary
         error: Error message if enhancement failed
     """
     if not enhancement_service:
         raise HTTPException(503, "Enhancement service not initialized")
 
+    # Parse privacy level header (invalid values ignored)
+    privacy_override = None
+    if x_privacy_level:
+        try:
+            privacy_override = PrivacyLevel(x_privacy_level)
+        except ValueError:
+            logger.warning(
+                f"Invalid X-Privacy-Level header: {x_privacy_level}"
+            )
+
     result = await enhancement_service.enhance(
         prompt=body.prompt,
         client_name=x_client_name,
         bypass_cache=body.bypass_cache,
+        privacy_override=privacy_override,
     )
 
     return {
@@ -965,6 +981,7 @@ async def enhance_prompt(
         "model": result.model,
         "cached": result.cached,
         "was_enhanced": result.was_enhanced,
+        "privacy_level": result.privacy_level,
         "error": result.error,
     }
 

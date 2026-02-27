@@ -15,6 +15,7 @@ failover to returning the original prompt if enhancement fails.
 import aiofiles
 import json
 import logging
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +44,40 @@ from router.resilience import (
 logger = logging.getLogger(__name__)
 
 
+class PrivacyLevel(StrEnum):
+    """Privacy boundary for prompt enhancement routing.
+
+    Determines whether a client's prompts may be sent to
+    external (cloud) enhancement services.
+    """
+
+    LOCAL_ONLY = "local_only"
+    FREE_OK = "free_ok"
+    ANY = "any"
+
+
+_PRIVACY_STRICTNESS: dict[PrivacyLevel, int] = {
+    PrivacyLevel.LOCAL_ONLY: 0,
+    PrivacyLevel.FREE_OK: 1,
+    PrivacyLevel.ANY: 2,
+}
+
+
+def resolve_privacy_level(
+    config_level: PrivacyLevel,
+    header_level: PrivacyLevel | None,
+) -> PrivacyLevel:
+    """Resolve effective privacy level.
+
+    The header can only downgrade (more restrictive), never upgrade.
+    """
+    if header_level is None:
+        return config_level
+    if _PRIVACY_STRICTNESS[header_level] < _PRIVACY_STRICTNESS[config_level]:
+        return header_level
+    return config_level
+
+
 class EnhancementRule(BaseModel):
     """Configuration for how to enhance prompts for a specific client."""
 
@@ -51,6 +86,7 @@ class EnhancementRule(BaseModel):
     system_prompt: str = "Improve clarity and structure. Preserve intent. Return only the enhanced prompt."
     temperature: float = 0.3
     max_tokens: int | None = 500
+    privacy_level: PrivacyLevel = PrivacyLevel.LOCAL_ONLY
 
 
 class EnhancementResult(BaseModel):
@@ -62,6 +98,7 @@ class EnhancementResult(BaseModel):
     cached: bool = False
     enhanced_by_llm: bool = False
     error: str | None = None
+    privacy_level: PrivacyLevel = PrivacyLevel.LOCAL_ONLY
 
     @property
     def was_enhanced(self) -> bool:
@@ -240,6 +277,7 @@ class EnhancementService:
         prompt: str,
         client_name: str | None = None,
         bypass_cache: bool = False,
+        privacy_override: PrivacyLevel | None = None,
     ) -> EnhancementResult:
         """
         Enhance a prompt using Ollama.
@@ -256,6 +294,7 @@ class EnhancementService:
             prompt: The prompt to enhance
             client_name: Client identifier for rule lookup
             bypass_cache: Skip cache lookup
+            privacy_override: Header-based privacy downgrade
 
         Returns:
             EnhancementResult with enhanced prompt
@@ -263,12 +302,18 @@ class EnhancementService:
         # Get rule for client
         rule = self.get_rule(client_name)
 
+        # Resolve effective privacy level
+        effective_privacy = resolve_privacy_level(
+            rule.privacy_level, privacy_override,
+        )
+
         # Check if enhancement is enabled
         if not rule.enabled:
             return EnhancementResult(
                 original=prompt,
                 enhanced=prompt,
                 error="Enhancement disabled for client",
+                privacy_level=effective_privacy,
             )
 
         # Check cache (unless bypassed)
@@ -285,6 +330,7 @@ class EnhancementService:
                     enhanced=cached,
                     model=rule.model,
                     cached=True,
+                    privacy_level=effective_privacy,
                 )
 
         # Check circuit breaker
@@ -296,6 +342,7 @@ class EnhancementService:
                 original=prompt,
                 enhanced=prompt,
                 error=f"Ollama circuit breaker open, retry in {e.retry_after:.0f}s",
+                privacy_level=effective_privacy,
             )
 
         # Call Ollama
@@ -338,6 +385,7 @@ class EnhancementService:
                 enhanced=enhanced,
                 model=rule.model,
                 enhanced_by_llm=True,
+                privacy_level=effective_privacy,
             )
 
         except (OllamaConnectionError, OllamaOpenAIConnectionError) as e:
@@ -347,6 +395,7 @@ class EnhancementService:
                 original=prompt,
                 enhanced=prompt,
                 error=str(e),
+                privacy_level=effective_privacy,
             )
 
         except (OllamaError, OllamaOpenAIError) as e:
@@ -356,6 +405,7 @@ class EnhancementService:
                 original=prompt,
                 enhanced=prompt,
                 error=str(e),
+                privacy_level=effective_privacy,
             )
 
         except Exception as e:
@@ -365,6 +415,7 @@ class EnhancementService:
                 original=prompt,
                 enhanced=prompt,
                 error=str(e),
+                privacy_level=effective_privacy,
             )
 
     async def get_stats(self) -> dict[str, Any]:
