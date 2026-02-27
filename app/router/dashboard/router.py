@@ -9,6 +9,7 @@ Provides endpoints for the HTMX-powered dashboard:
 - Quick actions (clear cache, restart servers)
 """
 
+import logging
 import re
 from collections.abc import Callable
 from pathlib import Path
@@ -21,6 +22,8 @@ from fastapi.templating import Jinja2Templates
 
 from router.config import get_settings
 from router.middleware import activity_log
+
+logger = logging.getLogger(__name__)
 
 # Templates directory
 TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
@@ -37,6 +40,7 @@ def create_dashboard_router(
     get_circuit_breakers: Callable[[], dict[str, Any]],
     get_ollama_info: Callable[[], Any] | None = None,
     reload_api_keys: Callable[[], Any] | None = None,
+    get_memory_info: Callable[[], Any] | None = None,
 ) -> APIRouter:
     """
     Create the dashboard router with injected dependencies.
@@ -52,6 +56,7 @@ def create_dashboard_router(
         get_circuit_breakers: Function to get circuit breaker states
         get_ollama_info: Function to get Ollama models and API keys summary
         reload_api_keys: Function to reload API keys from config
+        get_memory_info: Function to get session memory stats
 
     Returns:
         Configured APIRouter for dashboard endpoints
@@ -416,6 +421,44 @@ def create_dashboard_router(
             return JSONResponse(
                 status_code=500,
                 content={"status": "error", "message": str(e)}
+            )
+
+    @router.get("/memory-partial", response_class=HTMLResponse)
+    async def memory_partial(request: Request):
+        """HTMX partial: Session memory stats."""
+        if not get_memory_info:
+            return templates.TemplateResponse(
+                "partials/memory.html",
+                {
+                    "request": request,
+                    "stats": {},
+                    "recent_sessions": [],
+                },
+            )
+
+        try:
+            info = await get_memory_info()
+            stats = info.get("stats", {})
+            recent_sessions = info.get("recent_sessions", [])
+
+            return templates.TemplateResponse(
+                "partials/memory.html",
+                {
+                    "request": request,
+                    "stats": stats,
+                    "recent_sessions": recent_sessions,
+                },
+            )
+        except Exception as e:
+            logger.warning(f"Error loading memory info: {e}")
+            return templates.TemplateResponse(
+                "partials/memory.html",
+                {
+                    "request": request,
+                    "stats": {},
+                    "recent_sessions": [],
+                    "error": str(e),
+                },
             )
 
     return router

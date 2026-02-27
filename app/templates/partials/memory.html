@@ -1,0 +1,159 @@
+<!-- Session Memory Panel -->
+<div class="panel-header">
+  <h3>Session Memory</h3>
+  <span class="text-sm text-muted">{{ stats.active_sessions | default(0) }} active</span>
+</div>
+
+{% if error %}
+<div class="error-message">
+  Error loading memory info: {{ error }}
+</div>
+{% else %}
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Active Sessions</div>
+    <div class="stat-value">{{ stats.active_sessions | default(0) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Facts</div>
+    <div class="stat-value">{{ stats.total_facts | default(0) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Memory Blocks</div>
+    <div class="stat-value">{{ stats.total_blocks | default(0) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Closed Sessions</div>
+    <div class="stat-value">{{ stats.closed_sessions | default(0) }}</div>
+  </div>
+</div>
+
+{% if recent_sessions %}
+<div class="recent-sessions">
+  <h4>Recent Sessions</h4>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Session ID</th>
+        <th>Client</th>
+        <th>Status</th>
+        <th>Facts</th>
+        <th>Last Accessed</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for session in recent_sessions %}
+      <tr>
+        <td class="font-mono text-sm">{{ session.id[:8] }}...</td>
+        <td>{{ session.client_id }}</td>
+        <td>
+          <span class="badge badge-{{ 'success' if session.status == 'active' else 'secondary' }}">
+            {{ session.status }}
+          </span>
+        </td>
+        <td>{{ session.fact_count | default(0) }}</td>
+        <td class="text-sm">{{ session.last_accessed[:10] if session.last_accessed else 'N/A' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p class="text-muted">No sessions yet</p>
+</div>
+{% endif %}
+{% endif %}
+
+<style>
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.stat-card {
+  padding: 12px;
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.recent-sessions {
+  margin-top: 16px;
+}
+
+.recent-sessions h4 {
+  margin: 12px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table thead {
+  background: var(--color-bg-secondary);
+}
+
+.table th, .table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table tbody tr:hover {
+  background: var(--color-bg-secondary);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.badge-success {
+  background: #d4f0d4;
+  color: #2d5d2d;
+}
+
+.badge-secondary {
+  background: #e8e8e8;
+  color: #666;
+}
+
+.font-mono {
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.empty-state {
+  padding: 24px;
+  text-align: center;
+}
+
+.error-message {
+  padding: 12px;
+  background: #fde8e8;
+  color: #8b3333;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+</style>

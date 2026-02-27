@@ -72,6 +72,16 @@
         >
           <div class="loading">Loading Ollama info</div>
         </div>
+
+        <!-- Session Memory -->
+        <div
+          class="card"
+          hx-get="/dashboard/memory-partial"
+          hx-trigger="load, every 15s"
+          hx-swap="innerHTML"
+        >
+          <div class="loading">Loading memory info</div>
+        </div>
       </div>
 
       <!-- Quick Actions -->

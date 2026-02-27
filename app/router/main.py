@@ -31,6 +31,7 @@ from router.clients import (
 from router.config import get_settings
 from router.dashboard import create_dashboard_router
 from router.enhancement import EnhancementService, OllamaConfig
+from router.memory import MemoryMCPClient, create_memory_router, get_session_storage
 from router.openai_compat import create_openai_compat_router
 from router.openai_compat.auth import ApiKeyManager
 from router.middleware import (
@@ -63,6 +64,8 @@ enhancement_service: EnhancementService | None = None
 circuit_breakers: CircuitBreakerRegistry | None = None
 documentation_pipeline: DocumentationPipeline | None = None
 persistent_activity_log = None  # Will be initialized in lifespan
+session_storage = None  # Will be initialized in lifespan
+memory_mcp_client = None  # Will be initialized in lifespan
 
 # Gateway lifespan management — tracks the async cleanup for the current
 # FastMCP gateway so we can tear it down and re-enter on topology changes.
@@ -118,7 +121,7 @@ async def _mount_gateway() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown."""
-    global registry, supervisor, enhancement_service, circuit_breakers, documentation_pipeline, persistent_activity_log
+    global registry, supervisor, enhancement_service, circuit_breakers, documentation_pipeline, persistent_activity_log, session_storage, memory_mcp_client
 
     # Startup
     settings = get_settings()
@@ -133,6 +136,15 @@ async def lifespan(app: FastAPI):
     persistent_activity_log = get_persistent_activity_log(db_path=log_dir / "activity.db")
     await persistent_activity_log.initialize()
     logger.info("Initialized persistent activity log")
+
+    # Initialize session storage (memory system)
+    session_storage = get_session_storage(db_path=log_dir / "memory.db")
+    await session_storage.initialize()
+    logger.info("Initialized session storage")
+
+    # Initialize Memory MCP client (optional sync layer)
+    memory_mcp_client = MemoryMCPClient(base_url="http://localhost:9090")
+    logger.info("Initialized Memory MCP client")
 
     logger.info(f"Starting PromptHub Router on {settings.host}:{settings.port}")
 
@@ -445,6 +457,15 @@ async def _reload_api_keys():
     return _openai_api_key_manager.key_count
 
 
+async def _get_memory_info():
+    """Get session memory stats for dashboard."""
+    if session_storage:
+        stats = await session_storage.get_stats()
+        recent_sessions, _ = await session_storage.list_sessions(limit=5)
+        return {"stats": stats, "recent_sessions": recent_sessions}
+    return {"stats": {}, "recent_sessions": []}
+
+
 # Register dashboard router
 dashboard_router = create_dashboard_router(
     get_health=_get_health,
@@ -457,6 +478,7 @@ dashboard_router = create_dashboard_router(
     get_circuit_breakers=_get_circuit_breakers,
     get_ollama_info=_get_ollama_info,
     reload_api_keys=_reload_api_keys,
+    get_memory_info=_get_memory_info,
 )
 app.include_router(dashboard_router)
 
@@ -471,6 +493,15 @@ openai_compat_router = create_openai_compat_router(
     ollama_timeout=float(_openai_settings.ollama_timeout),
 )
 app.include_router(openai_compat_router)
+
+
+# Register memory router (session management)
+memory_router = create_memory_router(
+    get_storage=lambda: session_storage,
+    get_mcp_client=lambda: memory_mcp_client,
+    get_enhancement_service=lambda: enhancement_service,
+)
+app.include_router(memory_router)
 
 
 # =============================================================================
