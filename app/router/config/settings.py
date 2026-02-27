@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     # Cache
     cache_max_size: int = 1000
     cache_similarity_threshold: float = 0.85
+    cache_persistent: bool = True
+    cache_db_path: str = "/tmp/prompthub/cache.db"
 
     # Circuit Breaker
     cb_failure_threshold: int = 3

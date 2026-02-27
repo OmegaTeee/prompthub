@@ -174,6 +174,8 @@ async def lifespan(app: FastAPI):
         ollama_config=ollama_config,
         cache_max_size=500,
         cache_ttl=7200.0,
+        cache_persistent=settings.cache_persistent,
+        cache_db_path=settings.cache_db_path,
     )
     await enhancement_service.initialize()
 

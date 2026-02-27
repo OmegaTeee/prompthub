@@ -99,6 +99,8 @@ class EnhancementService:
         ollama_config: OllamaConfig | None = None,
         cache_max_size: int = 500,
         cache_ttl: float = 7200.0,
+        cache_persistent: bool = True,
+        cache_db_path: str = "/tmp/prompthub/cache.db",
     ):
         """
         Initialize the enhancement service.
@@ -108,6 +110,8 @@ class EnhancementService:
             ollama_config: Ollama client configuration
             cache_max_size: Maximum cache entries
             cache_ttl: Cache entry TTL in seconds
+            cache_persistent: Use SQLite-backed persistent cache
+            cache_db_path: Path for persistent cache database
         """
         self.rules_path = Path(rules_path) if rules_path else None
         self._rules: dict[str, EnhancementRule] = {}
@@ -133,7 +137,20 @@ class EnhancementService:
             self._ollama = OllamaClient(ollama_config)
             logger.info("Using native Ollama API")
 
-        self._cache = EnhancementCache(max_size=cache_max_size, default_ttl=cache_ttl)
+        if cache_persistent:
+            from router.cache.persistent_enhancement import (
+                PersistentEnhancementCache,
+            )
+            self._cache = PersistentEnhancementCache(
+                max_size=cache_max_size,
+                default_ttl=cache_ttl,
+                db_path=Path(cache_db_path),
+            )
+        else:
+            self._cache = EnhancementCache(
+                max_size=cache_max_size, default_ttl=cache_ttl,
+            )
+
         self._circuit_breaker = CircuitBreaker(
             "ollama",
             CircuitBreakerConfig(
@@ -156,6 +173,10 @@ class EnhancementService:
             await self._load_rules_async()
         else:
             logger.warning("No enhancement rules file found, using defaults")
+
+        # Initialize persistent cache if applicable
+        if hasattr(self._cache, "initialize"):
+            await self._cache.initialize()
 
         # Check Ollama health
         if await self._ollama.is_healthy():
@@ -372,3 +393,5 @@ class EnhancementService:
     async def close(self) -> None:
         """Clean up resources."""
         await self._ollama.close()
+        if hasattr(self._cache, "close"):
+            await self._cache.close()

@@ -22,12 +22,14 @@ class CacheStats(BaseModel):
     size: int = 0
     max_size: int = 0
     evictions: int = 0
+    l2_hits: int = 0   # Hits resolved from L2 (persistent store)
+    l2_size: int = 0   # Total entries in L2
 
     @property
     def hit_rate(self) -> float:
-        """Calculate cache hit rate."""
-        total = self.hits + self.misses
-        return self.hits / total if total > 0 else 0.0
+        """Calculate cache hit rate (L1 + L2 hits vs total)."""
+        total = self.hits + self.l2_hits + self.misses
+        return (self.hits + self.l2_hits) / total if total > 0 else 0.0
 
 
 class CacheEntry(BaseModel, Generic[V]):
