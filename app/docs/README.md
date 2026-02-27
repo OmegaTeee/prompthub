@@ -9,7 +9,7 @@ Technical documentation for PromptHub developers and maintainers.
 | **[api/](api/)** | OpenAPI spec, endpoint reference, enhancement API |
 | **[architecture/](architecture/)** | ADRs (stdio, circuit breaker, async-first, etc.) and comparison docs |
 | **[audit/](audit/)** | Audit phases, async audit, security fixes (Score: 9.0/10) |
-| **[features/](features/)** | Feature completion docs (keyring, OpenAI proxy, testing, CSS) |
+| **[features/](features/)** | Feature completion docs (keyring, OpenAI proxy, memory system, testing, CSS) |
 | **[guides/](guides/)** | Developer guides (auto-enhancement) |
 | **[modules/](modules/)** | Module documentation and coverage tracking |
 | **[archive/](archive/)** | Completed reviews, superseded docs (date-prefixed) |
@@ -20,6 +20,7 @@ Technical documentation for PromptHub developers and maintainers.
 - **[api/openapi.yaml](api/openapi.yaml)** — Full OpenAPI 3.0 spec (43 endpoints)
 - **[audit/AUDIT-IMPLEMENTATION-COMPLETE.md](audit/AUDIT-IMPLEMENTATION-COMPLETE.md)** — Audit system executive summary
 - **[modules/servers.md](modules/servers.md)** — Server lifecycle and stdio bridge documentation
+- **[features/MEMORY-SYSTEM-COMPLETE.md](features/MEMORY-SYSTEM-COMPLETE.md)** — Session memory and context management
 
 ## User Guides
 

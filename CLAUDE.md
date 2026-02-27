@@ -68,7 +68,8 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 | `cache/` | L1 in-memory LRU cache |
 | `enhancement/` | Ollama HTTP client (native + OpenAI-compat), per-client prompt enhancement |
 | `openai_compat/` | OpenAI-compatible `/v1/` proxy with bearer auth and optional enhancement |
-| `dashboard/` | HTMX observability UI (servers, cache, circuit breakers, Ollama panel) |
+| `memory/` | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync) |
+| `dashboard/` | HTMX observability UI (servers, cache, circuit breakers, Ollama, memory panels) |
 | `pipelines/` | Workflow orchestration (documentation generation) |
 | `clients/` | Config generators for Claude Desktop, VS Code, Raycast |
 | `middleware/` | Audit context, activity logging, request timeout, persistent storage |
@@ -112,7 +113,9 @@ POST /servers/{name}/stop       Stop server
 POST /mcp/{server}/{path}       Proxy JSON-RPC to MCP server
 POST /mcp-direct/mcp            Streamable HTTP endpoint (FastMCP gateway)
 POST /ollama/enhance            Enhance prompt via Ollama (X-Client-Name header)
-GET  /dashboard                 HTMX monitoring dashboard (servers, cache, Ollama panel)
+POST /sessions                  Create session (memory system)
+GET  /sessions/{id}/context     Full session context (facts + blocks + MCP graph)
+GET  /dashboard                 HTMX monitoring dashboard (servers, cache, Ollama, memory panels)
 POST /pipelines/documentation   Generate docs from codebase
 POST /v1/chat/completions       OpenAI-compatible proxy → Ollama (bearer auth, optional enhancement)
 GET  /v1/models                 List Ollama models (OpenAI format)

@@ -37,8 +37,8 @@ ADRs document significant architectural decisions, the context behind them, and 
 
 ```
 ┌───────────────────────────────────────────────┐
-│              FastAPI Routes                   │
-│  /health /servers /mcp /v1 /ollama /dashboard │
+│              FastAPI Routes                          │
+│  /health /servers /mcp /v1 /ollama /sessions /dashboard │
 └───────────────┬───────────────────────────────┘
                 │
 ┌───────────────▼───────────────────────────────┐
@@ -47,8 +47,8 @@ ADRs document significant architectural decisions, the context behind them, and 
 └───────────────┬───────────────────────────────┘
                 │
 ┌───────────────▼───────────────────────────────┐
-│           Service Layer                       │
-│  Supervisor │ Enhancement │ CircuitBreakers   │
+│           Service Layer                                  │
+│  Supervisor │ Enhancement │ CircuitBreakers │ SessionStorage │
 └──────┬──────┴─────┬───────┴───────┬───────────┘
        │            │               │
        ▼            ▼               ▼

@@ -2,7 +2,7 @@
 
 Detailed documentation for PromptHub's core modules.
 
-**Coverage**: 1 of 12 modules fully documented (8.3%) — See [COVERAGE-ANALYSIS.md](COVERAGE-ANALYSIS.md)
+**Coverage**: 2 of 13 modules documented — See [COVERAGE-ANALYSIS.md](COVERAGE-ANALYSIS.md)
 
 ## Module Index
 
@@ -15,6 +15,7 @@ Detailed documentation for PromptHub's core modules.
 ### Support Modules
 - [config/](config.md) - Settings and configuration management
 - [cache/](cache.md) - Response caching (L1 memory)
+- [memory/](../features/MEMORY-SYSTEM-COMPLETE.md) - Session memory and context management (SQLite)
 - [middleware/](middleware.md) - Request/response processing
 - [dashboard/](dashboard.md) - HTMX monitoring UI
 - [pipelines/](pipelines.md) - Workflow orchestration
@@ -48,6 +49,12 @@ main.py
   │   ├── activity.py        # ActivityLoggingMiddleware
   │   └── persistent_activity.py # PersistentActivityLog
   │
+  ├── memory/
+  │   ├── storage.py          # SessionStorage (aiosqlite)
+  │   ├── mcp_client.py       # MemoryMCPClient (optional sync)
+  │   ├── models.py           # Pydantic schemas
+  │   └── router.py           # create_memory_router
+  │
   ├── dashboard/
   │   └── router.py          # create_dashboard_router
   │
@@ -74,6 +81,7 @@ Dependencies flow one direction (no cycles):
 ```
 main.py → servers → config
        → enhancement → resilience → config
+       → memory → middleware (audit context)
        → middleware → audit
 ```
 
@@ -82,6 +90,7 @@ Each module owns its data structures:
 - **servers/**: `ServerConfig`, `ProcessInfo`, `ServerState`
 - **enhancement/**: `EnhancementRule`, `EnhancementResult`
 - **resilience/**: `CircuitBreakerConfig`, `CircuitBreakerStats`
+- **memory/**: `SessionCreate`, `SessionResponse`, `FactCreate`, `MemoryBlockUpsert`
 
 ## Testing Strategy
 
