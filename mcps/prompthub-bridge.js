@@ -45,6 +45,7 @@ async function fetchRunningServers() {
     const response = await fetch(`${PROMPTHUB_URL}/servers`, {
       headers: { 'X-Client-Name': CLIENT_NAME }
     });
+    /** @type {any} */
     const data = await response.json();
 
     if (data.servers) {
@@ -76,6 +77,7 @@ async function callPromptHub(serverName, jsonRpcRequest) {
     body: JSON.stringify(jsonRpcRequest)
   });
 
+  /** @type {any} */
   const data = await response.json();
 
   // Handle FastAPI error responses
@@ -163,6 +165,11 @@ async function callTool(toolName, args) {
 
   return response.result;
 }
+
+// Graceful shutdown on pipe closure (Claude Desktop exit/reload)
+// Without this, writing to a closed stdout crashes with EPIPE
+process.stdout.on('error', () => process.exit(0));
+process.stdin.on('end', () => process.exit(0));
 
 /**
  * Create and start the MCP server
