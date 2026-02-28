@@ -1,15 +1,17 @@
 {
-  "args": [],
-  "command": "~/.local/share/prompthub/mcps/prompthub-bridge.js",
+  "command": "node",
+  "args": [
+    "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
+  ],
   "env": {
-    "AUTHORIZATION": "Bearer sk-prompthub-perplexity-dev001",
+    "PROMPTHUB_URL": "http://127.0.0.1:9090",
     "CLIENT_NAME": "perplexity",
+    "AUTHORIZATION": "Bearer sk-prompthub-perplexity-dev001",
+    "SERVERS": "obsidian,context7,sequential-thinking,deepseek-reasoner,desktop-commander",
     "EXCLUDE_TOOLS": "perplexity,desktop-commander_get_config,desktop-commander_set_config_value,desktop-commander_get_usage_stats,desktop-commander_get_recent_tool_calls,desktop-commander_get_prompts,desktop-commander_give_feedback_to_desktop_commander,desktop-commander_create_directory,desktop-commander_move_file,desktop-commander_interact_with_process,desktop-commander_list_sessions,desktop-commander_kill_process,desktop-commander_force_terminate,desktop-commander_stop_search,duckduckgo",
     "OBSIDIAN_API_KEY": "e879f4edb34964a0c5578a549516fbd296e079a4c3b0429f28b98f3264dc2e0e",
     "OBSIDIAN_HOST": "https://127.0.0.1",
-    "OBSIDIAN_PORT": "27124",
-    "PROMPTHUB_URL": "http://127.0.0.1:9090",
-    "SERVERS": "obsidian,context7,sequential-thinking,deepseek-reasoner,desktop-commander"
+    "OBSIDIAN_PORT": "27124"
   },
   "useBuiltInNode": true
 }

@@ -7,8 +7,10 @@
       ],
       "env": {
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
-        "CLIENT_NAME": "raycast",
-        "AUTHORIZATION": "Bearer sk-prompthub-raycast-dev001"
+        "CLIENT_NAME": "claude-desktop",
+        "AUTHORIZATION": "Bearer sk-prompthub-claude-desktop",
+        "SERVERS": "context7,deepseek-reasoner,desktop-commander,sequential-thinking",
+        "EXCLUDE_TOOLS": "duckduckgo,perplexity,obsidian"
       }
     }
   }

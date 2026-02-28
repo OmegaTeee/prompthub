@@ -23,7 +23,8 @@ prompthub/
 │   │   ├── pipelines/            # Documentation generation workflow
 │   │   ├── resilience/           # Circuit breaker (CLOSED→OPEN→HALF_OPEN)
 │   │   └── servers/              # MCP server lifecycle (bridge, process, registry, supervisor)
-│   ├── tests/                    # Pytest suite (19 test files, 225 passing)
+│   ├── cli/                      # MCP Config Manager (Typer CLI: generate, install, validate, diff, list, diagnose)
+│   ├── tests/                    # Pytest suite (20 test files, 272 passing)
 │   ├── configs/                  # Runtime configs (mcp-servers.json, enhancement-rules.json, api-keys.json)
 │   ├── templates/                # Jinja2 templates (dashboard HTML)
 │   ├── scripts/                  # Shell scripts (dev, manual tests)
@@ -76,7 +77,8 @@ prompthub/
 | `dashboard/` | HTMX templates, real-time partials | servers/, cache/, enhancement/ |
 | `middleware/` | Audit context propagation, activity logging | — |
 | `pipelines/` | Multi-step documentation workflow | enhancement/, servers/ |
-| `clients/` | Config generators for desktop apps (Python: `router/clients/`) | config/, servers/ |
+| `clients/` | Config generators for desktop apps (delegates to `cli/`) | cli/ |
+| `cli/` | MCP Config Manager — path-safe config generation, validation, diagnostics | config/ |
 
 ## Documentation Split
 

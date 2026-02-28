@@ -13,6 +13,7 @@
 | Credential Store | macOS Keychain (keyring) | 24.0+ |
 | Logging | structlog | 25.0+ (JSON structured) |
 | Metrics | prometheus_client | 0.20+ |
+| CLI Framework | Typer | 0.12+ |
 | MCP Bridge | Node.js | 20+ |
 
 ## Build System
@@ -44,6 +45,11 @@ cd app && ruff format router/
 
 # Health check
 curl http://localhost:9090/health
+
+# MCP Config Manager CLI
+cd app && python -m cli generate claude-desktop
+cd app && python -m cli validate claude-desktop
+cd app && python -m cli diagnose
 ```
 
 ## Code Style

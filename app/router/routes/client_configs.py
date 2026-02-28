@@ -3,11 +3,10 @@
 import logging
 
 from fastapi import APIRouter
-from fastapi.responses import PlainTextResponse
 
 from router.clients import (
     generate_claude_desktop_config,
-    generate_raycast_script,
+    generate_raycast_config,
     generate_vscode_config,
     generate_vscode_tasks,
 )
@@ -21,19 +20,19 @@ def create_client_configs_router() -> APIRouter:
 
     @router.get("/configs/claude-desktop")
     async def get_claude_desktop_config():
-        """Generate Claude Desktop configuration for PromptHub."""
+        """Generate Claude Desktop bridge configuration for PromptHub."""
         settings = get_settings()
         return generate_claude_desktop_config(
-            router_host="localhost",
+            router_host="127.0.0.1",
             router_port=settings.port,
         )
 
     @router.get("/configs/vscode")
     async def get_vscode_config():
-        """Generate VS Code MCP configuration for PromptHub."""
+        """Generate VS Code bridge configuration for PromptHub."""
         settings = get_settings()
         return generate_vscode_config(
-            router_host="localhost",
+            router_host="127.0.0.1",
             router_port=settings.port,
         )
 
@@ -42,18 +41,17 @@ def create_client_configs_router() -> APIRouter:
         """Generate VS Code tasks.json for PromptHub pipelines."""
         settings = get_settings()
         return generate_vscode_tasks(
-            router_host="localhost",
+            router_host="127.0.0.1",
             router_port=settings.port,
         )
 
     @router.get("/configs/raycast")
-    async def get_raycast_script():
-        """Generate Raycast script for MCP queries."""
+    async def get_raycast_config():
+        """Generate Raycast bridge configuration for PromptHub."""
         settings = get_settings()
-        script = generate_raycast_script(
-            router_host="localhost",
+        return generate_raycast_config(
+            router_host="127.0.0.1",
             router_port=settings.port,
         )
-        return PlainTextResponse(content=script, media_type="text/plain")
 
     return router

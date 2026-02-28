@@ -12,8 +12,9 @@ This is a **multi-root workspace** with clear separation between the Python proj
 
 ```
 prompthub/                        # Workspace root
-├── app/                          # Python project (FastAPI router)
+├── app/                          # Python project (FastAPI router + CLI)
 │   ├── router/                   # FastAPI application
+│   ├── cli/                      # MCP Config Manager (Typer CLI)
 │   ├── tests/                    # Pytest suite
 │   ├── configs/                  # Runtime configs (mcp-servers.json, api-keys.json, etc.)
 │   ├── templates/                # Jinja2 + HTMX templates (dashboard, partials)
@@ -54,6 +55,12 @@ cd app && ruff format router/
 # Verify health
 curl http://localhost:9090/health
 
+# MCP Config Manager CLI (from app/ directory)
+cd app && python -m cli generate claude-desktop    # Print bridge config JSON
+cd app && python -m cli validate claude-desktop    # Check installed config
+cd app && python -m cli diagnose                   # Full stack health check
+cd app && python -m cli list                       # Show all clients + paths
+
 # LaunchAgent (production daemon)
 launchctl kickstart -k gui/$(id -u)/com.prompthub.router
 tail -f logs/router-stderr.log
@@ -75,7 +82,8 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 | `memory/` | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync) |
 | `dashboard/` | HTMX observability UI (servers, cache, circuit breakers, Ollama, memory panels) |
 | `pipelines/` | Workflow orchestration (documentation generation) |
-| `clients/` | Config generators for Claude Desktop, VS Code, Raycast (Python module in `router/clients/`) |
+| `clients/` | Config generators for desktop apps (delegates to `cli/` for bridge configs) |
+| `cli/` | MCP Config Manager CLI — generate, install, validate, diff, list, diagnose (Typer) |
 | `middleware/` | Audit context, activity logging, request timeout, persistent storage |
 | `audit.py` | Structured audit logging with security alerts |
 | `security_alerts.py` | Real-time anomaly detection and alerting |
@@ -130,7 +138,9 @@ POST /v1/chat/completions       OpenAI-compatible proxy → Ollama (bearer auth,
 GET  /v1/models                 List Ollama models (OpenAI format)
 GET  /audit/activity            Query persistent activity log
 GET  /security/alerts           Recent security alerts
-GET  /configs/claude-desktop    Generate Claude Desktop config for PromptHub
+GET  /configs/claude-desktop    Generate Claude Desktop bridge config
+GET  /configs/vscode            Generate VS Code bridge config
+GET  /configs/raycast           Generate Raycast bridge config
 ```
 
 ## Code Style
