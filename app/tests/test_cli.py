@@ -175,10 +175,10 @@ class TestConfigGenerator:
     def test_generate_with_exclude_tools(self, generator):
         config = generator.generate(
             ClientType.claude_desktop,
-            exclude_tools=["duckduckgo", "obsidian"],
+            exclude_tools=["duckduckgo", "perplexity"],
         )
         entry = config["mcpServers"]["prompthub"]
-        assert entry["env"]["EXCLUDE_TOOLS"] == "duckduckgo,obsidian"
+        assert entry["env"]["EXCLUDE_TOOLS"] == "duckduckgo,perplexity"
 
     def test_generate_with_extra_env(self, generator):
         config = generator.generate(

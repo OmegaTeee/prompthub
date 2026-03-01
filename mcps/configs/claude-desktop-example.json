@@ -10,7 +10,7 @@
         "CLIENT_NAME": "claude-desktop",
         "AUTHORIZATION": "Bearer sk-prompthub-claude-desktop",
         "SERVERS": "context7,deepseek-reasoner,desktop-commander,sequential-thinking",
-        "EXCLUDE_TOOLS": "duckduckgo,perplexity,obsidian"
+        "EXCLUDE_TOOLS": "duckduckgo,perplexity"
       }
     }
   }

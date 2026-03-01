@@ -20,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from router.audit import audit_admin_action, setup_audit_logging
+from router.orchestrator import OrchestratorAgent, get_orchestrator_agent
 from router.config import get_settings
 from router.dashboard import create_dashboard_router
 from router.enhancement import EnhancementService, OllamaConfig
@@ -49,6 +50,7 @@ supervisor: Supervisor | None = None
 enhancement_service: EnhancementService | None = None
 circuit_breakers: CircuitBreakerRegistry | None = None
 documentation_pipeline: DocumentationPipeline | None = None
+orchestrator_agent: OrchestratorAgent | None = None
 persistent_activity_log = None  # Will be initialized in lifespan
 session_storage = None  # Will be initialized in lifespan
 memory_mcp_client = None  # Will be initialized in lifespan
@@ -122,7 +124,7 @@ async def _rebuild_gateway() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown."""
-    global registry, supervisor, enhancement_service, circuit_breakers, documentation_pipeline, persistent_activity_log, session_storage, memory_mcp_client
+    global registry, supervisor, enhancement_service, circuit_breakers, documentation_pipeline, orchestrator_agent, persistent_activity_log, session_storage, memory_mcp_client
 
     # Startup
     settings = get_settings()
@@ -192,6 +194,12 @@ async def lifespan(app: FastAPI):
         supervisor=supervisor,
     )
 
+    # Initialize orchestrator agent (qwen3:14b)
+    # Uses same Ollama instance as enhancement — separate CircuitBreaker
+    orchestrator_agent = get_orchestrator_agent(ollama_config)
+    await orchestrator_agent.initialize()
+    logger.info(f"Orchestrator agent initialized (model: qwen3:14b)")
+
     yield
 
     # Shutdown
@@ -206,6 +214,9 @@ async def lifespan(app: FastAPI):
 
     if enhancement_service:
         await enhancement_service.close()
+
+    if orchestrator_agent:
+        await orchestrator_agent.close()
 
     if supervisor:
         await supervisor.stop()
@@ -476,6 +487,7 @@ app.include_router(create_mcp_proxy_router(
 
 app.include_router(create_enhancement_router(
     get_enhancement_service=lambda: enhancement_service,
+    get_orchestrator_agent=lambda: orchestrator_agent,
 ))
 
 app.include_router(create_audit_router(

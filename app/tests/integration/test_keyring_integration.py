@@ -23,9 +23,7 @@ def test_process_env_config():
     km = get_keyring_manager()
 
     test_config = {
-        "OBSIDIAN_API_KEY": {"source": "keyring", "service": "prompthub", "key": "obsidian_api_key"},
-        "OBSIDIAN_HOST": "https://127.0.0.1",
-        "OBSIDIAN_PORT": "27124",
+        "PERPLEXITY_API_KEY": {"source": "keyring", "service": "prompthub", "key": "perplexity_api_key"},
         "_comment": "This should be skipped",
     }
 

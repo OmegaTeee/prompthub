@@ -22,7 +22,7 @@ class DocumentationResult(BaseModel):
 
     status: str
     output_path: str
-    obsidian_url: str | None = None
+    file_url: str | None = None
     content_length: int = 0
     error: str | None = None
 
@@ -49,7 +49,7 @@ class DocumentationPipeline:
         self,
         enhancement_service: Any,
         supervisor: Any,
-        default_vault_path: str = "~/Obsidian/Projects",
+        default_vault_path: str = "~/Vault/PromptHub",
     ):
         """
         Initialize the documentation pipeline.
@@ -121,12 +121,12 @@ class DocumentationPipeline:
             write_success = await self._write_to_vault(output_path, final_doc)
 
             if write_success:
-                obsidian_url = f"obsidian://open?vault=Projects&file={project_name}"
+                file_url = f"file://{output_path}"
                 logger.info(f"Documentation written to {output_path}")
                 return DocumentationResult(
                     status="complete",
                     output_path=output_path,
-                    obsidian_url=obsidian_url,
+                    file_url=file_url,
                     content_length=len(final_doc),
                 )
             else:
@@ -253,7 +253,7 @@ generator: prompthub-documentation-pipeline
 
     async def _write_to_vault(self, path: str, content: str) -> bool:
         """
-        Write content to Obsidian vault using Desktop Commander.
+        Write content to vault using Desktop Commander.
 
         Returns True if write succeeded, False otherwise.
         """

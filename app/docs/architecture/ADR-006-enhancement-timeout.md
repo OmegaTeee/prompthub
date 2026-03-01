@@ -1,7 +1,7 @@
 # ADR-006: Enhancement Timeout & Unified Model
 
 ## Status
-Accepted
+Superseded (timeout tuning retained; unified model replaced by task-specific model strategy)
 
 ## Context
 The prompt enhancement service was failing intermittently — working when Ollama had the model "hot" in VRAM but silently timing out on cold starts. The root cause was a compound failure across three independent timeout layers.
@@ -137,3 +137,4 @@ enhancement_service = EnhancementService(
 
 ## Revision History
 - 2026-02-24: Initial decision after diagnosing intermittent enhancement failures
+- 2026-02-28: Superseded by ADR-008 — unified model replaced with task-specific model strategy. Timeout tuning from this ADR is retained unchanged.

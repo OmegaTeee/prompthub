@@ -75,6 +75,15 @@ def create_dashboard_router(
     return router
 ```
 
+### Ollama Model Roles
+
+| Role | Model | Purpose |
+|------|-------|---------|
+| Enhancement (default) | `gemma3:4b` | Fast prompt rewriting |
+| Enhancement (claude-desktop) | `gemma3:27b` | Higher-quality rewriting |
+| Enhancement (claude-code) | `qwen3-coder:30b` | Code-specialized rewriting |
+| Orchestrator | `qwen3:14b` | Intent classification, tool suggestions |
+
 ### Circuit Breaker States
 `CLOSED` (normal) → 3 failures → `OPEN` (reject all) → 30s → `HALF_OPEN` (test one) → success → `CLOSED`
 

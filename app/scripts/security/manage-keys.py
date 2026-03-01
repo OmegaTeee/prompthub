@@ -17,16 +17,16 @@ Usage:
 
 Examples:
     # Set API key (will prompt for value)
-    ./scripts/security/manage-keys.py set obsidian_api_key
+    ./scripts/security/manage-keys.py set perplexity_api_key
 
     # Set with value directly (less secure, shows in shell history)
-    ./scripts/security/manage-keys.py set obsidian_api_key YOUR_API_KEY
+    ./scripts/security/manage-keys.py set perplexity_api_key YOUR_API_KEY
 
     # Get API key
-    ./scripts/security/manage-keys.py get obsidian_api_key
+    ./scripts/security/manage-keys.py get perplexity_api_key
 
     # Migrate from macOS Keychain (security CLI)
-    ./scripts/security/manage-keys.py migrate obsidian_api_key
+    ./scripts/security/manage-keys.py migrate perplexity_api_key
 """
 
 import logging
@@ -48,9 +48,8 @@ SERVICE_NAME = "prompthub"
 
 # Known keys for PromptHub (must match mcp-servers.json keyring references)
 KNOWN_KEYS = [
-    "obsidian_api_key",
-    "github_api_key",
     "perplexity_api_key",
+    "github_api_key",
     "brave_api_key",
 ]
 

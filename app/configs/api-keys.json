@@ -1,14 +1,9 @@
 {
   "keys": {
-    "sk-prompthub-obsidian-dev001": {
-      "client_name": "obsidian",
-      "enhance": false,
-      "description": "Obsidian plugin"
-    },
     "sk-prompthub-raycast-dev001": {
       "client_name": "raycast",
-      "enhance": false,
-      "description": "Raycast commands"
+      "enhance": true,
+      "description": "Raycast commands (enhanced)"
     },
     "sk-prompthub-perplexity-dev001": {
       "client_name": "perplexity",

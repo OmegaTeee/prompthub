@@ -305,8 +305,7 @@ class TestCrossClientFeatures:
             "sequential-thinking",
             "memory",
             "deepseek-reasoner",
-            "duckduckgo",
-            "obsidian"
+            "duckduckgo"
         ]
 
         clients = ["claude-desktop", "vscode", "raycast"]

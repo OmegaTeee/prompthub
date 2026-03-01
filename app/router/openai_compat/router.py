@@ -126,6 +126,13 @@ def create_openai_compat_router(
             stream=body.stream,
         )
 
+        # Guard: reject placeholder model names (e.g. OpenAPI default "string")
+        if not body.model or body.model in ("string", "model", "") or " " in body.model:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid model name: '{body.model}'. Provide a valid Ollama model (e.g. 'gemma3:4b').",
+            )
+
         # Circuit breaker check
         cb_registry = circuit_breakers()
         breaker = cb_registry.get("ollama-proxy") if cb_registry else None

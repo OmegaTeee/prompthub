@@ -17,6 +17,7 @@ prompthub/
 │   │   ├── config/               # Pydantic Settings, JSON config loading
 │   │   ├── dashboard/            # HTMX monitoring UI (factory router)
 │   │   ├── enhancement/          # Ollama HTTP clients, per-client rules, cloud fallback (OpenRouter)
+│   │   ├── orchestrator/         # Pre-enhancement intent classifier (qwen3:14b)
 │   │   ├── middleware/            # Audit context, activity logging
 │   │   ├── memory/               # Session memory (SQLite-backed facts, blocks, MCP sync)
 │   │   ├── openai_compat/        # OpenAI proxy /v1/* (factory router)
@@ -30,7 +31,7 @@ prompthub/
 │   ├── scripts/                  # Shell scripts (dev, manual tests)
 │   ├── docs/                     # Developer documentation
 │   │   ├── api/                  # OpenAPI spec + API overview
-│   │   ├── architecture/         # 7 ADRs
+│   │   ├── architecture/         # 8 ADRs
 │   │   ├── modules/              # Module docs (servers/ + coverage analysis)
 │   │   ├── features/             # Completed feature docs
 │   │   ├── audit/                # 3-phase audit implementation
@@ -73,6 +74,7 @@ prompthub/
 | `resilience/` | Circuit breaker state machine | — |
 | `cache/` | LRU cache with hit/miss tracking | — |
 | `enhancement/` | Ollama clients, per-client model routing | cache/, resilience/ |
+| `orchestrator/` | Intent classification, prompt annotation, tool suggestion | enhancement/ (OllamaClient), resilience/ |
 | `openai_compat/` | Bearer auth, SSE streaming, /v1 endpoints | enhancement/, resilience/ |
 | `dashboard/` | HTMX templates, real-time partials | servers/, cache/, enhancement/ |
 | `middleware/` | Audit context propagation, activity logging | — |

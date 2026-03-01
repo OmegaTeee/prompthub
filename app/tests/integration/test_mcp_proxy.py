@@ -56,8 +56,7 @@ class TestMCPProxyRouting:
             "sequential-thinking",
             "memory",
             "deepseek-reasoner",
-            "duckduckgo",
-            "obsidian"
+            "duckduckgo"
         ]
 
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
