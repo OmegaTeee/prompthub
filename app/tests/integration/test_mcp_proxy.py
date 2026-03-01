@@ -55,7 +55,6 @@ class TestMCPProxyRouting:
             "desktop-commander",
             "sequential-thinking",
             "memory",
-            "deepseek-reasoner",
             "duckduckgo"
         ]
 

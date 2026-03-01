@@ -137,7 +137,7 @@ HTMX-powered monitoring UI at `localhost:9090/dashboard` with auto-refreshing pa
 
 ## MCP Servers
 
-PromptHub manages 7 MCP servers:
+PromptHub manages 6 MCP servers:
 
 | Server | Package | Auto-Start | Description |
 |--------|---------|------------|-------------|
@@ -146,7 +146,6 @@ PromptHub manages 7 MCP servers:
 | sequential-thinking | @modelcontextprotocol/server-sequential-thinking | Yes | Step-by-step reasoning |
 | obsidian | obsidian-mcp-tools | Yes | Semantic search, templates for Obsidian vault |
 | memory | @modelcontextprotocol/server-memory | No | Cross-session persistence |
-| deepseek-reasoner | deepseek-reasoner-mcp | No | Local reasoning |
 | fetch | mcp-fetch | No | HTTP fetch, GraphQL |
 
 > See [app/configs/mcp-servers.json.examples](app/configs/mcp-servers.json.examples) for additional server examples including Python-based MCPs.

@@ -48,18 +48,6 @@
       "health_check_interval": 30,
       "description": "Cross-session context persistence"
     },
-    "deepseek-reasoner": {
-      "package": "deepseek-reasoner-mcp",
-      "transport": "stdio",
-      "command": "node",
-      "args": ["./mcps/node_modules/deepseek-reasoner-mcp/dist/index.js"],
-      "env": {},
-      "auto_start": true,
-      "restart_on_failure": true,
-      "max_restarts": 3,
-      "health_check_interval": 30,
-      "description": "Local reasoning without API costs"
-    },
     "duckduckgo": {
       "package": "ddg-mcp-search",
       "transport": "stdio",

@@ -11,8 +11,7 @@
     "@perplexity-ai/mcp-server": "^0.8.2",
     "@upstash/context7-mcp": "2.1.1",
     "@wonderwhy-er/desktop-commander": "0.2.35",
-    "ddg-mcp-search": "1.1.0",
-    "deepseek-reasoner-mcp": "1.0.2"
+    "ddg-mcp-search": "1.1.0"
   },
   "devDependencies": {
     "@types/node": "^25.3.2"

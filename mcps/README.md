@@ -32,11 +32,7 @@ Installed via `npm install` in this directory:
    - Cross-session context persistence
    - Auto-start: No
 
-5. **deepseek-reasoner** - `deepseek-reasoner-mcp`
-   - Local reasoning without API costs
-   - Auto-start: No
-
-6. **fetch** - `mcp-fetch`
+5. **fetch** - `mcp-fetch`
    - HTTP fetch, GraphQL, WebSocket, browser automation
    - Auto-start: No
 

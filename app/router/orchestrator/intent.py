@@ -57,6 +57,6 @@ INTENT_SERVER_MAP: dict[IntentCategory, list[str]] = {
     IntentCategory.SEARCH: ["context7"],
     IntentCategory.MEMORY: ["memory"],
     IntentCategory.WORKFLOW: ["sequential-thinking", "desktop-commander"],
-    IntentCategory.REASONING: ["sequential-thinking", "deepseek-reasoner"],
+    IntentCategory.REASONING: ["sequential-thinking"],
     IntentCategory.GENERAL: [],
 }

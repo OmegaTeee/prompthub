@@ -15,7 +15,7 @@
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
         "CLIENT_NAME": "claude-desktop",
         "EXCLUDE_TOOLS": "duckduckgo,perplexity",
-        "SERVERS": "context7,deepseek-reasoner,desktop-commander,sequential-thinking"
+        "SERVERS": "context7,desktop-commander,sequential-thinking"
       }
     }
   }

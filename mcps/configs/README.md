@@ -16,8 +16,8 @@ python -m cli generate vscode
 
 # With server filter and tool exclusions
 python -m cli generate claude-desktop \
-  --servers "context7,deepseek-reasoner,desktop-commander,sequential-thinking" \
-  --exclude-tools "duckduckgo,perplexity,obsidian"
+  --servers "context7,desktop-commander,sequential-thinking" \
+  --exclude-tools "duckduckgo,perplexity"
 
 # Validate an installed config for common issues
 python -m cli validate claude-desktop
@@ -55,7 +55,7 @@ Desktop Client  ──stdio──►  prompthub-bridge.js  ──HTTP──►  
                                                               ┌─────┴─────┐
                                                               ▼           ▼
                                                           context7   desktop-commander
-                                                          deepseek   sequential-thinking
+                                                          sequential-thinking   memory
                                                           ...        ...
 ```
 

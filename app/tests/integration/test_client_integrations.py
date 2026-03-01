@@ -298,13 +298,12 @@ class TestCrossClientFeatures:
 
     @pytest.mark.asyncio
     async def test_all_mcp_servers_accessible_from_all_clients(self):
-        """Test that all 7 MCP servers are accessible from each client."""
+        """Test that all MCP servers are accessible from each client."""
         servers = [
             "context7",
             "desktop-commander",
             "sequential-thinking",
             "memory",
-            "deepseek-reasoner",
             "duckduckgo"
         ]
 
