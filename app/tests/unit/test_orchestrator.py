@@ -9,8 +9,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from router.orchestrator.agent import OrchestratorAgent, _strip_think_blocks
+from router.orchestrator.agent import (
+    CHARS_PER_TOKEN,
+    CONTEXT_TOKEN_BUDGET,
+    OrchestratorAgent,
+    _strip_think_blocks,
+)
 from router.orchestrator.intent import IntentCategory, OrchestratorResult
+from router.resilience import CircuitBreakerError, CircuitState
 
 
 # ── Helper ─────────────────────────────────────────────────────────────────────
@@ -83,7 +89,8 @@ async def test_process_returns_passthrough_on_timeout(agent):
         import asyncio
         await asyncio.sleep(10)
 
-    with patch.object(agent._client, "generate", new=AsyncMock(side_effect=_slow)):
+    with patch("router.orchestrator.agent.TIMEOUT_SECONDS", 0.01), \
+         patch.object(agent._client, "generate", new=AsyncMock(side_effect=_slow)):
         result = await agent.process("hello")
 
     assert result.skipped is True
@@ -254,3 +261,53 @@ async def test_cache_eviction(agent):
         await agent.process("third")  # should evict "first"
 
     assert len(agent._cache) == 2
+
+
+# ── Circuit breaker ──────────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_process_passthrough_when_circuit_open(agent):
+    """Circuit breaker in OPEN state returns pass-through without calling model."""
+    import time as _time
+
+    agent._breaker._stats.state = CircuitState.OPEN
+    agent._breaker._stats.last_failure_time = _time.time()  # recently opened
+
+    result = await agent.process("hello")
+
+    assert result.skipped is True
+    assert result.error == "circuit_open"
+
+
+# ── Session context truncation ───────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_session_context_truncated_to_budget(agent):
+    """Session context exceeding the token budget is truncated."""
+    budget_chars = CONTEXT_TOKEN_BUDGET * CHARS_PER_TOKEN
+    long_context = "x" * (budget_chars + 500)
+
+    payload = {
+        "intent": "general",
+        "suggested_tools": [],
+        "context_hints": [],
+        "annotated_prompt": "hi",
+        "reasoning": "Greeting.",
+        "confidence": 1.0,
+    }
+    captured_prompt = None
+
+    async def _capture(**kwargs):
+        nonlocal captured_prompt
+        captured_prompt = kwargs.get("prompt", "")
+        return _mock_ollama_response(payload)
+
+    with patch.object(agent._client, "generate", new=AsyncMock(side_effect=_capture)):
+        await agent.process("hi", session_context=long_context)
+
+    # The context block should be present but truncated to budget
+    assert "[SESSION_CONTEXT]" in captured_prompt
+    ctx_start = captured_prompt.index("[SESSION_CONTEXT]\n") + len("[SESSION_CONTEXT]\n")
+    ctx_end = captured_prompt.index("\n[/SESSION_CONTEXT]")
+    injected_context = captured_prompt[ctx_start:ctx_end]
+    assert len(injected_context) == budget_chars
