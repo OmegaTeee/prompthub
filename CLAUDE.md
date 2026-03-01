@@ -70,27 +70,27 @@ tail -f logs/router-stderr.log
 
 This is a **modular monolith** built with FastAPI. The main package is `app/router/` with these modules:
 
-| Module | Purpose |
-|--------|---------|
-| `routes/` | Route handlers extracted from main.py (health, servers, mcp_proxy, enhancement, audit, pipelines, client_configs) |
-| `config/` | Pydantic settings, JSON config loading |
-| `servers/` | MCP server lifecycle via FastMCP (spawn, monitor, restart stdio processes) |
-| `resilience/` | Circuit breaker (CLOSED → OPEN → HALF_OPEN states) |
-| `cache/` | L1 in-memory LRU + L2 SQLite persistent write-through cache |
-| `enhancement/` | Ollama HTTP client (native + OpenAI-compat), per-client prompt enhancement, cloud fallback via OpenRouter |
-| `orchestrator/` | Pre-enhancement intent classifier (qwen3:14b) — classifies prompts, suggests tools, annotates for enhancement |
-| `openai_compat/` | OpenAI-compatible `/v1/` proxy with bearer auth and optional enhancement |
-| `memory/` | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync) |
-| `tool_registry/` | MCP tool definition cache (SQLite-backed snapshots, automatic archival, cache-through proxy) |
-| `dashboard/` | HTMX observability UI (servers, cache, circuit breakers, Ollama, memory, tool registry panels) |
-| `pipelines/` | Workflow orchestration (documentation generation) |
-| `clients/` | Config generators for desktop apps (delegates to `cli/` for bridge configs) |
-| `cli/` | MCP Config Manager CLI — generate, install, validate, diff, list, diagnose (Typer) |
-| `middleware/` | Audit context, activity logging, request timeout, persistent storage |
-| `audit.py` | Structured audit logging with security alerts |
-| `security_alerts.py` | Real-time anomaly detection and alerting |
-| `audit_integrity.py` | Tamper detection with SHA256 checksums |
-| `keyring_manager.py` | Credential management with macOS Keychain |
+| Module               | Purpose                                                                                                           |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `routes/`            | Route handlers extracted from main.py (health, servers, mcp_proxy, enhancement, audit, pipelines, client_configs) |
+| `config/`            | Pydantic settings, JSON config loading                                                                            |
+| `servers/`           | MCP server lifecycle via FastMCP (spawn, monitor, restart stdio processes)                                        |
+| `resilience/`        | Circuit breaker (CLOSED → OPEN → HALF_OPEN states)                                                                |
+| `cache/`             | L1 in-memory LRU + L2 SQLite persistent write-through cache                                                       |
+| `enhancement/`       | Ollama HTTP client (native + OpenAI-compat), per-client prompt enhancement, cloud fallback via OpenRouter, token budget truncation |
+| `orchestrator/`      | Pre-enhancement intent classifier (qwen3:14b) — classifies prompts, suggests tools, annotates for enhancement     |
+| `openai_compat/`     | OpenAI-compatible `/v1/` proxy with bearer auth and optional enhancement                                          |
+| `memory/`            | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync)                              |
+| `tool_registry/`     | MCP tool definition cache (SQLite-backed snapshots, automatic archival, cache-through proxy)                      |
+| `dashboard/`         | HTMX observability UI (servers, cache, circuit breakers, Ollama, memory, tool registry panels)                    |
+| `pipelines/`         | Workflow orchestration (documentation generation)                                                                 |
+| `clients/`           | Config generators for desktop apps (delegates to `cli/` for bridge configs)                                       |
+| `cli/`               | MCP Config Manager CLI — generate, install, validate, diff, list, diagnose (Typer)                                |
+| `middleware/`        | Audit context, activity logging, request timeout, persistent storage                                              |
+| `audit.py`           | Structured audit logging with security alerts                                                                     |
+| `security_alerts.py` | Real-time anomaly detection and alerting                                                                          |
+| `audit_integrity.py` | Tamper detection with SHA256 checksums                                                                            |
+| `keyring_manager.py` | Credential management with macOS Keychain                                                                         |
 
 ### Request Flow
 
@@ -115,6 +115,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - **Cloud fallback**: When Ollama fails, `free_ok`/`any` clients fall back to OpenRouter free-tier; `local_only` never leaves localhost
 - **Tool registry cache-through**: `tools/list` responses cached in SQLite (24h TTL), served from cache on subsequent requests; old snapshots archived automatically for long-term access
 - **Schema minification**: Bridge strips verbose fields (`description`, `title`, `examples`, `default`) from tool `inputSchema` before sending to LLM clients, reducing context usage by ~67%
+- **Token budget**: Enhancement input capped at 4,096 tokens via `TokenBudget` — truncates at word boundaries with notice; prevents wasting context on prompt rewrites
 
 ## Configuration Files
 
@@ -218,10 +219,15 @@ For detailed audit system documentation, see `app/docs/audit/`
 
 Steering documents guide AI agents with project-specific conventions and patterns. These documents are located in `.claude/steering/`:
 
-| Document | Purpose | Path |
-|----------|---------|------|
-| **product.md** | Product purpose, value proposition, key features, business rules, request lifecycle | `.claude/steering/product.md` |
-| **tech.md** | Tech stack, frameworks, build system, common commands, code style requirements | `.claude/steering/tech.md` |
+| Document         | Purpose                                                                             | Path                            |
+| ---------------- | ----------------------------------------------------------------------------------- | ------------------------------- |
+| **product.md**   | Product purpose, value proposition, key features, business rules, request lifecycle | `.claude/steering/product.md`   |
+| **tech.md**      | Tech stack, frameworks, build system, common commands, code style requirements      | `.claude/steering/tech.md`      |
 | **structure.md** | Directory organization, file naming patterns, module responsibilities, request flow | `.claude/steering/structure.md` |
+
+## Available agents
+
+- `code-docs`: Improve docstrings, comments, and type hints for existing code without changing behavior.
+- `user-manual`: Generate user-facing documentation (Quickstart, Usage, Examples) based on the current codebase.
 
 These documents provide focused guidance for AI agents working on this codebase and should be referenced during onboarding and complex tasks.

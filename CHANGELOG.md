@@ -38,10 +38,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - **Bridge.js tool name truncation**: Fixed `split('_', 2)` dropping tool name segments (e.g., `create_directory` → `create`); now uses `indexOf`/`substring` to split on first underscore only
 - **Gateway topology rebuild**: Added `_rebuild_gateway()` in `main.py` for `install_server` and `remove_server` endpoints — gateway re-mounts after topology changes
 
+- **Token budget for enhancement** (`context_window.py`): Caps enhancement input at 4,096 tokens — truncates at word boundaries with notice. Prevents wasting context on prompt rewrites for large inputs. `TokenBudget` class with `fits()`, `truncate()`, `summary()` methods.
+- `register_model()` — register model context windows at runtime without editing source
+- `app/tests/unit/test_context_window.py` — 20+ tests covering budget formula, truncation, word boundary snapping, registry mutations
+- `app/templates/partials/token-budget.html` — Dashboard panel showing per-client token budgets
+- `app/scripts/test.sh` — Test runner script (unit/integration/coverage/watch modes)
+- Cloud model registry entries for task-specific models: `gemma3:4b`, `gemma3:27b`, `qwen3-coder:30b`, `qwen3:14b` with cloud upgrade/equivalent mappings
+- `obsidian-mcp-tools` server entry in `mcp-servers.json` (keyring-sourced API key)
+- API keys for `claude-code` and `obsidian` clients
+- Project-level agent specs: `code-docs`, `user-manual` (`.claude/agents/`)
+
+### Changed
+- **Data directory**: Cache DB moved from `/tmp/prompthub/cache.db` to `~/.prompthub/cache.db` via new `DATA_DIR` setting — persistent storage that survives reboots
+- **`.mcp.json` consolidation**: Replaced 5 individual MCP server entries with single `prompthub` bridge — all tools now route through the PromptHub router for circuit breaking, caching, and audit
+- **API key naming**: Renamed `*-dev001` keys to `*-001` across configs and docs
+- **MCP client configs**: Replaced `claude-desktop-example.json` and `perplexity-mcp.json` with cleaner `claude-desktop.json`, `claude-code.json`, `perplexity.json`
+- **LaunchAgent plist**: Changed from inline file to symlink pointing at `~/Library/LaunchAgents/`
+- **Workspace**: Replaced `notes` symlink with Obsidian vault as VS Code workspace folder
+- Enhancement `cache_db_path` fallback now reads from `settings.cache_db_path` (single source of truth)
+- Disabled enhancement on raycast and vscode API keys (was enabled)
+- CLAUDE.md: added token budget pattern, enhancement module description, available agents section, table formatting
+
+### Removed
+- `mcps/configs/claude-desktop-example.json` (replaced by `claude-desktop.json`)
+- `mcps/configs/claude_desktop_config.json` (dangling symlink to Claude's live config)
+- `mcps/configs/perplexity-mcp.json` (replaced by `perplexity.json`)
+- `notes` symlink (replaced by workspace folder)
+
 ### Documentation TODO
 - [x] **CLAUDE.md**: Add `X-Privacy-Level` header, `provider` response field, `OPENROUTER_*` env vars, `routes/` module, privacy/cloud patterns
 - [x] **ADR-007**: Cloud fallback decision — why OpenRouter free-tier, why not Together/Groq/direct DeepSeek API
-- [x] **`.env.example`**: Add `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_TIMEOUT`, `OPENROUTER_DEFAULT_MODEL`, `CACHE_PERSISTENT`, `CACHE_DB_PATH`
+- [x] **`.env.example`**: Add `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_TIMEOUT`, `OPENROUTER_DEFAULT_MODEL`, `CACHE_PERSISTENT`, `CACHE_DB_PATH`, `DATA_DIR`
 - [x] **`app/docs/modules/`**: Update modules README with `routes/` package, enhancement privacy/cloud info
 - [x] **`structure.md`**: Update steering doc with `routes/` package and updated line counts
 - [ ] **Privacy & cloud fallback guide** (`app/docs/features/`): Privacy levels, per-client assignment, downgrade-only headers, cloud fallback flow, model mapping

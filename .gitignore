@@ -87,7 +87,6 @@ qdrant_data/
 *.tmp
 *.temp
 /tmp/
-# notes/
 
 # Claude Code agent specs (generated, not tracked)
 .claude/agents/kfc/

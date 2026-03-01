@@ -35,6 +35,7 @@ from router.enhancement.ollama_openai import (
     OllamaOpenAIError,
     OpenAICompatConfig,
 )
+from router.enhancement.context_window import TokenBudget
 from router.resilience import (
     CircuitBreaker,
     CircuitBreakerConfig,
@@ -138,7 +139,7 @@ class EnhancementService:
         cache_max_size: int = 500,
         cache_ttl: float = 7200.0,
         cache_persistent: bool = True,
-        cache_db_path: str = "/tmp/prompthub/cache.db",
+        cache_db_path: str = "",  # resolved to ~/.prompthub/cache.db if empty
         openrouter_enabled: bool = False,
         openrouter_api_key: str = "",
         openrouter_base_url: str = "https://openrouter.ai/api/v1",
@@ -169,6 +170,10 @@ class EnhancementService:
 
         # Determine which Ollama API to use
         settings = get_settings()
+
+        # Resolve cache_db_path from settings (single source of truth)
+        if not cache_db_path:
+            cache_db_path = settings.cache_db_path
         self._api_mode = settings.ollama_api_mode
 
         # Components - instantiate appropriate Ollama client
@@ -499,6 +504,19 @@ class EnhancementService:
             return await self._try_cloud_fallback(
                 prompt, rule, effective_privacy, client_name,
                 f"Ollama circuit breaker open, retry in {e.retry_after:.0f}s",
+            )
+
+        # Apply token budget — truncate if prompt exceeds what the model needs
+        budget = TokenBudget(
+            model=rule.model,
+            max_response_tokens=rule.max_tokens or 500,
+            system_prompt=rule.system_prompt,
+        )
+        prompt, was_truncated = budget.truncate(prompt)
+        if was_truncated:
+            logger.debug(
+                "Prompt truncated for model=%s budget=%d tokens client=%s",
+                rule.model, budget.available_for_input, client_name,
             )
 
         # Call Ollama

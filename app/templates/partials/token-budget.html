@@ -1,0 +1,52 @@
+<h3>&#x1F4CF; Token Budget per Client</h3>
+
+<p class="text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">
+  Shows how many tokens are available for the user's prompt after reserving
+  space for the system prompt, model response, and formatting overhead.
+  Input is capped at {{ rows[0].cap if rows else 4096 }} tokens regardless of model context size.
+</p>
+
+{% if rows %}
+<table>
+  <tr>
+    <th>Client</th>
+    <th>Model</th>
+    <th style="text-align:right;">Ctx</th>
+    <th style="text-align:right;">System</th>
+    <th style="text-align:right;">Response</th>
+    <th style="text-align:right;">Available</th>
+    <th style="text-align:right;">Chars</th>
+  </tr>
+  {% for row in rows %}
+  <tr {% if not row.enabled %}style="opacity:0.45;"{% endif %}>
+    <td>
+      <strong>{{ row.client }}</strong>
+      {% if not row.enabled %}
+      <span class="badge badge-warning" style="font-size:0.7rem;">off</span>
+      {% endif %}
+    </td>
+    <td><code style="font-size:0.8rem;">{{ row.model }}</code></td>
+    <td style="text-align:right;" class="text-muted">{{ row.context_k }}K</td>
+    <td style="text-align:right;" class="text-muted">~{{ row.system_tokens }}</td>
+    <td style="text-align:right;" class="text-muted">{{ row.max_response_tokens }}</td>
+    <td style="text-align:right;">
+      <strong>{{ "{:,}".format(row.available_tokens) }}</strong>
+      <span class="text-muted" style="font-size:0.75rem;">tok</span>
+    </td>
+    <td style="text-align:right; color: var(--green);">
+      {{ "{:,}".format(row.available_chars) }}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<p class="text-muted" style="font-size: 0.78rem; margin-top: 10px;">
+  Prompts under <strong>{{ "{:,}".format(rows[0].available_chars if rows else 14336) }} chars</strong>
+  pass through without truncation. Longer inputs are clipped at a word boundary
+  and the model is notified.
+</p>
+
+{% else %}
+<p class="text-muted">Could not load enhancement rules — check
+  <code>configs/enhancement-rules.json</code>.</p>
+{% endif %}

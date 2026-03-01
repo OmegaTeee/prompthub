@@ -1,40 +1,16 @@
 {
   "mcpServers": {
-    "context7": {
+    "prompthub": {
       "type": "stdio",
       "command": "node",
       "args": [
-        "${HOME}/.local/share/prompthub/mcps/node_modules/@upstash/context7-mcp/dist/index.js"
-      ]
-    },
-    "deepseek-reasoner": {
-      "type": "stdio",
-      "command": "node",
-      "args": [
-        "${HOME}/.local/share/prompthub/mcps/node_modules/deepseek-reasoner-mcp/dist/index.js"
-      ]
-    },
-    "desktop-commander": {
-      "type": "stdio",
-      "command": "node",
-      "args": [
-        "${HOME}/.local/share/prompthub/mcps/node_modules/@wonderwhy-er/desktop-commander/dist/index.js"
-      ]
-    },
-    "sequential-thinking": {
-      "type": "stdio",
-      "command": "node",
-      "args": [
-        "${HOME}/.local/share/prompthub/mcps/node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"
-      ]
-    },
-    "obsidian-mcp-tools": {
-      "type": "stdio",
-      "command": "${HOME}/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server",
+        "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
+      ],
       "env": {
-        "OBSIDIAN_API_KEY": "${OBSIDIAN_API_KEY}",
-        "OBSIDIAN_HOST": "https://127.0.0.1",
-        "OBSIDIAN_PORT": "27124"
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "AUTHORIZATION": "Bearer sk-prompthub-claude-code-001",
+        "CLIENT_NAME": "claude-code",
+        "SERVERS": "context7,deepseek-reasoner,desktop-commander,sequential-thinking"
       }
     },
     "skills-mcp": {
@@ -44,7 +20,7 @@
         "-y",
         "skills-mcp",
         "-s",
-        "${HOME}/.claude/skills"
+        "/Users/visualval/.claude/skills"
       ]
     }
   }

@@ -26,11 +26,16 @@ class Settings(BaseSettings):
     ollama_timeout: int = 30
     ollama_api_mode: str = "native"  # "native" or "openai" - API format to use
 
+    # Data directory — persistent storage for cache, activity log, memory db
+    # Defaults to ~/.prompthub (XDG-style user data dir, survives reboots)
+    # Override via DATA_DIR env var (e.g. DATA_DIR=/var/prompthub in production)
+    data_dir: str = ""
+
     # Cache
     cache_max_size: int = 1000
     cache_similarity_threshold: float = 0.85
     cache_persistent: bool = True
-    cache_db_path: str = "/tmp/prompthub/cache.db"
+    cache_db_path: str = ""  # resolved in model_post_init from data_dir
 
     # OpenRouter (cloud fallback)
     openrouter_enabled: bool = False
@@ -64,6 +69,14 @@ class Settings(BaseSettings):
             self.workspace_root = str(
                 Path(__file__).resolve().parents[3]
             )
+
+        # Resolve data_dir — persistent user data (cache, logs, memory)
+        if not self.data_dir:
+            self.data_dir = str(Path.home() / ".prompthub")
+
+        # Resolve cache_db_path from data_dir if not explicitly set
+        if not self.cache_db_path:
+            self.cache_db_path = str(Path(self.data_dir) / "cache.db")
 
         # Normalize ollama_host: strip scheme and port if present
         # (handles OLLAMA_HOST=http://localhost:11434 from system env)

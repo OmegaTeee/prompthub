@@ -72,6 +72,26 @@
       "health_check_interval": 30,
       "description": "DuckDuckGo web search with SafeSearch and region support"
     },
+    "obsidian-mcp-tools": {
+      "package": "obsidian-mcp-tools",
+      "transport": "stdio",
+      "command": "/Users/visualval/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server",
+      "args": [],
+      "env": {
+        "OBSIDIAN_API_KEY": {
+          "source": "keyring",
+          "service": "prompthub",
+          "key": "obsidian_api_key"
+        },
+        "OBSIDIAN_HOST": "https://127.0.0.1",
+        "OBSIDIAN_PORT": "27124"
+      },
+      "auto_start": true,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Obsidian vault operations via MCP Tools plugin"
+    },
     "perplexity": {
       "package": "@perplexity-ai/mcp-server",
       "transport": "stdio",

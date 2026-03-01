@@ -86,11 +86,11 @@ Desktop App → POST localhost:9090/v1/chat/completions
 
 Endpoints:
 
-|Endpoint|Auth|Description|
-|---|---|---|
-|`POST /v1/chat/completions`|Bearer|Chat completion with optional enhancement + streaming|
-|`GET /v1/models`|Bearer|List available Ollama models|
-|`POST /v1/api-keys/reload`|None (admin)|Hot-reload API keys config|
+| Endpoint                    | Auth         | Description                                           |
+| --------------------------- | ------------ | ----------------------------------------------------- |
+| `POST /v1/chat/completions` | Bearer       | Chat completion with optional enhancement + streaming |
+| `GET /v1/models`            | Bearer       | List available Ollama models                          |
+| `POST /v1/api-keys/reload`  | None (admin) | Hot-reload API keys config                            |
 
 **`POST /v1/chat/completions` flow:**
 
@@ -134,22 +134,22 @@ Endpoints:
 
 ## Files Modified
 
-|File|Change|
-|---|---|
-|`app/router/config/settings.py`|Add `api_keys_config` setting|
-|`app/router/main.py`|Initialize `ApiKeyManager` in lifespan, register router|
+| File                            | Change                                                  |
+| ------------------------------- | ------------------------------------------------------- |
+| `app/router/config/settings.py` | Add `api_keys_config` setting                           |
+| `app/router/main.py`            | Initialize `ApiKeyManager` in lifespan, register router |
 
 ## Files Created
 
-|File|Purpose|
-|---|---|
-|`app/configs/api-keys.json`|Bearer token → client name mapping|
-|`app/router/openai_compat/__init__.py`|Package export|
-|`app/router/openai_compat/models.py`|Request models + API key config|
-|`app/router/openai_compat/auth.py`|Token validation + key registry|
-|`app/router/openai_compat/streaming.py`|SSE relay for Ollama streaming|
-|`app/router/openai_compat/router.py`|Factory function + endpoints|
-|`app/tests/test_openai_compat.py`|Tests|
+| File                                    | Purpose                            |
+| --------------------------------------- | ---------------------------------- |
+| `app/configs/api-keys.json`             | Bearer token → client name mapping |
+| `app/router/openai_compat/__init__.py`  | Package export                     |
+| `app/router/openai_compat/models.py`    | Request models + API key config    |
+| `app/router/openai_compat/auth.py`      | Token validation + key registry    |
+| `app/router/openai_compat/streaming.py` | SSE relay for Ollama streaming     |
+| `app/router/openai_compat/router.py`    | Factory function + endpoints       |
+| `app/tests/test_openai_compat.py`       | Tests                              |
 
 ## Existing Code Reused
 
@@ -189,29 +189,29 @@ Endpoints:
 
 ### New Files (7)
 
-|File|Purpose|
-|---|---|
-|[api-keys.json](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/configs/api-keys.json)|Bearer token → client name mapping (3 keys: cursor, obsidian, raycast)|
-|[**init**.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/__init__.py)|Package export|
-|[models.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/models.py)|`ChatCompletionRequest`, `ApiKeyConfig`, `ApiKeysRegistry`|
-|[auth.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/auth.py)|`ApiKeyManager` — load, validate, reload API keys|
-|[streaming.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/streaming.py)|SSE relay from Ollama → desktop app|
-|[router.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/router.py)|Factory function with `/v1/chat/completions`, `/v1/models`, `/v1/api-keys/reload`|
-|[test_openai_compat.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/tests/test_openai_compat.py)|19 tests covering auth, models, helpers, endpoints|
+| File                                                                                                                           | Purpose                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| [api-keys.json](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/configs/api-keys.json)               | Bearer token → client name mapping (3 keys: cursor, obsidian, raycast)            |
+| [**init**.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/__init__.py)      | Package export                                                                    |
+| [models.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/models.py)          | `ChatCompletionRequest`, `ApiKeyConfig`, `ApiKeysRegistry`                        |
+| [auth.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/auth.py)              | `ApiKeyManager` — load, validate, reload API keys                                 |
+| [streaming.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/streaming.py)    | SSE relay from Ollama → desktop app                                               |
+| [router.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/openai_compat/router.py)          | Factory function with `/v1/chat/completions`, `/v1/models`, `/v1/api-keys/reload` |
+| [test_openai_compat.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/tests/test_openai_compat.py) | 19 tests covering auth, models, helpers, endpoints                                |
 
 ### Modified Files (2)
 
-|File|Change|
-|---|---|
-|[settings.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/config/settings.py)|Added `api_keys_config` path setting|
-|[main.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/main.py)|Import, initialize `ApiKeyManager`, register router|
+| File                                                                                                               | Change                                              |
+| ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| [settings.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/config/settings.py) | Added `api_keys_config` path setting                |
+| [main.py](vscode-webview://0a59n255q5a08hkqstooho7tkj7l7s70b1vo18kcu45ulr05gorg/app/router/main.py)                | Import, initialize `ApiKeyManager`, register router |
 
 ### How Desktop Apps Connect
 
 Configure each app's OpenAI settings:
 
 - **Base URL**: `http://localhost:9090/v1`
-- **API Key**: `sk-prompthub-cursor-dev001` (or the appropriate key from `api-keys.json`)
+- **API Key**: `sk-prompthub-cursor-001` (or the appropriate key from `api-keys.json`)
 - **Model**: Any Ollama model name (e.g., `llama3.2:latest`, `deepseek-r1:latest`)
 
 > ★ **The enhancement pipeline is invisible to desktop apps.** From Cursor's perspective, it's just talking to an OpenAI-compatible API. But behind the scenes, the router enhances the last user message using per-client rules (Cursor gets `qwen2.5-coder`, Obsidian gets pass-through), caches enhanced prompts (SHA-256 keyed LRU), checks the circuit breaker, and logs everything to the audit trail. The app never knows — it just gets better responses with resilience for free.

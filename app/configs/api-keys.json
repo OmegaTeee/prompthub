@@ -1,29 +1,39 @@
 {
   "keys": {
-    "sk-prompthub-raycast-dev001": {
+    "sk-prompthub-raycast-001": {
       "client_name": "raycast",
-      "enhance": true,
+      "enhance": false,
       "description": "Raycast commands (enhanced)"
     },
-    "sk-prompthub-perplexity-dev001": {
+    "sk-prompthub-perplexity-001": {
       "client_name": "perplexity",
       "enhance": false,
       "description": "Perplexity assistant"
     },
-    "sk-prompthub-code-dev001": {
+    "sk-prompthub-code-001": {
       "client_name": "vscode",
-      "enhance": true,
+      "enhance": false,
       "description": "VS Code chat (enhanced)"
     },
-    "sk-prompthub-copilot-dev001": {
+    "sk-prompthub-copilot-001": {
       "client_name": "vscode",
       "enhance": false,
       "description": "OAI Copilot extension (pass-through)"
     },
-    "sk-prompthub-claude-desktop": {
+    "sk-prompthub-claude-desktop-001": {
       "client_name": "claude-desktop",
       "enhance": false,
       "description": "Claude.ai desktop integration"
+    },
+    "sk-prompthub-claude-code-001": {
+      "client_name": "claude-code",
+      "enhance": false,
+      "description": "Claude code integration"
+    },
+    "sk-prompthub-obsidian-001": {
+      "client_name": "obsidian",
+      "enhance": false,
+      "description": "Obsidian personal knowledge base"
     }
   }
 }
