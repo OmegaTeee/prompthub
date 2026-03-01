@@ -125,6 +125,21 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - `app/configs/cloud-models.json` - Cloud fallback model mapping (local models → free-tier cloud equivalents)
 - `app/.env` - Runtime settings (OLLAMA_TIMEOUT=120, OPENROUTER_ENABLED, OPENROUTER_API_KEY, etc.)
 
+### Persistent Data Directory (`~/.prompthub/`)
+
+All persistent state (databases, logs, checksums) lives under `~/.prompthub/` by default, configurable via `DATA_DIR` env var. Individual paths are resolved from `data_dir` in `Settings.model_post_init` and can each be overridden independently:
+
+| Setting | Default | Used by |
+|---|---|---|
+| `cache_db_path` | `$DATA_DIR/cache.db` | `PersistentCache`, `PersistentEnhancementCache` |
+| `activity_db_path` | `$DATA_DIR/activity.db` | `PersistentActivityLog` |
+| `memory_db_path` | `$DATA_DIR/memory.db` | `SessionStorage` |
+| `tool_registry_db_path` | `$DATA_DIR/tool_registry.db` | `ToolRegistryStorage` |
+| `audit_log_path` | `$DATA_DIR/audit.log` | `setup_audit_logging`, `AuditIntegrityManager` |
+| `audit_checksum_path` | `$DATA_DIR/audit_checksums.json` | `AuditIntegrityManager` |
+
+Storage constructors use `db_path: Path | None = None` with lazy `get_settings()` resolution inside the `if` branch to avoid circular imports and allow tests to pass explicit `tmp_path`.
+
 ## API Endpoints
 
 ```
