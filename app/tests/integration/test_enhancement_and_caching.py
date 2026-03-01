@@ -20,15 +20,15 @@ class TestPromptEnhancement:
         Test that different clients use different enhancement models.
 
         Must match configs/enhancement-rules.json:
-        - claude-desktop: deepseek-r1:latest
-        - vscode: qwen2.5-coder:32b
-        - raycast: llama3.2:latest
+        - claude-desktop: gemma3:27b
+        - vscode: gemma3:4b
+        - raycast: gemma3:4b
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
             clients_and_models = [
-                ("claude-desktop", "deepseek-r1"),
-                ("vscode", "qwen2.5-coder"),
-                ("raycast", "llama3.2"),
+                ("claude-desktop", "gemma3"),
+                ("vscode", "gemma3"),
+                ("raycast", "gemma3"),
             ]
 
             for client_name, expected_model in clients_and_models:
@@ -55,7 +55,7 @@ class TestPromptEnhancement:
         """
         Test that VS Code enhancement is code-first.
 
-        Expected: Code examples before explanations (qwen2.5-coder system prompt).
+        Expected: Code examples before explanations (gemma3:4b with code system prompt).
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
             response = await client.post(
@@ -79,7 +79,7 @@ class TestPromptEnhancement:
         """
         Test that Raycast enhancement is action-oriented.
 
-        Expected: CLI commands, under 200 words (llama3.2 system prompt).
+        Expected: CLI commands, under 200 words (gemma3:4b with action system prompt).
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
             response = await client.post(
@@ -263,10 +263,8 @@ class TestCaching:
             assert resp_vs.status_code == 200
             data_vs = resp_vs.json()
 
-            # Both should use the same model (all clients use llama3.2)
-            if data_cd.get("model") and data_vs.get("model"):
-                assert data_cd["model"] == data_vs["model"], \
-                    "All clients should use the same enhancement model"
+            # Different clients may use different models (task-specific, ADR-008)
+            # claude-desktop uses gemma3:27b, vscode uses gemma3:4b
 
             # Neither should be cached on first call
             if data_cd.get("model"):

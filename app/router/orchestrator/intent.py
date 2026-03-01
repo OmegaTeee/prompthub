@@ -6,9 +6,8 @@ analyzing an incoming prompt before it reaches enhancement.
 """
 
 from enum import StrEnum
-from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class IntentCategory(StrEnum):
@@ -36,7 +35,7 @@ class OrchestratorResult(BaseModel):
     context_hints: list[str] = []
     annotated_prompt: str = ""
     reasoning: str = ""            # Brief explanation (stripped from final prompt)
-    confidence: float = 1.0        # 0.0–1.0 how confident the classification is
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
     skipped: bool = False          # True if orchestration timed out or errored
     error: str | None = None
 

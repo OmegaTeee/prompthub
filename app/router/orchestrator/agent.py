@@ -19,11 +19,11 @@ import asyncio
 import json
 import logging
 import re
+import time
+from collections import OrderedDict
 from hashlib import sha256
-from pathlib import Path
-from typing import Any
 
-from router.enhancement.ollama import OllamaClient, OllamaConfig, OllamaError
+from router.enhancement.ollama import OllamaClient, OllamaConfig
 from router.orchestrator.intent import (
     INTENT_SERVER_MAP,
     IntentCategory,
@@ -42,6 +42,7 @@ TEMPERATURE = 0.1              # Low randomness for reliable structured output
 # ── Token budget for context injection ───────────────────────────────────────
 CHARS_PER_TOKEN = 4            # ~4 chars per token heuristic (no tokenizer needed)
 CONTEXT_TOKEN_BUDGET = 800     # Max tokens of session context to prepend
+HEALTH_PROBE_COOLDOWN = 10.0   # Seconds between health re-probes when unhealthy
 
 
 SYSTEM_PROMPT = """You are an intent classifier for a local AI router. Analyze the user's prompt and respond ONLY with a JSON object — no markdown, no preamble.
@@ -61,9 +62,12 @@ Rules:
 - Output valid JSON only"""
 
 
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+
 def _strip_think_blocks(text: str) -> str:
     """Remove qwen3 <think>...</think> reasoning blocks from output."""
-    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+    return _THINK_RE.sub("", text).strip()
 
 
 def _cache_key(prompt: str, client_name: str | None) -> str:
@@ -92,10 +96,11 @@ class OrchestratorAgent:
                 half_open_max_calls=1,
             ),
         )
-        # Simple in-process LRU cache (prompt hash → result)
-        self._cache: dict[str, OrchestratorResult] = {}
+        # In-process LRU cache (prompt hash → result)
+        self._cache: OrderedDict[str, OrchestratorResult] = OrderedDict()
         self._cache_max = 256
         self._healthy: bool | None = None   # None = not yet checked
+        self._last_probe_time: float = 0.0  # Monotonic time of last health probe
 
     async def initialize(self) -> None:
         """Check model availability. Logs warning if model not found."""
@@ -136,7 +141,11 @@ class OrchestratorAgent:
             OrchestratorResult — falls back to pass-through on any failure
         """
         if not self._healthy:
-            # Re-probe once per N calls to recover after Ollama starts
+            # Re-probe with cooldown to avoid flooding Ollama when it's down
+            now = time.monotonic()
+            if now - self._last_probe_time < HEALTH_PROBE_COOLDOWN:
+                return OrchestratorResult.pass_through(prompt, "Ollama unavailable")
+            self._last_probe_time = now
             self._healthy = await self._client.is_healthy()
             if not self._healthy:
                 return OrchestratorResult.pass_through(prompt, "Ollama unavailable")
@@ -145,6 +154,7 @@ class OrchestratorAgent:
         key = _cache_key(prompt, client_name)
         if not bypass_cache and key in self._cache:
             logger.debug(f"Orchestrator cache hit: {key}")
+            self._cache.move_to_end(key)
             return self._cache[key]
 
         # Build the user message — inject session context within budget
@@ -218,7 +228,11 @@ class OrchestratorAgent:
             # Try to extract JSON from a partially wrapped response
             match = re.search(r"\{.*\}", raw, re.DOTALL)
             if match:
-                data = json.loads(match.group())
+                try:
+                    data = json.loads(match.group())
+                except json.JSONDecodeError:
+                    logger.warning(f"Orchestrator extracted invalid JSON: {match.group()[:120]}")
+                    return OrchestratorResult.pass_through(original_prompt, "parse_error")
             else:
                 logger.warning(f"Orchestrator returned non-JSON: {raw[:120]}")
                 return OrchestratorResult.pass_through(original_prompt, "parse_error")
@@ -230,11 +244,18 @@ class OrchestratorAgent:
             intent = IntentCategory.GENERAL
 
         # Merge server suggestions: model hints + intent map
-        model_tools: list[str] = data.get("suggested_tools", [])
+        model_tools = data.get("suggested_tools", [])
+        if not isinstance(model_tools, list):
+            model_tools = []
         intent_tools: list[str] = INTENT_SERVER_MAP.get(intent, [])
         merged_tools = list(dict.fromkeys(model_tools + intent_tools))  # dedup, preserve order
 
         annotated = data.get("annotated_prompt", original_prompt) or original_prompt
+
+        try:
+            confidence = max(0.0, min(1.0, float(data.get("confidence", 1.0))))
+        except (ValueError, TypeError):
+            confidence = 1.0
 
         return OrchestratorResult(
             intent=intent,
@@ -242,7 +263,7 @@ class OrchestratorAgent:
             context_hints=data.get("context_hints", []),
             annotated_prompt=annotated,
             reasoning=data.get("reasoning", ""),
-            confidence=float(data.get("confidence", 1.0)),
+            confidence=confidence,
         )
 
 

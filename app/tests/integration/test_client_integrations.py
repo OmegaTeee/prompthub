@@ -254,18 +254,23 @@ class TestCrossClientFeatures:
     @pytest.mark.asyncio
     async def test_client_specific_enhancement_models(self):
         """
-        Test that all clients use the configured enhancement model (llama3.2).
+        Test that each client uses its configured enhancement model.
 
-        All clients use llama3.2:latest for enhancement to avoid model swap
-        thrashing on single-GPU setups. See configs/enhancement-rules.json.
+        Models are task-specific per ADR-008 (supersedes ADR-006).
+        See configs/enhancement-rules.json for the current mapping.
 
-        When Ollama is running: verifies model field matches llama3.2.
+        When Ollama is running: verifies model field is set.
         When Ollama is down: verifies graceful degradation (original prompt returned).
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=120.0) as client:
-            test_clients = ["claude-desktop", "vscode", "raycast"]
+        # Expected models from enhancement-rules.json
+        expected_models = {
+            "claude-desktop": "gemma3:27b",
+            "vscode": "gemma3:4b",
+            "raycast": "gemma3:4b",
+        }
 
-            for client_name in test_clients:
+        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=120.0) as client:
+            for client_name, expected_model in expected_models.items():
                 try:
                     response = await client.post(
                         "/ollama/enhance",
@@ -288,8 +293,8 @@ class TestCrossClientFeatures:
 
                 actual_model = data.get("model")
                 if actual_model is not None:
-                    assert "llama3.2" in actual_model.lower(), \
-                        f"Client {client_name} should use llama3.2, got {actual_model}"
+                    assert expected_model in actual_model.lower(), \
+                        f"Client {client_name} should use {expected_model}, got {actual_model}"
                 else:
                     assert data.get("error"), \
                         f"Client {client_name}: model is null but no error reported"

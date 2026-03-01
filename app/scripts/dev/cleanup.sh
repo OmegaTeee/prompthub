@@ -108,19 +108,25 @@ else
 fi
 echo ""
 
-# Old logs in /tmp
+# Old logs in legacy /tmp or current data dir
 echo -e "${YELLOW}Cleaning: temporary log files${NC}"
-if [[ -f "/tmp/prompthub-router.log" ]]; then
-    size=$(du -sk /tmp/prompthub-router.log 2>/dev/null | awk '{print $1}')
-    echo "  Found: /tmp/prompthub-router.log (${size}KB)"
-    TOTAL_SIZE=$((TOTAL_SIZE + size))
-    TOTAL_FILES=$((TOTAL_FILES + 1))
+DATA_DIR="${PROMPTHUB_DATA_DIR:-$HOME/.prompthub}"
+FOUND_LOGS=false
+for log_path in "/tmp/prompthub-router.log" "$DATA_DIR/audit.log"; do
+    if [[ -f "$log_path" ]]; then
+        size=$(du -sk "$log_path" 2>/dev/null | awk '{print $1}')
+        echo "  Found: $log_path (${size}KB)"
+        TOTAL_SIZE=$((TOTAL_SIZE + size))
+        TOTAL_FILES=$((TOTAL_FILES + 1))
+        FOUND_LOGS=true
 
-    if [[ "$DRY_RUN" == false ]]; then
-        rm -f /tmp/prompthub-router.log
-        echo -e "  ${GREEN}✓ Removed${NC}"
+        if [[ "$DRY_RUN" == false ]]; then
+            rm -f "$log_path"
+            echo -e "  ${GREEN}✓ Removed${NC}"
+        fi
     fi
-else
+done
+if [[ "$FOUND_LOGS" == false ]]; then
     echo "  No temp logs found"
 fi
 echo ""

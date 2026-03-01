@@ -3,7 +3,7 @@
     "sk-prompthub-raycast-001": {
       "client_name": "raycast",
       "enhance": false,
-      "description": "Raycast commands (enhanced)"
+      "description": "Raycast commands (pass-through)"
     },
     "sk-prompthub-perplexity-001": {
       "client_name": "perplexity",
@@ -13,7 +13,7 @@
     "sk-prompthub-code-001": {
       "client_name": "vscode",
       "enhance": false,
-      "description": "VS Code chat (enhanced)"
+      "description": "VS Code chat (pass-through)"
     },
     "sk-prompthub-copilot-001": {
       "client_name": "vscode",
