@@ -20,7 +20,7 @@ uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
 
 ### Key References
 
-- **[OLLAMA-OPENAI-API.md](OLLAMA-OPENAI-API.md)** — Dual API support (native Ollama + OpenAI-compatible)
+- **[OLLAMA-OPENAI-API.md](features/OLLAMA-OPENAI-API.md)** — Dual API support (native Ollama + OpenAI-compatible)
 - **[api/openapi.yaml](api/openapi.yaml)** — Full OpenAPI 3.0 spec (50 endpoints)
 - **[audit/AUDIT-IMPLEMENTATION-COMPLETE.md](audit/AUDIT-IMPLEMENTATION-COMPLETE.md)** — Audit system executive summary
 - **[modules/servers.md](modules/servers.md)** — Server lifecycle and stdio bridge documentation

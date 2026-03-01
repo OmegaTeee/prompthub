@@ -133,7 +133,7 @@ enhancement_service = EnhancementService(
 ## Related
 - [ADR-003: Per-Client Enhancement](ADR-003-per-client-enhancement.md) — Amended (model selection unified, system prompts remain per-client)
 - [ADR-005: Async-First](ADR-005-async-first.md) — httpx async client is the timeout boundary
-- `app/docs/OLLAMA-OPENAI-API.md` — User-facing timeout troubleshooting
+- `app/docs/features/OLLAMA-OPENAI-API.md` — User-facing timeout troubleshooting
 
 ## Revision History
 - 2026-02-24: Initial decision after diagnosing intermittent enhancement failures

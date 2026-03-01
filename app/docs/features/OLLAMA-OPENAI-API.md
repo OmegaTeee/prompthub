@@ -45,8 +45,8 @@ External apps connect to PromptHub as if it were an OpenAI API server. This is a
   "keys": {
     "sk-prompthub-code-001": {
       "client_name": "vscode",
-      "enhance": true,
-      "description": "VS Code chat (enhanced)"
+      "enhance": false,
+      "description": "VS Code chat (pass-through)"
     },
     "sk-prompthub-copilot-001": {
       "client_name": "vscode",
@@ -74,7 +74,6 @@ External apps connect to PromptHub as if it were an OpenAI API server. This is a
 OLLAMA_API_MODE=openai
 OLLAMA_HOST=localhost
 OLLAMA_PORT=11434
-OLLAMA_MODEL=llama3.2:latest
 OLLAMA_TIMEOUT=120
 
 # Client proxy
@@ -84,23 +83,21 @@ ENHANCEMENT_RULES_CONFIG=configs/enhancement-rules.json
 
 ### Enhancement rules (`enhancement-rules.json`)
 
-Each client maps to a model used for prompt enhancement. The enhancement model runs *before* the user's requested model. Using a lightweight model (`llama3.2`) for enhancement keeps it fast and avoids model swap overhead:
+Each client maps to a task-specific model for prompt enhancement (see [ADR-008](../architecture/ADR-008-task-specific-models.md)). The enhancement model runs *before* the user's requested model:
 
 ```json
 {
-  "default": { "model": "llama3.2:latest" },
+  "default": { "model": "gemma3:4b" },
   "clients": {
-    "vscode":  { "model": "llama3.2:latest" },
-    "raycast": { "model": "llama3.2:latest" },
-    "obsidian": { "model": "llama3.2:latest" }
+    "claude-desktop": { "model": "gemma3:27b" },
+    "claude-code":    { "model": "qwen3-coder:30b" },
+    "vscode":         { "model": "gemma3:4b" },
+    "raycast":        { "model": "gemma3:4b" }
   }
 }
 ```
 
-**Model swap warning:** If the enhancement model differs from the chat model, Ollama must
-swap models twice per request (load enhancement model → enhance → load chat model →
-respond). On single-GPU setups this adds significant latency. To avoid this, use the
-same model for both enhancement and chat, or set `"enhance": false` in `api-keys.json`.
+**Model swap note:** Enhancement and chat models are loaded sequentially. Lightweight models like `gemma3:4b` load in <5s, minimizing swap overhead. For latency-sensitive clients, set `"enhance": false` in `api-keys.json` to skip enhancement entirely.
 
 ### Client setup (VS Code example)
 
@@ -108,7 +105,7 @@ In VS Code `settings.json`:
 ```json
 {
   "chat.models": [{
-    "id": "qwen2.5-coder:32b",
+    "id": "gemma3:27b",
     "provider": "openaiCompatible",
     "url": "http://localhost:9090/v1",
     "apiKey": "sk-prompthub-code-001"
@@ -129,7 +126,7 @@ curl -s http://localhost:9090/v1/models \
 curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-copilot-001" \
   -H "Content-Type: application/json" \
-  -d '{"model":"llama3.2:latest","messages":[{"role":"user","content":"Hello"}]}'
+  -d '{"model":"gemma3:27b","messages":[{"role":"user","content":"Hello"}]}'
 ```
 
 ```bash
@@ -139,7 +136,7 @@ curl -s http://localhost:9090/v1/chat/completions \
 curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-code-001" \
   -H "Content-Type: application/json" \
-  -d '{"model":"qwen2.5-coder:32b","messages":[{"role":"user","content":"Explain JWT auth"}]}'
+  -d '{"model":"gemma3:27b","messages":[{"role":"user","content":"Explain JWT auth"}]}'
 ```
 
 ```bash
@@ -165,12 +162,12 @@ curl -s -X POST http://localhost:9090/v1/api-keys/reload
 
 **"Method Not Allowed" (405)** — You're sending GET to a POST-only endpoint. Use `curl -X POST` or `-d '{...}'`.
 
-**"Model not found"** — Pull the model first: `ollama pull llama3.2:latest`. Check available models: `GET /v1/models`.
+**"Model not found"** — Pull the model first: `ollama pull gemma3:4b`. Check available models: `GET /v1/models`.
 
-**Enhancement slow or timing out** — The enhancement service has a 30-second timeout. Large models (`qwen2.5-coder:32b`, `deepseek-r1`) may exceed this if Ollama needs to swap models. Fixes:
-- Use the same model for enhancement and chat completion to avoid model swaps
+**Enhancement slow or timing out** — The enhancement service has a 120-second httpx timeout (180s middleware timeout for `/ollama/enhance` and `/v1/chat/completions`). If enhancement still times out:
 - Set `"enhance": false` for the token in `api-keys.json` to skip enhancement entirely
 - Check `tail logs/router-stderr.log` for `Ollama request timed out` warnings
+- See [ADR-006](../architecture/ADR-006-enhancement-timeout.md) for timeout architecture
 
 **Enhancement not working** — Verify: (1) `enhance: true` is set for the token in `api-keys.json`, (2) the token's `client_name` has a matching entry in `enhancement-rules.json`, (3) the enhancement model is pulled in Ollama.
 
@@ -178,3 +175,4 @@ curl -s -X POST http://localhost:9090/v1/api-keys/reload
 
 - [Ollama OpenAI Compatibility](https://github.com/ollama/ollama/blob/main/docs/openai.md)
 - [OpenAI Chat Completions API](https://platform.openai.com/docs/api-reference/chat)
+- [ADR-008: Task-Specific Models](../architecture/ADR-008-task-specific-models.md)
