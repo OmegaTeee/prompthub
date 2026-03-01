@@ -82,6 +82,26 @@
         >
           <div class="loading">Loading memory info</div>
         </div>
+
+        <!-- Tool Registry -->
+        <div
+          class="card"
+          hx-get="/dashboard/tool-registry-partial"
+          hx-trigger="load, every 30s"
+          hx-swap="innerHTML"
+        >
+          <div class="loading">Loading tool registry</div>
+        </div>
+
+        <!-- Token Budget -->
+        <div
+          class="card"
+          hx-get="/dashboard/token-budget-partial"
+          hx-trigger="load"
+          hx-swap="innerHTML"
+        >
+          <div class="loading">Loading token budgets</div>
+        </div>
       </div>
 
       <!-- Quick Actions -->

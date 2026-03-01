@@ -2,6 +2,10 @@
 
 Technical documentation for PromptHub developers and maintainers.
 
+cd ~/.local/share/prompthub
+source .venv/bin/activate
+uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
+
 ## Folders
 
 | Folder                             | Contents                                                                     |
@@ -17,10 +21,11 @@ Technical documentation for PromptHub developers and maintainers.
 ### Key References
 
 - **[OLLAMA-OPENAI-API.md](OLLAMA-OPENAI-API.md)** — Dual API support (native Ollama + OpenAI-compatible)
-- **[api/openapi.yaml](api/openapi.yaml)** — Full OpenAPI 3.0 spec (43 endpoints)
+- **[api/openapi.yaml](api/openapi.yaml)** — Full OpenAPI 3.0 spec (50 endpoints)
 - **[audit/AUDIT-IMPLEMENTATION-COMPLETE.md](audit/AUDIT-IMPLEMENTATION-COMPLETE.md)** — Audit system executive summary
 - **[modules/servers.md](modules/servers.md)** — Server lifecycle and stdio bridge documentation
 - **[features/MEMORY-SYSTEM-COMPLETE.md](features/MEMORY-SYSTEM-COMPLETE.md)** — Session memory and context management
+- **[modules/README.md#tool-registry](modules/README.md#tool-registry)** — Tool registry cache and bridge schema minification
 
 #### User Guides
 

@@ -54,6 +54,7 @@ orchestrator_agent: OrchestratorAgent | None = None
 persistent_activity_log = None  # Will be initialized in lifespan
 session_storage = None  # Will be initialized in lifespan
 memory_mcp_client = None  # Will be initialized in lifespan
+tool_registry = None  # Will be initialized in lifespan
 
 # Gateway lifespan management — tracks the async cleanup for the current
 # FastMCP gateway so we can tear it down and re-enter on topology changes.
@@ -124,14 +125,15 @@ async def _rebuild_gateway() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown."""
-    global registry, supervisor, enhancement_service, circuit_breakers, documentation_pipeline, orchestrator_agent, persistent_activity_log, session_storage, memory_mcp_client
+    global registry, supervisor, enhancement_service, circuit_breakers, documentation_pipeline, orchestrator_agent, persistent_activity_log, session_storage, memory_mcp_client, tool_registry
 
     # Startup
     settings = get_settings()
 
-    # Setup audit logging (log to /tmp for development, can be changed in production)
+    # Setup audit logging — use persistent data dir (survives reboots)
     from pathlib import Path
-    log_dir = Path("/tmp/prompthub")
+    log_dir = Path(settings.data_dir)
+    log_dir.mkdir(parents=True, exist_ok=True)  # create ~/.prompthub if needed
     setup_audit_logging(log_dir=log_dir, console_output=True)
 
     # Initialize persistent activity log
@@ -148,6 +150,12 @@ async def lifespan(app: FastAPI):
     # Initialize Memory MCP client (optional sync layer)
     memory_mcp_client = MemoryMCPClient(base_url="http://localhost:9090")
     logger.info("Initialized Memory MCP client")
+
+    # Initialize tool registry (MCP tool definition cache)
+    from router.tool_registry import get_tool_registry
+    tool_registry = get_tool_registry(db_path=log_dir / "tool_registry.db")
+    await tool_registry.initialize()
+    logger.info("Initialized tool registry")
 
     logger.info(f"Starting PromptHub Router on {settings.host}:{settings.port}")
 
@@ -418,6 +426,15 @@ async def _get_memory_info():
     return {"stats": {}, "recent_sessions": []}
 
 
+async def _get_tool_registry_info():
+    """Get tool registry stats for dashboard."""
+    if tool_registry:
+        stats = await tool_registry.get_stats()
+        snapshots = await tool_registry.get_all_cached()
+        return {"stats": stats, "snapshots": snapshots}
+    return {"stats": {}, "snapshots": []}
+
+
 # =============================================================================
 # Router Registration
 # =============================================================================
@@ -435,6 +452,7 @@ dashboard_router = create_dashboard_router(
     get_ollama_info=_get_ollama_info,
     reload_api_keys=_reload_api_keys,
     get_memory_info=_get_memory_info,
+    get_tool_registry_info=_get_tool_registry_info,
 )
 app.include_router(dashboard_router)
 
@@ -483,6 +501,7 @@ app.include_router(create_mcp_proxy_router(
     get_registry=lambda: registry,
     get_supervisor=lambda: supervisor,
     get_circuit_breakers=lambda: circuit_breakers,
+    get_tool_registry=lambda: tool_registry,
 ))
 
 app.include_router(create_enhancement_router(
@@ -499,6 +518,14 @@ app.include_router(create_pipelines_router(
 ))
 
 app.include_router(create_client_configs_router())
+
+# Tool registry router (MCP tool definition cache)
+from router.tool_registry import create_tool_registry_router
+
+app.include_router(create_tool_registry_router(
+    get_registry=lambda: tool_registry,
+    get_supervisor=lambda: supervisor,
+))
 
 
 # =============================================================================

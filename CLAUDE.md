@@ -81,7 +81,8 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 | `orchestrator/` | Pre-enhancement intent classifier (qwen3:14b) — classifies prompts, suggests tools, annotates for enhancement |
 | `openai_compat/` | OpenAI-compatible `/v1/` proxy with bearer auth and optional enhancement |
 | `memory/` | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync) |
-| `dashboard/` | HTMX observability UI (servers, cache, circuit breakers, Ollama, memory panels) |
+| `tool_registry/` | MCP tool definition cache (SQLite-backed snapshots, automatic archival, cache-through proxy) |
+| `dashboard/` | HTMX observability UI (servers, cache, circuit breakers, Ollama, memory, tool registry panels) |
 | `pipelines/` | Workflow orchestration (documentation generation) |
 | `clients/` | Config generators for desktop apps (delegates to `cli/` for bridge configs) |
 | `cli/` | MCP Config Manager CLI — generate, install, validate, diff, list, diagnose (Typer) |
@@ -95,9 +96,11 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 
 1. Request arrives at `/mcp/{server}/{path}`
 2. Circuit breaker checked (reject if OPEN)
-3. Server auto-started if configured with `auto_start: true`
-4. JSON-RPC proxied via FastMCP bridge (StdioTransport)
-5. Success/failure updates circuit breaker state
+3. For `tools/list`: check tool registry cache → return if hit
+4. Server auto-started if configured with `auto_start: true`
+5. JSON-RPC proxied via FastMCP bridge (StdioTransport)
+6. For `tools/list`: cache raw response in tool registry (SQLite)
+7. Success/failure updates circuit breaker state
 
 ### Key Patterns
 
@@ -110,6 +113,8 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - **Task-specific models**: Per-client enhancement models (gemma3:4b default, gemma3:27b for claude-desktop, qwen3-coder:30b for claude-code) with orchestrator agent (qwen3:14b) for intent classification (see ADR-008, supersedes ADR-006)
 - **Privacy boundary**: `PrivacyLevel` enum (`local_only`, `free_ok`, `any`) controls whether prompts leave localhost (see ADR-007)
 - **Cloud fallback**: When Ollama fails, `free_ok`/`any` clients fall back to OpenRouter free-tier; `local_only` never leaves localhost
+- **Tool registry cache-through**: `tools/list` responses cached in SQLite (24h TTL), served from cache on subsequent requests; old snapshots archived automatically for long-term access
+- **Schema minification**: Bridge strips verbose fields (`description`, `title`, `examples`, `default`) from tool `inputSchema` before sending to LLM clients, reducing context usage by ~67%
 
 ## Configuration Files
 
@@ -139,6 +144,13 @@ POST /v1/chat/completions       OpenAI-compatible proxy → Ollama (bearer auth,
 GET  /v1/models                 List Ollama models (OpenAI format)
 GET  /audit/activity            Query persistent activity log
 GET  /security/alerts           Recent security alerts
+GET  /tools                     List all cached tool snapshots (tool registry)
+GET  /tools/{server}            Get raw cached tools for a server (pre-minification)
+GET  /tools/stats               Tool registry statistics (cached servers, total tools, archive count)
+POST /tools/{server}/refresh    Force re-fetch tools from live server
+DEL  /tools/{server}            Clear cached tools for a server
+POST /tools/archive             Archive expired tool cache entries
+POST /tools/cleanup             Delete old archived snapshots (retention_days param)
 GET  /configs/claude-desktop    Generate Claude Desktop bridge config
 GET  /configs/vscode            Generate VS Code bridge config
 GET  /configs/raycast           Generate Raycast bridge config

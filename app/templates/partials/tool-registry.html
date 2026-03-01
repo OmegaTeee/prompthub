@@ -1,0 +1,62 @@
+<!-- Tool Registry Panel -->
+<div class="panel-header">
+  <h3>Tool Registry</h3>
+  <span class="text-sm text-muted">{{ stats.cached_servers | default(0) }} servers cached</span>
+</div>
+
+{% if error %}
+<div class="error-message">
+  Error loading tool registry: {{ error }}
+</div>
+{% else %}
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Cached Servers</div>
+    <div class="stat-value">{{ stats.cached_servers | default(0) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Tools</div>
+    <div class="stat-value">{{ stats.total_tools | default(0) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Cache Size</div>
+    <div class="stat-value">{{ "%.1f"|format((stats.total_size_bytes | default(0)) / 1024) }}KB</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Archived</div>
+    <div class="stat-value">{{ stats.archived_snapshots | default(0) }}</div>
+  </div>
+</div>
+
+{% if snapshots %}
+<div class="recent-sessions">
+  <h4>Cached Snapshots</h4>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Server</th>
+        <th>Tools</th>
+        <th>Size</th>
+        <th>Serves</th>
+        <th>Cached</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for snap in snapshots %}
+      <tr>
+        <td class="font-mono text-sm">{{ snap.server_name }}</td>
+        <td>{{ snap.tool_count }}</td>
+        <td>{{ "%.1f"|format(snap.raw_size_bytes / 1024) }}KB</td>
+        <td>{{ snap.serve_count }}</td>
+        <td class="text-sm">{{ snap.cached_at[:16] if snap.cached_at else 'N/A' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p class="text-muted">No tools cached yet — trigger a tools/list request to populate</p>
+</div>
+{% endif %}
+{% endif %}

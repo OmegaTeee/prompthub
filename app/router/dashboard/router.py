@@ -21,6 +21,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from router.config import get_settings
+from router.enhancement.context_window import TokenBudget
 from router.middleware import activity_log
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ def create_dashboard_router(
     get_ollama_info: Callable[[], Any] | None = None,
     reload_api_keys: Callable[[], Any] | None = None,
     get_memory_info: Callable[[], Any] | None = None,
+    get_tool_registry_info: Callable[[], Any] | None = None,
 ) -> APIRouter:
     """
     Create the dashboard router with injected dependencies.
@@ -57,6 +59,7 @@ def create_dashboard_router(
         get_ollama_info: Function to get Ollama models and API keys summary
         reload_api_keys: Function to reload API keys from config
         get_memory_info: Function to get session memory stats
+        get_tool_registry_info: Function to get tool registry stats
 
     Returns:
         Configured APIRouter for dashboard endpoints
@@ -68,9 +71,9 @@ def create_dashboard_router(
     async def dashboard(request: Request):
         """Main dashboard page."""
         return templates.TemplateResponse(
+            request,
             "dashboard.html",
             {
-                "request": request,
                 "title": "PromptHub Dashboard",
             },
         )
@@ -109,9 +112,9 @@ def create_dashboard_router(
             )
 
         return templates.TemplateResponse(
+            request,
             "partials/health.html",
             {
-                "request": request,
                 "services": servers,
                 "circuit_breakers": circuit_breakers,
             },
@@ -131,9 +134,9 @@ def create_dashboard_router(
         hit_rate = hits / total if total > 0 else 0
 
         return templates.TemplateResponse(
+            request,
             "partials/stats.html",
             {
-                "request": request,
                 "cache_stats": {
                     "hits": hits,
                     "misses": misses,
@@ -151,9 +154,9 @@ def create_dashboard_router(
         """HTMX partial: Recent request activity."""
         activity = activity_log.get_recent(limit=50)
         return templates.TemplateResponse(
+            request,
             "partials/activity.html",
             {
-                "request": request,
                 "activity": activity,
             },
         )
@@ -167,9 +170,9 @@ def create_dashboard_router(
 
         if not guides_dir.exists():
             return templates.TemplateResponse(
+                request,
                 "partials/guides.html",
                 {
-                    "request": request,
                     "guides": [],
                 },
             )
@@ -223,9 +226,9 @@ def create_dashboard_router(
         guides.sort(key=lambda g: (g["filename"] != "index.md", g["title"].lower()))
 
         return templates.TemplateResponse(
+            request,
             "partials/guides.html",
             {
-                "request": request,
                 "guides": guides,
             },
         )
@@ -290,9 +293,9 @@ def create_dashboard_router(
             )
 
             return templates.TemplateResponse(
+                request,
                 "partials/guide-view.html",
                 {
-                    "request": request,
                     "title": title,
                     "content": html_content,
                 },
@@ -398,9 +401,9 @@ def create_dashboard_router(
 
         info = await get_ollama_info()
         return templates.TemplateResponse(
+            request,
             "partials/ollama.html",
             {
-                "request": request,
                 "models": info.get("models", []),
                 "api_keys": info.get("api_keys", []),
             },
@@ -428,9 +431,9 @@ def create_dashboard_router(
         """HTMX partial: Session memory stats."""
         if not get_memory_info:
             return templates.TemplateResponse(
+                request,
                 "partials/memory.html",
                 {
-                    "request": request,
                     "stats": {},
                     "recent_sessions": [],
                 },
@@ -442,9 +445,9 @@ def create_dashboard_router(
             recent_sessions = info.get("recent_sessions", [])
 
             return templates.TemplateResponse(
+                request,
                 "partials/memory.html",
                 {
-                    "request": request,
                     "stats": stats,
                     "recent_sessions": recent_sessions,
                 },
@@ -452,13 +455,98 @@ def create_dashboard_router(
         except Exception as e:
             logger.warning(f"Error loading memory info: {e}")
             return templates.TemplateResponse(
+                request,
                 "partials/memory.html",
                 {
-                    "request": request,
                     "stats": {},
                     "recent_sessions": [],
                     "error": str(e),
                 },
             )
+
+    @router.get("/tool-registry-partial", response_class=HTMLResponse)
+    async def tool_registry_partial(request: Request):
+        """HTMX partial: Tool registry cache stats."""
+        if not get_tool_registry_info:
+            return templates.TemplateResponse(
+                request,
+                "partials/tool-registry.html",
+                {"stats": {}, "snapshots": []},
+            )
+
+        try:
+            info = await get_tool_registry_info()
+            return templates.TemplateResponse(
+                request,
+                "partials/tool-registry.html",
+                {
+                    "stats": info.get("stats", {}),
+                    "snapshots": info.get("snapshots", []),
+                },
+            )
+        except Exception as e:
+            logger.warning("Error loading tool registry info: %s", e)
+            return templates.TemplateResponse(
+                request,
+                "partials/tool-registry.html",
+                {"stats": {}, "snapshots": [], "error": str(e)},
+            )
+
+    @router.get("/token-budget-partial", response_class=HTMLResponse)
+    async def token_budget_partial(request: Request):
+        """HTMX partial: Token budget per client model."""
+        import json
+        from pathlib import Path
+
+        settings = get_settings()
+        rules_path = (
+            Path(settings.workspace_root) / "app" / settings.enhancement_rules_config
+        )
+
+        rows = []
+        try:
+            data = json.loads(rules_path.read_text())
+            default_rule = data.get("default", {})
+            clients = data.get("clients", {})
+
+            # Merge default into each client rule (same logic as service.py)
+            merged_clients = {"default": default_rule}
+            for name, rule in clients.items():
+                merged = {**default_rule, **rule}
+                merged_clients[name] = merged
+
+            for client_name, rule in merged_clients.items():
+                model = rule.get("model", "unknown")
+                max_tokens = rule.get("max_tokens") or 500
+                system_prompt = rule.get("system_prompt", "")
+                enabled = rule.get("enabled", True)
+
+                budget = TokenBudget(
+                    model=model,
+                    max_response_tokens=max_tokens,
+                    system_prompt=system_prompt,
+                )
+                s = budget.summary()
+                rows.append(
+                    {
+                        "client": client_name,
+                        "model": model,
+                        "enabled": enabled,
+                        "context_k": s["context_limit_tokens"] // 1024,
+                        "available_tokens": s["available_for_input_tokens"],
+                        "available_chars": s["available_for_input_chars"],
+                        "system_tokens": s["system_prompt_tokens"],
+                        "max_response_tokens": s["max_response_tokens"],
+                        "cap": s["enhancement_input_cap"],
+                    }
+                )
+        except Exception as e:
+            logger.warning(f"Error computing token budgets: {e}")
+
+        return templates.TemplateResponse(
+            request,
+            "partials/token-budget.html",
+            {"rows": rows},
+        )
 
     return router

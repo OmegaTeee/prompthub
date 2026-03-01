@@ -34,6 +34,13 @@ const EXCLUDE_TOOLS = new Set(
     : []
 );
 
+// Schema minification: strip verbose fields from tool inputSchemas to reduce context usage
+// Set MINIFY_SCHEMAS=false to disable (enabled by default)
+const MINIFY_SCHEMAS = process.env.MINIFY_SCHEMAS !== 'false';
+
+// Max characters for tool descriptions (0 = no limit)
+const DESC_MAX_LENGTH = parseInt(process.env.DESC_MAX_LENGTH || '200', 10);
+
 // Cache of running server names (refreshed on each tools/list call)
 let cachedServers = [];
 
@@ -95,6 +102,68 @@ async function callPromptHub(serverName, jsonRpcRequest) {
   return data;
 }
 
+// ---------------------------------------------------------------------------
+// Schema minification — strip verbose fields to reduce LLM context usage
+// Keeps: type, properties, required, enum, items, oneOf/anyOf/allOf, format,
+//        additionalProperties, minimum/maximum, minLength/maxLength, pattern
+// Strips: description, title, examples, default, $comment, $defs/definitions
+// ---------------------------------------------------------------------------
+
+/** Fields to preserve on every schema node */
+const KEEP_FIELDS = new Set([
+  'type', 'properties', 'required', 'enum', 'const',
+  'items', 'oneOf', 'anyOf', 'allOf',
+  'additionalProperties', 'format', 'pattern',
+  'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum',
+  'minLength', 'maxLength', 'minItems', 'maxItems',
+]);
+
+/**
+ * Recursively strip noise from a JSON Schema object.
+ * Returns a new object — does not mutate the original.
+ */
+function minifySchema(schema) {
+  if (!schema || typeof schema !== 'object') return schema;
+  if (Array.isArray(schema)) return schema.map(minifySchema);
+
+  const out = {};
+  for (const [key, value] of Object.entries(schema)) {
+    if (!KEEP_FIELDS.has(key)) continue;
+
+    if (key === 'properties' && typeof value === 'object') {
+      out.properties = {};
+      for (const [prop, propSchema] of Object.entries(value)) {
+        out.properties[prop] = minifySchema(propSchema);
+      }
+    } else if (key === 'items') {
+      out.items = minifySchema(value);
+    } else if (key === 'additionalProperties' && typeof value === 'object') {
+      out.additionalProperties = minifySchema(value);
+    } else if (['oneOf', 'anyOf', 'allOf'].includes(key) && Array.isArray(value)) {
+      out[key] = value.map(minifySchema);
+    } else {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+/**
+ * Truncate a description string to DESC_MAX_LENGTH at a word boundary.
+ */
+function truncateDescription(desc) {
+  if (!desc || !DESC_MAX_LENGTH || desc.length <= DESC_MAX_LENGTH) return desc;
+  const cut = desc.lastIndexOf(' ', DESC_MAX_LENGTH);
+  return desc.substring(0, cut > 0 ? cut : DESC_MAX_LENGTH) + '...';
+}
+
+/**
+ * Rough byte size of a JSON-serialized object (for logging savings).
+ */
+function jsonSize(obj) {
+  return JSON.stringify(obj).length;
+}
+
 /**
  * Fetch tools from all servers
  */
@@ -111,15 +180,33 @@ async function getAllTools() {
       });
 
       if (response.result && response.result.tools) {
+        const rawTools = response.result.tools;
+
         // Prefix tool names with server name to avoid conflicts
         // Use underscore separator (MCP names can only contain: a-zA-Z0-9_-)
-        const prefixedTools = response.result.tools
-          .map(tool => ({
-            ...tool,
-            name: `${serverName}_${tool.name}`,
-            description: `[${serverName}] ${tool.description}`
-          }))
+        const prefixedTools = rawTools
+          .map(tool => {
+            const mapped = {
+              ...tool,
+              name: `${serverName}_${tool.name}`,
+              description: truncateDescription(`[${serverName}] ${tool.description}`),
+            };
+            if (MINIFY_SCHEMAS && mapped.inputSchema) {
+              mapped.inputSchema = minifySchema(mapped.inputSchema);
+            }
+            return mapped;
+          })
           .filter(tool => !EXCLUDE_TOOLS.has(tool.name));
+
+        // Log per-server savings when minification is active
+        if (MINIFY_SCHEMAS && prefixedTools.length > 0) {
+          const rawSize = jsonSize(rawTools);
+          const minSize = jsonSize(prefixedTools);
+          const pct = rawSize > 0 ? Math.round((1 - minSize / rawSize) * 100) : 0;
+          console.error(
+            `[minify] ${serverName}: ${rawTools.length} tools, ${rawSize} → ${minSize} bytes (−${pct}%)`
+          );
+        }
 
         allTools.push(...prefixedTools);
       }
@@ -231,6 +318,7 @@ async function main() {
   console.error('PromptHub MCP Bridge started');
   console.error(`Connected to: ${PROMPTHUB_URL}`);
   console.error(`Client name: ${CLIENT_NAME}`);
+  console.error(`Schema minification: ${MINIFY_SCHEMAS ? 'ON' : 'OFF'} (desc limit: ${DESC_MAX_LENGTH || 'none'})`);
   console.error(`Running servers: ${servers.join(', ') || '(none — router may not be running)'}`);
 }
 

@@ -67,6 +67,7 @@ def create_mcp_proxy_router(
     get_registry: Callable[[], Any],
     get_supervisor: Callable[[], Any],
     get_circuit_breakers: Callable[[], Any],
+    get_tool_registry: Callable[[], Any] | None = None,
 ) -> APIRouter:
     router = APIRouter(tags=["mcp"])
 
@@ -129,15 +130,47 @@ def create_mcp_proxy_router(
             method = body.get("method", path.replace("/", "."))
             params = body.get("params", {})
 
+            # Cache-through for tools/list: serve from registry if cached
+            is_tools_list = method in ("tools/list", "tools.list")
+            tool_reg = get_tool_registry() if get_tool_registry else None
+
+            if is_tools_list and tool_reg:
+                cached_tools = await tool_reg.get_cached_tools(server)
+                if cached_tools is not None:
+                    elapsed_ms = (time.time() - start_time) * 1000
+                    logger.debug("Tool cache hit for %s (%d tools)", server, len(cached_tools))
+                    return {
+                        "jsonrpc": "2.0",
+                        "result": {"tools": cached_tools},
+                        "id": body.get("id"),
+                        "metadata": {
+                            "cache": "hit",
+                            "timeout_used": bridge_timeout,
+                            "elapsed_ms": round(elapsed_ms, 2),
+                        },
+                    }
+
             response = await bridge.send(method, params, timeout=bridge_timeout)
             response = normalize_mcp_response(response, method)
 
             breaker.record_success()
 
+            # Cache tools/list responses after successful fetch
+            if is_tools_list and tool_reg and isinstance(response, dict):
+                result = response.get("result")
+                if isinstance(result, dict):
+                    tools = result.get("tools")
+                    if isinstance(tools, list):
+                        try:
+                            await tool_reg.cache_tools(server, tools)
+                        except Exception as cache_err:
+                            logger.warning("Failed to cache tools for %s: %s", server, cache_err)
+
             if isinstance(response, dict):
                 if "metadata" not in response:
                     response["metadata"] = {}
                 elapsed_ms = (time.time() - start_time) * 1000
+                response["metadata"]["cache"] = "miss"
                 response["metadata"]["timeout_used"] = bridge_timeout
                 response["metadata"]["elapsed_ms"] = round(elapsed_ms, 2)
 

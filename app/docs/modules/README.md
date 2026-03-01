@@ -2,7 +2,7 @@
 
 Detailed documentation for PromptHub's core modules.
 
-**Coverage**: 2 of 13 modules documented — See [COVERAGE-ANALYSIS.md](COVERAGE-ANALYSIS.md)
+**Coverage**: 3 of 14 modules documented — See [COVERAGE-ANALYSIS.md](COVERAGE-ANALYSIS.md)
 
 ## Module Index
 
@@ -16,6 +16,7 @@ Detailed documentation for PromptHub's core modules.
 - [config/](config.md) - Settings and configuration management
 - [cache/](cache.md) - Response caching (L1 memory + L2 SQLite persistent)
 - [memory/](../features/MEMORY-SYSTEM-COMPLETE.md) - Session memory and context management (SQLite)
+- [tool_registry/](#tool-registry) - MCP tool definition cache (SQLite, automatic archival)
 - [middleware/](middleware.md) - Request/response processing
 - [dashboard/](dashboard.md) - HTMX monitoring UI
 - [pipelines/](pipelines.md) - Workflow orchestration
@@ -65,6 +66,11 @@ main.py (~505 lines: globals, lifespan, middleware, dashboard helpers, router wi
   │   ├── models.py               # Pydantic schemas
   │   └── router.py               # create_memory_router
   │
+  ├── tool_registry/
+  │   ├── storage.py              # ToolRegistryStorage (aiosqlite, cache + archive tables)
+  │   ├── models.py               # CachedTool, ToolSnapshot, ToolRegistryStats
+  │   └── router.py               # create_tool_registry_router (/tools/* endpoints)
+  │
   ├── dashboard/
   │   └── router.py               # create_dashboard_router
   │
@@ -111,6 +117,7 @@ Dependencies flow one direction (no cycles):
 main.py → servers → config
        → enhancement → resilience → config
        → memory → middleware (audit context)
+       → tool_registry (standalone, used by routes/mcp_proxy)
        → middleware → audit
 ```
 
@@ -120,6 +127,7 @@ Each module owns its data structures:
 - **enhancement/**: `EnhancementRule`, `EnhancementResult`
 - **resilience/**: `CircuitBreakerConfig`, `CircuitBreakerStats`
 - **memory/**: `SessionCreate`, `SessionResponse`, `FactCreate`, `MemoryBlockUpsert`
+- **tool_registry/**: `CachedTool`, `ToolSnapshot`, `ToolSnapshotSummary`, `ToolRegistryStats`
 
 ## Testing Strategy
 
@@ -154,6 +162,39 @@ async def test_server_lifecycle():
     await supervisor.start_server("context7")
     assert registry.get_state("context7").status == "running"
 ```
+
+## Tool Registry
+
+The `tool_registry/` module caches raw MCP tool definitions in SQLite before they are minified by the bridge. This provides:
+
+- **Cache-through proxy**: `tools/list` responses served from SQLite on subsequent requests (24h TTL)
+- **Automatic archival**: Old snapshots moved to `tool_cache_archive` on upsert or invalidation
+- **Long-term access**: Archived snapshots retained for 90 days (configurable)
+- **Serve tracking**: Each cache hit increments `serve_count` and updates `last_served`
+
+### Schema
+
+```sql
+tool_cache          -- One row per server (current snapshot)
+tool_cache_archive  -- Historical snapshots (auto-populated on replace/invalidate)
+```
+
+### Integration
+
+The proxy in `routes/mcp_proxy.py` checks the registry before proxying `tools/list`:
+1. Cache hit + fresh → return cached tools (metadata: `"cache": "hit"`)
+2. Cache miss/expired → proxy to live server → cache response → return (metadata: `"cache": "miss"`)
+
+Server restarts or manual `POST /tools/{server}/refresh` invalidate the cache.
+
+### Bridge Schema Minification
+
+The Node.js bridge (`mcps/prompthub-bridge.js`) strips verbose fields from tool `inputSchema` before sending to LLM clients:
+
+- **Strips**: `description`, `title`, `examples`, `default`, `$comment`, `$defs`
+- **Keeps**: `type`, `properties`, `required`, `enum`, `items`, `format`, `pattern`, constraints
+- **Result**: ~67% reduction in tool definition size (~14K tokens saved across 41 tools)
+- **Config**: `MINIFY_SCHEMAS=true` (default), `DESC_MAX_LENGTH=200`
 
 ## Common Patterns
 
