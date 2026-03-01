@@ -12,7 +12,7 @@ uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
 | ---------------------------------- | ---------------------------------------------------------------------------- |
 | **[api/](api/)**                   | OpenAPI spec, endpoint reference, enhancement API                            |
 | **[architecture/](architecture/)** | ADRs (stdio, circuit breaker, async-first, etc.) and comparison docs         |
-| **[audit/](audit/)**               | Audit phases, async audit, security fixes (Score: 9.0/10)                    |
+| **[audit/](audit/)**               | Audit system summary, Phase 1 & 3 implementation (Score: 9.0/10)             |
 | **[features/](features/)**         | Feature completion docs (keyring, OpenAI proxy, memory system, testing, CSS) |
 | **[guides/](guides/)**             | Developer guides (auto-enhancement)                                          |
 | **[modules/](modules/)**           | Module documentation and coverage tracking                                   |
