@@ -15,7 +15,7 @@ A complete session memory system has been implemented for PromptHub, providing:
 
 ### Data Model
 
-**SQLite Schema** (`/tmp/prompthub/memory.db`):
+**SQLite Schema** (`~/.prompthub/memory.db`):
 - **sessions** — Session metadata with client_id, status, created_at, last_accessed
 - **session_facts** — Facts with tags, relevance scores, and sources
 - **session_memory_blocks** — Key-value memory with optional expiration
@@ -289,7 +289,7 @@ Created for common queries:
 
 ### Storage
 
-- SQLite file: `/tmp/prompthub/memory.db`
+- SQLite file: `~/.prompthub/memory.db`
 - No size limit (can grow to disk capacity)
 - Cleanup operations for old closed sessions and expired blocks
 

@@ -375,7 +375,7 @@ async def test_server_lifecycle():
 ### Server Won't Start
 ```bash
 # Check logs
-tail -f /tmp/prompthub/audit.log
+tail -f ~/.prompthub/audit.log
 
 # Check if command exists
 which npx

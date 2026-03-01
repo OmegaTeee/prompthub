@@ -68,7 +68,7 @@ class AuditIntegrityManager:
 
 - **Append-Only Validation**: Detects log truncation or deletion
 - **Modification Detection**: SHA256 mismatch indicates tampering
-- **Checksum History**: Stores baselines in `/tmp/prompthub/audit_checksums.json`
+- **Checksum History**: Stores baselines in `~/.prompthub/audit_checksums.json`
 - **Compliance Ready**: Meets SOC 2/HIPAA tamper-evident requirements
 
 ### Usage
@@ -85,7 +85,7 @@ curl http://localhost:9090/audit/integrity/verify
   "message": "Integrity verified successfully",
   "current_checksum": {
     "timestamp": "2026-01-29T01:32:08.383843",
-    "file_path": "/tmp/prompthub/audit.log",
+    "file_path": "~/.prompthub/audit.log",
     "file_size": 8788,
     "line_count": 26,
     "sha256": "206eff9c6f1d1813a55decc8976641324a5d0883cb837ceb9e9adfd9f8bd4e02",
@@ -295,7 +295,7 @@ Forwards audit logs to enterprise Security Information and Event Management (SIE
 #!/bin/bash
 # SIEM Log Forwarder for PromptHub
 
-AUDIT_LOG="/tmp/prompthub/audit.log"
+AUDIT_LOG="~/.prompthub/audit.log"
 
 # Splunk HTTP Event Collector (HEC)
 function forward_to_splunk() {

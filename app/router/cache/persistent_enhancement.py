@@ -24,7 +24,7 @@ class PersistentEnhancementCache(PersistentCache):
         self,
         max_size: int = 500,
         default_ttl: float = 7200.0,  # 2 hours
-        db_path: Path = Path("/tmp/prompthub/cache.db"),
+        db_path: Path | None = None,
     ):
         super().__init__(
             max_size=max_size,

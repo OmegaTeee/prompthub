@@ -139,7 +139,7 @@ except Exception as e:
 
 ### Audit Log Location
 ```
-/tmp/prompthub/audit.log
+~/.prompthub/audit.log
 ```
 
 **Log Rotation:**
@@ -355,40 +355,40 @@ Status:
 
 ### 1. Find all failed operations
 ```bash
-cat /tmp/prompthub/audit.log | jq 'select(.status == "failed")'
+cat ~/.prompthub/audit.log | jq 'select(.status == "failed")'
 ```
 
 ### 2. Find all operations by specific user
 ```bash
-cat /tmp/prompthub/audit.log | jq 'select(.client_id == "test-user")'
+cat ~/.prompthub/audit.log | jq 'select(.client_id == "test-user")'
 ```
 
 ### 3. Trace a specific request
 ```bash
 REQUEST_ID="bd945bbe-fe61-4872-8f40-7b42030982d2"
-cat /tmp/prompthub/audit.log | jq "select(.request_id == \"$REQUEST_ID\")"
+cat ~/.prompthub/audit.log | jq "select(.request_id == \"$REQUEST_ID\")"
 ```
 
 ### 4. Find all credential access attempts
 ```bash
-cat /tmp/prompthub/audit.log | jq 'select(.event == "credential_access")'
+cat ~/.prompthub/audit.log | jq 'select(.event == "credential_access")'
 ```
 
 ### 5. Timeline of server "memory" operations
 ```bash
-cat /tmp/prompthub/audit.log | jq 'select(.resource_name == "memory") | {timestamp, action, status, client_id}'
+cat ~/.prompthub/audit.log | jq 'select(.resource_name == "memory") | {timestamp, action, status, client_id}'
 ```
 
 ### 6. Count operations by client
 ```bash
-cat /tmp/prompthub/audit.log | jq -r '.client_id' | grep -v null | sort | uniq -c
+cat ~/.prompthub/audit.log | jq -r '.client_id' | grep -v null | sort | uniq -c
 ```
 
 ### 7. Find all errors in last hour
 ```bash
 # Get timestamp from 1 hour ago
 HOUR_AGO=$(date -u -v-1H +"%Y-%m-%dT%H:%M:%S")
-cat /tmp/prompthub/audit.log | jq "select(.timestamp > \"$HOUR_AGO\" and .level == \"error\")"
+cat ~/.prompthub/audit.log | jq "select(.timestamp > \"$HOUR_AGO\" and .level == \"error\")"
 ```
 
 ---
@@ -519,7 +519,7 @@ cat /tmp/prompthub/audit.log | jq "select(.timestamp > \"$HOUR_AGO\" and .level 
    - Export to CSV/JSON
 
 3. **Log Rotation Monitoring**
-   - Setup logrotate for `/tmp/prompthub/audit.log`
+   - Setup logrotate for `~/.prompthub/audit.log`
    - Add disk space monitoring
    - Alert on rotation failures
 

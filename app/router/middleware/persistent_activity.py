@@ -41,13 +41,16 @@ class PersistentActivityLog:
     Uses aiosqlite for async database operations without blocking the event loop.
     """
 
-    def __init__(self, db_path: Path = Path("/tmp/prompthub/activity.db")):
+    def __init__(self, db_path: Path | None = None):
         """
         Initialize persistent activity log.
 
         Args:
-            db_path: Path to SQLite database file
+            db_path: Path to SQLite database file (defaults to settings.activity_db_path)
         """
+        if db_path is None:
+            from router.config import get_settings
+            db_path = Path(get_settings().activity_db_path)
         self.db_path = db_path
         self._initialized = False
         self._init_lock = asyncio.Lock()
@@ -343,7 +346,7 @@ persistent_activity_log: PersistentActivityLog | None = None
 
 
 def get_persistent_activity_log(
-    db_path: Path = Path("/tmp/prompthub/activity.db"),
+    db_path: Path | None = None,
 ) -> PersistentActivityLog:
     """Get or create the global persistent activity log instance."""
     global persistent_activity_log

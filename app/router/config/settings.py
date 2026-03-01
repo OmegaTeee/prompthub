@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     cache_similarity_threshold: float = 0.85
     cache_persistent: bool = True
     cache_db_path: str = ""  # resolved in model_post_init from data_dir
+    activity_db_path: str = ""  # resolved in model_post_init from data_dir
+    memory_db_path: str = ""  # resolved in model_post_init from data_dir
+    tool_registry_db_path: str = ""  # resolved in model_post_init from data_dir
+    audit_log_path: str = ""  # resolved in model_post_init from data_dir
+    audit_checksum_path: str = ""  # resolved in model_post_init from data_dir
 
     # OpenRouter (cloud fallback)
     openrouter_enabled: bool = False
@@ -74,9 +79,20 @@ class Settings(BaseSettings):
         if not self.data_dir:
             self.data_dir = str(Path.home() / ".prompthub")
 
-        # Resolve cache_db_path from data_dir if not explicitly set
+        # Resolve DB/log paths from data_dir if not explicitly set
+        data = Path(self.data_dir)
         if not self.cache_db_path:
-            self.cache_db_path = str(Path(self.data_dir) / "cache.db")
+            self.cache_db_path = str(data / "cache.db")
+        if not self.activity_db_path:
+            self.activity_db_path = str(data / "activity.db")
+        if not self.memory_db_path:
+            self.memory_db_path = str(data / "memory.db")
+        if not self.tool_registry_db_path:
+            self.tool_registry_db_path = str(data / "tool_registry.db")
+        if not self.audit_log_path:
+            self.audit_log_path = str(data / "audit.log")
+        if not self.audit_checksum_path:
+            self.audit_checksum_path = str(data / "audit_checksums.json")
 
         # Normalize ollama_host: strip scheme and port if present
         # (handles OLLAMA_HOST=http://localhost:11434 from system env)

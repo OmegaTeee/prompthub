@@ -28,8 +28,11 @@ class SessionStorage:
     with lazy singleton initialization guarded by asyncio.Lock().
     """
 
-    def __init__(self, db_path: Path = Path("/tmp/prompthub/memory.db")):
+    def __init__(self, db_path: Path | None = None):
         """Initialize session storage."""
+        if db_path is None:
+            from router.config import get_settings
+            db_path = Path(get_settings().memory_db_path)
         self.db_path = db_path
         self._initialized = False
         self._init_lock = asyncio.Lock()
@@ -610,7 +613,7 @@ _session_storage: SessionStorage | None = None
 
 
 def get_session_storage(
-    db_path: Path = Path("/tmp/prompthub/memory.db"),
+    db_path: Path | None = None,
 ) -> SessionStorage:
     """Get or create the global session storage instance."""
     global _session_storage

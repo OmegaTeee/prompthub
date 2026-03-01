@@ -182,11 +182,16 @@ integrity_manager: AuditIntegrityManager | None = None
 
 
 def get_integrity_manager(
-    audit_log_path: Path = Path("/tmp/prompthub/audit.log"),
-    checksum_db: Path = Path("/tmp/prompthub/audit_checksums.json"),
+    audit_log_path: Path | None = None,
+    checksum_db: Path | None = None,
 ) -> AuditIntegrityManager:
     """Get or create global integrity manager."""
     global integrity_manager
     if integrity_manager is None:
+        if audit_log_path is None or checksum_db is None:
+            from router.config import get_settings
+            s = get_settings()
+            audit_log_path = audit_log_path or Path(s.audit_log_path)
+            checksum_db = checksum_db or Path(s.audit_checksum_path)
         integrity_manager = AuditIntegrityManager(audit_log_path, checksum_db)
     return integrity_manager

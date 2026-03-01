@@ -138,12 +138,14 @@ async def lifespan(app: FastAPI):
 
     # Initialize persistent activity log
     from router.middleware.persistent_activity import get_persistent_activity_log
-    persistent_activity_log = get_persistent_activity_log(db_path=log_dir / "activity.db")
+    persistent_activity_log = get_persistent_activity_log(
+        db_path=Path(settings.activity_db_path)
+    )
     await persistent_activity_log.initialize()
     logger.info("Initialized persistent activity log")
 
     # Initialize session storage (memory system)
-    session_storage = get_session_storage(db_path=log_dir / "memory.db")
+    session_storage = get_session_storage(db_path=Path(settings.memory_db_path))
     await session_storage.initialize()
     logger.info("Initialized session storage")
 
@@ -153,7 +155,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize tool registry (MCP tool definition cache)
     from router.tool_registry import get_tool_registry
-    tool_registry = get_tool_registry(db_path=log_dir / "tool_registry.db")
+    tool_registry = get_tool_registry(db_path=Path(settings.tool_registry_db_path))
     await tool_registry.initialize()
     logger.info("Initialized tool registry")
 

@@ -37,12 +37,15 @@ class PersistentCache(BaseCache[str, Any]):
         self,
         max_size: int = 1000,
         default_ttl: float = 3600.0,
-        db_path: Path = Path("/tmp/prompthub/cache.db"),
+        db_path: Path | None = None,
         warm_on_init: bool = True,
     ):
         self._l1 = MemoryCache(max_size=max_size, default_ttl=default_ttl)
         self.max_size = max_size
         self.default_ttl = default_ttl
+        if db_path is None:
+            from router.config import get_settings
+            db_path = Path(get_settings().cache_db_path)
         self.db_path = db_path
         self._warm_on_init = warm_on_init
         self._initialized = False

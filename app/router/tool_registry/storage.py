@@ -26,7 +26,10 @@ class ToolRegistryStorage:
     Uses per-operation aiosqlite.connect() — no persistent connections.
     """
 
-    def __init__(self, db_path: Path = Path("/tmp/prompthub/tool_registry.db")):
+    def __init__(self, db_path: Path | None = None):
+        if db_path is None:
+            from router.config import get_settings
+            db_path = Path(get_settings().tool_registry_db_path)
         self.db_path = db_path
         self._initialized = False
         self._init_lock = asyncio.Lock()
@@ -370,7 +373,7 @@ _tool_registry: ToolRegistryStorage | None = None
 
 
 def get_tool_registry(
-    db_path: Path = Path("/tmp/prompthub/tool_registry.db"),
+    db_path: Path | None = None,
 ) -> ToolRegistryStorage:
     """Get or create the global tool registry instance."""
     global _tool_registry

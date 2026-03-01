@@ -17,8 +17,10 @@
 
 set -euo pipefail
 
-AUDIT_LOG="/tmp/prompthub/audit.log"
-ACTIVITY_DB="/tmp/prompthub/activity.db"
+# Persistent data directory — mirrors DATA_DIR in app/.env / settings.py
+DATA_DIR="${DATA_DIR:-$HOME/.prompthub}"
+AUDIT_LOG="${DATA_DIR}/audit.log"
+ACTIVITY_DB="${DATA_DIR}/activity.db"
 ROUTER_URL="http://localhost:9090"
 
 # Colors for output
@@ -112,7 +114,7 @@ function cmd_cleanup() {
 
 function cmd_backup() {
     TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-    BACKUP_DIR="/tmp/prompthub/backups"
+    BACKUP_DIR="${DATA_DIR}/backups"
     mkdir -p "${BACKUP_DIR}"
 
     log_info "Creating backup..."

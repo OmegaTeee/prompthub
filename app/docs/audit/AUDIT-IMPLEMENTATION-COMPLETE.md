@@ -17,7 +17,7 @@ PromptHub's audit infrastructure has been completely transformed from basic stri
 - ✅ Structured JSON audit logging with `structlog`
 - ✅ Audit context propagation (WHO, WHAT, WHEN, WHERE, CORRELATION)
 - ✅ Complete keyring credential access auditing
-- ✅ Dedicated audit log file (`/tmp/prompthub/audit.log`)
+- ✅ Dedicated audit log file (`~/.prompthub/audit.log`)
 
 **Files Modified:**
 
