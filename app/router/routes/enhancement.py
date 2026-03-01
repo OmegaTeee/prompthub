@@ -27,6 +27,19 @@ class OrchestrateRequest(BaseModel):
     bypass_cache: bool = False
 
 
+class OrchestrateResponse(BaseModel):
+    """Response from the orchestration endpoint."""
+
+    intent: str
+    suggested_tools: list[str]
+    context_hints: list[str]
+    annotated_prompt: str
+    reasoning: str
+    confidence: float
+    skipped: bool
+    error: str | None
+
+
 def create_enhancement_router(
     get_enhancement_service: Callable[[], Any],
     get_orchestrator_agent: Callable[[], Any] | None = None,
@@ -87,7 +100,7 @@ def create_enhancement_router(
             raise HTTPException(503, "Enhancement service not initialized")
         return await svc.get_stats()
 
-    @router.post("/ollama/orchestrate")
+    @router.post("/ollama/orchestrate", response_model=OrchestrateResponse)
     async def orchestrate_prompt(
         body: OrchestrateRequest,
         x_client_name: str | None = Header(None, alias="X-Client-Name"),
