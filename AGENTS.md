@@ -1,24 +1,15 @@
 # Multi-Agent Contribution Workflow
 
-Rules for AI agents (Claude Code, Cursor/Qwen, Copilot) contributing to this project.
+Rules for AI agents (Claude Code, Copilot) contributing to this project.
 
 ## Roles
 
-| Agent             | Role                | Scope                                                 |
-|-------------------|---------------------|-------------------------------------------------------|
-| **Claude Code**   | Primary implementer | Structural changes, new features, bulk edits, commits |
-| **Cursor (Qwen)** | Reviewer / polish   | Consistency checks, minor fixes, style alignment      |
-| **Copilot**       | Inline assist       | Autocompletions, snippet generation within IDE        |
+| Agent           | Role                | Scope                                                 |
+|-----------------|---------------------|-------------------------------------------------------|
+| **Claude Code** | Primary implementer | Structural changes, new features, bulk edits, commits |
+| **Copilot**     | Inline assist       | Autocompletions, snippet generation, chat within IDE  |
 
-## Workflow
-
-```
-1. Implement   — Claude Code writes code, creates/modifies files
-2. Commit      — Claude Code commits with descriptive message
-3. Review      — Cursor/Qwen reviews the commit, produces patch
-4. Apply       — Cursor/Qwen commits fixes directly (no task file)
-5. Verify      — Claude Code confirms clean state on next session
-```
+Copilot auto-loads `.github/copilot-instructions.md` (thin pointer to CLAUDE.md) and `.github/instructions/*.md` for context.
 
 ## Rules
 
@@ -30,14 +21,9 @@ Rationale: Tracking files accumulate, go stale, and add noise to the steering co
 
 ### Commit Hygiene
 
-- Each agent's commit stands on its own with a clear message
+- Each commit stands on its own with a clear message
 - Use `Co-Authored-By` trailer when an agent builds on another's work
 - One logical change per commit (don't bundle unrelated fixes)
-- Never amend another agent's commit; always create a new one
-
-### File Boundaries
-
-Agents should not fight over the same file in the same session. If Claude Code just modified `openapi.yaml`, Cursor reviews it in a separate commit afterward — not concurrently.
 
 ### Steering Documents
 
@@ -53,15 +39,14 @@ These files are loaded into agent context. Keep them concise. Do not add transie
 
 ### CHANGELOG.md
 
-- `[Unreleased]` stays empty between releases
-- Agents add entries under the current version section
+- `[Unreleased]` collects changes between releases
 - Follow [Keep a Changelog](https://keepachangelog.com/) categories: Added, Changed, Fixed, Removed
 
 ### Documentation Location
 
 | Content | Location | Owner |
 |---------|----------|-------|
-| User guides | `~/Vault/PromptHub/` (Obsidian) | Manual / Cursor |
+| User guides | `app/docs/guides/` | Claude Code |
 | Developer docs | `app/docs/` | Claude Code |
 | API spec | `app/docs/api/openapi.yaml` | Claude Code |
 | Agent guidance | `.claude/steering/` | Claude Code |
