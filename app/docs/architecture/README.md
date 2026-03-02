@@ -13,8 +13,10 @@ ADRs document significant architectural decisions, the context behind them, and 
 - [ADR-003: Per-Client Prompt Enhancement](ADR-003-per-client-enhancement.md) (model selection amended by ADR-006, privacy levels added by ADR-007)
 - [ADR-004: Modular Monolith Architecture](ADR-004-modular-monolith.md)
 - [ADR-005: Async-First Architecture](ADR-005-async-first.md)
-- [ADR-006: Enhancement Timeout & Unified Model](ADR-006-enhancement-timeout.md)
+- [ADR-006: Enhancement Timeout & Unified Model](ADR-006-enhancement-timeout.md) (unified model superseded by ADR-008; timeout tuning retained)
 - [ADR-007: Cloud Fallback via OpenRouter](ADR-007-cloud-fallback.md)
+- [ADR-008: Task-Specific Models & Orchestrator Agent](ADR-008-task-specific-models.md)
+- [ADR-009: Orchestrator Agent](ADR-009-orchestrator-agent.md)
 
 ## System Architecture
 
@@ -125,18 +127,22 @@ Response (tools namespaced: "server_tool")
 ### 2. Prompt Enhancement Flow
 
 ```
-Client → FastAPI → EnhancementService
+Client → FastAPI → OrchestratorAgent (qwen3:14b, 2.5s timeout)
    ↓
-Cache hit? → Return cached (keyed by client_name + prompt + model)
+Intent classification → OrchestratorResult (intent, tools, annotated prompt)
+   ↓ (pass-through on any failure)
+EnhancementService → Cache hit? → Return cached
    ↓
 CircuitBreaker.check() → Ollama available?
    ↓
-Select system prompt by client (all clients use llama3.2:latest)
+Select model by client (gemma3:4b / gemma3:27b / qwen3-coder:30b)
    ↓
 Ollama OpenAI API (/v1/chat/completions) → Enhanced prompt → Cache → Response
    ↓ (on failure, if privacy allows)
 Cloud fallback → OpenRouter free tier → Enhanced prompt (provider="openrouter")
 ```
+
+See [ADR-008](ADR-008-task-specific-models.md) (task-specific models) and [ADR-009](ADR-009-orchestrator-agent.md) (orchestrator architecture).
 
 **Privacy gating**: `local_only` clients never hit cloud. `free_ok`/`any` clients fall back to OpenRouter when Ollama fails. See [ADR-007](ADR-007-cloud-fallback.md).
 

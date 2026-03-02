@@ -106,6 +106,7 @@ POST /ollama/orchestrate    Classify intent and annotate prompt (qwen3:14b)
 ```
 
 ## Related
+- [ADR-009: Orchestrator Agent](ADR-009-orchestrator-agent.md) — Deep-dive into orchestrator architecture (timeout, cache, circuit breaker, token budget)
 - [ADR-006: Enhancement Timeout](ADR-006-enhancement-timeout.md) — Superseded (timeout tuning retained, unified model replaced)
 - [ADR-003: Per-Client Enhancement](ADR-003-per-client-enhancement.md) — Extended (per-client now includes model selection again)
 
