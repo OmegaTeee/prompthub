@@ -33,36 +33,24 @@ http://localhost:9090
 ```
 
 ### Authentication
-Currently no authentication required (local-only). For production deployments, use:
-```bash
-export API_KEY_REQUIRED=true
-export API_KEY=your-secret-key
-```
+- **MCP proxy, health, servers**: No authentication required (local-only)
+- **OpenAI-compatible `/v1/` endpoints**: Bearer token required (configured in `configs/api-keys.json`)
 
-Then include in requests:
 ```bash
-curl -H "X-API-Key: your-secret-key" http://localhost:9090/servers
+# /v1/ endpoints require a bearer token
+curl -H "Authorization: Bearer sk-prompthub-code-001" http://localhost:9090/v1/models
 ```
 
 ## Common Workflows
 
-### 1. Install and Start an MCP Server
+### 1. Start an MCP Server
 
 ```bash
-# Install
-curl -X POST http://localhost:9090/servers/install \
-  -H "Content-Type: application/json" \
-  -d '{
-    "package": "@modelcontextprotocol/server-memory",
-    "name": "memory",
-    "auto_start": true
-  }'
-
-# Start
+# Start a configured server
 curl -X POST http://localhost:9090/servers/memory/start
 
 # Verify
-curl http://localhost:9090/health/memory
+curl http://localhost:9090/health | jq '.servers.memory'
 ```
 
 ### 2. Enhance a Prompt
@@ -82,7 +70,7 @@ Response:
 {
   "original": "Write a Python function to merge two sorted arrays",
   "enhanced": "Create a Python function that efficiently merges two pre-sorted arrays into a single sorted array. The function should:\n- Accept two sorted lists as parameters\n- Return a new sorted list containing all elements\n- Maintain O(n+m) time complexity\n- Include type hints and docstring",
-  "model": "deepseek-r1:latest",
+  "model": "gemma3:27b",
   "cached": false,
   "was_enhanced": true,
   "error": null
@@ -115,14 +103,14 @@ curl -X POST http://localhost:9090/mcp/context7/tools/call \
 # Overall health
 curl http://localhost:9090/health | jq
 
-# Specific server
-curl http://localhost:9090/health/context7 | jq
-
-# Circuit breaker states
-curl http://localhost:9090/circuit-breakers | jq
+# Circuit breaker states (included in health response)
+curl http://localhost:9090/health | jq '.circuit_breakers'
 
 # Activity log
 curl "http://localhost:9090/audit/activity?limit=10" | jq
+
+# Dashboard (browser)
+open http://localhost:9090/dashboard
 ```
 
 ### 5. Generate Client Configurations
@@ -156,10 +144,7 @@ chmod +x ~/raycast-mcp.sh
 }
 ```
 
-**Solution:** Wait for `retry_after` seconds or manually reset:
-```bash
-curl -X POST http://localhost:9090/circuit-breakers/fetch/reset
-```
+**Solution:** Wait for `retry_after` seconds. Circuit breakers auto-recover after the recovery timeout (30s default).
 
 ### Server Not Running
 ```json
@@ -198,22 +183,9 @@ curl http://localhost:11434/api/tags
 ollama serve
 ```
 
-## WebSocket Support (Future)
-
-Currently all MCP servers use stdio transport. WebSocket support planned for Phase 4.
-
-## Rate Limiting (Future)
-
-No rate limiting currently implemented. For production:
-- Implement rate limiting middleware
-- Use Redis for distributed rate limiting
-- Configure per-client limits in `configs/enhancement-rules.json`
-
 ## Versioning
 
-API versioning via URL path:
-- `/v1/servers` - Version 1 (future)
-- `/servers` - Unversioned (current)
+The `/v1/` prefix is used for the OpenAI-compatible proxy endpoints. All other endpoints are unversioned.
 
 ## SDKs
 
@@ -275,14 +247,11 @@ class PromptHubClient {
 ## Testing the API
 
 ```bash
-# Run integration tests
-pytest tests/integration/ -v
+# Run integration tests (from app/ directory)
+cd app && pytest tests/integration/ -v
 
-# Test specific endpoint
-pytest tests/integration/test_servers.py::test_list_servers -v
-
-# Load testing with locust
-locust -f tests/load/locustfile.py --host http://localhost:9090
+# Run unit tests
+cd app && pytest tests/unit/ -v
 ```
 
 ## Further Reading

@@ -1,12 +1,12 @@
-# AI Agent Hub vs Alternatives: Focused Comparison
+# PromptHub vs Alternatives: Focused Comparison
 
-> **For**: Understanding how AI Agent Hub differs from other AI integration approaches
+> **For**: Understanding how PromptHub differs from other AI integration approaches
 
 ---
 
 ## Quick Summary
 
-| Feature                     | AI Agent Hub        | Direct API        | LLM Studio        | Generic MCP |
+| Feature                     | PromptHub        | Direct API        | LLM Studio        | Generic MCP |
 | --------------------------- | ------------------- | ----------------- | ----------------- | ----------- |
 | **One config for all apps** | ✅ Yes              | ❌ Configure each | ❌ Configure each | ⚠️ Partial  |
 | **Prompt enhancement**      | ✅ Automatic        | ❌ No             | ❌ No             | ❌ No       |
@@ -21,7 +21,7 @@
 
 ## Detailed Comparison
 
-### AI Agent Hub
+### PromptHub
 
 **What it is:**
 
@@ -162,7 +162,7 @@
 
 ### Core Capabilities
 
-| Capability                  | AI Agent Hub | Direct API | LLM Studio         | Generic MCP |
+| Capability                  | PromptHub | Direct API | LLM Studio         | Generic MCP |
 | --------------------------- | ------------ | ---------- | ------------------ | ----------- |
 | **Use Claude API**          | ✅ Yes       | ✅ Yes     | ❌ No              | ⚠️ Optional |
 | **Use Copilot**             | ✅ Yes       | ✅ Yes     | ❌ No              | ⚠️ Optional |
@@ -174,7 +174,7 @@
 
 ## Key Takeaway
 
-**AI Agent Hub is the Goldilocks solution:**
+**PromptHub is the Goldilocks solution:**
 
 - Not too simple (Direct API)
 - Not too complex (Generic MCP)
