@@ -29,7 +29,7 @@ Use **async-first architecture** with Python asyncio throughout the codebase.
 
 ### Principles
 1. All public APIs are async (`async def`)
-2. All I/O operations use async clients (`httpx`, `aiofiles`, `aiosqlite`)
+2. All I/O operations use async clients (`httpx`, `asyncio.to_thread`, `aiosqlite`)
 3. Use `asyncio.create_subprocess` for process management
 4. Background tasks use `asyncio.create_task`
 
@@ -343,7 +343,7 @@ async def blocking_operation():
 
 **When useful**: Unavoidable blocking operations (legacy libraries, CPU-bound work)
 
-**Current need**: All libraries have async versions → Not needed
+**Current use**: File I/O uses `asyncio.to_thread(path.read_text)` to offload to the default thread pool, avoiding the `aiofiles` dependency while staying non-blocking
 
 ### 3. Async + Multiprocessing
 ```python
@@ -431,3 +431,4 @@ async def test_function():
 ## Revision History
 - 2025-01-05: Initial async architecture
 - 2025-02-02: Documented as ADR
+- 2026-03-05: Replaced `aiofiles` with `asyncio.to_thread` for file I/O (Python 3.14 deprecation fix)

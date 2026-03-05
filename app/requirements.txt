@@ -23,8 +23,6 @@ structlog>=25.0.0
 # Async SQLite for persistent activity log
 aiosqlite>=0.22.0
 
-# Async file I/O (replaces sync open() in async contexts)
-aiofiles>=24.1.0
 
 # Markdown rendering for dashboard guides
 markdown2>=2.4.0

@@ -7,7 +7,7 @@ The registry:
 - Provides CRUD operations for server management
 """
 
-import aiofiles
+import asyncio
 import json
 import logging
 from pathlib import Path
@@ -47,7 +47,7 @@ class ServerRegistry:
         Load server configurations from JSON file asynchronously.
 
         Creates empty config file if it doesn't exist.
-        Uses aiofiles for non-blocking I/O.
+        Uses asyncio.to_thread for non-blocking I/O.
         """
         if not self.config_path.exists():
             logger.warning(f"Config file not found: {self.config_path}, creating empty")
@@ -56,10 +56,9 @@ class ServerRegistry:
             return
 
         try:
-            # Use aiofiles for async file I/O
-            async with aiofiles.open(self.config_path) as f:
-                content = await f.read()
-                data = json.loads(content)
+            # Non-blocking file read via thread pool
+            content = await asyncio.to_thread(self.config_path.read_text)
+            data = json.loads(content)
 
             servers_data = data.get("servers", {})
             for name, config_dict in servers_data.items():
@@ -138,9 +137,10 @@ class ServerRegistry:
         data = {"servers": servers_data}
 
         try:
-            # Use aiofiles for async file I/O
-            async with aiofiles.open(self.config_path, "w") as f:
-                await f.write(json.dumps(data, indent=2))
+            # Non-blocking file write via thread pool
+            await asyncio.to_thread(
+                self.config_path.write_text, json.dumps(data, indent=2)
+            )
             logger.info(f"Saved {len(self._servers)} server configurations")
         except Exception as e:
             logger.error(f"Failed to save config file: {e}")

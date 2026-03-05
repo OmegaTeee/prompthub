@@ -12,7 +12,7 @@ The service provides resilient prompt enhancement with automatic
 failover to returning the original prompt if enhancement fails.
 """
 
-import aiofiles
+import asyncio
 import json
 import logging
 from enum import StrEnum
@@ -280,10 +280,9 @@ class EnhancementService:
             return
 
         try:
-            # Use aiofiles for non-blocking file I/O
-            async with aiofiles.open(self.rules_path) as f:
-                content = await f.read()
-                data = json.loads(content)
+            # Non-blocking file read via thread pool
+            content = await asyncio.to_thread(self.rules_path.read_text)
+            data = json.loads(content)
 
             # Load default rule
             if "default" in data and isinstance(data["default"], dict):
