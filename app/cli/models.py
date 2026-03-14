@@ -22,6 +22,7 @@ class ClientType(str, Enum):
     cursor = "cursor"
     vscode = "vscode"
     raycast = "raycast"
+    open_webui = "open-webui"
 
     def config_path(self) -> Path:
         """Default macOS config file path for this client."""
@@ -57,6 +58,7 @@ class ClientType(str, Enum):
                 / "mcp_settings.json"
             ),
             ClientType.raycast: home / ".config" / "raycast" / "mcp.json",
+            ClientType.open_webui: home / ".prompthub" / "open-webui.json",
         }
         return paths[self]
 
@@ -136,6 +138,36 @@ class ClientProfile(BaseModel):
     exclude_tools: list[str] | None = None
 
 
+def build_open_webui_config(
+    router_url: str = "http://127.0.0.1:9090",
+    api_key: str = "sk-prompthub-openwebui-001",
+    port: int = 3000,
+) -> dict[str, Any]:
+    """
+    Build Open WebUI connection settings (HTTP-based, no bridge).
+
+    Unlike stdio-bridge clients, Open WebUI connects directly over HTTP
+    via the OpenAI-compatible proxy and Streamable HTTP MCP endpoint.
+
+    Args:
+        router_url: PromptHub router base URL (use 127.0.0.1, not localhost)
+        api_key: Bearer token registered in api-keys.json
+        port: Open WebUI listen port (for reference only, not set by us)
+
+    Returns:
+        Config dict keyed by ``"open_webui"`` with connection fields.
+    """
+    return {
+        "open_webui": {
+            "api_base_url": f"{router_url}/v1",
+            "mcp_endpoint": f"{router_url}/mcp-direct/mcp",
+            "api_key": api_key,
+            "port": port,
+            "data_dir": "~/.open-webui",
+        }
+    }
+
+
 def wrap_for_client(
     client_type: ClientType,
     bridge: BridgeConfig,
@@ -147,6 +179,7 @@ def wrap_for_client(
     Different clients use different schemas:
     - Claude Desktop / Cursor / Raycast: {"mcpServers": {"name": {...}}}
     - VS Code: {"mcp": {"servers": {"name": {...}}}}
+    - Open WebUI: connection settings (no bridge — use build_open_webui_config)
     """
     entry = bridge.model_dump(exclude_none=True)
 

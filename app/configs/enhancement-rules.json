@@ -56,6 +56,13 @@
       "temperature": 0.5,
       "max_tokens": 400,
       "privacy_level": "local_only"
+    },
+    "open-webui": {
+      "model": "gemma3:4b",
+      "system_prompt": "You are a prompt engineer for conversational AI. Rewrite the user's prompt to be clearer and more specific. Preserve conversational tone. Return only the rewritten prompt — no explanation.",
+      "temperature": 0.3,
+      "max_tokens": 500,
+      "privacy_level": "local_only"
     }
   },
   "fallback_chain": [

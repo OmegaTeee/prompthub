@@ -8,6 +8,7 @@ for path-safe generation.
 
 from router.clients.generators import (
     generate_claude_desktop_config,
+    generate_open_webui_config,
     generate_raycast_config,
     generate_vscode_config,
     generate_vscode_tasks,
@@ -15,6 +16,7 @@ from router.clients.generators import (
 
 __all__ = [
     "generate_claude_desktop_config",
+    "generate_open_webui_config",
     "generate_vscode_config",
     "generate_vscode_tasks",
     "generate_raycast_config",

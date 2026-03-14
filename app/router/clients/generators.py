@@ -3,6 +3,7 @@ Client Configuration Generators.
 
 Generates configuration files for connecting applications to PromptHub:
 - Claude Desktop, VS Code, Cursor, Raycast: Bridge-based MCP configs
+- Open WebUI: HTTP connection settings (no bridge)
 - VS Code tasks: Pipeline integration tasks
 
 Bridge-based configs delegate to cli.generator for path-safe generation.
@@ -172,6 +173,29 @@ def generate_vscode_tasks(
         path.write_text(json.dumps(tasks, indent=2) + "\n")
 
     return tasks
+
+
+def generate_open_webui_config(
+    router_host: str = "127.0.0.1",
+    router_port: int = 9090,
+) -> dict[str, Any]:
+    """
+    Generate Open WebUI connection settings for PromptHub.
+
+    Open WebUI connects via HTTP (OpenAI-compatible proxy + Streamable HTTP),
+    not the stdio bridge. Returns connection settings, not bridge config.
+
+    Args:
+        router_host: PromptHub router host (default: 127.0.0.1)
+        router_port: PromptHub router port
+
+    Returns:
+        Connection settings dictionary
+    """
+    gen = ConfigGenerator(router_url=f"http://{router_host}:{router_port}")
+    loader = ProfileLoader()
+    profile = loader.load(ClientType.open_webui)
+    return gen.generate(ClientType.open_webui, profile=profile)
 
 
 def generate_raycast_config(

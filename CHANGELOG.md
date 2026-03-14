@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 ## [Unreleased]
 
 ### Added
+- **Open WebUI integration**: First-class PromptHub client connecting via HTTP (`/v1/` proxy + `/mcp-direct/mcp` Streamable HTTP). API key `sk-prompthub-openwebui-001` with enhancement enabled (gemma3:4b, local_only privacy). CLI support (`generate`, `install`, `validate`, `list`), `GET /configs/open-webui` endpoint, dashboard panel with connection status (15s HTMX polling), launch scripts (`start.sh`, `stop.sh`), and macOS LaunchAgent plist. 13 new tests (8 unit, 5 integration).
 - **Cloud enhancement fallback (Path D)**: When Ollama is unavailable, clients with `free_ok` or `any` privacy level fall back to OpenRouter free-tier models (e.g., `deepseek/deepseek-r1-0528:free`). `local_only` clients never leave localhost. Separate circuit breaker for OpenRouter (2 failures/60s).
 - **Privacy boundary system (Path C)**: `PrivacyLevel` enum (`local_only`, `free_ok`, `any`) on per-client enhancement rules. `X-Privacy-Level` header can downgrade (more restrictive) but never upgrade. Perplexity and Raycast set to `free_ok`; all others default to `local_only`.
 - **Persistent write-through cache (Path B)**: L1 in-memory + L2 SQLite hybrid cache. L2 survives restarts, L1 warmup on startup. Controlled via `CACHE_PERSISTENT=true` setting.

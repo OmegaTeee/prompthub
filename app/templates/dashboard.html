@@ -93,6 +93,16 @@
           <div class="loading">Loading tool registry</div>
         </div>
 
+        <!-- Open WebUI -->
+        <div
+          class="card"
+          hx-get="/dashboard/open-webui-partial"
+          hx-trigger="load, every 15s"
+          hx-swap="innerHTML"
+        >
+          <div class="loading">Loading Open WebUI status</div>
+        </div>
+
         <!-- Token Budget -->
         <div
           class="card"

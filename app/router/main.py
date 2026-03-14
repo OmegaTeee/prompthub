@@ -437,6 +437,54 @@ async def _get_tool_registry_info():
     return {"stats": {}, "snapshots": []}
 
 
+async def _get_open_webui_info() -> dict[str, Any]:
+    """
+    Get Open WebUI connection status for the dashboard panel.
+
+    Probes the Open WebUI health endpoint (port 3000) and counts
+    recent requests from the ``open-webui`` client in the activity log.
+
+    Returns:
+        Dict with keys: ``status`` ("up"/"down"), ``api_base_url``,
+        ``mcp_endpoint``, ``port``, ``recent_activity`` (int).
+    """
+    import httpx
+
+    settings = get_settings()
+    port = 3000
+    api_base_url = f"http://127.0.0.1:{settings.port}/v1"
+    mcp_endpoint = f"http://127.0.0.1:{settings.port}/mcp-direct/mcp"
+
+    # Probe Open WebUI's own health endpoint to determine liveness
+    status = "down"
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            resp = await client.get(f"http://127.0.0.1:{port}/health")
+            if resp.status_code == 200:
+                status = "up"
+    except Exception:
+        pass  # Open WebUI unreachable -- report as "down"
+
+    # Count recent activity from this client in the persistent log
+    recent_activity = 0
+    if persistent_activity_log:
+        try:
+            entries = await persistent_activity_log.query(
+                client_id="open-webui", limit=100
+            )
+            recent_activity = len(entries)
+        except Exception:
+            pass
+
+    return {
+        "status": status,
+        "api_base_url": api_base_url,
+        "mcp_endpoint": mcp_endpoint,
+        "port": port,
+        "recent_activity": recent_activity,
+    }
+
+
 # =============================================================================
 # Router Registration
 # =============================================================================
@@ -455,6 +503,7 @@ dashboard_router = create_dashboard_router(
     reload_api_keys=_reload_api_keys,
     get_memory_info=_get_memory_info,
     get_tool_registry_info=_get_tool_registry_info,
+    get_open_webui_info=_get_open_webui_info,
 )
 app.include_router(dashboard_router)
 

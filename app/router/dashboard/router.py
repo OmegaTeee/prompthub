@@ -43,6 +43,7 @@ def create_dashboard_router(
     reload_api_keys: Callable[[], Any] | None = None,
     get_memory_info: Callable[[], Any] | None = None,
     get_tool_registry_info: Callable[[], Any] | None = None,
+    get_open_webui_info: Callable[[], Any] | None = None,
 ) -> APIRouter:
     """
     Create the dashboard router with injected dependencies.
@@ -60,6 +61,7 @@ def create_dashboard_router(
         reload_api_keys: Function to reload API keys from config
         get_memory_info: Function to get session memory stats
         get_tool_registry_info: Function to get tool registry stats
+        get_open_webui_info: Function to get Open WebUI connection status
 
     Returns:
         Configured APIRouter for dashboard endpoints
@@ -490,6 +492,50 @@ def create_dashboard_router(
                 request,
                 "partials/tool-registry.html",
                 {"stats": {}, "snapshots": [], "error": str(e)},
+            )
+
+    @router.get("/open-webui-partial", response_class=HTMLResponse)
+    async def open_webui_partial(request: Request):
+        """HTMX partial: Open WebUI connection status."""
+        if not get_open_webui_info:
+            return templates.TemplateResponse(
+                request,
+                "partials/open-webui.html",
+                {
+                    "status": "down",
+                    "api_base_url": "",
+                    "mcp_endpoint": "",
+                    "port": 3000,
+                    "recent_activity": 0,
+                },
+            )
+
+        try:
+            info = await get_open_webui_info()
+            return templates.TemplateResponse(
+                request,
+                "partials/open-webui.html",
+                {
+                    "status": info.get("status", "down"),
+                    "api_base_url": info.get("api_base_url", ""),
+                    "mcp_endpoint": info.get("mcp_endpoint", ""),
+                    "port": info.get("port", 3000),
+                    "recent_activity": info.get("recent_activity", 0),
+                },
+            )
+        except Exception as e:
+            logger.warning("Error loading Open WebUI info: %s", e)
+            return templates.TemplateResponse(
+                request,
+                "partials/open-webui.html",
+                {
+                    "status": "down",
+                    "api_base_url": "",
+                    "mcp_endpoint": "",
+                    "port": 3000,
+                    "recent_activity": 0,
+                    "error": str(e),
+                },
             )
 
     @router.get("/token-budget-partial", response_class=HTMLResponse)

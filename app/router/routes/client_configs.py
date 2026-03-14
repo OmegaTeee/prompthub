@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from router.clients import (
     generate_claude_desktop_config,
+    generate_open_webui_config,
     generate_raycast_config,
     generate_vscode_config,
     generate_vscode_tasks,
@@ -50,6 +51,15 @@ def create_client_configs_router() -> APIRouter:
         """Generate Raycast bridge configuration for PromptHub."""
         settings = get_settings()
         return generate_raycast_config(
+            router_host="127.0.0.1",
+            router_port=settings.port,
+        )
+
+    @router.get("/configs/open-webui")
+    async def get_open_webui_config():
+        """Generate Open WebUI HTTP connection settings for PromptHub."""
+        settings = get_settings()
+        return generate_open_webui_config(
             router_host="127.0.0.1",
             router_port=settings.port,
         )

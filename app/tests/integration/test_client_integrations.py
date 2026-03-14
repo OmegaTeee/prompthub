@@ -1,7 +1,8 @@
 """
-Integration tests for client configurations (Claude Desktop, VS Code, Raycast).
+Integration tests for client configurations.
 
 Tests that the actual client configurations work as documented.
+Covers Claude Desktop, VS Code, Raycast, and Open WebUI.
 """
 
 import json
@@ -400,3 +401,92 @@ class TestConfigurationValidation:
         # Should NOT have npx anywhere
         assert "npx" not in json.dumps(config), \
             "Claude Desktop config should not reference npx"
+
+
+# ── Open WebUI Integration ──────────────────────────────────────────
+
+CONFIGS_DIR = Path(__file__).parent.parent.parent / "configs"
+
+
+class TestOpenWebUIIntegration:
+    """Integration tests for Open WebUI as a PromptHub client."""
+
+    @pytest.mark.skipif(
+        not (CONFIGS_DIR / "api-keys.json").exists(),
+        reason="api-keys.json not found",
+    )
+    def test_api_key_registered(self):
+        """The Open WebUI API key exists in api-keys.json."""
+        keys = json.loads((CONFIGS_DIR / "api-keys.json").read_text())
+        assert "sk-prompthub-openwebui-001" in keys["keys"]
+        entry = keys["keys"]["sk-prompthub-openwebui-001"]
+        assert entry["client_name"] == "open-webui"
+        assert entry["enhance"] is True
+
+    @pytest.mark.skipif(
+        not (CONFIGS_DIR / "enhancement-rules.json").exists(),
+        reason="enhancement-rules.json not found",
+    )
+    def test_enhancement_rule_exists(self):
+        """An enhancement rule exists for open-webui."""
+        rules = json.loads(
+            (CONFIGS_DIR / "enhancement-rules.json").read_text()
+        )
+        clients = rules.get("clients", {})
+        assert "open-webui" in clients
+        ow_rule = clients["open-webui"]
+        assert "system_prompt" in ow_rule
+        assert ow_rule["privacy_level"] == "local_only"
+
+    def test_cli_generate_produces_connection_settings(self):
+        """CLI generate for open-webui returns connection settings."""
+        from cli.generator import ConfigGenerator
+        from cli.models import ClientType
+
+        gen = ConfigGenerator()
+        config = gen.generate(ClientType.open_webui)
+
+        assert "open_webui" in config
+        ow = config["open_webui"]
+        assert "api_base_url" in ow
+        assert "mcp_endpoint" in ow
+        assert "api_key" in ow
+        assert "127.0.0.1" in ow["api_base_url"]
+        assert "/v1" in ow["api_base_url"]
+        assert "/mcp-direct/mcp" in ow["mcp_endpoint"]
+
+    @pytest.mark.skipif(
+        not (CONFIGS_DIR / "api-keys.json").exists(),
+        reason="api-keys.json not found",
+    )
+    def test_profile_loads_with_key(self):
+        """ProfileLoader finds the open-webui API key."""
+        from cli.models import ClientType
+        from cli.profiles import ProfileLoader
+
+        loader = ProfileLoader(configs_dir=CONFIGS_DIR)
+        profile = loader.load(ClientType.open_webui)
+
+        assert profile.client_name == "open-webui"
+        assert profile.api_key == "sk-prompthub-openwebui-001"
+        assert profile.enhance is True
+
+    def test_installer_writes_standalone_file(self, tmp_path):
+        """ConfigInstaller writes Open WebUI config as standalone file."""
+        from cli.installer import ConfigInstaller
+        from cli.models import ClientType, build_open_webui_config
+
+        config_path = tmp_path / "open-webui.json"
+        generated = build_open_webui_config()
+
+        installer = ConfigInstaller()
+        merged = installer.install(
+            ClientType.open_webui,
+            generated,
+            config_path=config_path,
+        )
+
+        assert config_path.exists()
+        written = json.loads(config_path.read_text())
+        assert "open_webui" in written
+        assert merged == generated

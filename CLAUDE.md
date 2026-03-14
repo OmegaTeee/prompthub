@@ -245,4 +245,18 @@ Steering documents guide AI agents with project-specific conventions and pattern
 - `code-docs`: Improve docstrings, comments, and type hints for existing code without changing behavior.
 - `user-manual`: Generate user-facing documentation (Quickstart, Usage, Examples) based on the current codebase.
 
+### Post-implementation documentation queue
+
+**IMPORTANT — Active directive:** After completing any feature, fix, or structural change, evaluate the decision table below and proactively ask the user: *"Should I run the doc queue? Based on this change I'd update: [list applicable steps]."* Do not skip this prompt. Do not wait for the user to remember.
+
+| Change type | 1. CHANGELOG.md | 2. Code docs (`code-docs` agent) | 3. User guide (`user-manual` agent) |
+|---|---|---|---|
+| New feature | Yes | Yes | Yes — create/update in `app/docs/guides/` |
+| Bug fix | Yes | If code changed | If user-facing |
+| Refactor | If notable | Yes | No |
+| Config change | Yes | No | If user-facing |
+| Test-only | No | No | No |
+
+Steps are independent and can run in parallel. See `AGENTS.md` § "Post-Implementation Documentation Queue" for full details, flow diagram, and agent prompts.
+
 These documents provide focused guidance for AI agents working on this codebase and should be referenced during onboarding and complex tasks.

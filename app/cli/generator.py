@@ -11,7 +11,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from cli.models import BridgeConfig, ClientProfile, ClientType, wrap_for_client
+from cli.models import (
+    BridgeConfig,
+    ClientProfile,
+    ClientType,
+    build_open_webui_config,
+    wrap_for_client,
+)
 
 
 class ConfigGenerator:
@@ -82,10 +88,22 @@ class ConfigGenerator:
 
         Returns the client-specific JSON structure (e.g. {"mcpServers": {...}}
         for Claude Desktop, {"mcp": {"servers": {...}}} for VS Code).
+        Open WebUI returns connection settings (HTTP-based, no bridge).
 
         Raises:
             ValueError: If path validation fails (unexpanded vars, relative paths)
         """
+        if client_type == ClientType.open_webui:
+            # Open WebUI connects via HTTP, not the stdio bridge.
+            # Return connection settings directly instead of a BridgeConfig.
+            api_key = (
+                profile.api_key if profile else "sk-prompthub-openwebui-001"
+            )
+            return build_open_webui_config(
+                router_url=self.router_url,
+                api_key=api_key or "sk-prompthub-openwebui-001",
+            )
+
         env = self._build_env(client_type, profile, servers, exclude_tools)
 
         if extra_env:
