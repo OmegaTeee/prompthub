@@ -81,7 +81,19 @@ def _make_client_factory(
 
 
 def _parse_server_filter(gateway_servers: str) -> list[str]:
-    """Parse comma-separated server filter into a list of names."""
+    """Parse the ``GATEWAY_SERVERS`` setting into a list of server names.
+
+    Splits on commas, strips whitespace, and drops empty segments so that
+    trailing commas or extra spaces are harmless.
+
+    Args:
+        gateway_servers: Raw value of the ``GATEWAY_SERVERS`` env var /
+            settings field (e.g. ``"context7, duckduckgo"``).
+
+    Returns:
+        A list of trimmed server names, or an empty list when the input
+        is empty or blank (meaning "all servers").
+    """
     if not gateway_servers or not gateway_servers.strip():
         return []
     return [s.strip() for s in gateway_servers.split(",") if s.strip()]
@@ -92,28 +104,37 @@ def build_mcp_gateway(
     registry: "ServerRegistry",
     server_filter: list[str] | None = None,
 ) -> FastMCP:
-    """
-    Build a FastMCP gateway that proxies to configured MCP servers.
+    """Build a FastMCP gateway that proxies to configured MCP servers.
 
-    Mounts a proxy for configured servers (filtered by server_filter if
-    provided). Each proxy uses a dynamic client factory that resolves the
-    current bridge at request time, so server restarts are handled
-    transparently.
+    Iterates over every server in the registry (optionally narrowed by
+    *server_filter*), creates a dynamic client factory via
+    :func:`_make_client_factory`, wraps it in a ``FastMCPProxy``, and
+    mounts it on the gateway under the server's name prefix.
+
+    Servers that fail to mount (e.g. import errors in proxy setup) are
+    logged and skipped -- they do not prevent the remaining servers from
+    being exposed.
 
     Args:
-        supervisor: Supervisor with active bridges
-        registry: Registry with all configured servers
-        server_filter: Optional list of server names to include.
-                       Empty list or None = all servers.
+        supervisor: The :class:`~router.servers.supervisor.Supervisor`
+            holding active bridges for all running servers.
+        registry: The :class:`~router.servers.registry.ServerRegistry`
+            containing every configured server (running or not).
+        server_filter: Allowlist of server names to include.  ``None``
+            or an empty list means *all* servers.  Typically produced by
+            :func:`_parse_server_filter` from the ``GATEWAY_SERVERS``
+            setting.
 
     Returns:
-        FastMCP gateway server (can be served via .http_app())
+        A :class:`~fastmcp.FastMCP` gateway instance ready to be served
+        via ``gateway.http_app(path="/mcp")``.
     """
     gateway = FastMCP("PromptHub Gateway")
     mounted = 0
 
     for state in registry.list_all():
         name = state.config.name
+        # Falsy server_filter (None or []) means "mount everything"
         if server_filter and name not in server_filter:
             logger.debug(f"Skipping {name} (not in gateway_servers filter)")
             continue
