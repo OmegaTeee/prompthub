@@ -19,18 +19,22 @@ LOG_FILE="${HOME}/.prompthub/open-webui.log"
 OWUI_PORT="${OWUI_PORT:-3000}"
 PROMPTHUB_URL="${PROMPTHUB_URL:-http://127.0.0.1:9090}"
 OLLAMA_PORT="${OLLAMA_PORT:-11434}"
+OWUI_API_KEY="${OWUI_API_KEY:-sk-prompthub-openwebui-001}"
 
-# Read port from config file if it exists
+# Read settings from config file if it exists
 if [[ -f "$CONFIG_FILE" ]]; then
     CONFIG_PORT=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('open_webui', {}).get('port', ''))" 2>/dev/null || true)
-    if [[ -n "$CONFIG_PORT" ]]; then
-        OWUI_PORT="${OWUI_PORT:-$CONFIG_PORT}"
-    fi
+    CONFIG_KEY=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('open_webui', {}).get('api_key', ''))" 2>/dev/null || true)
+    [[ -n "$CONFIG_PORT" ]] && OWUI_PORT="${OWUI_PORT:-$CONFIG_PORT}"
+    [[ -n "$CONFIG_KEY" ]] && OWUI_API_KEY="${CONFIG_KEY}"
 fi
 
 echo "=== Open WebUI Startup ==="
 echo "  Port:         $OWUI_PORT"
 echo "  PromptHub:    $PROMPTHUB_URL"
+echo "  API Base URL: ${PROMPTHUB_URL}/v1"
+echo "  API Key:      ${OWUI_API_KEY:0:15}..."
+echo "  Data Dir:     ~/.open-webui"
 echo "  Log:          $LOG_FILE"
 echo ""
 
@@ -60,7 +64,13 @@ mkdir -p "$(dirname "$LOG_FILE")"
 
 echo "Starting Open WebUI..."
 
-# Start Open WebUI via uvx
-exec uvx --python 3.11 open-webui@latest serve \
+# Export env vars that Open WebUI needs to connect to PromptHub
+export DATA_DIR="${HOME}/.open-webui"
+export ENABLE_OPENAI_API=true
+export OPENAI_API_BASE_URL="${PROMPTHUB_URL}/v1"
+export OPENAI_API_KEY="${OWUI_API_KEY}"
+
+# Start Open WebUI via uvx (pin to compatible range)
+exec uvx --python 3.11 "open-webui>=0.8,<0.8.10" serve \
     --port "$OWUI_PORT" \
     >> "$LOG_FILE" 2>&1

@@ -58,7 +58,7 @@ Open WebUI is installed via `uv` (the Python package runner). It is **not** a st
 ```bash
 cd ~ && DATA_DIR=~/.open-webui \
   ENABLE_OPENAI_API=true \
-  OPENAI_API_BASE_URL=http://localhost:9090/v1 \
+  OPENAI_API_BASE_URL=http://127.0.0.1:9090/v1 \
   OPENAI_API_KEY=sk-prompthub-openwebui-001 \
   uvx --python 3.11 "open-webui>=0.8,<0.8.10" serve --port 3000
 ```
