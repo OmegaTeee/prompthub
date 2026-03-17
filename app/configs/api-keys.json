@@ -37,7 +37,7 @@
     },
     "sk-prompthub-openwebui-001": {
       "client_name": "open-webui",
-      "enhance": true,
+      "enhance": false,
       "description": "Open WebUI chat interface"
     }
   }
