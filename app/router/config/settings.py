@@ -65,6 +65,11 @@ class Settings(BaseSettings):
     # Auto-detected if not set via WORKSPACE_ROOT env var
     workspace_root: str = ""
 
+    # MCP Gateway — filter which servers are exposed via /mcp-direct/mcp
+    # Comma-separated list of server names (empty = all servers)
+    # e.g. GATEWAY_SERVERS="context7,duckduckgo,sequential-thinking"
+    gateway_servers: str = ""
+
     # Logging
     log_level: str = "info"
 

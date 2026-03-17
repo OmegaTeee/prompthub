@@ -35,7 +35,7 @@ from router.openai_compat.auth import ApiKeyManager
 from router.pipelines import DocumentationPipeline
 from router.resilience import CircuitBreakerRegistry
 from router.servers import ServerRegistry, Supervisor
-from router.servers.mcp_gateway import build_mcp_gateway
+from router.servers.mcp_gateway import build_mcp_gateway, _parse_server_filter
 
 # Configure logging
 logging.basicConfig(
@@ -91,7 +91,8 @@ async def _mount_gateway() -> None:
         logger.warning("Cannot mount gateway: services not initialized")
         return
 
-    gateway = build_mcp_gateway(supervisor, registry)
+    server_filter = _parse_server_filter(get_settings().gateway_servers)
+    gateway = build_mcp_gateway(supervisor, registry, server_filter=server_filter)
     mcp_http_app = gateway.http_app(path="/mcp")
 
     # Enter the FastMCP lifespan (initializes StreamableHTTPSessionManager)
