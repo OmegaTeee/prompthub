@@ -232,13 +232,13 @@ Open WebUI supports MCP via Streamable HTTP natively (since v0.6.31):
 1. Go to **Admin Panel** (click profile icon bottom-left) → **Settings → External Tools**
 2. Click **+ (Add Server)**
 3. Set **Type** to **"MCP (Streamable HTTP)"** (not OpenAPI)
-4. Set **Server URL** to: `http://localhost:9090/mcp-direct/mcp`
+4. Set **Server URL** to: `http://127.0.0.1:9090/mcp-direct/mcp`
 5. Leave authentication as **None** (local traffic, no token needed)
 6. Click **Save**
 
 All PromptHub tools (web search, file operations, sequential-thinking, Obsidian notes, etc.) are discovered automatically.
 
-> **Note:** PromptHub's gateway runs in stateless mode — no session handshake is needed. Each request is independent, which is compatible with Open WebUI's MCP client.
+> **Note:** Open WebUI's MCP client handles the Streamable HTTP session handshake automatically. The gateway exposes **58 tools** across all running MCP servers, namespaced by server name (e.g., `context7_resolve-library-id`).
 
 ### Option B: Custom Tool Functions
 
