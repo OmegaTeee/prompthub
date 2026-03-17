@@ -83,6 +83,9 @@ credentials.json
 # Qdrant data (Phase 2.1+)
 qdrant_data/
 
+# Open WebUI secret key (generated on first run)
+.webui_secret_key
+
 # Temporary files
 *.tmp
 *.temp
