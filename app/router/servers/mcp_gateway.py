@@ -3,22 +3,37 @@ MCP Gateway — Streamable HTTP access to managed MCP servers.
 
 Creates a FastMCP composite server that proxies to all configured MCP server
 bridges. Mounted as an ASGI sub-application alongside FastAPI, this gives
-MCP clients a standards-compliant Streamable HTTP endpoint:
+MCP clients a standards-compliant Streamable HTTP endpoint::
 
-    Client → HTTP POST /mcp-direct/mcp → FastMCP Gateway → Bridge → Stdio subprocess
+    Client --> HTTP POST /mcp-direct/mcp --> FastMCP Gateway --> Bridge --> Stdio subprocess
 
 Each server's tools, resources, and prompts are namespaced by server name
-(e.g., "context7_resolve-library-id") to avoid collisions.
+(e.g., ``context7_resolve-library-id``) to avoid collisions.
 
-Uses dynamic client factories so that server restarts, late starts, and
-stop/start cycles are handled transparently — no gateway rebuild needed
-for lifecycle changes, only for topology changes (install/delete server).
+**Dynamic client factories** — Server restarts, late starts, and stop/start
+cycles are handled transparently. The gateway only needs rebuilding for
+topology changes (server installed or deleted), not lifecycle changes.
 
-Filtering: Set GATEWAY_SERVERS env var (comma-separated) to limit which
-servers are exposed. Empty = all servers.
+**Server filtering** — The ``GATEWAY_SERVERS`` env var (comma-separated)
+controls which servers are exposed through the gateway. When empty or unset,
+all configured servers are mounted. The raw setting string is parsed by
+:func:`_parse_server_filter` and passed as the ``server_filter`` parameter
+to :func:`build_mcp_gateway`.
+
+Example::
+
+    # Expose only three servers
+    GATEWAY_SERVERS="context7,duckduckgo,sequential-thinking"
+
+Functions:
+    _parse_server_filter: Parse ``GATEWAY_SERVERS`` string into a name list.
+    _make_client_factory: Build a per-server callable that resolves the
+        current bridge at request time.
+    build_mcp_gateway: Assemble the FastMCP gateway with proxy mounts.
 """
 
 import logging
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from fastmcp import Client, FastMCP
@@ -31,13 +46,29 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _make_client_factory(supervisor: "Supervisor", server_name: str):
-    """
-    Create a client factory that dynamically resolves the current bridge.
+def _make_client_factory(
+    supervisor: "Supervisor", server_name: str
+) -> Callable[[], Client]:
+    """Create a client factory that dynamically resolves the current bridge.
 
-    Called by FastMCPProxy on each tool listing or tool call. If the server
-    is not running, raises RuntimeError — FastMCP's gateway catches this
-    and skips the server's tools (other servers remain unaffected).
+    Returns a zero-argument callable that FastMCPProxy invokes on every tool
+    listing or tool call.  The callable looks up the live bridge from the
+    supervisor at call time, so server restarts are picked up without
+    rebuilding the gateway.
+
+    Args:
+        supervisor: The Supervisor holding active bridges.
+        server_name: Name of the MCP server (must match a key in
+            ``mcp-servers.json``).
+
+    Returns:
+        A callable returning the bridge's :class:`~fastmcp.Client`.
+
+    Raises:
+        RuntimeError: (from the returned callable) If the server has no
+            bridge or the bridge is disconnected.  FastMCPProxy catches
+            this and gracefully omits the server's tools from the
+            aggregated listing.
     """
 
     def client_factory() -> Client:

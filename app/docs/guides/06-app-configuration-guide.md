@@ -109,6 +109,43 @@ For advanced users, configure VS Code to connect directly to PromptHub's MCP ser
 
 ---
 
+## Open WebUI
+
+Open WebUI connects to PromptHub via two channels:
+- **Chat**: OpenAI-compatible `/v1/` proxy for conversations
+- **Tools**: Streamable HTTP gateway (`/mcp-direct/mcp`) for MCP tool access
+
+### Configuration
+
+1. **Add PromptHub as an OpenAI connection** in Open WebUI Admin > Connections:
+   - URL: `http://127.0.0.1:9090/v1`
+   - API Key: `sk-prompthub-openwebui-001`
+
+2. **Add MCP tools** in Admin > Settings > Tools > MCP Servers:
+   - URL: `http://127.0.0.1:9090/mcp-direct/mcp`
+   - No auth required (local-only endpoint)
+
+3. **Select a model** in the chat dropdown (e.g., `gemma3:4b` for fast responses)
+
+### Filtering Tools with GATEWAY_SERVERS
+
+By default, the gateway exposes all configured MCP servers (~58 tools). For smaller models, reduce the tool count by setting `GATEWAY_SERVERS` in `app/.env`:
+
+```bash
+# Only expose these servers to the gateway
+GATEWAY_SERVERS="context7,desktop-commander,sequential-thinking"
+```
+
+Empty value (default) = all servers. Restart the router after changing.
+
+### Performance Tips
+
+- **Disable enhancement**: Set `"enhance": false` in `api-keys.json` for the Open WebUI key to skip the prompt rewrite step
+- **Use smaller models**: `gemma3:4b` is fastest; `gemma3:27b` is more capable but slower
+- **Reduce tool count**: Use `GATEWAY_SERVERS` to limit exposed tools — fewer tools means faster tool selection by the model
+
+---
+
 ## Raycast
 
 ### Using OpenAI-Compatible API
@@ -452,6 +489,7 @@ Benefits:
 |-----|------------------|-------------|--------|-------|
 | Claude Desktop | Easy | Yes (MCP) | Yes | Direct integration |
 | VS Code | Easy | Yes | No | Via OpenAI API |
+| Open WebUI | Easy | Optional | No | Chat + MCP tools via gateway |
 | Raycast | Medium | Yes | No | Via OpenAI API |
 | Python Scripts | Easy | Yes | Yes | Use requests library |
 | Bash Scripts | Easy | No | No | Use curl |
