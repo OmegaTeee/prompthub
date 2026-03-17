@@ -48,12 +48,6 @@
   "files.exclude": {
     "**/__pycache__": true,
     "**/.pytest_cache": true,
-    "**/.mypy_cache": true,
-    "clients": true
-  },
-  // ── Markdown settings ────────────────────────────----───
-  "markdownlint.configFile": ".vscode/.markdownlint-cli2.jsonc",
-  "markdown.styles": [
-    ".vscode/markdown.css"
-  ]
+    "**/.mypy_cache": true
+  }
 }
