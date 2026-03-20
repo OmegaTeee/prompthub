@@ -17,10 +17,10 @@ from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from router.audit import audit_admin_action, setup_audit_logging
-from router.orchestrator import OrchestratorAgent, get_orchestrator_agent
 from router.config import get_settings
 from router.dashboard import create_dashboard_router
 from router.enhancement import EnhancementService, OllamaConfig
@@ -32,10 +32,11 @@ from router.middleware import (
 )
 from router.openai_compat import create_openai_compat_router
 from router.openai_compat.auth import ApiKeyManager
+from router.orchestrator import OrchestratorAgent, get_orchestrator_agent
 from router.pipelines import DocumentationPipeline
 from router.resilience import CircuitBreakerRegistry
 from router.servers import ServerRegistry, Supervisor
-from router.servers.mcp_gateway import build_mcp_gateway, _parse_server_filter
+from router.servers.mcp_gateway import _parse_server_filter, build_mcp_gateway
 
 # Configure logging
 logging.basicConfig(
@@ -263,6 +264,13 @@ app.add_middleware(RequestTimeoutMiddleware, timeout=60.0)
 # Mount static files for dashboard CSS
 static_path = Path(__file__).parent.parent / "templates" / "css"
 app.mount("/static/css", StaticFiles(directory=str(static_path)), name="static")
+
+
+# Redirect root to the dashboard page
+@app.get("/", include_in_schema=False)
+async def _root_redirect():
+    """Redirect base URL to the dashboard UI at `/dashboard`."""
+    return RedirectResponse(url="/dashboard")
 
 
 # =============================================================================
