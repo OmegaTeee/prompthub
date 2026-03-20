@@ -15,19 +15,19 @@ set -euo pipefail
 CONFIG_FILE="${HOME}/.prompthub/open-webui.json"
 LOG_FILE="${HOME}/.prompthub/open-webui.log"
 
-# Defaults (overridden by config file or env vars)
-OWUI_PORT="${OWUI_PORT:-3000}"
+# Defaults — env vars override config file, config file overrides hardcoded defaults
 PROMPTHUB_URL="${PROMPTHUB_URL:-http://127.0.0.1:9090}"
 OLLAMA_PORT="${OLLAMA_PORT:-11434}"
-OWUI_API_KEY="${OWUI_API_KEY:-sk-prompthub-openwebui-001}"
 
-# Read settings from config file if it exists
+# Read settings from config file first, then apply env var / fallback defaults
+CONFIG_PORT=""
+CONFIG_KEY=""
 if [[ -f "$CONFIG_FILE" ]]; then
     CONFIG_PORT=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('open_webui', {}).get('port', ''))" 2>/dev/null || true)
     CONFIG_KEY=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('open_webui', {}).get('api_key', ''))" 2>/dev/null || true)
-    [[ -n "$CONFIG_PORT" ]] && OWUI_PORT="${OWUI_PORT:-$CONFIG_PORT}"
-    [[ -n "$CONFIG_KEY" ]] && OWUI_API_KEY="${CONFIG_KEY}"
 fi
+OWUI_PORT="${OWUI_PORT:-${CONFIG_PORT:-3000}}"
+OWUI_API_KEY="${OWUI_API_KEY:-${CONFIG_KEY:-sk-prompthub-openwebui-001}}"
 
 echo "=== Open WebUI Startup ==="
 echo "  Port:         $OWUI_PORT"

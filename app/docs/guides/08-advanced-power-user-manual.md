@@ -1,14 +1,16 @@
 # Advanced Power User Manual
 
-This guide is for users who want to customize PromptHub beyond the basics.
+This guide is for users who want to customize PromptHub beyond the basics. It covers custom models, API keys, performance tuning, monitoring, scripting, and troubleshooting.
 
-## Advanced Configuration
+---
 
-### Custom Enhancement Models
+## Custom Enhancement Models
 
-By default, PromptHub uses lightweight models for prompt enhancement. You can customize this per app.
+PromptHub uses lightweight models to rewrite your prompts before they reach the AI. You can swap these models per app. Think of it like choosing a different editor for different writing tasks: a quick proofreader for casual chat, a thorough editor for important work.
 
-**Edit `~/.local/share/prompthub/configs/enhancement-rules.json`:**
+### How to Configure
+
+Edit `~/prompthub/configs/enhancement-rules.json`:
 
 ```json
 {
@@ -37,29 +39,43 @@ By default, PromptHub uses lightweight models for prompt enhancement. You can cu
 }
 ```
 
-**Key options:**
-- `model` — Which Ollama model to use for enhancement
-- `system_prompt` — Custom instructions for enhancement (optional)
-- `timeout` — How long to wait before giving up (seconds)
-- `enabled` — Can disable enhancement per client
+### Configuration Options
 
-**Available models in Ollama:**
-- `gemma3:4b` — Fast (1-2s), good enough
-- `gemma3:27b` — Powerful, slower (3-5s)
-- `qwen2.5-coder:32b` — Code-specific, very powerful
-- `mistral:latest` — Fast and capable
-- `llama3:27b` — General purpose, balanced
+| Option | What it does |
+|--------|-------------|
+| `model` | Which Ollama model to use for enhancement |
+| `system_prompt` | Custom instructions that guide how enhancement works (optional) |
+| `timeout` | How many seconds to wait before giving up |
+| `enabled` | Set to `false` to turn off enhancement for a specific client |
 
-Pull new models:
+### Available Models
+
+| Model | Speed | Strength |
+|-------|-------|----------|
+| `gemma3:4b` | Fast (1-2 seconds) | Good enough for most tasks |
+| `gemma3:27b` | Slower (3-5 seconds) | More powerful and detailed |
+| `qwen2.5-coder:32b` | Slower | Specialized for code |
+| `mistral:latest` | Fast | Capable all-rounder |
+| `llama3:27b` | Medium | General purpose, balanced |
+
+To download a new model:
+
 ```bash
 ollama pull qwen2.5-coder:32b
 ```
 
+**Key points:**
+- Each app can use a different enhancement model.
+- Faster models (4b) work well for casual use; larger models (27b+) give better results for important tasks.
+- Set `enabled: false` to skip enhancement for apps that do not need it.
+
 ---
 
-### API Key Management
+## API Key Management
 
-#### Creating Fine-Grained API Keys
+API keys control which apps can access PromptHub. Think of them like keycards for a building: each card can open different doors with different permissions.
+
+### Creating Fine-Grained API Keys
 
 Instead of one key per app, create multiple keys with different settings:
 
@@ -85,28 +101,39 @@ Instead of one key per app, create multiple keys with different settings:
 }
 ```
 
-Benefits:
-- Different enhancement settings per use case
-- Can disable one key without affecting others
-- Easier to track which key is used where
+**Benefits:**
+- Different enhancement settings per use case.
+- You can disable one key without affecting others.
+- Easier to track which key is used where.
 
-#### Key Rotation
+### Key Rotation
 
-To safely rotate a key without downtime:
+To rotate a key without downtime, follow these steps:
 
-1. Create a new key in `api-keys.json`
-2. Update your apps to use the new key
-3. Reload keys: `curl -X POST http://localhost:9090/v1/api-keys/reload`
-4. Remove old key from `api-keys.json`
-5. Reload again
+1. Add a new key to `api-keys.json`.
+2. Update your apps to use the new key.
+3. Reload the key list:
+   ```bash
+   curl -X POST http://localhost:9090/v1/api-keys/reload
+   ```
+4. Remove the old key from `api-keys.json`.
+5. Reload again:
+   ```bash
+   curl -X POST http://localhost:9090/v1/api-keys/reload
+   ```
+
+**Key points:**
+- Use separate keys for production and testing.
+- Rotate keys by adding the new one first, then removing the old one.
+- Reload after every change so PromptHub picks up the updated keys.
 
 ---
 
-### Custom Enhancement Rules
+## Custom Enhancement Rules
 
-#### Per-Client Timeouts
+### Per-Client Timeouts
 
-For slow models, increase the timeout:
+Some models take longer to respond. Increase the timeout for slow models so PromptHub does not give up too soon:
 
 ```json
 {
@@ -119,9 +146,9 @@ For slow models, increase the timeout:
 }
 ```
 
-#### Disabling Enhancement for Specific Scenarios
+### Disabling Enhancement for Specific Keys
 
-Disable enhancement for a specific API key:
+Turn off enhancement for a specific API key. This is useful when you want raw, unmodified responses:
 
 ```json
 {
@@ -136,15 +163,17 @@ Disable enhancement for a specific API key:
 
 ---
 
-### Memory Advanced Features
+## Memory Advanced Features
 
-#### Semantic Search
+The memory system stores facts and context across conversations. Think of it like a notebook that PromptHub keeps beside every conversation.
 
-Coming in future version — ability to search facts by meaning rather than exact text.
+### Semantic Search
 
-#### Memory Expiration Policies
+Coming in a future version. This will let you search facts by meaning rather than exact text.
 
-Automatically expire old facts:
+### Memory Expiration
+
+Old facts can pile up. Clean them out automatically:
 
 ```bash
 # Delete facts older than 30 days
@@ -153,9 +182,11 @@ curl -X POST http://localhost:9090/sessions/{id}/cleanup \
   -d '{"days": 30}'
 ```
 
-#### Batch Operations
+Replace `{id}` with your session ID.
 
-Add multiple facts at once:
+### Batch Operations
+
+Add multiple facts at once instead of one at a time:
 
 ```bash
 curl -X POST http://localhost:9090/sessions/{id}/facts/batch \
@@ -166,11 +197,16 @@ curl -X POST http://localhost:9090/sessions/{id}/facts/batch \
   ]'
 ```
 
+**Key points:**
+- Clean up old facts regularly to keep the memory database lean.
+- Use batch operations when you have many facts to add.
+- Replace `{id}` with your actual session ID in all commands.
+
 ---
 
 ## Environment Variables
 
-Fine-tune PromptHub behavior via `.env`:
+You can fine-tune PromptHub's behavior by editing the `.env` file. Think of these as dials and switches that control how the system runs under the hood.
 
 ```bash
 # API Configuration
@@ -206,23 +242,28 @@ CACHE_TTL=300                        # Cache timeout in seconds
 CIRCUIT_BREAKER_ENABLED=true
 ```
 
+**Key points:**
+- `OLLAMA_TIMEOUT` controls how long PromptHub waits for Ollama before giving up.
+- `CACHE_TTL` sets how many seconds cached responses stay valid.
+- `LOG_LEVEL` at `DEBUG` gives the most detail; `INFO` is the normal setting.
+
 ---
 
 ## Performance Tuning
 
 ### Running Multiple Workers
 
-For high throughput, run multiple worker processes:
+By default, PromptHub handles one request at a time. For higher throughput, run multiple worker processes. This is like opening more checkout lanes at a store.
 
 ```bash
 uvicorn router.main:app --workers 4 --host 127.0.0.1 --port 9090
 ```
 
-This allows 4 concurrent requests. Increase for higher throughput (1 worker per CPU core recommended).
+This allows 4 requests to be processed at the same time. A good rule: use 1 worker per CPU core.
 
 ### Caching
 
-Enable response caching for identical requests:
+Caching stores responses so identical requests get instant answers. This saves time and resources when the same question comes up again.
 
 ```bash
 # In .env
@@ -230,66 +271,74 @@ CACHE_ENABLED=true
 CACHE_TTL=300
 ```
 
-Caches responses for 5 minutes. Useful for:
-- Repeated prompts
-- Multi-app queries (same question asked by different apps)
-- Enhancement results (same prompt enhanced multiple times)
+This caches responses for 5 minutes (300 seconds). Caching helps with:
+- Repeated prompts.
+- The same question asked by different apps.
+- Enhancement results when the same prompt is enhanced more than once.
 
 ### Circuit Breaker
 
-Automatically stop sending requests to failing services:
+The circuit breaker protects PromptHub from wasting time on a service that is down. Think of it like a real circuit breaker in your house: it trips to prevent damage, then resets when things are safe again.
 
 ```bash
 # In .env
 CIRCUIT_BREAKER_ENABLED=true
 ```
 
-If Ollama crashes:
-- First failure: try once more
-- Second failure: disable temporarily
-- After 60s: try again gradually
-- Once responsive: resume normal operation
+Here is what happens if Ollama crashes:
+1. First failure: PromptHub tries once more.
+2. Second failure: PromptHub temporarily stops sending requests.
+3. After 60 seconds: PromptHub tries again cautiously.
+4. Once Ollama responds: Normal operation resumes.
+
+**Key points:**
+- More workers means more concurrent requests. Match workers to CPU cores.
+- Caching eliminates redundant work for repeated prompts.
+- The circuit breaker prevents cascading failures when a service goes down.
 
 ---
 
-## Monitoring & Debugging
+## Monitoring and Debugging
 
 ### Verbose Logging
 
-Enable debug logging:
+When something goes wrong, turn on debug logging to see every detail:
 
 ```bash
 # Edit .env
 LOG_LEVEL=DEBUG
 
-# Or start PromptHub with logging
+# Or start PromptHub with debug logging
 uvicorn router.main:app --log-level debug
 ```
 
 Debug logs show:
-- Every request received
-- Every external call made
-- Cache hits/misses
-- Enhancement details
-- Circuit breaker state
+- Every request received.
+- Every external call made.
+- Cache hits and misses.
+- Enhancement details.
+- Circuit breaker state changes.
+
+> **Warning:** Debug logging writes a lot of data to disk. Turn it off when you are done troubleshooting.
 
 ### Real-Time Log Monitoring
 
 Watch logs as they happen:
 
 ```bash
-tail -f ~/.local/share/prompthub/logs/router-stderr.log
+tail -f ~/prompthub/logs/router-stderr.log
 ```
 
-Filter by severity:
+Filter by severity to focus on problems:
+
 ```bash
-tail -f ~/.local/share/prompthub/logs/router-stderr.log | grep ERROR
-tail -f ~/.local/share/prompthub/logs/router-stderr.log | grep WARNING
+tail -f ~/prompthub/logs/router-stderr.log | grep ERROR
+tail -f ~/prompthub/logs/router-stderr.log | grep WARNING
 ```
 
-### Metrics & Health
+### Metrics and Health
 
-Check system metrics:
+Check system metrics with these commands:
 
 ```bash
 # Health endpoint
@@ -304,14 +353,18 @@ curl http://localhost:9090/sessions/stats
 
 ### Profiling
 
-To profile PromptHub (find slow operations):
+To find slow operations, run PromptHub with Python's built-in profiler:
 
 ```bash
-# Start with profiler
 python -m cProfile -s cumtime -m uvicorn router.main:app --port 9090
 ```
 
-Look for functions consuming the most time.
+This outputs a list of functions sorted by how much time they consume. Look at the top entries to find bottlenecks.
+
+**Key points:**
+- Use `DEBUG` logging to investigate problems, then switch back to `INFO`.
+- `tail -f` with `grep` lets you watch for specific log levels in real time.
+- The profiler helps you find which operations are slowing things down.
 
 ---
 
@@ -319,11 +372,7 @@ Look for functions consuming the most time.
 
 ### Adding Your Own MCP Server
 
-If you have a custom MCP server, integrate it with PromptHub:
-
-1. Start your MCP server on a different port
-2. Configure PromptHub to route to it
-3. Access it via PromptHub
+If you have a custom MCP server, you can route it through PromptHub. This lets all your apps access it through one endpoint.
 
 **Example: Adding Context7**
 
@@ -332,15 +381,15 @@ If you have a custom MCP server, integrate it with PromptHub:
 context7 serve --port 8000
 
 # Terminal 2: Start PromptHub (it discovers Context7)
-cd ~/.local/share/prompthub
+cd ~/prompthub
 uvicorn router.main:app --host 127.0.0.1 --port 9090
 ```
 
-PromptHub should automatically discover and proxy Context7.
+PromptHub discovers and proxies Context7 automatically.
 
 ### Custom Tool Development
 
-Build your own tools and expose them via PromptHub:
+Build your own tools and expose them through PromptHub:
 
 ```python
 # my_tool.py
@@ -362,13 +411,17 @@ if __name__ == "__main__":
     tool.register()
 ```
 
+**Key points:**
+- PromptHub can discover and proxy custom MCP servers automatically.
+- You can build your own tools and register them with PromptHub.
+
 ---
 
-## Automation & Integration
+## Automation and Integration
 
 ### Bash Script Integration
 
-Automate PromptHub calls:
+Automate PromptHub calls from the command line. This script provides helper functions you can reuse:
 
 ```bash
 #!/bin/bash
@@ -412,15 +465,19 @@ session_create "my-app"
 
 ### Cron Jobs
 
-Schedule PromptHub tasks:
+Schedule recurring PromptHub tasks using cron:
 
 ```bash
-# Cleanup old sessions (monthly)
+# Cleanup old sessions (monthly, on the 1st at midnight)
 0 0 1 * * /usr/local/bin/prompthub-cleanup.sh
 
-# Refresh API keys (never, but keep script for manual use)
+# Refresh API keys (manual use only — uncomment if needed)
 # 0 * * * * curl -X POST http://localhost:9090/v1/api-keys/reload
 ```
+
+**Key points:**
+- The bash helper functions let you call PromptHub from scripts and the terminal.
+- Use cron for recurring maintenance tasks like session cleanup.
 
 ---
 
@@ -428,53 +485,57 @@ Schedule PromptHub tasks:
 
 ### "Enhancement service crashed"
 
-Check logs:
-```bash
-grep "enhancement" ~/.local/share/prompthub/logs/router-stderr.log
-```
-
-If Ollama crashed:
-```bash
-# Restart Ollama
-killall ollama
-sleep 2
-ollama serve &
-```
+1. Check the logs for clues:
+   ```bash
+   grep "enhancement" ~/prompthub/logs/router-stderr.log
+   ```
+2. If Ollama crashed, restart it:
+   ```bash
+   killall ollama
+   sleep 2
+   ollama serve &
+   ```
 
 ### "Circuit breaker keeps triggering"
 
-Indicates Ollama is flaky. Either:
-1. Increase timeouts: `OLLAMA_TIMEOUT=300` in `.env`
-2. Increase Ollama's resources
-3. Reduce concurrent requests
+This means Ollama is struggling to keep up. Try one of these fixes:
+
+1. Increase the timeout in `.env`:
+   ```bash
+   OLLAMA_TIMEOUT=300
+   ```
+2. Give Ollama more system resources (close other heavy apps).
+3. Reduce the number of concurrent requests.
 
 ### "High memory usage"
 
-Monitor:
-```bash
-# See memory usage
-ps aux | grep ollama
-ps aux | grep uvicorn
+1. Check what is using memory:
+   ```bash
+   ps aux | grep ollama
+   ps aux | grep uvicorn
+   ```
+2. See which models are loaded:
+   ```bash
+   ollama list | grep "SIZE"
+   ```
+3. Unload models you are not using:
+   ```bash
+   ollama rm gemma3:4b
+   ```
 
-# Check which models are loaded
-ollama list | grep "SIZE"
-```
-
-Free up memory:
-```bash
-# Unload unused models
-ollama rm gemma3:4b
-```
+**Key points:**
+- Check logs first when something breaks.
+- Circuit breaker warnings mean a downstream service is unstable.
+- Unload unused Ollama models to free up memory.
 
 ---
 
 ## API Contract (Developer Reference)
 
-### Request/Response Models
+All request and response models are validated by Pydantic. Pydantic is a data validation library that checks inputs and outputs match the expected format, like a bouncer checking IDs at the door.
 
-All models are Pydantic and validate input/output.
+### Session Model
 
-**Session Model:**
 ```python
 {
     "id": "uuid",
@@ -486,7 +547,8 @@ All models are Pydantic and validate input/output.
 }
 ```
 
-**Fact Model:**
+### Fact Model
+
 ```python
 {
     "id": "uuid",
@@ -506,37 +568,40 @@ All models are Pydantic and validate input/output.
 }
 ```
 
-HTTP Status Codes:
-- 200 — Success
-- 400 — Bad request format
-- 401 — Unauthorized (bad API key)
-- 404 — Resource not found
-- 500 — Server error
+### HTTP Status Codes
+
+| Code | Meaning |
+|------|---------|
+| 200 | Success |
+| 400 | Bad request format |
+| 401 | Unauthorized (bad API key) |
+| 404 | Resource not found |
+| 500 | Server error |
 
 ---
 
-## Contributing & Custom Features
+## Contributing and Custom Features
 
-### Building Custom Extensions
+PromptHub is open source. You can extend it to fit your needs.
 
-PromptHub is open source. You can:
-1. Fork the repository
-2. Add custom features
-3. Submit pull requests
-4. Run locally in development mode
+1. Fork the repository.
+2. Add custom features.
+3. Submit pull requests.
+4. Run locally in development mode.
 
 **Development setup:**
+
 ```bash
-cd ~/.local/share/prompthub/app
+cd ~/prompthub/app
 python -m pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
 ---
 
-## Performance Benchmark
+## Performance Benchmarks
 
-Typical request times (on M2 Mac):
+Typical request times on an M2 Mac:
 
 | Operation | Time |
 |-----------|------|
@@ -553,22 +618,22 @@ Typical request times (on M2 Mac):
 
 ## Best Practices Summary
 
-✅ DO:
-- Use multiple API keys for different use cases
-- Enable enhancement for quality-critical tasks
-- Monitor memory.db file size regularly
-- Use debug logging when troubleshooting
-- Keep Ollama and PromptHub updated
+**Do:**
+- Use multiple API keys for different use cases.
+- Enable enhancement for quality-critical tasks.
+- Monitor the `memory.db` file size regularly.
+- Use debug logging when troubleshooting.
+- Keep Ollama and PromptHub updated.
 
-❌ DON'T:
-- Use extremely large models unless necessary
-- Run many models simultaneously
-- Commit API keys to version control
-- Leave debug logging on permanently (uses disk space)
-- Ignore circuit breaker warnings (means system is unstable)
+**Do not:**
+- Use extremely large models unless you need them.
+- Run many models at the same time.
+- Commit API keys to version control.
+- Leave debug logging on permanently (it fills up disk space).
+- Ignore circuit breaker warnings (they mean the system is unstable).
 
 ---
 
-**Advanced users:** You now have full control of PromptHub. Experiment, customize, and optimize for your workflow!
+You now have full control of PromptHub. Experiment, customize, and optimize for your workflow.
 
-For questions, check logs first, then consult the troubleshooting guide.
+For questions, check the logs first, then consult the Troubleshooting Guide.

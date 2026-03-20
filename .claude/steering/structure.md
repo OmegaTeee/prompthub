@@ -84,9 +84,10 @@ prompthub/
 
 ## Documentation Split
 
-| Location | Content | Audience |
-|----------|---------|----------|
-| `app/docs/` | ADRs, API specs, module docs, audit reports, feature completions | Developers |
-| `~/Vault/PromptHub/` | Setup guides, integrations, workflows, troubleshooting | Users |
-| `CLAUDE.md` | AI agent instructions | Claude Code |
-| `.claude/steering/` | Product, tech, structure guidance | All AI agents |
+| Location | Content | Audience | Reading Level |
+|----------|---------|----------|---------------|
+| `app/docs/guides/` | Setup guides, integrations, workflows, troubleshooting | General users | Grade 9–10 (see `user-manual` agent) |
+| `app/docs/` (other) | ADRs, API specs, module docs, audit reports, feature completions | Developers | Technical |
+| `~/Vault/PromptHub/` | Personal notes, extended workflows | Users | — |
+| `CLAUDE.md` | AI agent instructions | Claude Code | Technical |
+| `.claude/steering/` | Product, tech, structure guidance | All AI agents | Technical |

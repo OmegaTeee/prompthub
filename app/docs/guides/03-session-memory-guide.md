@@ -1,80 +1,101 @@
 # Session Memory Guide
 
-## What is Session Memory?
+## What Is Session Memory?
 
-Session Memory is PromptHub's built-in brain. It **remembers important information** across your conversations, so AI models have more context about you and your needs.
+Session Memory lets PromptHub remember important information across your conversations. Think of it like a notebook that PromptHub keeps beside the keyboard: every preference, fact, or detail you share gets written down so AI models can refer back to it later.
 
-### Without Memory
+### Before and After
+
+**Without memory:**
+
 ```
 Day 1: "I prefer Python for coding"
 (AI forgets)
 Day 3: "Write me some code"
-(AI suggests JavaScript, because it forgot your preference)
+(AI suggests JavaScript because it has no record of your preference)
 ```
 
-### With Memory
+**With memory:**
+
 ```
 Day 1: "I prefer Python for coding"
-(PromptHub stores this)
+(PromptHub stores this as a fact)
 Day 3: "Write me some code"
-(AI remembers Python preference, suggests Python code)
+(AI checks the notebook, sees your Python preference, writes Python code)
 ```
 
-## How Memory Works
+**Key points:**
 
-PromptHub stores three types of information:
+- Session Memory stores what you tell it so AI models have context.
+- You control what gets saved. Nothing is stored automatically.
+- All data stays on your Mac.
 
-### 1. **Sessions**
-Think of a session as a "conversation thread" with a unique ID. Each session tracks:
-- When it started
-- What app you're using
-- How many facts you've told it
-- Your last interaction
+## How Memory Is Organized
 
-### 2. **Facts**
-These are individual pieces of information you want PromptHub to remember:
-- Your preferences ("I prefer dark mode")
-- Your background ("I'm a software engineer")
-- Your goals ("I'm learning Rust")
-- Your constraints ("No external APIs")
+PromptHub stores three types of information. Each serves a different purpose.
 
-Each fact can be tagged (e.g., `#preferences`, `#background`) for easy retrieval.
+### 1. Sessions
 
-### 3. **Memory Blocks**
-Named storage for specific information:
-- User settings (`user_settings`: theme, font size, etc.)
-- Project context (`project_info`: current project details)
-- Custom data (anything you want to store)
+A session is a conversation thread with a unique ID. It is like opening a new page in the notebook. Each session tracks:
+
+- When it started.
+- Which app you are using.
+- How many facts it contains.
+- Your last interaction.
+
+### 2. Facts
+
+Facts are individual pieces of information you want PromptHub to remember. Examples:
+
+- Preferences: "I prefer dark mode."
+- Background: "I am a software engineer."
+- Goals: "I am learning Rust."
+- Constraints: "No external APIs."
+
+You can tag each fact (for example, `#preferences` or `#background`) to make it easy to find later.
+
+### 3. Memory Blocks
+
+Memory blocks hold structured data under a named key. They work like labeled folders in a filing cabinet.
+
+- `user_settings`: theme, font size, language preference.
+- `project_info`: current project details.
+- Any custom key you choose.
+
+**Key points:**
+
+- Sessions group related facts into conversation threads.
+- Facts store single pieces of information with optional tags.
+- Memory blocks store structured data under a named key.
 
 ## Using Session Memory
 
-### Via the Dashboard
+### Through the Dashboard
 
-1. Open http://localhost:9090
-2. Look for the **Memory** section
-3. You'll see:
-   - Active sessions count
-   - Total facts stored
-   - Recent conversations
+1. Open your browser and go to `http://localhost:9090`.
+2. Find the **Memory** section on the dashboard.
+3. You will see active session count, total facts stored, and recent conversations.
 
-### Via API (Advanced Users)
+### Through the API
 
-Create a session:
+To create a new session, run this command in Terminal:
+
 ```bash
 curl -X POST http://localhost:9090/sessions \
   -H "Content-Type: application/json" \
   -d '{"client_id": "my-app"}'
 ```
 
-The response includes a session ID. Use this ID for all your future requests to that session.
+The response includes a session ID. Save this ID -- you will use it for all future requests to that session.
 
 ## Adding Facts
 
-Facts are the main way to teach PromptHub about yourself.
+Facts are the main way to teach PromptHub about you and your work.
 
-### Simple Example
+### A Simple Example
 
-Tell PromptHub about your preferences:
+Store a preference:
+
 ```bash
 curl -X POST http://localhost:9090/sessions/{session-id}/facts \
   -H "Content-Type: application/json" \
@@ -85,9 +106,12 @@ curl -X POST http://localhost:9090/sessions/{session-id}/facts \
   }'
 ```
 
-### Real-World Example
+Replace `{session-id}` with the ID you received when you created the session.
 
-Store project context:
+### A Real-World Example
+
+Store project context so the AI knows what you are working on:
+
 ```bash
 curl -X POST http://localhost:9090/sessions/{session-id}/facts \
   -H "Content-Type: application/json" \
@@ -98,9 +122,17 @@ curl -X POST http://localhost:9090/sessions/{session-id}/facts \
   }'
 ```
 
-## Storing Custom Data
+**Key points:**
 
-For more structured information, use Memory Blocks:
+- Use tags to categorize facts for easier retrieval.
+- The `source` field records where the fact came from.
+- Replace `{session-id}` with your actual session ID in every command.
+
+## Storing Structured Data with Memory Blocks
+
+When you need to store a group of related settings, use a memory block. This is like creating a labeled folder instead of writing loose notes.
+
+Save a block:
 
 ```bash
 curl -X PUT http://localhost:9090/sessions/{session-id}/memory/user_settings \
@@ -115,61 +147,68 @@ curl -X PUT http://localhost:9090/sessions/{session-id}/memory/user_settings \
   }'
 ```
 
-Later, retrieve it:
+Retrieve the block later:
+
 ```bash
 curl http://localhost:9090/sessions/{session-id}/memory/user_settings
 ```
 
 ## Dashboard Memory Panel
 
-The dashboard shows real-time memory statistics:
+The dashboard shows real-time memory statistics at a glance.
 
-| Metric | What it means |
-|--------|--------------|
-| **Active Sessions** | Number of ongoing conversation threads |
-| **Total Facts** | All pieces of information you've stored |
-| **Memory Blocks** | Structured data storage items |
-| **Closed Sessions** | Old conversations (can be archived) |
+| Metric              | What It Means                                 |
+| ------------------- | --------------------------------------------- |
+| **Active Sessions** | Ongoing conversation threads.                 |
+| **Total Facts**     | All individual pieces of stored information.  |
+| **Memory Blocks**   | Structured data items.                        |
+| **Closed Sessions** | Old conversations that can be archived.       |
 
 Click on a recent session to see all its facts.
 
-## Memory Best Practices
+## Best Practices
 
-### ✅ DO
-- Store preferences (coding style, tone, format)
-- Store background info (your role, expertise, constraints)
-- Use clear, concise facts
-- Tag facts for easy searching
-- Update facts when things change
+### What to Store
 
-### ❌ DON'T
-- Store sensitive personal info (passwords, SSNs)
-- Store huge files (use files feature instead)
-- Keep old facts you no longer need
-- Use memory for temporary info
+- Preferences: coding style, tone, output format.
+- Background: your role, expertise, constraints.
+- Project context: current goals and requirements.
+- Use clear, concise wording for each fact.
+- Add tags so you can search later.
+- Update facts when your situation changes.
+
+### What to Avoid
+
+- Sensitive data like passwords or personal ID numbers. Memory is local, but good habits matter.
+- Large files. Use the files feature for those instead.
+- Outdated facts you no longer need. Delete them to keep context clean.
+- Temporary information that will be irrelevant tomorrow.
 
 ## Managing Sessions
 
 ### View All Sessions
+
 ```bash
 curl http://localhost:9090/sessions?limit=10
 ```
 
-### Get Session Details
+### Get Details for One Session
+
 ```bash
 curl http://localhost:9090/sessions/{session-id}
 ```
 
 ### Close a Session
+
 ```bash
 curl -X DELETE http://localhost:9090/sessions/{session-id}
 ```
 
-This keeps the data (for archival) but marks the session as closed.
+Closing a session marks it as done but keeps the data for archival. The facts are not deleted.
 
-## Memory Expiration
+## Setting Expiration Dates
 
-You can set facts to expire automatically:
+You can make memory blocks expire automatically. This is useful for temporary project details that you know will become irrelevant after a deadline.
 
 ```bash
 curl -X PUT http://localhost:9090/sessions/{session-id}/memory/temporary_data \
@@ -180,37 +219,49 @@ curl -X PUT http://localhost:9090/sessions/{session-id}/memory/temporary_data \
   }'
 ```
 
-After the date passes, this data is automatically deleted.
+After the specified date, PromptHub automatically deletes this data.
 
-## Privacy and Data
+**Key points:**
 
-### Where is my data stored?
-- Everything is stored locally on your Mac
-- File: `~/.prompthub/memory.db` (SQLite database)
-- No data is sent to external servers
+- Use expiration for short-lived context like sprint goals or event details.
+- Data without an expiration date stays until you delete it manually.
+
+## Privacy and Data Storage
+
+### Where is your data stored?
+
+Everything lives locally on your Mac in a SQLite database:
+
+```
+~/.prompthub/memory.db
+```
+
+No data is sent to external servers.
 
 ### Who can access it?
-- Only PromptHub can access it
-- Only apps connected to PromptHub can use it
 
-### How do I delete data?
-Delete individual facts:
+Only PromptHub and the apps connected to it can read the data.
+
+### How do you delete data?
+
+Delete a single fact:
+
 ```bash
 curl -X DELETE http://localhost:9090/sessions/{session-id}/facts/{fact-id}
 ```
 
-Or close an entire session (keeps data) or delete manually.
+Or close an entire session to archive it. You can also delete the database file directly if you want a clean slate.
 
 ## Common Questions
 
-**Q: Does PromptHub automatically add facts?**
-A: No, you control what gets stored. You must explicitly add facts.
+**Q: Does PromptHub add facts on its own?**
+A: No. You control what gets stored. You must add facts yourself.
 
-**Q: Can I share memory between apps?**
-A: Yes, if they use the same session ID. Different apps can have separate sessions.
+**Q: Can different apps share the same memory?**
+A: Yes, if they use the same session ID. You can also give each app its own session.
 
 **Q: How much can I store?**
-A: Practically unlimited (up to your disk space).
+A: There is no built-in limit. Storage depends on your available disk space.
 
 **Q: Do facts expire automatically?**
 A: Only if you set an expiration date. Otherwise, they stay until you delete them.
@@ -218,26 +269,31 @@ A: Only if you set an expiration date. Otherwise, they stay until you delete the
 ## Troubleshooting
 
 ### "Session not found"
-- You might have the wrong session ID
-- The session might be closed
-- Try listing all sessions to find the right ID
+
+- Double-check the session ID. A single wrong character will cause this error.
+- The session may be closed. List all sessions to find the right one:
+
+  ```bash
+  curl http://localhost:9090/sessions?limit=20
+  ```
 
 ### "Can't add facts"
-- Make sure the session exists
-- Check your request format (should be JSON)
-- Verify the session ID is correct
+
+- Confirm the session exists before adding facts to it.
+- Make sure your request body is valid JSON.
+- Verify the session ID in the URL matches an active session.
 
 ### "Memory panel shows no data"
-- No sessions have been created yet
-- Try creating a session first
-- Refresh the dashboard
 
-## What's Next?
+- No sessions have been created yet. Create one first.
+- Try refreshing the dashboard page.
 
-- **Session Memory with MCP** — Advanced guide for using memory with Memory MCP servers
-- **API Configuration** — How to connect your apps to PromptHub sessions
-- **Troubleshooting** — Common issues and solutions
+## What to Do Next
+
+- **Session Memory with MCP** -- Advanced guide for using memory with Memory MCP servers.
+- **API Configuration** -- How to connect your apps to PromptHub sessions.
+- **Troubleshooting** -- Common issues and solutions.
 
 ---
 
-**Remember:** Session Memory is optional. You can use PromptHub without it, but it's a powerful way to get better AI results by providing context.
+Session Memory is optional. You can use PromptHub without it. But if you want AI models that understand your preferences and context over time, memory is a powerful way to get there.

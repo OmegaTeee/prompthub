@@ -1,151 +1,160 @@
 # PromptHub Troubleshooting Guide
 
-This guide covers the most common issues and how to fix them.
+When something goes wrong, this guide helps you find the cause and fix it. Work through the Quick Diagnosis steps first. If those do not solve the problem, find your specific error in the sections below.
+
+---
 
 ## Quick Diagnosis
 
-### Step 1: Check System Health
+Think of this like a pre-flight checklist. Run these three checks before digging deeper.
+
+### Step 1: Run the Health Check
 
 Open Terminal and run:
+
 ```bash
 python -m cli diagnose
 ```
 
-You should see:
+You should see output like this:
+
 ```
-✅ Router is healthy
-✅ Ollama is running
-✅ Database is accessible
-✅ API keys are loaded
-✅ All systems operational
+Router is healthy
+Ollama is running
+Database is accessible
+API keys are loaded
+All systems operational
 ```
 
-If any checks fail, scroll down to find your specific issue.
+If any check fails, find the matching section below for a fix.
 
 ### Step 2: Check the Logs
 
-View the latest errors:
+The log file records errors as they happen. View the most recent entries:
+
 ```bash
-tail -n 50 ~/.local/share/prompthub/logs/router-stderr.log
+tail -n 50 ~/prompthub/logs/router-stderr.log
 ```
 
-This shows the last 50 lines. Add `| grep ERROR` to see only errors:
+To show only error lines:
+
 ```bash
-tail -n 100 ~/.local/share/prompthub/logs/router-stderr.log | grep ERROR
+tail -n 100 ~/prompthub/logs/router-stderr.log | grep ERROR
 ```
 
 ### Step 3: Check the Dashboard
 
-Open http://localhost:9090 and look at the **Status** section. Green means healthy, red means there's an issue.
+Open http://localhost:9090 in your browser. Look at the **Status** section. Green means healthy. Red means something needs attention.
+
+**Key takeaways:**
+- Run `python -m cli diagnose` first -- it checks everything at once.
+- Logs tell you exactly what went wrong and when.
+- The dashboard gives you a visual health overview.
 
 ---
 
 ## Common Issues
 
-### ❌ "Cannot connect to localhost:9090"
+### "Cannot connect to localhost:9090"
 
-**Problem:** PromptHub isn't running or isn't responding.
+**Problem:** PromptHub is not running or not responding. This is like trying to call a phone that is turned off.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **Is PromptHub running?**
+1. Check if PromptHub is running:
    ```bash
    lsof -i :9090
    ```
-   If nothing shows up, PromptHub isn't running.
+   If nothing appears, PromptHub is not running. Move to step 2.
 
-2. **Start it manually:**
+2. Start it manually:
    ```bash
-   cd ~/.local/share/prompthub
+   cd ~/prompthub
    source .venv/bin/activate
    uvicorn router.main:app --host 127.0.0.1 --port 9090
    ```
 
-3. **Check for error messages:**
-   Look at the Terminal output while it starts. Any error messages?
+3. Watch the Terminal output for error messages as it starts.
 
-4. **Is another app using port 9090?**
+4. If another app is using port 9090, find and stop it:
    ```bash
-   # Find what's using port 9090
+   # See what is using port 9090
    lsof -i :9090
 
-   # Kill it if needed (replace XXXX with the PID from above)
+   # Stop it (replace XXXX with the PID from above)
    kill XXXX
    ```
 
-5. **Restart completely:**
+5. If all else fails, restart completely:
    ```bash
    killall uvicorn 2>/dev/null
    sleep 2
-   cd ~/.local/share/prompthub
+   cd ~/prompthub
    source .venv/bin/activate
    uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
    ```
 
 ---
 
-### ❌ "Ollama connection failed"
+### "Ollama connection failed"
 
-**Problem:** PromptHub can't reach Ollama.
+**Problem:** PromptHub cannot reach Ollama. Ollama is the engine that runs your AI models. If it is not running, no model requests will work.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **Is Ollama running?**
+1. Check if Ollama is running:
    ```bash
    lsof -i :11434
    ```
-   If nothing, Ollama isn't running.
+   If nothing appears, Ollama is not running.
 
-2. **Start Ollama:**
+2. Start Ollama:
    ```bash
    ollama serve
    ```
 
-3. **Test Ollama directly:**
+3. Test Ollama directly:
    ```bash
    curl http://localhost:11434/api/tags
    ```
-   Should return a list of models.
+   This should return a list of models.
 
-4. **Check Ollama is healthy:**
+4. Confirm installed models:
    ```bash
    ollama list
    ```
-   Should show installed models.
 
-5. **If Ollama crashes:**
+5. If Ollama is stuck or crashing, restart it:
    ```bash
-   # Kill any stuck Ollama processes
    killall ollama
    sleep 2
-
-   # Restart
    ollama serve
    ```
 
 ---
 
-### ❌ "401 Unauthorized" or "Missing bearer token"
+### "401 Unauthorized" or "Missing bearer token"
 
-**Problem:** API key is missing or invalid.
+**Problem:** Your API key is missing, misspelled, or not loaded. Think of it like entering the wrong password at a door.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **Check your header:**
-   Make sure you're sending: `Authorization: Bearer sk-your-key`
-
-2. **Verify the key exists:**
-   ```bash
-   cat ~/.local/share/prompthub/configs/api-keys.json | grep sk-
+1. Check that your request header uses this exact format:
+   ```
+   Authorization: Bearer sk-your-key
    ```
 
-3. **Reload API keys (if you just changed the file):**
+2. Confirm the key exists in the config file:
+   ```bash
+   cat ~/prompthub/configs/api-keys.json | grep sk-
+   ```
+
+3. If you recently edited the file, reload the keys:
    ```bash
    curl -X POST http://localhost:9090/v1/api-keys/reload
    ```
 
-4. **Add a key if missing:**
-   Edit `api-keys.json` and add:
+4. If no key exists, add one. Edit `api-keys.json` and insert:
    ```json
    "sk-my-test-key": {
      "client_name": "test",
@@ -153,117 +162,111 @@ Open http://localhost:9090 and look at the **Status** section. Green means healt
      "description": "Test key"
    }
    ```
-   Then reload.
+   Then reload with the command from step 3.
 
 ---
 
-### ❌ "404 Model not found"
+### "404 Model not found"
 
-**Problem:** The model you requested doesn't exist in Ollama.
+**Problem:** You asked for a model that Ollama does not have. It is like requesting a book the library has not stocked yet.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **List available models:**
+1. List the models you have:
    ```bash
    ollama list
    ```
 
-2. **Pull the model:**
+2. Download the model you need:
    ```bash
    ollama pull gemma3:27b
    ```
-   (Replace with the model you want)
+   Replace `gemma3:27b` with whatever model you want.
 
-3. **Verify it's available via API:**
+3. Confirm it shows up through the API:
    ```bash
    curl http://localhost:9090/v1/models \
      -H "Authorization: Bearer sk-your-key"
    ```
 
-4. **Wait for it to finish pulling:**
-   Large models take time. Check progress in Ollama's output.
+4. Large models take time to download. Check progress in the Ollama output.
 
 ---
 
-### ⏱️ "Request timed out" or "Enhancement taking too long"
+### "Request timed out" or "Enhancement taking too long"
 
-**Problem:** An operation is taking longer than expected.
+**Problem:** An operation is running longer than the allowed time. This often happens when a large model is doing enhancement on a busy machine. Think of it like a queue at a busy counter -- too many tasks, not enough power.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **Disable enhancement temporarily:**
-   Edit `api-keys.json`, set `"enhance": false`
+1. Turn off enhancement temporarily. Edit `api-keys.json` and set `"enhance": false`, then reload:
    ```bash
    curl -X POST http://localhost:9090/v1/api-keys/reload
    ```
 
-2. **Use a faster model:**
-   Change to `gemma3:4b` instead of larger models.
+2. Switch to a smaller, faster model like `gemma3:4b`.
 
-3. **Check system resources:**
+3. Check your system resources:
    ```bash
-   # See what's using CPU/RAM
    top -o %CPU
    ```
-   If Ollama is using >80% CPU, your system is overloaded.
+   If Ollama is using more than 80% CPU, your system is overloaded.
 
-4. **Reduce concurrent operations:**
-   Don't run multiple large models at the same time.
+4. Avoid running multiple large models at the same time.
 
-5. **Increase timeout (advanced):**
-   Edit `router/config/settings.py` and increase `ENHANCEMENT_TIMEOUT`.
+5. For advanced users: increase the timeout value in `router/config/settings.py` by raising `ENHANCEMENT_TIMEOUT`.
 
 ---
 
-### 💾 "Database is locked" or SQLite errors
+### "Database is locked" or SQLite Errors
 
-**Problem:** Memory database is being accessed by multiple processes.
+**Problem:** The database file is being accessed by more than one process at once. Think of it like two people trying to write in the same notebook at the same time.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **Ensure only one PromptHub is running:**
+1. Check that only one copy of PromptHub is running:
    ```bash
    lsof | grep memory.db
    ```
-   Should show only one process.
+   You should see only one process listed.
 
-2. **Kill any stuck processes:**
+2. Stop any extra processes:
    ```bash
    # Find all uvicorn processes
    ps aux | grep uvicorn
 
-   # Kill the stuck one
-   kill -9 XXXX  # Replace XXXX with PID
+   # Stop the extra one (replace XXXX with the PID)
+   kill -9 XXXX
    ```
 
-3. **Restart fresh:**
+3. Restart cleanly:
    ```bash
    killall uvicorn 2>/dev/null
    sleep 2
-   cd ~/.local/share/prompthub
+   cd ~/prompthub
    uvicorn router.main:app --host 127.0.0.1 --port 9090
    ```
 
-4. **Check database integrity:**
+4. Check database health:
    ```bash
    sqlite3 ~/.prompthub/memory.db "PRAGMA integrity_check;"
    ```
-   Should return `ok`. If not, the database may be corrupted.
+   This should print `ok`. If it does not, the database may be corrupted.
 
 ---
 
-### ❌ "Session not found" or "Memory not working"
+### "Session not found" or "Memory not working"
 
-**Problem:** Can't access stored sessions or facts.
+**Problem:** You are trying to access a session that does not exist or the memory database is unavailable.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **Check if session exists:**
+1. List your existing sessions:
    ```bash
    curl http://localhost:9090/sessions \
      -H "Authorization: Bearer sk-your-key"
    ```
-   See any sessions? If not, create one:
+   If no sessions appear, create one:
    ```bash
    curl -X POST http://localhost:9090/sessions \
      -H "Content-Type: application/json" \
@@ -271,133 +274,126 @@ Open http://localhost:9090 and look at the **Status** section. Green means healt
      -d '{"client_id": "test"}'
    ```
 
-2. **Verify you have the right session ID:**
-   Sessions are UUIDs, not short IDs. Check the exact format.
+2. Double-check your session ID. Sessions use full UUIDs (long strings like `a1b2c3d4-e5f6-...`), not short IDs.
 
-3. **Check database permissions:**
+3. Verify file permissions:
    ```bash
    ls -la ~/.prompthub/memory.db
    ```
-   Should show you own the file.
+   You should own the file.
 
-4. **Clear corrupted database (last resort):**
+4. As a last resort, delete the database. A new one will be created on the next request. **Warning:** this erases all stored sessions.
    ```bash
    rm ~/.prompthub/memory.db
    ```
-   A new one will be created. This will erase all stored sessions.
 
 ---
 
-### 🔥 "Port 9090 already in use"
+### "Port 9090 already in use"
 
-**Problem:** Another app is using the same port.
+**Problem:** Another program is already using port 9090. Only one program can listen on a port at a time.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **Find what's using port 9090:**
+1. Find what is using the port:
    ```bash
    lsof -i :9090
    ```
 
-2. **Kill the process:**
+2. Stop that process:
    ```bash
-   kill XXXX  # Replace with PID from above
+   kill XXXX
    ```
+   Replace `XXXX` with the PID shown in step 1.
 
-3. **Or use a different port:**
-   Start PromptHub on a different port:
+3. Or start PromptHub on a different port instead:
    ```bash
    uvicorn router.main:app --host 127.0.0.1 --port 9091
    ```
-   Then access it at `http://localhost:9091`
+   Then access it at `http://localhost:9091`.
 
 ---
 
-### 🌐 "Connection refused" when testing localhost
+### "Connection refused" When Testing Localhost
 
-**Problem:** Apps can't connect to PromptHub even though it's running.
+**Problem:** Your app cannot reach PromptHub even though it is running. This is usually an address mismatch.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **Use the correct address:**
-   - ✅ Correct: `http://localhost:9090`
-   - ✅ Correct: `http://127.0.0.1:9090`
-   - ❌ Wrong: `http://0.0.0.0:9090` (this is the listen address, not a client address)
+1. Use the correct address. These work:
+   - `http://localhost:9090`
+   - `http://127.0.0.1:9090`
 
-2. **Test locally first:**
+   This does **not** work as a client address:
+   - `http://0.0.0.0:9090` (this is a listen/bind address, not a connection address)
+
+2. Test with a quick health check:
    ```bash
    curl http://localhost:9090/health
    ```
 
-3. **If using hostname:**
+3. If you are connecting by hostname:
    ```bash
    curl http://$(hostname).local:9090/health
    ```
 
-4. **Check firewall:**
-   Sometimes Mac's firewall blocks local ports. Try:
-   ```bash
-   # Add PromptHub to firewall exceptions (if needed)
-   # Usually not needed for localhost
-   ```
+4. The macOS firewall rarely blocks localhost traffic. If you suspect it, check System Settings > Network > Firewall.
 
 ---
 
-### 🔧 "Something broke after an update"
+### "Something broke after an update"
 
-**Problem:** Code changed and now things aren't working.
+**Problem:** Code changed and now things are not working. This is like updating an app and finding a new bug.
 
-**What to try:**
+**Fix -- work through these steps in order:**
 
-1. **Check the error logs:**
+1. Watch the error log in real time (`-f` means "follow new lines"):
    ```bash
-   tail -f ~/.local/share/prompthub/logs/router-stderr.log
+   tail -f ~/prompthub/logs/router-stderr.log
    ```
-   `-f` means "follow" (watch for new errors)
 
-2. **Restart completely:**
+2. Restart everything from scratch:
    ```bash
    killall uvicorn ollama
    sleep 3
    ollama serve &
    sleep 3
-   cd ~/.local/share/prompthub
+   cd ~/prompthub
    uvicorn router.main:app --host 127.0.0.1 --port 9090
    ```
 
-3. **Check for syntax errors:**
+3. Check for Python syntax errors:
    ```bash
-   cd ~/.local/share/prompthub/app
+   cd ~/prompthub/app
    python -m py_compile router/main.py
    ```
 
-4. **Reinstall dependencies:**
+4. Reinstall dependencies in case something is missing:
    ```bash
-   cd ~/.local/share/prompthub
+   cd ~/prompthub
    source .venv/bin/activate
    pip install -r requirements.txt
    ```
 
-5. **As a last resort, restart your Mac**
-   Sometimes helps with lingering issues.
+5. If nothing else works, restart your Mac. This clears lingering processes and stale file locks.
 
 ---
 
 ## Getting More Help
 
-### Check the Logs Carefully
+### Read the Logs Carefully
 
-The logs usually tell you exactly what's wrong:
+The logs almost always contain the answer. Here are three useful commands:
 
 ```bash
-# See all errors in the last 200 lines
-tail -n 200 ~/.local/share/prompthub/logs/router-stderr.log | grep -i error
+# Show errors from the last 200 lines
+tail -n 200 ~/prompthub/logs/router-stderr.log | grep -i error
 
-# See the last 50 lines (most recent first)
-tail -n 50 ~/.local/share/prompthub/logs/router-stderr.log
+# Show the 50 most recent lines
+tail -n 50 ~/prompthub/logs/router-stderr.log
 
-# Watch for new errors in real-time
-tail -f ~/.local/share/prompthub/logs/router-stderr.log
+# Watch for new errors as they happen
+tail -f ~/prompthub/logs/router-stderr.log
 ```
 
 ### Run Diagnostics
@@ -406,36 +402,41 @@ tail -f ~/.local/share/prompthub/logs/router-stderr.log
 python -m cli diagnose
 ```
 
-This checks all major systems and tells you what's wrong.
+This checks all major systems and reports what is healthy and what is not.
 
-### Check System Health via Dashboard
+### Use the Dashboard
 
-1. Open http://localhost:9090
-2. Click **Health Check** button
-3. It will test:
-   - ✅ Router running
-   - ✅ Ollama responsive
-   - ✅ Database accessible
-   - ✅ API keys loaded
+1. Open http://localhost:9090 in your browser.
+2. Click the **Health Check** button.
+3. It tests:
+   - Router running
+   - Ollama responsive
+   - Database accessible
+   - API keys loaded
 
 ### Restart Everything
 
-When in doubt, restart:
+When in doubt, a clean restart often fixes the problem:
 
 ```bash
-# Kill everything
+# Stop all processes
 killall uvicorn ollama 2>/dev/null
 
-# Wait a moment
+# Wait for them to shut down
 sleep 3
 
 # Start fresh
 ollama serve &
 sleep 2
-cd ~/.local/share/prompthub
+cd ~/prompthub
 source .venv/bin/activate
 uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
 ```
+
+**Key takeaways:**
+- Logs are your best friend -- read them first.
+- `python -m cli diagnose` gives a one-command health report.
+- A full restart fixes most mysterious issues.
 
 ---
 
@@ -443,7 +444,7 @@ uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
 
 | Symptom | First Try | Second Try |
 |---------|-----------|-----------|
-| Can't access dashboard | Restart PromptHub | Check if Ollama is running |
+| Cannot access dashboard | Restart PromptHub | Check if Ollama is running |
 | Enhancement slow | Disable it | Use smaller model |
 | API returns 401 | Check API key format | Reload keys |
 | API returns 404 | List models with `ollama list` | Pull missing model |
@@ -455,18 +456,18 @@ uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
 
 ## Still Stuck?
 
-If none of these work:
+If none of the above works, gather information for further debugging:
 
-1. **Collect information:**
+1. Collect diagnostics into a file:
    ```bash
    python -m cli diagnose > diagnostics.txt
-   tail -n 100 ~/.local/share/prompthub/logs/router-stderr.log >> diagnostics.txt
+   tail -n 100 ~/prompthub/logs/router-stderr.log >> diagnostics.txt
    ```
 
-2. **Check the logs carefully** — The answer is usually in the error message
+2. Read the error messages in that file carefully. The answer is usually there.
 
-3. **Restart your Mac** — Fixes surprising number of issues
+3. Restart your Mac. This fixes a surprising number of issues.
 
-4. **Review the other guides** — Maybe you're missing a configuration step
+4. Review the other guides. You may be missing a configuration step.
 
-Good luck! 🍀
+Good luck with the fix.

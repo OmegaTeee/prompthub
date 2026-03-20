@@ -36,6 +36,10 @@ macOS power users who work across multiple AI-powered editors and tools and want
 - The router is **local-only** (`127.0.0.1`); no public-facing deployment is supported
 - API keys for the `/v1/*` proxy use the `sk-prompthub-{client}-*` prefix convention
 
+## Documentation Principle
+
+User-facing documentation (guides, quickstarts, troubleshooting) is written at a **high-school reading level (grade 9–10)**: short sentences, common words, active voice, one action per step, and plain-English analogies for complex concepts. See the `user-manual` agent for the full readability standard.
+
 ## Project Phases
 
 | Phase | Status | Description |

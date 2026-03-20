@@ -1,91 +1,110 @@
 # Prompt Enhancement Guide
 
-## What is Prompt Enhancement?
+## What Is Prompt Enhancement?
 
-Prompt Enhancement is a feature that **automatically improves your prompts** before sending them to AI models. Think of it as a smart editor that:
-- Makes your requests clearer
-- Adds helpful context
-- Improves the quality of AI responses
-- Works transparently in the background
+Prompt Enhancement automatically rewrites your prompts before they reach the AI model. Think of it like a copy editor who reads your rough draft and polishes it before it goes to print.
 
-### Without Enhancement
+The result: clearer requests, more relevant context, and higher-quality AI responses -- all happening in the background.
+
+### Before and After
+
+**Without enhancement:**
+
 ```
 You: "Summarize this"
-AI: (confused about what "this" is, gives generic response)
+AI: (unsure what "this" refers to, gives a generic answer)
 ```
 
-### With Enhancement
+**With enhancement:**
+
 ```
 You: "Summarize this"
-PromptHub: (improves it to) "Please summarize the main ideas and key takeaways from the provided document"
-AI: (understands better, gives focused response)
+PromptHub rewrites it to: "Please summarize the main ideas and key takeaways from the provided document"
+AI: (understands the request, gives a focused answer)
 ```
 
-## Enabling Enhancement
+**Key points:**
 
-Enhancement can be enabled in two ways:
+- Enhancement rewrites vague prompts into clear ones.
+- It runs automatically -- you do not need to change how you write.
+- The AI model receives the improved version, not your original.
 
-### Method 1: Always Enhance (Global Setting)
+## How to Enable Enhancement
 
-If you want all your requests enhanced by default:
+You have three options. Pick the one that fits your workflow.
 
-1. Open the file `~/.local/share/prompthub/.env`
-2. Add or change this line:
-   ```
-   AUTO_ENHANCE_MCP=true
-   ```
-3. Restart PromptHub
-4. From now on, all prompts are automatically improved
+### Option 1: Enable for a Specific App (Recommended)
 
-### Method 2: Enhance per App (Recommended)
+This approach lets you turn enhancement on for one app without affecting the others. It is like setting a thermostat room by room instead of for the whole house.
 
-You can enable enhancement for specific apps only:
+1. Open `~/prompthub/configs/api-keys.json`.
+2. Find the entry for your app (for example, `sk-prompthub-code-001`).
+3. Change `"enhance": false` to `"enhance": true`.
+4. Save the file.
 
-1. Open `~/.local/share/prompthub/configs/api-keys.json`
-2. Find your app's entry (e.g., `sk-prompthub-code-001`)
-3. Change `"enhance": false` to `"enhance": true`
-4. Save the file
-5. The change takes effect immediately — no restart needed
+The change takes effect right away. No restart needed.
 
-Example:
 ```json
 {
   "keys": {
     "sk-prompthub-code-001": {
       "client_name": "vscode",
-      "enhance": true,  // ← Changed to true
+      "enhance": true,
       "description": "VS Code (with enhancement)"
     }
   }
 }
 ```
 
-### Method 3: Per-Request (Advanced)
+### Option 2: Enable Globally
 
-For apps that support custom headers, add this to individual requests:
+If you want every app enhanced by default:
+
+1. Open `~/prompthub/.env`.
+2. Add or change this line:
+
+   ```
+   AUTO_ENHANCE_MCP=true
+   ```
+
+3. Restart PromptHub.
+
+From that point on, all prompts are improved automatically.
+
+### Option 3: Enable per Request (Advanced)
+
+Some apps let you set custom HTTP headers. Add this header to a single request:
+
 ```
 X-Enhance: true
 ```
 
-This overrides the global setting for just that one request.
+This overrides the global and per-app settings for that one request only.
+
+**Key points:**
+
+- Per-app is the recommended approach. It gives you fine-grained control.
+- Global enhancement is a single toggle in `.env`.
+- Per-request headers work for one-off testing.
 
 ## Enhancement Models
 
-Each app can use a different "enhancement model" — this is the AI that improves your prompt. The default is a lightweight model that's fast and efficient.
+An enhancement model is the local AI that rewrites your prompt. It is a small, specialized model that runs on your Mac through Ollama. Think of it as a dedicated writing assistant that lives on your computer.
 
-**What are enhancement models?**
-- Small, specialized AI models
-- Run locally on your computer
-- Improve prompts in 1-2 seconds
-- Don't require internet
+Enhancement models:
 
-**Changing the Enhancement Model**
+- Run locally. They do not need the internet.
+- Are small and fast. Most finish in 1-2 seconds.
+- Are separate from the main AI model that answers your question.
 
-1. Open `~/.local/share/prompthub/configs/enhancement-rules.json`
-2. Find your app under `"clients"`
-3. Change the `"model"` value to one available in Ollama
+### Changing the Enhancement Model
 
-Example:
+Different apps can use different models. For example, you might want a lightweight model for VS Code and a more capable one for Claude Desktop.
+
+1. Open `~/prompthub/configs/enhancement-rules.json`.
+2. Find your app under `"clients"`.
+3. Change the `"model"` value to any model available in Ollama.
+
 ```json
 {
   "clients": {
@@ -95,73 +114,109 @@ Example:
 }
 ```
 
+**Key points:**
+
+- Enhancement models run locally via Ollama.
+- Each app can use a different model.
+- Smaller models are faster; larger models produce better rewrites.
+
 ## When to Use Enhancement
 
-✅ **Use enhancement when:**
-- Your prompts are vague or unclear
-- You want better quality responses
-- You're asking complex questions
-- You want AI to suggest improvements
+### Good Fit
 
-❌ **Skip enhancement when:**
-- Your prompts are already very specific
-- You need the absolute fastest response
-- You're testing with simple queries
-- Your app's latency is critical
+- Your prompts tend to be short or vague.
+- You want consistently better AI responses.
+- You are asking complex, multi-part questions.
+
+### Not Ideal
+
+- Your prompts are already detailed and specific.
+- You need the fastest possible response time.
+- You are running quick test queries.
+- Latency matters more than quality for your use case.
 
 ## Performance Impact
 
-Enabling enhancement adds a small delay:
-- **With lightweight models** — 1-2 seconds added
-- **With larger models** — 3-5 seconds added
+Enhancement adds a small delay because PromptHub rewrites your prompt before sending it to the main model.
 
-This is usually worth it for better results!
+- **Lightweight models** (e.g., `gemma3:4b`): 1-2 seconds.
+- **Larger models** (e.g., `gemma3:27b`): 3-5 seconds.
 
-## Troubleshooting Enhancement
+For most workflows, the improvement in response quality is worth the wait.
 
-### "Enhancement is slow"
-- Switch to a faster model: `gemma3:4b` instead of `gemma3:27b`
-- Disable enhancement for that app if speed is critical
-- Check if Ollama is busy (run other models in the background?)
+## Troubleshooting
 
-### "I don't see any improvement"
-- Some prompts are already clear and don't need enhancement
-- Try asking more complex questions to see the benefit
-- Check the logs to verify enhancement is actually running
+### Enhancement feels slow
 
-### "Enhancement keeps failing"
-- Make sure the enhancement model is downloaded: `ollama pull gemma3:4b`
-- Verify Ollama is running: `ollama serve`
-- Check your internet connection (for cloud enhancements)
+- Switch to a faster model. Use `gemma3:4b` instead of `gemma3:27b`.
+- Check if Ollama is busy with other tasks. Run `ollama ps` to see active models.
+- Disable enhancement for that app if speed is critical.
+
+### No visible improvement
+
+- Some prompts are already clear. Enhancement helps most with vague or short inputs.
+- Try a more complex question to see the difference.
+- Check the logs to confirm enhancement is running:
+
+  ```bash
+  tail -f ~/prompthub/logs/router-stderr.log
+  ```
+
+### Enhancement keeps failing
+
+- Make sure the enhancement model is downloaded:
+
+  ```bash
+  ollama pull gemma3:4b
+  ```
+
+- Verify Ollama is running:
+
+  ```bash
+  ollama serve
+  ```
+
+- If you use cloud-based enhancement, check your internet connection.
 
 ## Advanced: Custom Enhancement Rules
 
-For power users, you can create custom rules based on your app. Edit `enhancement-rules.json` to:
-- Use different models for different clients
-- Enable/disable enhancement per client
-- Add custom system prompts for enhancement
+You can tailor enhancement behavior for each app by editing `~/prompthub/configs/enhancement-rules.json`. Options include:
 
-See **Advanced Power User Manual** for details.
+- Assigning different models to different apps.
+- Writing custom system prompts that guide how enhancement rewrites your input.
+- Enabling or disabling enhancement per app.
 
-## Disabling Enhancement
+See the **Advanced Power User Manual** for full details.
 
-If you want to turn off enhancement entirely:
+## How to Disable Enhancement
 
-1. Open `~/.local/share/prompthub/.env`
-2. Change `AUTO_ENHANCE_MCP=true` to `AUTO_ENHANCE_MCP=false`
-3. OR set `"enhance": false` for specific apps in `api-keys.json`
-4. Restart PromptHub (if using global setting)
+### Disable for one app
+
+1. Open `~/prompthub/configs/api-keys.json`.
+2. Set `"enhance": false` for that app's entry.
+3. Save the file. The change takes effect immediately.
+
+### Disable globally
+
+1. Open `~/prompthub/.env`.
+2. Change the line to:
+
+   ```
+   AUTO_ENHANCE_MCP=false
+   ```
+
+3. Restart PromptHub.
 
 ## Summary
 
-| Question | Answer |
-|----------|--------|
-| What does it do? | Automatically improves your prompts before sending to AI |
-| How do I enable it? | Set `enhance: true` in your app's settings |
-| Does it slow things down? | Only 1-2 seconds (usually worth it!) |
-| Can I disable it? | Yes, per-app or globally |
-| How do I know if it's working? | Check the logs or notice better AI responses |
+| Question                       | Answer                                                         |
+| ------------------------------ | -------------------------------------------------------------- |
+| What does it do?               | Rewrites your prompts automatically for better AI responses.   |
+| How do I enable it?            | Set `enhance: true` in your app's entry in `api-keys.json`.   |
+| Does it slow things down?      | Adds 1-2 seconds with lightweight models.                      |
+| Can I disable it?              | Yes, per-app or globally.                                      |
+| How do I know it is working?   | Check the logs or notice better AI responses.                  |
 
 ---
 
-Next: Read **Session Memory Guide** to learn how PromptHub remembers important information.
+Next: Read the **Session Memory Guide** to learn how PromptHub remembers important context across conversations.

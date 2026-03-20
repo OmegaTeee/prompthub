@@ -3,7 +3,7 @@
 # Reads server commands from configs/mcp-servers.json dynamically.
 set -euo pipefail
 
-PROMPTHUB_DIR="${HOME}/.local/share/prompthub"
+PROMPTHUB_DIR="${HOME}/prompthub"
 CONFIG="${PROMPTHUB_DIR}/app/configs/mcp-servers.json"
 
 NODE=$(command -v node || true)

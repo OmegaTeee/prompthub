@@ -2,19 +2,20 @@
 
 ## The Problem PromptHub Solves
 
-Imagine you use multiple apps:
-- Claude on your Mac
-- VS Code for coding
-- Raycast for quick searches
+Picture this: you use Claude on your Mac, VS Code for coding, and Raycast for quick searches. Each app connects to an AI model on its own. That creates real headaches:
 
-Each app needs to connect to an AI model separately. That means:
-- ❌ Multiple API keys to manage
-- ❌ Different configuration for each app
-- ❌ No way for apps to "remember" your preferences
-- ❌ Paying for each API call
-- ❌ No automatic prompt improvement
+- You manage multiple API keys across different apps.
+- You configure each app separately.
+- Your apps cannot share preferences or memory.
+- You pay for every single API call.
+- Your prompts go out as-is, with no automatic improvement.
 
-**PromptHub fixes all of this.**
+PromptHub fixes all of these problems. It acts as a central hub that sits between your apps and your AI models. Think of it like a power strip for AI: you plug all your apps into one place, and PromptHub handles the connections, memory, and optimization.
+
+**Key points:**
+- Multiple apps without a hub means scattered keys, duplicate setup, and higher costs.
+- PromptHub centralizes everything into one local endpoint.
+- You get prompt improvement, memory, and privacy as built-in benefits.
 
 ---
 
@@ -22,36 +23,36 @@ Each app needs to connect to an AI model separately. That means:
 
 ### PromptHub
 
-**What it is:** A central hub that connects all your apps to AI models.
+**What it is:** A central hub that connects all your apps to AI models through one local endpoint.
 
 **Strengths:**
-- ✅ One configuration for unlimited apps
-- ✅ Automatic prompt improvement (enhances your requests)
-- ✅ Remembers information across conversations (sessions & memory)
-- ✅ Save money using local Ollama models
-- ✅ Works offline for many tasks
-- ✅ Complete privacy (everything stays on your Mac)
-- ✅ No vendor lock-in (open protocol)
-- ✅ Tool chaining (one tool's output → next tool's input)
+- One configuration works for unlimited apps.
+- Automatic prompt improvement rewrites your requests for better results.
+- Remembers information across conversations using sessions and memory.
+- Saves money by using free local Ollama models.
+- Works offline for many tasks.
+- Complete privacy: everything stays on your Mac.
+- No vendor lock-in thanks to an open protocol.
+- Tool chaining lets one tool's output feed into the next tool.
 
 **Weaknesses:**
-- ⚠️ Requires maintenance (another service to run)
-- ⚠️ Learning curve for advanced features
-- ⚠️ Depends on Ollama for prompt enhancement
+- Requires maintenance as an extra service running on your Mac.
+- Advanced features have a learning curve.
+- Depends on Ollama for prompt enhancement.
 
 **Best for:**
-- People using multiple apps
-- Teams wanting to reduce API costs
-- Privacy-conscious users
-- Users wanting automatic optimization
+- People using multiple apps with AI.
+- Teams wanting to cut API costs.
+- Privacy-conscious users.
+- Anyone who wants automatic prompt optimization.
 
-**Cost:** Free (open source)
+**Cost:** Free (open source).
 
 ---
 
 ### Direct API (No Middle Layer)
 
-**What it is:** Each app connects directly to OpenAI, Claude API, etc.
+**What it is:** Each app connects straight to OpenAI, Claude API, or another provider.
 
 **How it works:**
 ```
@@ -60,33 +61,35 @@ App 2 → OpenAI API
 App 3 → Claude API
 ```
 
+Think of this like plugging each appliance directly into a different wall outlet, scattered across different rooms. It works, but there is no coordination.
+
 **Strengths:**
-- ✅ Simplest setup (just copy your API key)
-- ✅ No additional software
-- ✅ Fastest response time (direct connection)
-- ✅ Works immediately out of the box
+- Easiest setup: copy your API key and go.
+- No extra software needed.
+- Fastest response time with a direct connection.
+- Works right away.
 
 **Weaknesses:**
-- ❌ Configure each app individually
-- ❌ No automatic prompt improvement
-- ❌ API keys scattered across apps (security risk)
-- ❌ Higher costs (paying for every API call)
-- ❌ No memory between conversations
-- ❌ No tool chaining
-- ❌ Scales poorly with more apps
+- You must configure each app one by one.
+- No automatic prompt improvement.
+- API keys end up scattered across apps, creating a security risk.
+- Higher costs because you pay for every API call.
+- No memory between conversations.
+- No tool chaining.
+- Scales poorly as you add more apps.
 
 **Best for:**
-- Single-app users
-- Quick one-off use cases
-- Teams with minimal overhead needs
+- Single-app users.
+- Quick, one-off tasks.
+- Teams that want minimal setup overhead.
 
-**Cost:** Pay per API call (~$0.01-1.00 per request depending on model)
+**Cost:** Pay per API call (around $0.01 to $1.00 per request depending on the model).
 
 ---
 
 ### LLM Studio (Desktop App)
 
-**What it is:** Standalone app for managing and running local AI models.
+**What it is:** A standalone app for managing and running local AI models on your computer.
 
 **How it works:**
 ```
@@ -95,36 +98,38 @@ Your Computer
 └── Ollama (runs models)
 ```
 
+Think of this like a personal kitchen: everything you need is in one room, but you cannot serve food to anyone outside it.
+
 **Strengths:**
-- ✅ Easy graphical interface
-- ✅ Built-in model management
-- ✅ Works completely offline
-- ✅ No API costs (free)
-- ✅ No internet dependency
-- ✅ Good for experimenting with models
+- Easy graphical interface.
+- Built-in model management.
+- Works completely offline.
+- No API costs (free).
+- No internet dependency.
+- Great for experimenting with models.
 
 **Weaknesses:**
-- ❌ Single-app only (doesn't integrate with other apps)
-- ❌ Limited MCP server integration
-- ❌ No automatic prompt improvement
-- ❌ No credential management
-- ❌ No memory persistence
-- ❌ Can't be used as a server for other apps
-- ❌ Less scalable for advanced workflows
+- Single-app only. It does not integrate with other apps.
+- Limited MCP server integration.
+- No automatic prompt improvement.
+- No credential management.
+- No memory persistence.
+- Cannot serve as a backend for other apps.
+- Less scalable for advanced workflows.
 
 **Best for:**
-- Individual experimentation
-- One-off AI tasks
-- Users not needing app integration
-- Local development only
+- Individual experimentation.
+- One-off AI tasks.
+- Users who do not need app integration.
+- Local development only.
 
-**Cost:** Free (open source)
+**Cost:** Free (open source).
 
 ---
 
 ### Using MCP Servers Directly (No Router)
 
-**What it is:** Directly connecting individual MCP servers to your apps.
+**What it is:** You connect individual MCP servers to your apps without a central router.
 
 **How it works:**
 ```
@@ -135,119 +140,131 @@ Claude Desktop
 └── Tool A, Tool B, Tool C
 ```
 
+Think of this like wiring each light in your house to its own breaker panel. It gives you fine control, but the wiring gets complicated fast.
+
 **Strengths:**
-- ✅ Fine-grained control
-- ✅ Pick and choose tools
-- ✅ No intermediary (lower latency)
-- ✅ Can be lightweight
+- Fine-grained control over each server.
+- Pick and choose specific tools.
+- No intermediary means lower latency.
+- Can be lightweight.
 
 **Weaknesses:**
-- ❌ High configuration burden
-- ❌ No prompt enhancement
-- ❌ No centralized credential management
-- ❌ No tool chaining between servers
-- ❌ Scales poorly with more servers/apps
-- ❌ Difficult to debug
-- ❌ No unified memory system
+- Heavy configuration burden.
+- No prompt enhancement.
+- No centralized credential management.
+- No tool chaining between servers.
+- Scales poorly with more servers and apps.
+- Difficult to debug.
+- No unified memory system.
 
 **Best for:**
-- Advanced users with fine-grained needs
-- Single MCP server usage
-- Teams with custom requirements
-- Developers, not end-users
+- Advanced users with specific fine-grained needs.
+- Single MCP server usage.
+- Teams with custom requirements.
+- Developers, not end-users.
 
-**Cost:** Free (but time-intensive)
+**Cost:** Free (but time-intensive to set up and maintain).
+
+**Key points:**
+- PromptHub is the best fit when you use multiple apps and want enhancement, memory, and privacy.
+- Direct API is the fastest to set up but costs more and lacks features.
+- LLM Studio is ideal for solo experimentation with no app integration needed.
+- MCP Direct gives maximum control but demands significant setup effort.
 
 ---
 
 ## Decision Matrix
 
-### I want to...
+Use these tables to find the best option for your specific goal.
 
-**"Use AI in multiple apps"**
-
-| Option | Rating | Why |
-|--------|--------|-----|
-| PromptHub | ⭐⭐⭐⭐⭐ | Purpose-built for this |
-| Direct API | ⭐⭐ | Need to configure each app separately |
-| LLM Studio | ⭐ | Can't connect to other apps |
-| MCP Direct | ⭐⭐⭐ | Works but complex to set up |
-
-**"Improve the quality of AI responses"**
+### "I want to use AI in multiple apps"
 
 | Option | Rating | Why |
 |--------|--------|-----|
-| PromptHub | ⭐⭐⭐⭐⭐ | Has built-in enhancement |
-| Direct API | ⭐ | No enhancement feature |
-| LLM Studio | ⭐⭐ | Manual prompt editing only |
-| MCP Direct | ⭐⭐ | No enhancement pipeline |
+| PromptHub | 5/5 | Purpose-built for multi-app use |
+| Direct API | 2/5 | You must configure each app separately |
+| LLM Studio | 1/5 | Cannot connect to other apps |
+| MCP Direct | 3/5 | Works, but complex to set up |
 
-**"Save money on AI API calls"**
-
-| Option | Rating | Why |
-|--------|--------|-----|
-| PromptHub | ⭐⭐⭐⭐ | Caches, uses local models |
-| Direct API | ⭐ | Pays for every call |
-| LLM Studio | ⭐⭐⭐⭐⭐ | Free local models |
-| MCP Direct | ⭐⭐⭐ | Free but complicated |
-
-**"Simple, zero-maintenance setup"**
+### "I want to improve the quality of AI responses"
 
 | Option | Rating | Why |
 |--------|--------|-----|
-| PromptHub | ⭐⭐⭐ | Runs automatically after setup |
-| Direct API | ⭐⭐⭐⭐⭐ | Just paste API key |
-| LLM Studio | ⭐⭐⭐⭐ | GUI makes it simple |
-| MCP Direct | ⭐⭐ | Complex configuration |
+| PromptHub | 5/5 | Built-in prompt enhancement |
+| Direct API | 1/5 | No enhancement feature |
+| LLM Studio | 2/5 | Manual prompt editing only |
+| MCP Direct | 2/5 | No enhancement pipeline |
 
-**"Complete privacy and offline use"**
+### "I want to save money on AI API calls"
 
 | Option | Rating | Why |
 |--------|--------|-----|
-| PromptHub | ⭐⭐⭐⭐ | Local + optional cloud |
-| Direct API | ⭐ | All requests to cloud |
-| LLM Studio | ⭐⭐⭐⭐⭐ | Completely local and offline |
-| MCP Direct | ⭐⭐⭐⭐ | Local MCP servers |
+| PromptHub | 4/5 | Caches results and uses local models |
+| Direct API | 1/5 | Pays for every call |
+| LLM Studio | 5/5 | Free local models |
+| MCP Direct | 3/5 | Free but complicated |
+
+### "I want a zero-maintenance setup"
+
+| Option | Rating | Why |
+|--------|--------|-----|
+| PromptHub | 3/5 | Runs automatically after initial setup |
+| Direct API | 5/5 | Paste your API key and go |
+| LLM Studio | 4/5 | GUI makes management straightforward |
+| MCP Direct | 2/5 | Complex configuration required |
+
+### "I want complete privacy and offline use"
+
+| Option | Rating | Why |
+|--------|--------|-----|
+| PromptHub | 4/5 | Local by default with optional cloud fallback |
+| Direct API | 1/5 | All requests go to the cloud |
+| LLM Studio | 5/5 | Completely local and offline |
+| MCP Direct | 4/5 | Local MCP servers |
 
 ---
 
 ## Cost Comparison (Monthly Example)
 
-Assume: 500 AI requests per month
+Assume you make 500 AI requests per month.
 
 **Using Direct API (OpenAI gpt-4):**
 - Cost: $0.10 per request
 - **Total: $50/month**
 
 **Using LLM Studio (local models):**
-- Cost: $0 (already have computer)
+- Cost: $0 (your computer runs the models)
 - **Total: $0/month**
 
 **Using PromptHub:**
-- Local models: $0
-  - Ollama (included): $0
-  - Enhancement (local): $0
+- Local models via Ollama: $0
+- Enhancement (local): $0
 - **Total: $0/month**
 
 **Using MCP Direct:**
-- Cost: $0 (but 10+ hours setup time)
+- Cost: $0 (but expect 10+ hours of setup time)
 - **Total: $0/month**
+
+**Key points:**
+- Direct API is the most expensive option at scale.
+- PromptHub, LLM Studio, and MCP Direct all cost $0 per month for local models.
+- PromptHub gives you more features than LLM Studio or MCP Direct at the same price.
 
 ---
 
-## The PromptHub Advantage
+## Feature Comparison Table
 
-| What | Direct API | LLM Studio | MCP Direct | PromptHub |
+| Feature | Direct API | LLM Studio | MCP Direct | PromptHub |
 |------|-----------|-----------|-----------|-----------|
-| Multi-app support | Yes | No | No | Yes ✅ |
-| Unified config | No | N/A | No | Yes ✅ |
-| Prompt enhancement | No | No | No | Yes ✅ |
-| Session memory | No | No | No | Yes ✅ |
-| Cost savings | No | Yes | Yes | Yes ✅ |
-| Privacy | No | Yes | Yes | Yes ✅ |
+| Multi-app support | Yes | No | No | Yes |
+| Unified config | No | N/A | No | Yes |
+| Prompt enhancement | No | No | No | Yes |
+| Session memory | No | No | No | Yes |
+| Cost savings | No | Yes | Yes | Yes |
+| Privacy | No | Yes | Yes | Yes |
 | Easy setup | Yes | Yes | No | Moderate |
-| Offline capability | No | Yes | Yes | Yes ✅ |
-| Tool chaining | No | No | No | Yes ✅ |
+| Offline capability | No | Yes | Yes | Yes |
+| Tool chaining | No | No | No | Yes |
 
 ---
 
@@ -256,162 +273,169 @@ Assume: 500 AI requests per month
 ### Scenario 1: Freelance Writer
 
 **Needs:**
-- AI assistant in multiple apps (Claude, VS Code, notes)
-- Prompt improvement for quality writing
-- Custom tone/style preferences
+- AI assistant in multiple apps (Claude, VS Code, notes app).
+- Prompt improvement for higher-quality writing.
+- Custom tone and style preferences remembered.
 
-**Best choice: PromptHub** ✅
-- One configuration for all apps
-- Enhancement ensures consistent quality
-- Memory stores writing preferences and voice
+**Best choice: PromptHub**
+- One configuration covers all apps.
+- Enhancement ensures consistent quality across tools.
+- Memory stores your writing preferences and voice.
 
 **Why not others:**
-- Direct API: Would need to configure each app
-- LLM Studio: Can't use in Claude or notes
-- MCP Direct: Too complex for non-developers
+- Direct API: You would need to configure each app separately.
+- LLM Studio: Cannot be used inside Claude or your notes app.
+- MCP Direct: Too complex for non-developers.
 
 ---
 
 ### Scenario 2: Solo Developer
 
 **Needs:**
-- AI coding help in VS Code
-- Fast responses
-- Local models (offline work)
+- AI coding help in VS Code.
+- Fast responses.
+- Local models for offline work.
 
-**Best choice: LLM Studio** ✅
-- Simple GUI for model management
-- Works offline completely
-- Integrates with coding extensions
+**Best choice: LLM Studio**
+- A graphical interface makes model management easy.
+- Works offline completely.
+- Integrates well with coding extensions.
 
 **Why not PromptHub:**
-- Only using one app (VS Code)
-- Doesn't need enhancement
-- Simpler to just use local Ollama directly
+- You are only using one app (VS Code).
+- You do not need prompt enhancement.
+- Using local Ollama directly is the simpler path.
 
 ---
 
 ### Scenario 3: Enterprise Team
 
 **Needs:**
-- Multiple apps, multiple users
-- Cost control (can't pay OpenAI for everyone)
-- Privacy (data stays on-premise)
-- Automatic prompt improvement
-- Cross-app memory and context
+- Multiple apps across multiple users.
+- Cost control (cannot pay for cloud API for everyone).
+- Privacy (data stays on-premise).
+- Automatic prompt improvement.
+- Shared memory and context across apps.
 
-**Best choice: PromptHub** ✅
-- Centralized, one installation for team
-- Local models reduce cloud costs 80%
-- Automatic enhancement improves output quality
-- Unified memory system
+**Best choice: PromptHub**
+- Centralized: one installation serves the whole team.
+- Local models reduce cloud costs by up to 80%.
+- Automatic enhancement improves output quality.
+- Unified memory system keeps context across apps.
 
 **Why not others:**
-- Direct API: Costs explode ($50/month × 10 people = $500+)
-- LLM Studio: Single-user desktop app only
-- MCP Direct: Scaling nightmare (20+ separate configs)
+- Direct API: Costs explode ($50/month per person = $500+ for 10 people).
+- LLM Studio: A single-user desktop app that cannot serve a team.
+- MCP Direct: A scaling nightmare with 20+ separate configs to maintain.
 
 ---
 
-### Scenario 4: Learning & Experimentation
+### Scenario 4: Learning and Experimentation
 
 **Needs:**
-- Try different models easily
-- Offline experimentation
-- No API costs
-- Simple interface
+- Try different models with ease.
+- Offline experimentation.
+- No API costs.
+- A straightforward interface.
 
-**Best choice: LLM Studio** ✅
-- GUI makes switching models easy
-- Free (no API costs)
-- Works offline
+**Best choice: LLM Studio**
+- The GUI makes switching models easy.
+- Free with no API costs.
+- Works offline.
 
 **Why not PromptHub:**
-- Overkill for just experimenting
-- Simpler to use LLM Studio directly
+- PromptHub is more than you need for experimentation.
+- LLM Studio is the more direct path.
+
+**Key points:**
+- Writers and teams with multiple apps benefit most from PromptHub.
+- Solo developers using one app are better served by LLM Studio or direct Ollama.
+- Enterprise teams save the most money and complexity with PromptHub.
 
 ---
 
 ## Migration Paths
 
-### From Direct API → PromptHub
+Already using something else? Here is how to switch to PromptHub.
 
-1. Stop paying per-request APIs
-2. Install PromptHub
-3. Reconfigure each app to use `http://localhost:9090`
-4. Use same API keys (or create new ones)
-5. Enable enhancement gradually
+### From Direct API to PromptHub
 
-**Benefit:** 70% cost reduction, better results
+1. Install PromptHub.
+2. Reconfigure each app to point to `http://localhost:9090`.
+3. Use your existing API keys, or create new ones.
+4. Enable enhancement gradually as you get comfortable.
+5. Stop paying per-request cloud APIs for tasks local models handle well.
 
----
-
-### From LLM Studio → PromptHub
-
-1. Keep LLM Studio + Ollama running
-2. Install PromptHub
-3. Configure apps to use PromptHub instead
-4. Add session memory
-5. Enable enhancement
-
-**Benefit:** Multi-app access + memory + enhancement
+**Benefit:** Up to 70% cost reduction with better results.
 
 ---
 
-### From MCP Direct → PromptHub
+### From LLM Studio to PromptHub
 
-1. Instead of configuring MCP directly in each app
-2. Configure PromptHub as single MCP server
-3. PromptHub routes to all MCP servers
-4. Get enhancement and memory as bonus
+1. Keep LLM Studio and Ollama running (PromptHub uses Ollama too).
+2. Install PromptHub.
+3. Configure your apps to talk to PromptHub instead of Ollama directly.
+4. Add session memory to carry context across conversations.
+5. Enable enhancement to improve prompt quality.
 
-**Benefit:** Simpler configuration, enhancement, memory
+**Benefit:** Multi-app access plus memory and enhancement on top of your existing setup.
+
+---
+
+### From MCP Direct to PromptHub
+
+1. Install PromptHub.
+2. Configure PromptHub as the single MCP server for your apps.
+3. PromptHub routes requests to all your MCP servers behind the scenes.
+4. Get enhancement and memory as added bonuses.
+
+**Benefit:** One config replaces many, and you gain enhancement and memory.
 
 ---
 
 ## Key Takeaways
 
-### PromptHub is Best When:
-✅ Using 2+ apps with AI
-✅ Want automatic quality improvement
-✅ Want to remember preferences/context
-✅ Want to reduce API costs
-✅ Want privacy and control
+### Choose PromptHub when you:
+- Use 2 or more apps with AI.
+- Want automatic quality improvement.
+- Want your preferences and context remembered.
+- Want to reduce API costs.
+- Want privacy and control over your data.
 
-### Use Direct API When:
-✅ Single-app only
-✅ Willing to pay per request
-✅ Don't care about enhancement
-✅ Don't need offline capability
+### Choose Direct API when you:
+- Use a single app.
+- Are willing to pay per request.
+- Do not need enhancement.
+- Do not need offline capability.
 
-### Use LLM Studio When:
-✅ Experimenting with models
-✅ Want simplicity
-✅ Don't need app integration
-✅ Single-user local only
+### Choose LLM Studio when you:
+- Are experimenting with different models.
+- Want the most straightforward experience.
+- Do not need app integration.
+- Are a single user working locally.
 
-### Use MCP Direct When:
-✅ Advanced/developer user
-✅ Need fine-grained control
-✅ Willing to do complex setup
-✅ Specific custom requirements
+### Choose MCP Direct when you:
+- Are an advanced developer.
+- Need fine-grained control over each server.
+- Are willing to invest time in complex setup.
+- Have specific custom requirements.
 
 ---
 
 ## Next Steps
 
 **Ready to try PromptHub?**
-→ Start with **Quick Start Guide**
+Start with the **Quick Start Guide**.
 
 **Already using something else?**
-→ Read **Migration Path** above
+Read the **Migration Path** section above.
 
-**Want detailed setup?**
-→ See **App Configuration Guide**
+**Want detailed setup instructions?**
+See the **App Configuration Guide**.
 
-**Questions?**
-→ Check **Troubleshooting Guide**
+**Have questions?**
+Check the **Troubleshooting Guide**.
 
 ---
 
-**PromptHub: One hub for all your AI needs.** 🚀
+**PromptHub: One hub for all your AI needs.**

@@ -1,105 +1,139 @@
 # PromptHub Quick Start
 
-Welcome to PromptHub! This guide will help you get up and running in just a few minutes.
+Welcome to PromptHub. This guide walks you through setup and your first test. You will be up and running in about five minutes.
 
-## What is PromptHub?
+## What Is PromptHub?
 
-PromptHub is a smart assistant hub that connects all your favorite apps to AI models. It works like a central control panel, allowing you to:
-- Use AI features in multiple apps from one place
-- Automatically improve your prompts for better results
-- Remember important information across conversations
-- Save money by using local AI when possible
+PromptHub is a central hub that connects your apps to AI models. Think of it like a power strip for AI: you plug all your tools into one place, and PromptHub handles the wiring.
 
-## Prerequisites
+With PromptHub you can:
 
-Before starting, make sure you have:
-- PromptHub installed on your Mac
-- Ollama running (for local AI features) — you can start it from your applications or terminal
-- An internet connection (for cloud-based features like Claude API)
+- Use AI features in multiple apps from a single endpoint.
+- Improve your prompts automatically for better results.
+- Remember important information across conversations.
+- Save money by running AI locally when possible.
 
-## Getting Started in 3 Steps
+## Before You Start
+
+Make sure you have these three things ready:
+
+1. **PromptHub installed** on your Mac.
+2. **Ollama running** for local AI features. Launch it from your Applications folder or run `ollama serve` in Terminal.
+3. **An internet connection** if you plan to use cloud features like the Claude API.
+
+## Getting Started
 
 ### Step 1: Launch PromptHub
 
-PromptHub starts automatically when you log in. To manually start it:
+PromptHub can start automatically at login. To check or enable this:
 
-1. Open **System Preferences > General > Login Items & Extensions**
-2. Look for **PromptHub** in the "Allow in the next section" list
-3. If not there, add it by clicking the **+** button and selecting PromptHub
+1. Open **System Preferences > General > Login Items & Extensions**.
+2. Look for **PromptHub** in the list.
+3. If it is missing, click the **+** button and add PromptHub.
 
-You can also start it manually from the terminal:
-```
-cd ~/.local/share/prompthub
+To start it by hand from Terminal, run these commands:
+
+```bash
+cd ~/prompthub
 source .venv/bin/activate
 uvicorn router.main:app --host 127.0.0.1 --port 9090
 ```
 
-### Step 2: Access the Dashboard
+### Step 2: Open the Dashboard
 
-Once PromptHub is running, open your web browser and go to:
+Once PromptHub is running, open your browser and go to:
+
 ```
 http://localhost:9090
 ```
 
-You should see the PromptHub Dashboard with:
-- **Status panel** — Shows if all systems are working
-- **Memory stats** — Displays stored information
-- **Recent sessions** — Lists your recent conversations
+You will see the PromptHub Dashboard. It has three main areas:
+
+- **Status panel** -- shows whether all systems are working.
+- **Memory stats** -- displays how much information is stored.
+- **Recent sessions** -- lists your latest conversations.
 
 ### Step 3: Connect Your Apps
 
-PromptHub works with apps that support MCP (Model Context Protocol). Popular apps include:
+PromptHub works with apps that support MCP (Model Context Protocol). MCP is a standard way for apps to talk to AI servers -- like USB but for AI tools.
+
+Popular supported apps include:
+
 - Claude for Mac
 - VS Code (with extensions)
 - Raycast
 - Custom tools
 
-Each app needs a small configuration change. See **App Configuration** section below.
+Each app needs a small config change. See the **App Configuration** section below for details.
+
+**Key points:**
+
+- PromptHub runs on `localhost:9090`.
+- The dashboard gives you a quick health overview.
+- Each app needs a one-time config change to connect.
 
 ## Dashboard Overview
 
-The PromptHub dashboard shows:
+The dashboard gives you a bird's-eye view of the whole system.
 
-| Section      | What it shows                                                       |
-| ------------ | ------------------------------------------------------------------- |
-| **Status**   | ✅ Green = all systems running, 🔴 Red = something needs attention |
-| **Memory**   | Number of active sessions, facts stored, and memory blocks          |
-| **Sessions** | List of your recent conversations with timestamps                   |
+| Section      | What It Shows                                              |
+| ------------ | ---------------------------------------------------------- |
+| **Status**   | Green = all systems running. Red = something needs fixing. |
+| **Memory**   | Active sessions, stored facts, and memory blocks.          |
+| **Sessions** | Recent conversations with timestamps.                      |
 
 ### Checking System Health
 
-Click the **Health Check** button to verify:
-- ✅ Router is running
-- ✅ Ollama is responding
-- ✅ Database is accessible
-- ✅ API keys are loaded
+Click the **Health Check** button on the dashboard. It verifies four things:
 
-## First Test
+1. The router is running.
+2. Ollama is responding.
+3. The database is accessible.
+4. API keys are loaded.
 
-To verify everything works:
+If any check fails, the dashboard tells you which one so you know where to look.
 
-1. Open Terminal
-2. Run this command to test the API:
+## Your First Test
+
+Before connecting apps, confirm that PromptHub itself is healthy. This is like turning the key to make sure the engine starts before you drive.
+
+1. Open Terminal.
+2. Run this command:
 
    ```bash
    curl -s http://localhost:9090/health | python3 -m json.tool
    ```
-3. You should see `"status": "healthy"`
 
-## What's Next?
+3. Look for `"status": "healthy"` in the output.
 
-- **Enable Prompt Enhancement** — See *Prompt Enhancement Guide*
-- **Set Up Sessions** — See *Session Memory Guide*
-- **Connect Your Apps** — See *App Configuration Guide*
-- **Troubleshoot Issues** — See *Troubleshooting Guide*
+If you see that response, PromptHub is ready to go.
+
+**Key points:**
+
+- The `/health` endpoint is the fastest way to check if PromptHub is running.
+- A healthy response means the router, Ollama, and database are all working.
+
+## What to Do Next
+
+Now that PromptHub is running, pick your next step:
+
+- **Enable Prompt Enhancement** -- See the *Prompt Enhancement Guide* to get better AI responses automatically.
+- **Set Up Sessions** -- See the *Session Memory Guide* to let PromptHub remember context across conversations.
+- **Connect Your Apps** -- See the *App Configuration Guide* for per-app setup instructions.
+- **Troubleshoot Issues** -- See the *Troubleshooting Guide* if something is not working.
 
 ## Getting Help
 
-If something isn't working:
-1. Check the **Health Check** in the dashboard
-2. Look at the **Troubleshooting Guide** in this docs folder
-3. Check the logs at `~/.local/share/prompthub/logs/router-stderr.log`
+If something goes wrong, follow these steps in order:
+
+1. Click **Health Check** in the dashboard to see which component failed.
+2. Read the **Troubleshooting Guide** in this docs folder.
+3. Check the log file for error details:
+
+   ```bash
+   tail -f ~/prompthub/logs/router-stderr.log
+   ```
 
 ---
 
-**That's it!** You're now ready to use PromptHub. Start with one app and add more as you get comfortable.
+You are now ready to use PromptHub. Start with one app, get comfortable, and add more over time.

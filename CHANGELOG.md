@@ -37,6 +37,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - Test suite: 153 → 225 passed (12 skipped)
 
 ### Fixed
+- **Open WebUI port configuration**: Dashboard panel (`_get_open_webui_info()`) now reads port from `~/.prompthub/open-webui.json` instead of hardcoding 3000, so the HTMX widget correctly detects Open WebUI on non-default ports
+- **Open WebUI start script port precedence**: Fixed variable ordering in `start.sh` so the JSON config port is consulted before the hardcoded default (`env var > config file > 3000`)
+- **Project path references**: Updated `~/.local/share/prompthub` → `~/prompthub` across 4 user guides, `validate-mcp-servers.sh`, and root start script (`$HOME/PromptHub` → `$HOME/prompthub`)
+- **QUICKSTART.md script references**: Corrected `start-prompthub.zsh`/`kill-prompthub.zsh` to match actual filenames `prompthub-start.zsh`/`prompthub-kill.zsh`; fixed missing `~/` prefix in api-keys.json path
 - **MCP gateway stale client references**: Rewrote `mcp_gateway.py` to use dynamic `FastMCPProxy(client_factory=...)` instead of `FastMCP.as_proxy(bridge.client)` — servers now survive restarts and late starts without gateway rebuild
 - **Bridge.js tool name truncation**: Fixed `split('_', 2)` dropping tool name segments (e.g., `create_directory` → `create`); now uses `indexOf`/`substring` to split on first underscore only
 - **Gateway topology rebuild**: Added `_rebuild_gateway()` in `main.py` for `install_server` and `remove_server` endpoints — gateway re-mounts after topology changes
@@ -116,7 +120,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 ### Fixed
 - OLLAMA_HOST normalization in settings (handles `http://localhost:11434` from env)
 - Plaintext secrets removed from `.mcp.json`, stored in macOS Keychain
-- Stale MCP paths updated from `~/.local/share/mcps/` to `~/.local/share/prompthub/mcps/`
+- Stale MCP paths updated from `~/.local/share/mcps/` to `~/prompthub/mcps/`
 
 ### Security
 - GitHub token and API keys moved to keyring, removed from config files
