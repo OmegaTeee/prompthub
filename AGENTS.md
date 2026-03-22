@@ -46,9 +46,9 @@ These files are loaded into agent context. Keep them concise. Do not add transie
 
 | Content | Location | Owner |
 |---------|----------|-------|
-| User guides | `app/docs/guides/` | Claude Code |
-| Developer docs | `app/docs/` | Claude Code |
-| API spec | `app/docs/api/openapi.yaml` | Claude Code |
+| User guides | `docs/guides/` | Claude Code |
+| Developer docs | `docs/` | Claude Code |
+| API spec | `docs/api/openapi.yaml` | Claude Code |
 | Agent guidance | `.claude/steering/` | Claude Code |
 | Project metadata | `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md` | Claude Code |
 
@@ -94,7 +94,7 @@ Do not touch unchanged code. Match the existing style (concise docstrings, 88-ch
 
 **Step 3 — Add or update user guide** (when a user-facing feature was added or changed)
 
-Run the `user-manual` agent to create or update a guide in `app/docs/guides/`. Scope:
+Run the `user-manual` agent to create or update a guide in `docs/guides/`. Scope:
 - New feature → new guide file (follow the `NN-name-guide.md` numbering convention)
 - Changed feature → update the existing guide in-place (add sections, don't remove working content)
 - Include: overview, setup/prerequisites, usage with copy-pasteable examples, troubleshooting
@@ -125,7 +125,7 @@ Skip this step for internal-only changes (refactors, test-only changes, CI tweak
 
 # 3. User guide — delegate to agent
 #    Agent: user-manual
-#    Prompt: "Add/update guide in app/docs/guides/ for <feature>"
+#    Prompt: "Add/update guide in docs/guides/ for <feature>"
 ```
 
 ### When to Escalate

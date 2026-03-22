@@ -423,5 +423,5 @@ if not bridge.is_connected:
 - [ADR-001: Stdio Transport](../architecture/ADR-001-stdio-transport.md)
 - [MCP Specification](https://modelcontextprotocol.io/docs/specification)
 - [FastMCP Documentation](https://gofastmcp.com)
-- [FastMCPBridge Source](../../router/servers/fastmcp_bridge.py)
-- [Supervisor Source](../../router/servers/supervisor.py)
+- [FastMCPBridge Source](../../app/router/servers/fastmcp_bridge.py)
+- [Supervisor Source](../../app/router/servers/supervisor.py)

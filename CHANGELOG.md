@@ -25,6 +25,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - Gateway module docstring documenting the Streamable HTTP request path and dynamic factory pattern
 
 ### Changed
+- **Docs migration to project root**: Moved `app/docs/` → `docs/` so documentation sits above both `app/` and `mcps/`, matching the actual system boundary. Updated all cross-references in CLAUDE.md, AGENTS.md, README.md, QUICKSTART.md, CHANGELOG.md, steering docs, and copilot-instructions.md. Removed `guides` symlink (no longer needed — `docs/guides/` is directly accessible).
+- **MCP transport adapters doc**: Renamed `fastmcp-bridge.md` → `mcp-transport-adapters.md` and restructured into three clear sections: (1) Stdio Bridge, (2) Streamable HTTP Gateway, (3) Internal FastMCPBridge — with shared infrastructure (proxy route, cache-through, circuit breaker) in a common section.
 - **main.py split (Path E)**: Reduced main.py from 1,421 → 505 lines by extracting 30+ route handlers into 7 focused modules under `router/routes/` (health, servers, mcp_proxy, enhancement, audit, pipelines, client_configs). Uses existing factory-with-getter-callables DI pattern.
 - Enhancement service `enhance()` now attempts cloud fallback on all Ollama error paths
 - `/ollama/enhance` response includes `privacy_level` and `provider` fields
@@ -41,6 +43,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - **Open WebUI start script port precedence**: Fixed variable ordering in `start.sh` so the JSON config port is consulted before the hardcoded default (`env var > config file > 3000`)
 - **Project path references**: Updated `~/.local/share/prompthub` → `~/prompthub` across 4 user guides, `validate-mcp-servers.sh`, and root start script (`$HOME/PromptHub` → `$HOME/prompthub`)
 - **QUICKSTART.md script references**: Corrected `start-prompthub.zsh`/`kill-prompthub.zsh` to match actual filenames `prompthub-start.zsh`/`prompthub-kill.zsh`; fixed missing `~/` prefix in api-keys.json path
+- **Ollama setting defaults**: Changed `ollama_host` from `host.docker.internal` (Docker) to `localhost` (local macOS), `ollama_model` from `llama3.2:3b` (not installed) to `gemma3:4b`, and `ollama_timeout` from 30s to 120s to match `.env` and documentation
+- **Configs README phantom file**: Removed 4 references to nonexistent `mcp-servers-keyring.json`; replaced credentials section with actual inline keyring pattern used in `mcp-servers.json`
 - **MCP gateway stale client references**: Rewrote `mcp_gateway.py` to use dynamic `FastMCPProxy(client_factory=...)` instead of `FastMCP.as_proxy(bridge.client)` — servers now survive restarts and late starts without gateway rebuild
 - **Bridge.js tool name truncation**: Fixed `split('_', 2)` dropping tool name segments (e.g., `create_directory` → `create`); now uses `indexOf`/`substring` to split on first underscore only
 - **Gateway topology rebuild**: Added `_rebuild_gateway()` in `main.py` for `install_server` and `remove_server` endpoints — gateway re-mounts after topology changes
@@ -76,9 +80,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - [x] **CLAUDE.md**: Add `X-Privacy-Level` header, `provider` response field, `OPENROUTER_*` env vars, `routes/` module, privacy/cloud patterns
 - [x] **ADR-007**: Cloud fallback decision — why OpenRouter free-tier, why not Together/Groq/direct DeepSeek API
 - [x] **`.env.example`**: Add `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_TIMEOUT`, `OPENROUTER_DEFAULT_MODEL`, `CACHE_PERSISTENT`, `CACHE_DB_PATH`, `DATA_DIR`
-- [x] **`app/docs/modules/`**: Update modules README with `routes/` package, enhancement privacy/cloud info
+- [x] **`docs/modules/`**: Update modules README with `routes/` package, enhancement privacy/cloud info
 - [x] **`structure.md`**: Update steering doc with `routes/` package and updated line counts
-- [ ] **Privacy & cloud fallback guide** (`app/docs/features/`): Privacy levels, per-client assignment, downgrade-only headers, cloud fallback flow, model mapping
+- [ ] **Privacy & cloud fallback guide** (`docs/features/`): Privacy levels, per-client assignment, downgrade-only headers, cloud fallback flow, model mapping
 - [ ] **Obsidian vault** (`~/Vault/PromptHub/`): User guide for getting OpenRouter API key and enabling cloud fallback
 
 ---
@@ -88,7 +92,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 ### Added
 - Steering documents for AI agents (`.claude/steering/product.md`, `tech.md`, `structure.md`)
 - Complete OpenAPI 3.0 spec coverage (43 endpoints, including `/v1/*` proxy)
-- Module coverage analysis (`app/docs/modules/COVERAGE-ANALYSIS.md`)
+- Module coverage analysis (`docs/modules/COVERAGE-ANALYSIS.md`)
 
 ### Changed
 - Documentation restructuring: fixed broken links, promoted completed features, archived stale docs

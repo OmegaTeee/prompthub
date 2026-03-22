@@ -2,9 +2,11 @@
 
 Technical documentation for PromptHub developers and maintainers.
 
-cd ~/.local/share/prompthub
+```bash
+cd ~/prompthub
 source .venv/bin/activate
 uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
+```
 
 ## Folders
 
@@ -33,4 +35,4 @@ User-facing guides live in the Obsidian vault at `~/Vault`.
 
 ##### Contributing
 
-See the project [README.md](../../README.md) and [CLAUDE.md](../../CLAUDE.md).
+See the project [README.md](../README.md) and [CLAUDE.md](../CLAUDE.md).

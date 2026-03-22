@@ -27,10 +27,10 @@ Templates and full instructions live at `~/.claude/skills/doc-tour/`.
 
 ## Output Location
 
-Feature docs are colocated at `app/docs/features/<feature>/`:
+Feature docs are colocated at `docs/features/<feature>/`:
 
 ```
-app/docs/features/openai-proxy/
+docs/features/openai-proxy/
 ├── tour.md       # Verification steps (source of truth)
 ├── product.md    # User-facing guide
 └── setup.md      # Developer setup

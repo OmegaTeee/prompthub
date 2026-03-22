@@ -30,6 +30,6 @@ ruff check router/ && ruff format router/        # Lint
 app/router/          # FastAPI application (modular monolith)
 app/configs/         # Runtime JSON configs
 app/tests/           # Pytest suite (unit/ + integration/)
-app/docs/            # Developer docs and ADRs
+docs/                # Developer docs and ADRs
 mcps/                # Node.js MCP bridge + client configs
 ```

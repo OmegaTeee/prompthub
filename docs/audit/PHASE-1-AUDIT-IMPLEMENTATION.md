@@ -15,7 +15,7 @@ Successfully implemented Phase 1 of the audit improvements, adding structured JS
 ### 1. Structured Logging with structlog ✅
 
 **Files Created:**
-- [router/audit.py](../../router/audit.py) - Core audit logging framework
+- [router/audit.py](../../app/router/audit.py) - Core audit logging framework
 
 **Features:**
 - JSON-formatted audit logs for machine parsing
@@ -47,7 +47,7 @@ Successfully implemented Phase 1 of the audit improvements, adding structured JS
 ### 2. Audit Context Middleware ✅
 
 **Files Created:**
-- [router/middleware/audit_context.py](../../router/middleware/audit_context.py) - Context propagation
+- [router/middleware/audit_context.py](../../app/router/middleware/audit_context.py) - Context propagation
 
 **Features:**
 - Uses Python `contextvars` for async-safe context propagation
@@ -80,7 +80,7 @@ context = get_audit_context()
 ### 3. Dashboard Action Logging ✅
 
 **Files Modified:**
-- [router/main.py](../../router/main.py) - Updated all dashboard actions
+- [router/main.py](../../app/router/main.py) - Updated all dashboard actions
 
 **Enhanced Functions:**
 - `_start_server()` - Logs start initiated/success/failed
@@ -109,7 +109,7 @@ except Exception as e:
 ### 4. Keyring Audit Trail ✅
 
 **Files Modified:**
-- [router/keyring_manager.py](../../router/keyring_manager.py) - Complete credential audit
+- [router/keyring_manager.py](../../app/router/keyring_manager.py) - Complete credential audit
 
 **Enhanced Methods:**
 - `get_credential()` - Logs all access attempts (success/not found/error)

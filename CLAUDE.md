@@ -19,10 +19,16 @@ prompthub/                        # Workspace root
 │   ├── configs/                  # Runtime configs (mcp-servers.json, api-keys.json, etc.)
 │   ├── templates/                # Jinja2 + HTMX templates (dashboard, partials)
 │   ├── scripts/                  # Shell scripts and LaunchAgent plist
-│   ├── docs/                     # Developer/engineering docs and ADRs
 │   ├── pyproject.toml
 │   ├── requirements.txt
 │   └── Dockerfile
+├── docs/                         # Developer/engineering docs, ADRs, and user guides
+│   ├── architecture/             # ADRs and transport adapter docs
+│   ├── guides/                   # User-facing setup and integration guides
+│   ├── api/                      # OpenAPI spec and API reference
+│   ├── modules/                  # Module documentation
+│   ├── audit/                    # Audit system docs
+│   └── archive/                  # Historical docs
 ├── mcps/                         # MCP servers (Node.js bridge) + client configs
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
 │   ├── configs/                  # Desktop client configs (Claude, Raycast, Inspector)
@@ -225,10 +231,10 @@ Query API: `GET /audit/activity?client_id=admin&limit=50`
 ### Documentation
 
 - **User Guides**: Obsidian vault (`~/Vault/PromptHub/`) - Setup, configuration, integrations
-- **Developer Docs**: `app/docs/` - Architecture, audit system, security
-- **Audit Implementation**: `app/docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md`
+- **Developer Docs**: `docs/` - Architecture, audit system, security
+- **Audit Implementation**: `docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md`
 
-For detailed audit system documentation, see `app/docs/audit/`
+For detailed audit system documentation, see `docs/audit/`
 
 ## Steering Documents
 
@@ -251,7 +257,7 @@ Steering documents guide AI agents with project-specific conventions and pattern
 
 | Change type | 1. CHANGELOG.md | 2. Code docs (`code-docs` agent) | 3. User guide (`user-manual` agent) |
 |---|---|---|---|
-| New feature | Yes | Yes | Yes — create/update in `app/docs/guides/` |
+| New feature | Yes | Yes | Yes — create/update in `docs/guides/` |
 | Bug fix | Yes | If code changed | If user-facing |
 | Refactor | If notable | Yes | No |
 | Config change | Yes | No | If user-facing |

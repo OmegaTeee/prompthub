@@ -29,17 +29,17 @@ prompthub/
 │   ├── configs/                  # Runtime configs (mcp-servers.json, enhancement-rules.json, api-keys.json)
 │   ├── templates/                # Jinja2 templates (dashboard HTML)
 │   ├── scripts/                  # Shell scripts (dev, manual tests)
-│   ├── docs/                     # Developer documentation
-│   │   ├── api/                  # OpenAPI spec + API overview
-│   │   ├── architecture/         # 8 ADRs
-│   │   ├── modules/              # Module docs (servers/ + coverage analysis)
-│   │   ├── features/             # Completed feature docs
-│   │   ├── audit/                # 3-phase audit implementation
-│   │   ├── reviews/              # Code reviews and planning
-│   │   └── archive/              # Historical docs
 │   ├── pyproject.toml
 │   ├── requirements.txt
 │   └── Dockerfile
+├── docs/                         # Developer/engineering docs, ADRs, and user guides
+│   ├── api/                      # OpenAPI spec + API overview
+│   ├── architecture/             # ADRs and transport adapter docs
+│   ├── modules/                  # Module docs (servers/ + coverage analysis)
+│   ├── features/                 # Completed feature docs
+│   ├── guides/                   # User-facing setup and integration guides
+│   ├── audit/                    # 3-phase audit implementation
+│   └── archive/                  # Historical docs
 ├── mcps/                         # Node.js MCP servers + unified bridge + client configs
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
 │   ├── configs/                  # Desktop client configs (Claude, Raycast, Inspector)
@@ -86,8 +86,8 @@ prompthub/
 
 | Location | Content | Audience | Reading Level |
 |----------|---------|----------|---------------|
-| `app/docs/guides/` | Setup guides, integrations, workflows, troubleshooting | General users | Grade 9–10 (see `user-manual` agent) |
-| `app/docs/` (other) | ADRs, API specs, module docs, audit reports, feature completions | Developers | Technical |
+| `docs/guides/` | Setup guides, integrations, workflows, troubleshooting | General users | Grade 9–10 (see `user-manual` agent) |
+| `docs/` (other) | ADRs, API specs, module docs, audit reports, feature completions | Developers | Technical |
 | `~/Vault/PromptHub/` | Personal notes, extended workflows | Users | — |
 | `CLAUDE.md` | AI agent instructions | Claude Code | Technical |
 | `.claude/steering/` | Product, tech, structure guidance | All AI agents | Technical |

@@ -12,7 +12,7 @@ Completed all outstanding test TODOs (6 tests) and reorganized project structure
 
 ## Test Implementations
 
-### 1. Circuit Breaker Test ([test_mcp_proxy.py:204](../../tests/integration/test_mcp_proxy.py#L204))
+### 1. Circuit Breaker Test ([test_mcp_proxy.py:204](../../app/tests/integration/test_mcp_proxy.py#L204))
 
 **Test:** `test_circuit_breaker_activates_on_failures`
 
@@ -26,7 +26,7 @@ Completed all outstanding test TODOs (6 tests) and reorganized project structure
 
 ---
 
-### 2. Auto-Restart Test ([test_mcp_proxy.py:216](../../tests/integration/test_mcp_proxy.py#L216))
+### 2. Auto-Restart Test ([test_mcp_proxy.py:216](../../app/tests/integration/test_mcp_proxy.py#L216))
 
 **Test:** `test_auto_restart_on_crash`
 
@@ -40,7 +40,7 @@ Completed all outstanding test TODOs (6 tests) and reorganized project structure
 
 ---
 
-### 3. Client-Specific Enhancement Test ([test_client_integrations.py:104](../../tests/integration/test_client_integrations.py#L104))
+### 3. Client-Specific Enhancement Test ([test_client_integrations.py:104](../../app/tests/integration/test_client_integrations.py#L104))
 
 **Test:** `test_client_specific_enhancement_models`
 
@@ -56,7 +56,7 @@ Completed all outstanding test TODOs (6 tests) and reorganized project structure
 
 ---
 
-### 4. Ollama Fallback Test ([test_enhancement_and_caching.py:98](../../tests/integration/test_enhancement_and_caching.py#L98))
+### 4. Ollama Fallback Test ([test_enhancement_and_caching.py:98](../../app/tests/integration/test_enhancement_and_caching.py#L98))
 
 **Test:** `test_enhancement_fallback_when_ollama_down`
 
@@ -71,7 +71,7 @@ Completed all outstanding test TODOs (6 tests) and reorganized project structure
 
 ---
 
-### 5. LRU Eviction Test ([test_enhancement_and_caching.py:317](../../tests/integration/test_enhancement_and_caching.py#L317))
+### 5. LRU Eviction Test ([test_enhancement_and_caching.py:317](../../app/tests/integration/test_enhancement_and_caching.py#L317))
 
 **Test:** `test_cache_lru_eviction`
 
@@ -85,7 +85,7 @@ Completed all outstanding test TODOs (6 tests) and reorganized project structure
 
 ---
 
-### 6. Cache Key with Client Test ([test_enhancement_and_caching.py:377](../../tests/integration/test_enhancement_and_caching.py#L377))
+### 6. Cache Key with Client Test ([test_enhancement_and_caching.py:377](../../app/tests/integration/test_enhancement_and_caching.py#L377))
 
 **Test:** `test_cache_key_includes_client_name`
 
@@ -118,7 +118,7 @@ test_security_alerts.py      → scripts/manual-tests/test_security_alerts.py
 
 #### Documentation Added
 
-Created [scripts/manual-tests/README.md](../../scripts/manual-tests/README.md):
+Created [scripts/manual-tests/README.md](../../app/scripts/manual-tests/README.md):
 - Explains difference between manual scripts and pytest tests
 - Provides usage examples for each script
 - Documents prerequisites and expected output
@@ -219,16 +219,16 @@ This testing philosophy aligns with the **circuit breaker pattern** in the appli
 ## Files Changed
 
 ### Modified
-- [tests/integration/test_mcp_proxy.py](../../tests/integration/test_mcp_proxy.py) - 2 tests implemented
-- [tests/integration/test_client_integrations.py](../../tests/integration/test_client_integrations.py) - 1 test implemented
-- [tests/integration/test_enhancement_and_caching.py](../../tests/integration/test_enhancement_and_caching.py) - 3 tests implemented
+- [tests/integration/test_mcp_proxy.py](../../app/tests/integration/test_mcp_proxy.py) - 2 tests implemented
+- [tests/integration/test_client_integrations.py](../../app/tests/integration/test_client_integrations.py) - 1 test implemented
+- [tests/integration/test_enhancement_and_caching.py](../../app/tests/integration/test_enhancement_and_caching.py) - 3 tests implemented
 
 ### Added
-- [scripts/manual-tests/README.md](../../scripts/manual-tests/README.md) - Documentation for manual test scripts
+- [scripts/manual-tests/README.md](../../app/scripts/manual-tests/README.md) - Documentation for manual test scripts
 
 ### Moved
-- `test_keyring_integration.py` → [scripts/manual-tests/test_keyring_integration.py](../../scripts/manual-tests/test_keyring_integration.py)
-- `test_security_alerts.py` → [scripts/manual-tests/test_security_alerts.py](../../scripts/manual-tests/test_security_alerts.py)
+- `test_keyring_integration.py` → [scripts/manual-tests/test_keyring_integration.py](../../app/scripts/manual-tests/test_keyring_integration.py)
+- `test_security_alerts.py` → [scripts/manual-tests/test_security_alerts.py](../../app/scripts/manual-tests/test_security_alerts.py)
 
 ---
 

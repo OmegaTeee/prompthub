@@ -97,8 +97,8 @@ See **[mcps/configs/](mcps/configs/)** for desktop client configurations:
 - [MCP Inspector](mcps/configs/mcp-inspector.json) - Inspector testing config
 
 ### Developer Documentation
-See **[app/docs/](app/docs/)** for technical documentation:
-- [Audit System](app/docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md) - Production audit infrastructure (Security Score: 9.0/10)
+See **[docs/](docs/)** for technical documentation:
+- [Audit System](docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md) - Production audit infrastructure (Security Score: 9.0/10)
 
 ## Key Features
 
@@ -148,7 +148,7 @@ PromptHub manages 6 MCP servers:
 | memory | @modelcontextprotocol/server-memory | No | Cross-session persistence |
 | fetch | mcp-fetch | No | HTTP fetch, GraphQL |
 
-> See [app/configs/mcp-servers.json.examples](app/configs/mcp-servers.json.examples) for additional server examples including Python-based MCPs.
+> See [app/configs/mcp-servers.json.examples](./app/configs/mcp-servers.json.examples) for additional server examples including Python-based MCPs.
 
 ### Adding/Updating MCPs
 
@@ -224,7 +224,7 @@ Edit `app/configs/enhancement-rules.json` to customize per-client behavior.
 
 PromptHub provides REST APIs for MCP server management, prompt enhancement, and monitoring.
 
-Full OpenAPI 3.0 specification: **[app/docs/api/openapi.yaml](app/docs/api/openapi.yaml)** (43 endpoints)
+Full OpenAPI 3.0 specification: **[docs/api/openapi.yaml](docs/api/openapi.yaml)** (43 endpoints)
 
 ### Base URL
 

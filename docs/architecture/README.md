@@ -18,6 +18,10 @@ ADRs document significant architectural decisions, the context behind them, and 
 - [ADR-008: Task-Specific Models & Orchestrator Agent](ADR-008-task-specific-models.md)
 - [ADR-009: Orchestrator Agent](ADR-009-orchestrator-agent.md)
 
+## Deep Dives
+
+- [MCP Transport Adapters](mcp-transport-adapters.md) — Three transport paths (stdio bridge, Streamable HTTP gateway, internal FastMCPBridge), tool prefixing, schema minification, client config generation
+
 ## System Architecture
 
 ### High-Level Overview

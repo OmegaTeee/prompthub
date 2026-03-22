@@ -29,7 +29,7 @@ You need four things installed on your Mac before you start:
 ~/prompthub/
 ├── app/          # FastAPI router + CLI (Python)
 ├── mcps/         # MCP bridge + client configs (Node)
-├── guides/       # User guides (symlink → app/docs/guides)
+├── docs/         # Developer docs, ADRs, and user guides
 ├── logs/         # Router logs
 └── (scripts)     # prompthub-start.zsh, prompthub-kill.zsh
 ```
@@ -248,7 +248,7 @@ cd ~/prompthub
 
 ## 8. Next Steps
 
-- **More app examples** — See `guides/04-openai-api-guide.md` for Python scripts, Raycast, and other clients.
+- **More app examples** — See `docs/guides/04-openai-api-guide.md` for Python scripts, Raycast, and other clients.
 - **Run diagnostics** — From `~/prompthub/app`, run `python -m cli diagnose` to check all systems.
-- **Browse user guides** — Open `~/prompthub/guides/` for the full set.
-- **Explore internals** — See `~/prompthub/app/docs/` for architecture decisions and developer docs.
+- **Browse user guides** — Open `~/prompthub/docs/guides/` for the full set.
+- **Explore internals** — See `~/prompthub/docs/` for architecture decisions and developer docs.

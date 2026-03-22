@@ -197,10 +197,11 @@ The new `Copilot-Processing.md` serves as:
 ## References
 
 - **New File:** [Copilot-Processing.md](../../Copilot-Processing.md)
-- **Archived Record:** [docs/archive/2026-02-03-awesome-copilot-installation.md](../archive/2026-02-03-awesome-copilot-installation.md)
-- **Archive Index:** [docs/archive/README.md](../archive/README.md)
+- **Archived Record:** [2026-02-03-awesome-copilot-installation.md](2026-02-03-awesome-copilot-installation.md)
+- **Archive Index:** [archive/README.md](README.md)
 - **Copilot Instructions:** [.github/copilot-instructions.md](../../.github/copilot-instructions.md)
 - **Copilot Resources:** [.github/awesome-copilot-index.md](../../.github/awesome-copilot-index.md)
+
 
 ---
 
