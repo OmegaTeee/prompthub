@@ -2,16 +2,29 @@
 
 Working notes, research, model evaluations, and improvement plans that aren't yet formal guides or architecture docs. This is a low-ceremony space for capturing ideas and analysis.
 
+## Folder Structure
+
+```
+docs/notes/
+├── models/       LLM model cards (one per Ollama model)
+├── servers/      MCP server cards (one per registered server)
+├── research/     Comparisons, evaluations, stack inventories
+├── plans/        Roadmaps and phased improvement proposals
+├── dashboard/    Dashboard refactor and observability ideas
+└── README.md     This file
+```
+
 ## Naming Convention
 
 Use a **category prefix** followed by a descriptive topic:
 
-| Prefix | Use for | Examples |
-|---|---|---|
-| `llm-` | Model evaluations, comparisons, model cards | `llm-qwen3-14b-model-card.md` |
-| `plan-` | Roadmaps, improvement plans, phased proposals | `plan-rag-improvement.md` |
-| `idea-` | Brainstorming, feature ideation, explorations | `idea-webhook-ingestion.md` |
-| `eval-` | Benchmarks, tool evaluations, integration tests | `eval-mcp-bridge-latency.md` |
+| Prefix | Use for | Location | Examples |
+|---|---|---|---|
+| `llm-` | Model cards, evaluations | `models/`, `research/` | `llm-qwen3-14b-model-card.md` |
+| `mcp-` | MCP server cards | `servers/` | `mcp-context7.md` |
+| `plan-` | Roadmaps, phased proposals | `plans/` | `plan-rag-improvement.md` |
+| `idea-` | Brainstorming, feature ideation | `dashboard/` or root | `idea-dashboard-improvements.md` |
+| `eval-` | Benchmarks, integration tests | `research/` | `eval-mcp-bridge-latency.md` |
 
 ## Frontmatter
 
@@ -45,7 +58,7 @@ tags: [relevant, topic, tags]
 
 ## Current notes
 
-### Model cards
+### models/ — LLM Model Cards
 
 | File | Status | Model | PromptHub Role |
 |---|---|---|---|
@@ -55,15 +68,33 @@ tags: [relevant, topic, tags]
 | `llm-qwen3-coder-30b-model-card.md` | final | qwen3-coder:30b (30.5B MoE) | Claude Code enhancement |
 | `llm-bge-m3-model-card.md` | final | bge-m3 (567M) | Embeddings (future RAG) |
 
-### Research & plans
+### servers/ — MCP Server Cards
+
+| File | Status | Auto-start | Key Role |
+|---|---|---|---|
+| `mcp-context7.md` | final | Yes | Library documentation fetching |
+| `mcp-desktop-commander.md` | final | Yes | File operations, terminal, editing (26 tools) |
+| `mcp-sequential-thinking.md` | final | Yes | Step-by-step reasoning and planning |
+| `mcp-memory.md` | final | Yes | Knowledge graph persistence |
+| `mcp-duckduckgo.md` | final | Yes | Web search (no API key needed) |
+| `mcp-obsidian-mcp-tools.md` | final | Yes | Obsidian vault operations (keyring auth) |
+| `mcp-chrome-devtools.md` | final | No | CDP debugging, profiling (30+ tools) |
+| `mcp-browsermcp.md` | final | No | Chrome extension browser automation |
+
+### research/ — Evaluations & Inventories
 
 | File | Status | Description |
 |---|---|---|
 | `llm-stack.md` | review | Full stack inventory, per-client assignments, experimentation log |
 | `llm-mcp-guide.md` | review | 4-model comparison (qwen3/gemma3) for MCP and desktop clients |
+
+### plans/ — Roadmaps
+
+| File | Status | Description |
+|---|---|---|
 | `plan-rag-improvement.md` | draft | 4-phase RAG improvement roadmap (session context, PGVector, RAG enhancement, n8n) |
 
-### Dashboard & observability
+### dashboard/ — Dashboard & Observability Ideas
 
 | File | Status | Description |
 |---|---|---|
