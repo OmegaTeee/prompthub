@@ -1,3 +1,11 @@
+---
+title: "Dashboard Refactor Recommendations"
+status: draft
+created: 2026-02-03
+updated: 2026-03-23
+tags: [idea, dashboard, refactor, enhancement-middleware]
+---
+
 Dashboard: Recommendations & Refactor Suggestions
 ---------------------------------------------------
 **Date:** 2026-02-03

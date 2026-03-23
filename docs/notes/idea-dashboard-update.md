@@ -1,3 +1,11 @@
+---
+title: "Dashboard Update — Server Control Buttons"
+status: draft
+created: 2026-01-30
+updated: 2026-03-23
+tags: [idea, dashboard, htmx, ui]
+---
+
 # Dashboard Update - Server Control Buttons
 
 ## Changes Made

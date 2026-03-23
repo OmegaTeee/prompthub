@@ -62,3 +62,15 @@ tags: [relevant, topic, tags]
 | `llm-stack.md` | review | Full stack inventory, per-client assignments, experimentation log |
 | `llm-mcp-guide.md` | review | 4-model comparison (qwen3/gemma3) for MCP and desktop clients |
 | `plan-rag-improvement.md` | draft | 4-phase RAG improvement roadmap (session context, PGVector, RAG enhancement, n8n) |
+
+### Dashboard & observability
+
+| File | Status | Description |
+|---|---|---|
+| `idea-dashboard-update.md` | draft | Server control buttons, auto-start changes |
+| `idea-dashboard-improvements.md` | draft | UX improvements — loading indicators, toast notifications |
+| `idea-dashboard-refactor-recommendations.md` | draft | Refactor suggestions from enhancement middleware work |
+| `idea-dashboard-refactor-review.md` | draft | Scoping review for dashboard redesign |
+| `idea-dashboard-refactor-tech-overview.md` | draft | Tech stack evaluation — Grafana, Prometheus, OpenTelemetry |
+| `idea-grafana-readme.md` | draft | Grafana dashboard import/setup instructions |
+| `idea-grafana-dashboard.json` | — | Grafana dashboard JSON definition (import-ready) |

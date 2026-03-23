@@ -1,3 +1,11 @@
+---
+title: "Dashboard UX Improvements"
+status: draft
+created: 2026-02-03
+updated: 2026-03-23
+tags: [idea, dashboard, htmx, ux, toast-notifications]
+---
+
 # Dashboard UX Improvements
 
 ## Overview

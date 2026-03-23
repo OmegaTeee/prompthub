@@ -1,3 +1,11 @@
+---
+title: "Grafana Dashboard Setup"
+status: draft
+created: 2026-02-03
+updated: 2026-03-23
+tags: [idea, dashboard, grafana, setup]
+---
+
 PromptHub Grafana Dashboard
 ==========================
 
