@@ -1,44 +1,49 @@
 {
   "keys": {
-    "sk-prompthub-raycast-001": {
-      "client_name": "raycast",
-      "enhance": false,
-      "description": "Raycast commands (pass-through)"
-    },
-    "sk-prompthub-perplexity-001": {
-      "client_name": "perplexity",
-      "enhance": false,
-      "description": "Perplexity assistant"
-    },
-    "sk-prompthub-code-001": {
-      "client_name": "vscode",
-      "enhance": false,
-      "description": "VS Code chat (pass-through)"
-    },
-    "sk-prompthub-copilot-001": {
-      "client_name": "vscode",
-      "enhance": false,
-      "description": "OAI Copilot extension (pass-through)"
+    "sk-prompthub-claude-code-001": {
+      "client_name": "claude-code",
+      "description": "Claude Code CLI",
+      "enhance": false
     },
     "sk-prompthub-claude-desktop-001": {
       "client_name": "claude-desktop",
-      "enhance": false,
-      "description": "Claude.ai desktop integration"
+      "description": "Claude.ai Desktop App",
+      "enhance": false
     },
-    "sk-prompthub-claude-code-001": {
-      "client_name": "claude-code",
-      "enhance": false,
-      "description": "Claude code integration"
+    "sk-prompthub-codex-001": {
+      "client_name": "codex",
+      "description": "Codex CLI",
+      "enhance": false
     },
-    "sk-prompthub-obsidian-001": {
-      "client_name": "obsidian",
-      "enhance": false,
-      "description": "Obsidian personal knowledge base"
+    "sk-prompthub-vscode-001": {
+      "client_name": "vscode",
+      "description": "VSCode IDE",
+      "enhance": false
+    },
+    "sk-prompthub-copilot-001": {
+      "client_name": "copilot",
+      "description": "Github Copilot",
+      "enhance": false
     },
     "sk-prompthub-openwebui-001": {
       "client_name": "open-webui",
-      "enhance": false,
-      "description": "Open WebUI chat interface"
+      "description": "Open WebUI",
+      "enhance": false
+    },
+    "sk-prompthub-perplexity-001": {
+      "client_name": "perplexity",
+      "description": "Perplexity Desktop",
+      "enhance": false
+    },
+    "sk-prompthub-raycast-001": {
+      "client_name": "raycast",
+      "description": "Raycast Commands",
+      "enhance": false
+    },
+    "sk-prompthub-openclaw-001": {
+      "client_name": "openclaw",
+      "description": "OpenClaw Agent",
+      "enhance": false
     }
   }
 }
