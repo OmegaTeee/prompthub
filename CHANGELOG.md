@@ -49,6 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - Test suite: 153 → 225 passed (12 skipped)
 
 ### Fixed
+- **Memory MCP client hardcoded port**: `MemoryMCPClient` was initialized with `base_url="http://localhost:9090"` instead of deriving host/port from `Settings`. Running the router on a non-default port (e.g., `PORT=8080`) caused Memory MCP sync to silently fail. Now derives the URL from `settings.host`/`settings.port` with `0.0.0.0` → `127.0.0.1` translation for loopback connectivity.
 - **Script audit fixes**: Fixed broken `sys.path` in `test_security_alerts.py` and `test_keyring_integration.py` (pointed at `manual-tests/` instead of `app/`), stale `"obsidian"` server name → `"obsidian-mcp-tools"` in keyring test, and `((PASS++))` arithmetic crash under `set -e` in `validate-mcp-servers.sh`. Removed redundant `dev/run-tests.sh` (superseded by `test.sh`).
 - **Open WebUI port configuration**: Dashboard panel (`_get_open_webui_info()`) now reads port from `~/.prompthub/open-webui.json` instead of hardcoding 3000, so the HTMX widget correctly detects Open WebUI on non-default ports
 - **Open WebUI start script port precedence**: Fixed variable ordering in `start.sh` so the JSON config port is consulted before the hardcoded default (`env var > config file > 3000`)

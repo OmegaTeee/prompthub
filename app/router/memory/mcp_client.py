@@ -18,10 +18,32 @@ class MemoryMCPClient:
 
     Calls PromptHub's /mcp/memory/* proxy endpoints to sync session
     entities and facts with a Memory MCP server running behind PromptHub.
+
+    When no ``base_url`` is provided, the URL is derived from
+    ``Settings.host`` / ``Settings.port`` via lazy ``get_settings()``
+    (same deferred-import pattern used by storage classes to avoid
+    circular imports).
     """
 
-    def __init__(self, base_url: str = "http://localhost:9090"):
-        """Initialize with base URL to PromptHub."""
+    def __init__(self, base_url: str | None = None) -> None:
+        """Initialize with base URL to PromptHub.
+
+        Args:
+            base_url: Explicit base URL (e.g. ``http://127.0.0.1:9090``).
+                If ``None``, derived from ``Settings.host`` and
+                ``Settings.port``. A bind address of ``0.0.0.0`` is
+                rewritten to ``127.0.0.1`` since the wildcard address
+                is not connectable as a client target.
+        """
+        if base_url is None:
+            from router.config import get_settings
+
+            settings = get_settings()
+            # 0.0.0.0 is a bind address, not connectable — use loopback
+            host = (
+                "127.0.0.1" if settings.host == "0.0.0.0" else settings.host
+            )
+            base_url = f"http://{host}:{settings.port}"
         self.base_url = base_url
         self.memory_mcp_path = "/mcp/memory"
 

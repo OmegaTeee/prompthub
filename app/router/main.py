@@ -152,7 +152,7 @@ async def lifespan(app: FastAPI):
     logger.info("Initialized session storage")
 
     # Initialize Memory MCP client (optional sync layer)
-    memory_mcp_client = MemoryMCPClient(base_url="http://localhost:9090")
+    memory_mcp_client = MemoryMCPClient()
     logger.info("Initialized Memory MCP client")
 
     # Initialize tool registry (MCP tool definition cache)
