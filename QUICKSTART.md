@@ -27,11 +27,11 @@ You need four things installed on your Mac before you start:
 
 ```text
 ~/prompthub/
-├── app/          # FastAPI router + CLI (Python)
-├── mcps/         # MCP bridge + client configs (Node)
-├── docs/         # Developer docs, ADRs, and user guides
-├── logs/         # Router logs
-└── (scripts)     # prompthub-start.zsh, prompthub-kill.zsh
+├── app/              # FastAPI router + CLI (Python)
+├── scripts/          # prompthub-start.zsh, prompthub-kill.zsh, open-webui/, etc.
+├── mcps/             # MCP bridge + client configs (Node)
+├── docs/             # Developer docs, ADRs, and user guides
+└── logs/             # Router logs
 ```
 
 Router code and Python dependencies live under `app/`. The MCP bridge and Claude configs live under `mcps/`.
@@ -56,8 +56,7 @@ Run these commands once to create the Python environment:
    ```
 4. Make the helper scripts executable:
    ```bash
-   cd ~/prompthub
-   chmod +x prompthub-start.zsh prompthub-kill.zsh
+   chmod +x ~/prompthub/scripts/prompthub-start.zsh ~/prompthub/scripts/prompthub-kill.zsh
    ```
 
 **Key points:**
@@ -68,11 +67,10 @@ Run these commands once to create the Python environment:
 
 ## 4. Start PromptHub
 
-Run the start script from the project root:
+Run the start script:
 
 ```bash
-cd ~/prompthub
-./prompthub-start.zsh
+~/prompthub/scripts/prompthub-start.zsh
 ```
 
 The script does four things for you:
@@ -141,9 +139,8 @@ tail -n 40 ~/prompthub/mcps/configs/claude-desktop--prompthub-bridge.log
 If you see `Failed to fetch server list from router: fetch failed`, the router was not running when Claude started. Restart:
 
 ```bash
-cd ~/prompthub
-./prompthub-kill.zsh
-./prompthub-start.zsh
+~/prompthub/scripts/prompthub-kill.zsh
+~/prompthub/scripts/prompthub-start.zsh
 ```
 
 Then reopen Claude Desktop.
@@ -226,8 +223,7 @@ curl -s http://localhost:9090/v1/chat/completions \
 To stop the router and MCP bridge:
 
 ```bash
-cd ~/prompthub
-./prompthub-kill.zsh
+~/prompthub/scripts/prompthub-kill.zsh
 ```
 
 This stops PromptHub but leaves Ollama running. To stop Ollama too:
@@ -239,9 +235,8 @@ killall ollama
 To restart from scratch:
 
 ```bash
-cd ~/prompthub
-./prompthub-kill.zsh
-./prompthub-start.zsh
+~/prompthub/scripts/prompthub-kill.zsh
+~/prompthub/scripts/prompthub-start.zsh
 ```
 
 ---

@@ -170,7 +170,7 @@ mkdir -p mcps/<mcp-name>/bin
 cp /path/to/binary mcps/<mcp-name>/bin/
 
 # Create wrapper script (if API keys needed)
-# See app/scripts/README.md for wrapper pattern
+# See scripts/README.md for wrapper pattern
 ```
 
 **For Python packages:**
@@ -189,7 +189,7 @@ pip install -r requirements.txt
 
 ### API Key Management
 
-MCP servers requiring API keys use wrapper scripts that retrieve credentials from macOS Keychain. See [app/scripts/README.md](app/scripts/README.md) for details.
+MCP servers requiring API keys use wrapper scripts that retrieve credentials from macOS Keychain. See [scripts/README.md](scripts/README.md) for details.
 
 **Add API keys to Keychain:**
 
@@ -200,7 +200,7 @@ security add-generic-password -a $USER -s obsidian_api_key -w YOUR_API_KEY
 **Validate installation:**
 
 ```bash
-./app/scripts/router/validate-mcp-servers.sh
+./scripts/router/validate-mcp-servers.sh
 ```
 
 ## Configuration

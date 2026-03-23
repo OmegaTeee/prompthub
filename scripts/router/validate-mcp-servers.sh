@@ -44,13 +44,13 @@ else:
   printf "  %-25s " "${name}:"
   if [[ -f "${command}" ]]; then
     echo "FOUND  ${command}"
-    ((PASS++))
+    PASS=$((PASS + 1))
   elif command -v "${command}" &>/dev/null; then
     echo "FOUND  $(command -v "${command}")"
-    ((PASS++))
+    PASS=$((PASS + 1))
   else
     echo "MISSING  ${command}"
-    ((FAIL++))
+    FAIL=$((FAIL + 1))
   fi
 done
 

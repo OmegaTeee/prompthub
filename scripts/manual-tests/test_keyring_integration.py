@@ -8,8 +8,8 @@ Run with: source .venv/bin/activate && python test_keyring_integration.py
 import sys
 from pathlib import Path
 
-# Add router to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add app/ to path so `from router.*` resolves
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "app"))
 
 from router.keyring_manager import get_keyring_manager
 
@@ -103,7 +103,7 @@ def test_mcp_server_config():
     with open(config_path) as f:
         config = json.load(f)
 
-    obsidian_config = config["servers"]["obsidian"]
+    obsidian_config = config["servers"]["obsidian-mcp-tools"]
 
     print("\nObsidian server config:")
     print(f"  Command: {obsidian_config['command']}")

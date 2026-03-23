@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+APP_DIR="$(cd "$(dirname "$0")/../app" && pwd)"
 VENV="$APP_DIR/.venv/bin/activate"
 
 # Colours

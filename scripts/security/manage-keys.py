@@ -36,7 +36,7 @@ import subprocess
 from pathlib import Path
 
 # Add app/ to path so `from router.keyring_manager` resolves
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "app"))
 
 # Suppress audit log JSON output for CLI usage
 logging.getLogger("audit").setLevel(logging.CRITICAL)

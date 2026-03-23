@@ -18,10 +18,10 @@ prompthub/                        # Workspace root
 │   ├── tests/                    # Pytest suite
 │   ├── configs/                  # Runtime configs (mcp-servers.json, api-keys.json, etc.)
 │   ├── templates/                # Jinja2 + HTMX templates (dashboard, partials)
-│   ├── scripts/                  # Shell scripts and LaunchAgent plist
 │   ├── pyproject.toml
 │   ├── requirements.txt
 │   └── Dockerfile
+├── scripts/                      # Shell scripts, LaunchAgent plists, manual tests
 ├── docs/                         # Developer/engineering docs, ADRs, and user guides
 │   ├── architecture/             # ADRs and transport adapter docs
 │   ├── guides/                   # User-facing setup and integration guides

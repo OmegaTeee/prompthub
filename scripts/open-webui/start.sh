@@ -13,7 +13,9 @@
 set -euo pipefail
 
 CONFIG_FILE="${HOME}/.prompthub/open-webui.json"
-LOG_FILE="${HOME}/.prompthub/open-webui.log"
+# Resolve project root from script location: scripts/open-webui/ -> project root
+PROMPTHUB_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+LOG_FILE="${PROMPTHUB_ROOT}/logs/openwebui.log"
 
 # Defaults — env vars override config file, config file overrides hardcoded defaults
 PROMPTHUB_URL="${PROMPTHUB_URL:-http://127.0.0.1:9090}"
@@ -59,8 +61,8 @@ if lsof -i :"$OWUI_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
     exit 1
 fi
 
-# Ensure log directory exists
-mkdir -p "$(dirname "$LOG_FILE")"
+# Ensure logs directory exists
+mkdir -p "${PROMPTHUB_ROOT}/logs"
 
 echo "Starting Open WebUI..."
 

@@ -10,8 +10,17 @@
         <string>/bin/bash</string>
         <string>-l</string>
         <string>-c</string>
-        <string>~/.local/share/prompthub/app/scripts/open-webui/start.sh</string>
+        <string>/Users/visualval/.local/share/prompthub/scripts/open-webui/start.sh</string>
     </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/visualval/.local/share/prompthub</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
 
     <key>RunAtLoad</key>
     <false/>
@@ -20,15 +29,9 @@
     <false/>
 
     <key>StandardOutPath</key>
-    <string>~/.prompthub/open-webui-launchd.log</string>
+    <string>/Users/visualval/.local/share/prompthub/logs/openwebui-stdout.log</string>
 
     <key>StandardErrorPath</key>
-    <string>~/.prompthub/open-webui-launchd.log</string>
-
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>PATH</key>
-        <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
-    </dict>
+    <string>/Users/visualval/.local/share/prompthub/logs/openwebui-stderr.log</string>
 </dict>
 </plist>
