@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 ## [Unreleased]
 
 ### Added
+- **`clients/` directory**: Separated client application settings (VS Code, Codex, OpenClaw, Copilot OAI extension, Open WebUI MCPO example) from MCP bridge configs. `mcps/configs/` now holds only MCP bridge configs; `clients/` holds editor prefs, agent configs, and integration examples.
 - **`docs/notes/` convention**: Established naming convention (`llm-`, `plan-`, `idea-`, `eval-` prefixes), YAML frontmatter with status lifecycle (`draft` → `review` → `final`), and README. Renamed misnamed `llm-gemma3:4b.md` → `llm-qwen3-14b-model-card.md`, `prompthub-rag-improvement-plan.md` → `plan-rag-improvement.md`.
 - **Model cards** for all 5 Ollama models: `qwen3:14b` (orchestrator + OpenClaw), `gemma3:4b` (default enhancement), `gemma3:27b` (Claude Desktop enhancement), `qwen3-coder:30b` (Claude Code enhancement), `bge-m3` (embeddings). Each card documents Ollama manifest, capabilities, parameters, PromptHub roles, and recommendations.
 - **LLM stack inventory** (`docs/notes/llm-stack.md`): Rewritten with actual Ollama state, three-layer pipeline docs (orchestrator → enhancement → proxy), per-client enhancement table from `enhancement-rules.json`, OpenClaw experimentation log, model-client pairing guide.
@@ -68,8 +69,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - `obsidian-mcp-tools` server entry in `mcp-servers.json` (keyring-sourced API key)
 - API keys for `claude-code` and `obsidian` clients
 - Project-level agent specs: `code-docs`, `user-manual` (`.claude/agents/`)
-
-### Changed
 - **Data directory**: Cache DB moved from `/tmp/prompthub/cache.db` to `~/.prompthub/cache.db` via new `DATA_DIR` setting — persistent storage that survives reboots
 - **`.mcp.json` consolidation**: Replaced 5 individual MCP server entries with single `prompthub` bridge — all tools now route through the PromptHub router for circuit breaking, caching, and audit
 - **API key naming**: Renamed `*-dev001` keys to `*-001` across configs and docs

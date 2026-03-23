@@ -29,9 +29,10 @@ prompthub/                        # Workspace root
 │   ├── modules/                  # Module documentation
 │   ├── audit/                    # Audit system docs
 │   └── archive/                  # Historical docs
-├── mcps/                         # MCP servers (Node.js bridge) + client configs
+├── clients/                      # Client application settings (editor prefs, agent configs, examples)
+├── mcps/                         # MCP servers (Node.js bridge) + MCP bridge configs
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
-│   ├── configs/                  # Desktop client configs (Claude, Raycast, Inspector)
+│   ├── configs/                  # MCP bridge configs (Claude, Raycast, OpenClaw, Inspector)
 │   └── package.json              # npm dependencies
 ├── logs/                         # LaunchAgent stdout/stderr logs
 └── .claude/ .github/ .vscode/    # Workspace-level configs
