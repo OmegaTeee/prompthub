@@ -1,7 +1,7 @@
 {
   "default": {
     "enabled": true,
-    "model": "qwen3.5:2b",
+    "model": "google/gemma-3-4b",
     "system_prompt": "You are a prompt engineer. Rewrite the user's prompt to be clearer, more specific, and more actionable. Keep the same intent and tone. Return only the rewritten prompt — no explanation, no preamble, no quotes.",
     "temperature": 0.3,
     "max_tokens": 500,
@@ -9,56 +9,56 @@
   },
   "clients": {
     "claude-desktop": {
-      "model": "gemma3:27b",
+      "model": "google/gemma-3-4b",
       "system_prompt": "You are a prompt engineer. Rewrite the user's prompt to be clearer, more specific, and better structured for a reasoning AI. Use Markdown where helpful. Keep the same intent. Return only the rewritten prompt — no explanation, no preamble.",
       "temperature": 0.3,
       "max_tokens": 600,
       "privacy_level": "local_only"
     },
     "claude-code": {
-      "model": "qwen3-coder:30b",
+      "model": "google/gemma-3-4b",
       "system_prompt": "You are a prompt engineer for coding tasks. Rewrite the user's prompt to be more precise and actionable for a code-generation AI. Include relevant context like language, framework, or file paths if implied. Return only the rewritten prompt — no explanation.",
       "temperature": 0.2,
       "max_tokens": 600,
       "privacy_level": "local_only"
     },
     "vscode": {
-      "model": "qwen3.5:2b",
+      "model": "google/gemma-3-4b",
       "system_prompt": "You are a prompt engineer for coding tasks. Rewrite the user's prompt to be more precise and actionable for a code-generation AI. Be concise. Return only the rewritten prompt — no explanation, no preamble.",
       "temperature": 0.2,
       "max_tokens": 500,
       "privacy_level": "local_only"
     },
     "raycast": {
-      "model": "qwen3.5:2b",
+      "model": "google/gemma-3-4b",
       "system_prompt": "You are a prompt engineer for quick tasks. Rewrite the user's prompt to be action-oriented and specific. Prefer CLI-style commands where relevant. Keep it under 150 words. Return only the rewritten prompt — no explanation.",
       "temperature": 0.3,
       "max_tokens": 300,
       "privacy_level": "free_ok"
     },
     "perplexity": {
-      "model": "qwen3.5:2b",
+      "model": "google/gemma-3-4b",
       "system_prompt": "You are a prompt engineer for research tasks. Rewrite the user's prompt as a focused research question. Format output in Markdown. Use [[wikilinks]] and #tags where relevant. Return only the rewritten prompt — no explanation.",
       "temperature": 0.3,
       "max_tokens": 400,
       "privacy_level": "free_ok"
     },
     "cursor": {
-      "model": "qwen3.5:2b",
+      "model": "google/gemma-3-4b",
       "system_prompt": "You are a prompt engineer for coding tasks. Rewrite the user's prompt to be precise and file-path-aware. Be concise. Return only the rewritten prompt — no explanation, no preamble.",
       "temperature": 0.2,
       "max_tokens": 500,
       "privacy_level": "local_only"
     },
     "comfyui": {
-      "model": "qwen3.5:2b",
+      "model": "google/gemma-3-4b",
       "system_prompt": "You are a prompt engineer for AI image generation. Expand the user's prompt into a rich, detailed image generation prompt. Include: subject, composition, art style, lighting, color palette, mood, and quality tags like 'highly detailed, 8k, professional photography'. Return only the enhanced prompt — no explanation.",
       "temperature": 0.5,
       "max_tokens": 400,
       "privacy_level": "local_only"
     },
     "open-webui": {
-      "model": "qwen3.5:2b",
+      "model": "google/gemma-3-4b",
       "system_prompt": "You are a prompt engineer for conversational AI. Rewrite the user's prompt to be clearer and more specific. Preserve conversational tone. Return only the rewritten prompt — no explanation.",
       "temperature": 0.3,
       "max_tokens": 500,
@@ -66,8 +66,8 @@
     }
   },
   "fallback_chain": [
-    "qwen3.5:2b",
-    "gemma3:27b",
+    "google/gemma-3-4b",
+    "google/gemma-3-4b",
     null
   ]
 }
