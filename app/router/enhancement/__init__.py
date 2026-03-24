@@ -1,4 +1,4 @@
-"""Prompt enhancement via local Ollama models."""
+"""Prompt enhancement via local LLM models."""
 
 from router.enhancement.context_window import (
     ENHANCEMENT_INPUT_CAP,
@@ -6,13 +6,12 @@ from router.enhancement.context_window import (
     TokenBudget,
     register_model,
 )
-from router.enhancement.ollama import (
-    OllamaClient,
-    OllamaConfig,
-    OllamaConnectionError,
-    OllamaError,
-    OllamaModelError,
-    OllamaResponse,
+from router.enhancement.llm_client import (
+    LLMClient,
+    LLMConfig,
+    LLMConnectionError,
+    LLMError,
+    LLMModelError,
 )
 from router.enhancement.service import (
     EnhancementResult,
@@ -30,12 +29,11 @@ __all__ = [
     "EnhancementResult",
     "EnhancementRule",
     "EnhancementService",
-    "OllamaClient",
-    "OllamaConfig",
-    "OllamaConnectionError",
-    "OllamaError",
-    "OllamaModelError",
-    "OllamaResponse",
+    "LLMClient",
+    "LLMConfig",
+    "LLMConnectionError",
+    "LLMError",
+    "LLMModelError",
     "PrivacyLevel",
     "resolve_privacy_level",
 ]

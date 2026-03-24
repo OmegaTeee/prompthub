@@ -1,10 +1,11 @@
 """
-OpenAI-compatible client for Ollama.
+OpenAI-compatible client for local LLM servers.
 
-This module provides async communication with Ollama using OpenAI's API format.
-Ollama exposes OpenAI-compatible endpoints at /v1/chat/completions and /v1/completions.
+This module provides async communication with LLM servers using OpenAI's API format.
+LM Studio and similar servers expose OpenAI-compatible endpoints at
+/v1/chat/completions and /v1/completions.
 
-This allows drop-in replacement of OpenAI with local Ollama models.
+This allows drop-in replacement of OpenAI with local LLM models.
 """
 
 import asyncio
@@ -17,8 +18,8 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
-class OpenAICompatConfig(BaseModel):
-    """Configuration for OpenAI-compatible Ollama client."""
+class LLMConfig(BaseModel):
+    """Configuration for OpenAI-compatible LLM client."""
 
     base_url: str = "http://localhost:11434/v1"
     timeout: float = 30.0
@@ -53,35 +54,35 @@ class ChatCompletionResponse(BaseModel):
     usage: dict[str, int] | None = None
 
 
-class OllamaOpenAIError(Exception):
-    """Base exception for Ollama OpenAI-compatible API errors."""
+class LLMError(Exception):
+    """Base exception for LLM server API errors."""
 
     pass
 
 
-class OllamaOpenAIConnectionError(OllamaOpenAIError):
-    """Raised when unable to connect to Ollama."""
+class LLMConnectionError(LLMError):
+    """Raised when unable to connect to LLM server."""
 
     pass
 
 
-class OllamaOpenAIModelError(OllamaOpenAIError):
+class LLMModelError(LLMError):
     """Raised when model is not available."""
 
     pass
 
 
-class OllamaOpenAIClient:
+class LLMClient:
     """
-    OpenAI-compatible async client for Ollama.
+    OpenAI-compatible async client for local LLM servers.
 
-    Uses Ollama's OpenAI-compatible endpoints:
+    Uses OpenAI-compatible endpoints:
     - /v1/chat/completions (Chat Completions API)
     - /v1/completions (Completions API)
     - /v1/models (Models API)
 
     Example:
-        client = OllamaOpenAIClient()
+        client = LLMClient()
         if await client.is_healthy():
             response = await client.chat_completion(
                 model="deepseek-r1:latest",
@@ -93,14 +94,14 @@ class OllamaOpenAIClient:
             print(response.choices[0].message.content)
     """
 
-    def __init__(self, config: OpenAICompatConfig | None = None):
+    def __init__(self, config: LLMConfig | None = None):
         """
-        Initialize the OpenAI-compatible Ollama client.
+        Initialize the OpenAI-compatible LLM client.
 
         Args:
             config: Configuration options
         """
-        self.config = config or OpenAICompatConfig()
+        self.config = config or LLMConfig()
         self._client: httpx.AsyncClient | None = None
 
     async def _get_client(self) -> httpx.AsyncClient:
@@ -121,10 +122,10 @@ class OllamaOpenAIClient:
 
     async def is_healthy(self) -> bool:
         """
-        Check if Ollama is running and accessible.
+        Check if LLM server is running and accessible.
 
         Returns:
-            True if Ollama is healthy
+            True if LLM server is healthy
         """
         try:
             client = await self._get_client()
@@ -141,7 +142,7 @@ class OllamaOpenAIClient:
             List of model information dicts
 
         Raises:
-            OllamaOpenAIConnectionError: If unable to connect
+            LLMConnectionError: If unable to connect
         """
         try:
             client = await self._get_client()
@@ -150,11 +151,11 @@ class OllamaOpenAIClient:
             data = response.json()
             return data.get("data", [])
         except httpx.ConnectError as e:
-            raise OllamaOpenAIConnectionError(
-                f"Cannot connect to Ollama: {e}"
+            raise LLMConnectionError(
+                f"Cannot connect to LLM server: {e}"
             ) from e
         except httpx.RequestError as e:
-            raise OllamaOpenAIError(f"Request failed: {e}") from e
+            raise LLMError(f"Request failed: {e}") from e
 
     async def has_model(self, model: str) -> bool:
         """
@@ -170,7 +171,7 @@ class OllamaOpenAIClient:
             models = await self.list_models()
             model_ids = [m.get("id", "") for m in models]
             return model in model_ids
-        except OllamaOpenAIError:
+        except LLMError:
             return False
 
     async def chat_completion(
@@ -195,9 +196,9 @@ class OllamaOpenAIClient:
             ChatCompletionResponse with generated text
 
         Raises:
-            OllamaOpenAIConnectionError: If unable to connect
-            OllamaOpenAIModelError: If model not found
-            OllamaOpenAIError: For other errors
+            LLMConnectionError: If unable to connect
+            LLMModelError: If model not found
+            LLMError: For other errors
         """
         if stream:
             raise NotImplementedError("Streaming not yet implemented")
@@ -220,7 +221,7 @@ class OllamaOpenAIClient:
                 response = await client.post("/chat/completions", json=payload)
 
                 if response.status_code == 404:
-                    raise OllamaOpenAIModelError(f"Model '{model}' not found")
+                    raise LLMModelError(f"Model '{model}' not found")
 
                 response.raise_for_status()
                 data = response.json()
@@ -245,21 +246,21 @@ class OllamaOpenAIClient:
                 )
 
             except httpx.ConnectError as e:
-                last_error = OllamaOpenAIConnectionError(
-                    f"Cannot connect to Ollama: {e}"
+                last_error = LLMConnectionError(
+                    f"Cannot connect to LLM server: {e}"
                 )
-                logger.warning(f"Ollama connection failed (attempt {attempt + 1})")
+                logger.warning(f"LLM server connection failed (attempt {attempt + 1})")
 
-            except OllamaOpenAIModelError:
+            except LLMModelError:
                 raise  # Don't retry model errors
 
             except httpx.TimeoutException as e:
-                last_error = OllamaOpenAIError(f"Request timed out: {e}")
-                logger.warning(f"Ollama request timed out (attempt {attempt + 1})")
+                last_error = LLMError(f"Request timed out: {e}")
+                logger.warning(f"LLM server request timed out (attempt {attempt + 1})")
 
             except httpx.RequestError as e:
-                last_error = OllamaOpenAIError(f"Request failed: {e}")
-                logger.warning(f"Ollama request failed (attempt {attempt + 1})")
+                last_error = LLMError(f"Request failed: {e}")
+                logger.warning(f"LLM server request failed (attempt {attempt + 1})")
 
             # Wait before retry
             if attempt < self.config.max_retries:
@@ -268,7 +269,7 @@ class OllamaOpenAIClient:
         # All retries exhausted
         if last_error:
             raise last_error
-        raise OllamaOpenAIError("Unknown error occurred")
+        raise LLMError("Unknown error occurred")
 
     async def generate_from_prompt(
         self,
@@ -309,7 +310,7 @@ class OllamaOpenAIClient:
             return response.choices[0].message.content
         return ""
 
-    async def __aenter__(self) -> "OllamaOpenAIClient":
+    async def __aenter__(self) -> "LLMClient":
         """Async context manager entry."""
         return self
 

@@ -23,18 +23,22 @@ from pydantic import BaseModel
 
 from router.cache import EnhancementCache
 from router.config.settings import get_settings
-from router.enhancement.ollama import (
-    OllamaClient,
-    OllamaConfig,
-    OllamaConnectionError,
-    OllamaError,
+from router.enhancement.llm_client import (
+    LLMClient,
+    LLMConfig,
+    LLMConnectionError,
+    LLMError,
 )
-from router.enhancement.ollama_openai import (
-    OllamaOpenAIClient,
-    OllamaOpenAIConnectionError,
-    OllamaOpenAIError,
-    OpenAICompatConfig,
-)
+
+# Backward-compatible aliases for internal use (will be cleaned up in later tasks)
+OllamaClient = LLMClient
+OllamaConfig = LLMConfig
+OllamaConnectionError = LLMConnectionError
+OllamaError = LLMError
+OllamaOpenAIClient = LLMClient
+OllamaOpenAIConnectionError = LLMConnectionError
+OllamaOpenAIError = LLMError
+OpenAICompatConfig = LLMConfig
 from router.enhancement.context_window import TokenBudget
 from router.resilience import (
     CircuitBreaker,
