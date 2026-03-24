@@ -2,7 +2,7 @@
 Documentation Generation Pipeline.
 
 This pipeline chains multiple MCP servers to generate documentation:
-1. Enhance prompt with Ollama (deepseek-r1 for reasoning)
+1. Enhance prompt with LLM server (deepseek-r1 for reasoning)
 2. Structure content with Sequential Thinking
 3. Write to Obsidian vault with Desktop Commander
 """
@@ -55,7 +55,7 @@ class DocumentationPipeline:
         Initialize the documentation pipeline.
 
         Args:
-            enhancement_service: EnhancementService for Ollama calls
+            enhancement_service: EnhancementService for LLM server calls
             supervisor: Supervisor for MCP server bridges
             default_vault_path: Default Obsidian vault path
         """
@@ -90,7 +90,7 @@ class DocumentationPipeline:
             doc_prompt = self._create_doc_prompt(repo_path, project_name)
             logger.info(f"Generating documentation for {project_name}")
 
-            # Step 2: Enhance with Ollama
+            # Step 2: Enhance with LLM server
             enhanced_result = await self._enhancement.enhance(
                 prompt=doc_prompt,
                 client_name="documentation-pipeline",

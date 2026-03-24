@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Model context window registry (tokens)
-# Source: Ollama /api/show -> model_info.<arch>.context_length
+# Source: model metadata (context_length from model manifest)
 # ---------------------------------------------------------------------------
 MODEL_CONTEXT_TOKENS: dict[str, int] = {
     "gemma3:4b":       131_072,

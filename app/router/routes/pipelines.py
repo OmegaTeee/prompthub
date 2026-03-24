@@ -31,7 +31,7 @@ def create_pipelines_router(
 
         This pipeline:
         1. Creates a documentation prompt from the repo path
-        2. Enhances it with Ollama (deepseek-r1)
+        2. Enhances it with LLM server (deepseek-r1)
         3. Optionally structures with Sequential Thinking
         4. Writes to Obsidian vault with Desktop Commander
         """
