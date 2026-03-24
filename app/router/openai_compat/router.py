@@ -3,11 +3,10 @@
 Provides /v1/chat/completions and /v1/models endpoints that desktop apps
 (Cursor, Raycast, Obsidian) can use as a drop-in OpenAI replacement.
 Requests are authenticated via bearer tokens, optionally enhanced,
-and forwarded to Ollama with circuit breaker protection.
+and forwarded to the LLM server with circuit breaker protection.
 """
 
 import logging
-import time
 from typing import Any
 
 import httpx
@@ -16,17 +15,15 @@ from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from router.audit import audit_event
-from router.enhancement.ollama_openai import (
-    OllamaOpenAIClient,
-    OllamaOpenAIConnectionError,
-    OllamaOpenAIError,
-    OpenAICompatConfig,
+from router.enhancement.llm_client import (
+    LLMClient,
+    LLMConfig,
+    LLMConnectionError,
+    LLMError,
 )
 from router.openai_compat.auth import ApiKeyManager
 from router.openai_compat.models import ApiKeyConfig, ChatCompletionRequest
 from collections.abc import Callable
-
-from router.openai_compat.streaming import stream_ollama_response
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +34,8 @@ def create_openai_compat_router(
     enhancement_service: Callable[[], Any],
     circuit_breakers: Callable[[], Any],
     api_key_manager: ApiKeyManager,
-    ollama_base_url: str = "http://localhost:11434/v1",
-    ollama_timeout: float = 120.0,
+    llm_base_url: str = "http://localhost:1234/v1",
+    llm_timeout: float = 120.0,
 ) -> APIRouter:
     """Create the OpenAI-compatible API router with injected dependencies.
 
@@ -49,17 +46,17 @@ def create_openai_compat_router(
         enhancement_service: Callable returning EnhancementService (may return None before startup)
         circuit_breakers: Callable returning CircuitBreakerRegistry (may return None before startup)
         api_key_manager: Manages bearer token validation (loaded at module level)
-        ollama_base_url: Ollama's OpenAI-compat base URL
-        ollama_timeout: Timeout for Ollama requests in seconds
+        llm_base_url: LLM server's OpenAI-compat base URL
+        llm_timeout: Timeout for LLM requests in seconds
 
     Returns:
         Configured APIRouter for /v1/ endpoints
     """
     router = APIRouter(prefix="/v1", tags=["openai-compat"])
 
-    # Shared Ollama client for non-streaming requests
-    _ollama_client = OllamaOpenAIClient(
-        OpenAICompatConfig(base_url=ollama_base_url, timeout=ollama_timeout)
+    # Shared LLM client for non-streaming requests
+    _llm_client = LLMClient(
+        LLMConfig(base_url=llm_base_url, timeout=llm_timeout)
     )
 
     # --- Auth dependency (closure over api_key_manager) ---
@@ -114,14 +111,14 @@ def create_openai_compat_router(
         """OpenAI-compatible chat completion endpoint.
 
         Supports both streaming (SSE) and non-streaming modes.
-        Optionally enhances the last user message before forwarding to Ollama.
+        Optionally enhances the last user message before forwarding to LLM server.
         """
         client_name = api_key.client_name
 
         audit_event(
             event_type="openai_proxy",
             action="chat_completion",
-            resource_type="ollama",
+            resource_type="llm",
             resource_name=body.model,
             status="initiated",
             client_name=client_name,
@@ -132,12 +129,12 @@ def create_openai_compat_router(
         if not body.model or body.model in ("string", "model", "") or " " in body.model:
             raise HTTPException(
                 status_code=422,
-                detail=f"Invalid model name: '{body.model}'. Provide a valid Ollama model (e.g. 'gemma3:4b').",
+                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'gemma3:4b').",
             )
 
         # Circuit breaker check
         cb_registry = circuit_breakers()
-        breaker = cb_registry.get("ollama-proxy") if cb_registry else None
+        breaker = cb_registry.get("llm-proxy") if cb_registry else None
         if breaker:
             try:
                 breaker.check()
@@ -145,7 +142,7 @@ def create_openai_compat_router(
                 audit_event(
                     event_type="openai_proxy",
                     action="chat_completion",
-                    resource_type="ollama",
+                    resource_type="llm",
                     resource_name=body.model,
                     status="failed",
                     error="Circuit breaker open",
@@ -154,7 +151,7 @@ def create_openai_compat_router(
                     status_code=503,
                     detail={
                         "error": {
-                            "message": "Service temporarily unavailable — Ollama circuit breaker open",
+                            "message": "Service temporarily unavailable — LLM circuit breaker open",
                             "type": "server_error",
                         }
                     },
@@ -200,8 +197,7 @@ def create_openai_compat_router(
                     # Enhancement failure is non-fatal — proceed with original
                     logger.warning("Enhancement failed for %s: %s", client_name, e)
 
-        # Build Ollama payload (think:false is applied downstream in
-        # streaming.py and _chat_via_native_api via Ollama's native API)
+        # Build payload for LLM server
         payload: dict[str, Any] = {
             "model": body.model,
             "messages": messages,
@@ -219,7 +215,7 @@ def create_openai_compat_router(
         if body.stream:
             return StreamingResponse(
                 _stream_with_breaker(
-                    ollama_base_url, payload, ollama_timeout, breaker, body.model
+                    payload, breaker, _llm_client, body.model
                 ),
                 media_type="text/event-stream",
                 headers={
@@ -230,31 +226,49 @@ def create_openai_compat_router(
             )
 
         # --- Non-streaming response ---
-        # Route through Ollama's native /api/chat with think:false
-        # (Ollama's /v1/ ignores think:false, wasting tokens on reasoning)
         try:
-            result = await _chat_via_native_api(
-                ollama_base_url, payload, ollama_timeout,
+            response = await _llm_client.chat_completion(
+                model=body.model,
+                messages=messages,
+                temperature=body.temperature,
+                max_tokens=body.max_tokens,
             )
             if breaker:
                 breaker.record_success()
             audit_event(
                 event_type="openai_proxy",
                 action="chat_completion",
-                resource_type="ollama",
+                resource_type="llm",
                 resource_name=body.model,
                 status="success",
                 stream=False,
             )
-            return result
+            return response.model_dump()
 
-        except (OllamaOpenAIConnectionError, OllamaOpenAIError, httpx.HTTPError) as e:
+        except LLMConnectionError as e:
             if breaker:
                 breaker.record_failure(e)
             audit_event(
                 event_type="openai_proxy",
                 action="chat_completion",
-                resource_type="ollama",
+                resource_type="llm",
+                resource_name=body.model,
+                status="failed",
+                error=str(e),
+            )
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "error": {"message": f"Cannot reach LLM server: {e}", "type": "server_error"}
+                },
+            )
+        except (LLMError, httpx.HTTPError) as e:
+            if breaker:
+                breaker.record_failure(e)
+            audit_event(
+                event_type="openai_proxy",
+                action="chat_completion",
+                resource_type="llm",
                 resource_name=body.model,
                 status="failed",
                 error=str(e),
@@ -268,21 +282,21 @@ def create_openai_compat_router(
 
     @router.get("/models")
     async def list_models():
-        """List available Ollama models in OpenAI format.
+        """List available models in OpenAI format.
 
         Unauthenticated — model listing is non-sensitive and clients
         like Raycast call this without a bearer token during provider
         discovery.
         """
         try:
-            models = await _ollama_client.list_models()
+            models = await _llm_client.list_models()
             return {"object": "list", "data": models}
         except Exception as e:
             raise HTTPException(
                 status_code=502,
                 detail={
                     "error": {
-                        "message": f"Cannot reach Ollama: {e}",
+                        "message": f"Cannot reach LLM server: {e}",
                         "type": "server_error",
                     }
                 },
@@ -290,7 +304,7 @@ def create_openai_compat_router(
 
     @router.get("/api/version")
     async def api_version():
-        """Ollama-compatible version endpoint.
+        """Version endpoint for client discovery.
 
         Raycast probes this to verify the provider is alive.
         Returns a minimal version response to prevent 404 errors.
@@ -325,36 +339,42 @@ def _find_last_user_message(messages: list[dict[str, str]]) -> int | None:
 
 
 async def _stream_with_breaker(
-    ollama_base_url: str,
     payload: dict,
-    timeout: float,
     breaker: Any,
+    llm_client: LLMClient,
     model: str,
 ):
-    """Wrap the SSE stream with circuit breaker recording and audit logging."""
+    """Stream chat completion via OpenAI-compat /v1/chat/completions."""
     try:
-        async for chunk in stream_ollama_response(
-            ollama_base_url=ollama_base_url,
-            payload=payload,
-            timeout=timeout,
-        ):
-            yield chunk
-        breaker.record_success()
+        async with httpx.AsyncClient(timeout=httpx.Timeout(llm_client.config.timeout)) as client:
+            async with client.stream(
+                "POST",
+                f"{llm_client.config.base_url}/chat/completions",
+                json=payload,
+                headers=llm_client.config.extra_headers or {},
+            ) as response:
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if line.strip():
+                        yield f"{line}\n\n"
+        if breaker:
+            breaker.record_success()
         audit_event(
             event_type="openai_proxy",
             action="chat_completion",
-            resource_type="ollama",
+            resource_type="llm",
             resource_name=model,
             status="success",
             stream=True,
         )
     except Exception as e:
-        breaker.record_failure(e)
+        if breaker:
+            breaker.record_failure(e)
         logger.error("Streaming error for model=%s: %s", model, e)
         audit_event(
             event_type="openai_proxy",
             action="chat_completion",
-            resource_type="ollama",
+            resource_type="llm",
             resource_name=model,
             status="failed",
             error=str(e),
@@ -362,70 +382,3 @@ async def _stream_with_breaker(
         error_msg = str(e).replace('"', '\\"')
         yield f'data: {{"error": {{"message": "{error_msg}"}}}}\n\n'
         yield "data: [DONE]\n\n"
-
-
-async def _chat_via_native_api(
-    ollama_v1_url: str,
-    payload: dict,
-    timeout: float,
-) -> dict:
-    """Non-streaming chat via Ollama's native /api/chat (supports think:false).
-
-    Translates the OpenAI-format payload to Ollama native format,
-    calls /api/chat, and returns an OpenAI-compatible response dict.
-    """
-    from router.openai_compat.streaming import _ollama_base_from_v1
-
-    base = _ollama_base_from_v1(ollama_v1_url)
-    url = f"{base}/api/chat"
-
-    native_payload: dict = {
-        "model": payload.get("model", ""),
-        "messages": payload.get("messages", []),
-        "stream": False,
-        "think": False,
-    }
-    options: dict = {}
-    if payload.get("temperature") is not None:
-        options["temperature"] = payload["temperature"]
-    if payload.get("top_p") is not None:
-        options["top_p"] = payload["top_p"]
-    if payload.get("max_tokens") is not None:
-        options["num_predict"] = payload["max_tokens"]
-    if payload.get("stop") is not None:
-        options["stop"] = payload["stop"]
-    if options:
-        native_payload["options"] = options
-
-    async with httpx.AsyncClient(timeout=httpx.Timeout(timeout)) as client:
-        resp = await client.post(url, json=native_payload)
-        resp.raise_for_status()
-        data = resp.json()
-
-    msg = data.get("message", {})
-    model = data.get("model", payload.get("model", ""))
-    prompt_tokens = data.get("prompt_eval_count", 0)
-    completion_tokens = data.get("eval_count", 0)
-    reason = data.get("done_reason", "stop")
-
-    return {
-        "id": f"chatcmpl-{int(time.time())}",
-        "object": "chat.completion",
-        "created": int(time.time()),
-        "model": model,
-        "choices": [
-            {
-                "index": 0,
-                "message": {
-                    "role": msg.get("role", "assistant"),
-                    "content": msg.get("content", ""),
-                },
-                "finish_reason": "length" if reason == "length" else "stop",
-            }
-        ],
-        "usage": {
-            "prompt_tokens": prompt_tokens,
-            "completion_tokens": completion_tokens,
-            "total_tokens": prompt_tokens + completion_tokens,
-        },
-    }

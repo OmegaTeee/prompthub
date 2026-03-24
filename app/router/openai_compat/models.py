@@ -7,7 +7,7 @@ class ChatCompletionRequest(BaseModel):
     """OpenAI chat completion request body.
 
     Accepts the standard OpenAI fields. Extra fields are ignored by Pydantic.
-    Response models are reused from router.enhancement.ollama_openai.
+    Response models are reused from router.enhancement.llm_client.
     """
 
     model: str
