@@ -3,10 +3,10 @@ Prompt Enhancement Service.
 
 This service orchestrates prompt enhancement by:
 1. Checking cache for previously enhanced prompts
-2. Checking circuit breaker state for Ollama
-3. Calling Ollama for enhancement
+2. Checking circuit breaker state for LLM server
+3. Calling LLM server for enhancement
 4. Caching results
-5. Gracefully degrading when Ollama is unavailable
+5. Gracefully degrading when LLM server is unavailable
 
 The service provides resilient prompt enhancement with automatic
 failover to returning the original prompt if enhancement fails.
@@ -29,16 +29,6 @@ from router.enhancement.llm_client import (
     LLMConnectionError,
     LLMError,
 )
-
-# Backward-compatible aliases for internal use (will be cleaned up in later tasks)
-OllamaClient = LLMClient
-OllamaConfig = LLMConfig
-OllamaConnectionError = LLMConnectionError
-OllamaError = LLMError
-OllamaOpenAIClient = LLMClient
-OllamaOpenAIConnectionError = LLMConnectionError
-OllamaOpenAIError = LLMError
-OpenAICompatConfig = LLMConfig
 from router.enhancement.context_window import TokenBudget
 from router.resilience import (
     CircuitBreaker,
@@ -104,7 +94,7 @@ class EnhancementResult(BaseModel):
     enhanced_by_llm: bool = False
     error: str | None = None
     privacy_level: PrivacyLevel = PrivacyLevel.LOCAL_ONLY
-    provider: str | None = None  # "ollama" or "openrouter"
+    provider: str | None = None  # "llm" or "openrouter"
 
     @property
     def was_enhanced(self) -> bool:
@@ -114,11 +104,11 @@ class EnhancementResult(BaseModel):
 
 class EnhancementService:
     """
-    Service for enhancing prompts via Ollama.
+    Service for enhancing prompts via LLM server.
 
     Provides resilient prompt enhancement with:
     - L1 cache for repeated prompts
-    - Circuit breaker for Ollama failures
+    - Circuit breaker for LLM failures
     - Graceful degradation to original prompt
     - Per-client enhancement rules
 
@@ -133,13 +123,12 @@ class EnhancementService:
         print(result.enhanced)
     """
 
-    # Type annotation for client that can be either API type
-    _ollama: OllamaClient | OllamaOpenAIClient
+    _llm: LLMClient
 
     def __init__(
         self,
         rules_path: str | Path | None = None,
-        ollama_config: OllamaConfig | None = None,
+        llm_config: LLMConfig | None = None,
         cache_max_size: int = 500,
         cache_ttl: float = 7200.0,
         cache_persistent: bool = True,
@@ -156,7 +145,7 @@ class EnhancementService:
 
         Args:
             rules_path: Path to enhancement-rules.json
-            ollama_config: Ollama client configuration
+            llm_config: LLM client configuration
             cache_max_size: Maximum cache entries
             cache_ttl: Cache entry TTL in seconds
             cache_persistent: Use SQLite-backed persistent cache
@@ -166,35 +155,33 @@ class EnhancementService:
             openrouter_base_url: OpenRouter API base URL
             openrouter_timeout: Timeout for OpenRouter requests
             openrouter_default_model: Default cloud model when no mapping exists
-            cloud_models_path: Path to cloud-models.json for local→cloud mapping
+            cloud_models_path: Path to cloud-models.json for local->cloud mapping
         """
         self.rules_path = Path(rules_path) if rules_path else None
         self._rules: dict[str, EnhancementRule] = {}
         self._default_rule = EnhancementRule()
 
-        # Determine which Ollama API to use
         settings = get_settings()
 
         # Resolve cache_db_path from settings (single source of truth)
         if not cache_db_path:
             cache_db_path = settings.cache_db_path
-        self._api_mode = settings.ollama_api_mode
 
-        # Components - instantiate appropriate Ollama client
-        if self._api_mode == "openai":
-            # Use OpenAI-compatible API
-            openai_config = OpenAICompatConfig(
-                base_url=ollama_config.base_url.rstrip("/api") + "/v1" if ollama_config else "http://localhost:11434/v1",
-                timeout=ollama_config.timeout if ollama_config else 30.0,
-                max_retries=ollama_config.max_retries if ollama_config else 2,
-                retry_delay=ollama_config.retry_delay if ollama_config else 1.0,
+        # Single LLM client — always OpenAI-compatible
+        if llm_config:
+            config = LLMConfig(
+                base_url=llm_config.base_url,
+                timeout=llm_config.timeout,
+                max_retries=llm_config.max_retries if hasattr(llm_config, 'max_retries') else 2,
+                retry_delay=llm_config.retry_delay if hasattr(llm_config, 'retry_delay') else 1.0,
             )
-            self._ollama = OllamaOpenAIClient(openai_config)
-            logger.info("Using OpenAI-compatible Ollama API")
         else:
-            # Use native Ollama API (default)
-            self._ollama = OllamaClient(ollama_config)
-            logger.info("Using native Ollama API")
+            config = LLMConfig(
+                base_url=f"http://{settings.llm_host}:{settings.llm_port}/v1",
+                timeout=float(settings.llm_timeout),
+            )
+        self._llm = LLMClient(config)
+        logger.info("LLM client initialized at %s", config.base_url)
 
         if cache_persistent:
             from router.cache.persistent_enhancement import (
@@ -211,7 +198,7 @@ class EnhancementService:
             )
 
         self._circuit_breaker = CircuitBreaker(
-            "ollama",
+            "llm",
             CircuitBreakerConfig(
                 failure_threshold=3,
                 recovery_timeout=30.0,
@@ -220,19 +207,19 @@ class EnhancementService:
         )
 
         # Cloud fallback (OpenRouter)
-        self._cloud_client: OllamaOpenAIClient | None = None
+        self._cloud_client: LLMClient | None = None
         self._default_cloud_model = openrouter_default_model
         self._cloud_model_map: dict[str, str] = {}
 
         if openrouter_enabled and openrouter_api_key:
-            cloud_config = OpenAICompatConfig(
+            cloud_config = LLMConfig(
                 base_url=openrouter_base_url,
                 timeout=openrouter_timeout,
                 max_retries=1,
                 retry_delay=0.5,
                 extra_headers={"Authorization": f"Bearer {openrouter_api_key}"},
             )
-            self._cloud_client = OllamaOpenAIClient(cloud_config)
+            self._cloud_client = LLMClient(cloud_config)
             logger.info("OpenRouter cloud fallback enabled")
         elif openrouter_enabled:
             logger.warning("OpenRouter enabled but no API key provided")
@@ -258,7 +245,7 @@ class EnhancementService:
         """
         Initialize the service.
 
-        Loads enhancement rules and checks Ollama health.
+        Loads enhancement rules and checks LLM server health.
         """
         # Load rules (now async to avoid blocking event loop on file I/O)
         if self.rules_path and self.rules_path.exists():
@@ -270,11 +257,11 @@ class EnhancementService:
         if hasattr(self._cache, "initialize"):
             await self._cache.initialize()
 
-        # Check Ollama health
-        if await self._ollama.is_healthy():
-            logger.info("Ollama is healthy")
+        # Check LLM server health
+        if await self._llm.is_healthy():
+            logger.info("LLM server is healthy")
         else:
-            logger.warning("Ollama is not available, enhancement will be degraded")
+            logger.warning("LLM server is not available, enhancement will be degraded")
 
         self._initialized = True
 
@@ -328,7 +315,7 @@ class EnhancementService:
 
     @staticmethod
     def _load_cloud_model_map(path: Path) -> dict[str, str]:
-        """Load local→cloud model mapping from cloud-models.json.
+        """Load local->cloud model mapping from cloud-models.json.
 
         Builds a dict like {"llama3.2:latest": "meta-llama/llama-3.3-70b-instruct:free"}
         using the cloud_upgrade field from local_models, with :free suffix.
@@ -367,9 +354,9 @@ class EnhancementService:
         rule: EnhancementRule,
         effective_privacy: PrivacyLevel,
         client_name: str | None,
-        ollama_error: str,
+        llm_error: str,
     ) -> EnhancementResult:
-        """Attempt cloud enhancement when Ollama fails.
+        """Attempt cloud enhancement when LLM server fails.
 
         Only proceeds if privacy level permits cloud processing
         and the cloud client is available and healthy.
@@ -378,14 +365,14 @@ class EnhancementService:
         if effective_privacy == PrivacyLevel.LOCAL_ONLY:
             return EnhancementResult(
                 original=prompt, enhanced=prompt,
-                error=ollama_error, privacy_level=effective_privacy,
+                error=llm_error, privacy_level=effective_privacy,
             )
 
         # Gate: cloud client must exist
         if not self._cloud_client:
             return EnhancementResult(
                 original=prompt, enhanced=prompt,
-                error=ollama_error, privacy_level=effective_privacy,
+                error=llm_error, privacy_level=effective_privacy,
             )
 
         # Gate: cloud circuit breaker
@@ -394,11 +381,11 @@ class EnhancementService:
         except CircuitBreakerError as e:
             return EnhancementResult(
                 original=prompt, enhanced=prompt,
-                error=f"{ollama_error}; cloud breaker open ({e.retry_after:.0f}s)",
+                error=f"{llm_error}; cloud breaker open ({e.retry_after:.0f}s)",
                 privacy_level=effective_privacy,
             )
 
-        # Map local model → cloud model
+        # Map local model -> cloud model
         cloud_model = self._cloud_model_map.get(
             rule.model, self._default_cloud_model,
         )
@@ -434,7 +421,7 @@ class EnhancementService:
             logger.warning(f"Cloud fallback failed: {e}")
             return EnhancementResult(
                 original=prompt, enhanced=prompt,
-                error=f"{ollama_error}; cloud fallback failed: {e}",
+                error=f"{llm_error}; cloud fallback failed: {e}",
                 privacy_level=effective_privacy,
             )
 
@@ -446,13 +433,13 @@ class EnhancementService:
         privacy_override: PrivacyLevel | None = None,
     ) -> EnhancementResult:
         """
-        Enhance a prompt using Ollama.
+        Enhance a prompt using LLM server.
 
         This method:
         1. Checks if enhancement is enabled for the client
         2. Checks cache for previously enhanced prompt
         3. Checks circuit breaker state
-        4. Calls Ollama for enhancement
+        4. Calls LLM server for enhancement
         5. Caches the result
         6. Returns original prompt if any step fails
 
@@ -506,7 +493,7 @@ class EnhancementService:
             logger.warning(f"Circuit breaker open: {e}")
             return await self._try_cloud_fallback(
                 prompt, rule, effective_privacy, client_name,
-                f"Ollama circuit breaker open, retry in {e.retry_after:.0f}s",
+                f"LLM circuit breaker open, retry in {e.retry_after:.0f}s",
             )
 
         # Apply token budget — truncate if prompt exceeds what the model needs
@@ -522,28 +509,15 @@ class EnhancementService:
                 rule.model, budget.available_for_input, client_name,
             )
 
-        # Call Ollama
+        # Call LLM server
         try:
-            # Call appropriate API based on mode
-            if isinstance(self._ollama, OllamaOpenAIClient):
-                # OpenAI-compatible API - use chat completion format
-                enhanced = await self._ollama.generate_from_prompt(
-                    model=rule.model,
-                    prompt=prompt,
-                    system=rule.system_prompt,
-                    temperature=rule.temperature,
-                    max_tokens=rule.max_tokens,
-                )
-            else:
-                # Native API - use generate endpoint
-                response = await self._ollama.generate(
-                    model=rule.model,
-                    prompt=prompt,
-                    system=rule.system_prompt,
-                    temperature=rule.temperature,
-                    max_tokens=rule.max_tokens,
-                )
-                enhanced = response.response.strip()
+            enhanced = await self._llm.generate_from_prompt(
+                model=rule.model,
+                prompt=prompt,
+                system=rule.system_prompt,
+                temperature=rule.temperature,
+                max_tokens=rule.max_tokens,
+            )
 
             # Record success
             self._circuit_breaker.record_success()
@@ -556,26 +530,26 @@ class EnhancementService:
                 model=rule.model,
             )
 
-            logger.debug(f"Enhanced prompt with {rule.model} (API: {self._api_mode})")
+            logger.debug("Enhanced prompt with %s", rule.model)
             return EnhancementResult(
                 original=prompt,
                 enhanced=enhanced,
                 model=rule.model,
                 enhanced_by_llm=True,
                 privacy_level=effective_privacy,
-                provider="ollama",
+                provider="llm",
             )
 
-        except (OllamaConnectionError, OllamaOpenAIConnectionError) as e:
+        except LLMConnectionError as e:
             self._circuit_breaker.record_failure(e)
-            logger.warning(f"Ollama connection failed: {e}")
+            logger.warning("LLM connection failed: %s", e)
             return await self._try_cloud_fallback(
                 prompt, rule, effective_privacy, client_name, str(e),
             )
 
-        except (OllamaError, OllamaOpenAIError) as e:
+        except LLMError as e:
             self._circuit_breaker.record_failure(e)
-            logger.error(f"Ollama error: {e}")
+            logger.error("LLM error: %s", e)
             return await self._try_cloud_fallback(
                 prompt, rule, effective_privacy, client_name, str(e),
             )
@@ -597,7 +571,7 @@ class EnhancementService:
         stats: dict[str, Any] = {
             "cache": self._cache.stats().model_dump(),
             "circuit_breaker": self._circuit_breaker.stats.model_dump(),
-            "ollama_healthy": await self._ollama.is_healthy(),
+            "llm_healthy": await self._llm.is_healthy(),
         }
         if self._cloud_client:
             stats["cloud_circuit_breaker"] = (
@@ -608,9 +582,9 @@ class EnhancementService:
         return stats
 
     async def reset_circuit_breaker(self) -> None:
-        """Reset the Ollama circuit breaker."""
+        """Reset the LLM circuit breaker."""
         self._circuit_breaker.reset()
-        logger.info("Ollama circuit breaker reset")
+        logger.info("LLM circuit breaker reset")
 
     async def clear_cache(self) -> None:
         """Clear the enhancement cache."""
@@ -619,7 +593,7 @@ class EnhancementService:
 
     async def close(self) -> None:
         """Clean up resources."""
-        await self._ollama.close()
+        await self._llm.close()
         if self._cloud_client:
             await self._cloud_client.close()
         if hasattr(self._cache, "close"):
