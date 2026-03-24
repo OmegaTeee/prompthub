@@ -7,7 +7,7 @@ PromptHub is a **local-first AI gateway for macOS** — a single router (`localh
 ## Value Proposition
 
 - **Configure once, use everywhere** — MCP servers are managed centrally; clients (Claude Desktop, VS Code, Cursor, Raycast, Obsidian) all connect to one router
-- **Invisible enhancement** — Prompts are automatically improved via Ollama using per-client models before reaching the AI service
+- **Invisible enhancement** — Prompts are automatically improved via a local LLM server using per-client models before reaching the AI service
 - **Resilience built-in** — Circuit breakers, auto-restart, caching prevent cascading failures
 - **Observable** — Dashboard, audit logging, security alerts give full visibility into what's happening
 
@@ -20,7 +20,7 @@ macOS power users who work across multiple AI-powered editors and tools and want
 | Feature | Description |
 |---------|-------------|
 | MCP server management | Spawn, monitor, auto-restart stdio MCP servers from a central registry |
-| Per-client enhancement | Ollama model routing: Claude Desktop → deepseek-r1, VS Code → qwen2.5-coder, etc. |
+| Per-client enhancement | LLM model routing: Claude Desktop → deepseek-r1, VS Code → qwen2.5-coder, etc. |
 | OpenAI-compatible proxy | `/v1/chat/completions` endpoint for desktop apps (Cursor, Raycast, Obsidian) |
 | Circuit breakers | 3 failures → OPEN → 30s → HALF_OPEN → recovery; per-server isolation |
 | Response caching | SHA256-keyed L1 in-memory LRU cache for enhanced prompts |
@@ -44,7 +44,7 @@ User-facing documentation (guides, quickstarts, troubleshooting) is written at a
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phase 2 | Complete | Core router, caching, circuit breakers, Ollama enhancement |
+| Phase 2 | Complete | Core router, caching, circuit breakers, LLM enhancement |
 | Phase 2.5 | Complete | MCP server management, stdio bridges |
 | Phase 3 | Complete | Desktop integration, config generators, documentation pipeline |
 | Phase 4 | Complete | HTMX dashboard with real-time monitoring |
@@ -60,13 +60,13 @@ User-facing documentation (guides, quickstarts, troubleshooting) is written at a
 
 ### OpenAI Proxy (`POST /v1/chat/completions`)
 1. Bearer token validation → resolve `client_name`
-2. Circuit breaker check (`ollama-proxy`)
+2. Circuit breaker check (`llm-proxy`)
 3. Enhancement: last user message enhanced via EnhancementService (if `enhance: true`)
-4. Forward to Ollama (`localhost:11434/v1/chat/completions`)
+4. Forward to LLM server (`localhost:1234/v1/chat/completions`)
 5. Stream SSE or return JSON → back to desktop app
 
-### Direct Enhancement (`POST /ollama/enhance`)
-1. X-Client-Name header determines Ollama model
+### Direct Enhancement (`POST /llm/enhance`)
+1. X-Client-Name header determines LLM model
 2. Cache check (SHA256 of prompt)
-3. Ollama request with per-client system prompt
+3. LLM server request with per-client system prompt
 4. Cache result and return

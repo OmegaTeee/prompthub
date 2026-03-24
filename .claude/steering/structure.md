@@ -16,7 +16,7 @@ prompthub/
 │   │   ├── clients/              # Config generators (Claude, VS Code, Raycast)
 │   │   ├── config/               # Pydantic Settings, JSON config loading
 │   │   ├── dashboard/            # HTMX monitoring UI (factory router)
-│   │   ├── enhancement/          # Ollama HTTP clients, per-client rules, cloud fallback (OpenRouter)
+│   │   ├── enhancement/          # LLM HTTP client (OpenAI-compat), per-client rules, cloud fallback (OpenRouter)
 │   │   ├── orchestrator/         # Pre-enhancement intent classifier (qwen3:14b)
 │   │   ├── middleware/            # Audit context, activity logging
 │   │   ├── memory/               # Session memory (SQLite-backed facts, blocks, MCP sync)
@@ -73,8 +73,8 @@ prompthub/
 | `servers/` | MCP server lifecycle (spawn, bridge, registry, supervisor) | config/ |
 | `resilience/` | Circuit breaker state machine | — |
 | `cache/` | LRU cache with hit/miss tracking | — |
-| `enhancement/` | Ollama clients, per-client model routing | cache/, resilience/ |
-| `orchestrator/` | Intent classification, prompt annotation, tool suggestion | enhancement/ (OllamaClient), resilience/ |
+| `enhancement/` | LLM client, per-client model routing | cache/, resilience/ |
+| `orchestrator/` | Intent classification, prompt annotation, tool suggestion | enhancement/ (LLMClient), resilience/ |
 | `openai_compat/` | Bearer auth, SSE streaming, /v1 endpoints | enhancement/, resilience/ |
 | `dashboard/` | HTMX templates, real-time partials | servers/, cache/, enhancement/ |
 | `middleware/` | Audit context propagation, activity logging | — |

@@ -75,7 +75,7 @@ def create_dashboard_router(
     return router
 ```
 
-### Ollama Model Roles
+### LLM Model Roles
 
 | Role | Model | Purpose |
 |------|-------|---------|

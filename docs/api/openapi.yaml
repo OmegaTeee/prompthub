@@ -8,7 +8,7 @@ info:
     ## Features
     - MCP server lifecycle management (install, start, stop, monitor)
     - Unified MCP server access via JSON-RPC proxy
-    - Prompt enhancement via Ollama with per-client routing
+    - Prompt enhancement via local LLM server with per-client routing
     - Response caching (L1 in-memory; L2 semantic planned)
     - Circuit breaker resilience patterns
     - Real-time monitoring dashboard
@@ -33,7 +33,7 @@ tags:
   - name: MCP Proxy
     description: JSON-RPC proxy to MCP servers
   - name: Enhancement
-    description: Prompt enhancement via Ollama
+    description: Prompt enhancement via local LLM server
   - name: OpenAI Proxy
     description: OpenAI-compatible API for desktop apps (Cursor, Raycast, Obsidian)
   - name: Circuit Breakers
@@ -49,7 +49,7 @@ paths:
   /health:
     get:
       summary: System health check
-      description: Returns status of all services including router, Ollama, cache, and MCP servers
+      description: Returns status of all services including router, LLM server, cache, and MCP servers
       operationId: healthCheck
       tags:
         - Health
@@ -64,7 +64,7 @@ paths:
                 status: healthy
                 services:
                   router: up
-                  ollama: up
+                  llm_server: up
                   cache:
                     status: up
                     hit_rate: 0.82
@@ -366,11 +366,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/JsonRpcError'
 
-  /ollama/enhance:
+  /llm/enhance:
     post:
       summary: Enhance prompt
       description: |
-        Enhance a prompt using Ollama. Model selection is based on the X-Client-Name header:
+        Enhance a prompt using the local LLM server. Model selection is based on the X-Client-Name header:
         - `claude-desktop`: deepseek-r1 for structured reasoning
         - `vscode`: qwen2.5-coder for code-focused responses
         - `raycast`: deepseek-r1 for action-oriented responses
@@ -407,10 +407,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /ollama/stats:
+  /llm/stats:
     get:
       summary: Enhancement statistics
-      description: Get cache stats, hit rates, and Ollama health
+      description: Get cache stats, hit rates, and LLM server health
       operationId: enhancementStats
       tags:
         - Enhancement
@@ -434,7 +434,7 @@ paths:
                       hit_rate:
                         type: number
                         format: float
-                  ollama_healthy:
+                  llm_healthy:
                     type: boolean
 
   /circuit-breakers:
@@ -520,7 +520,7 @@ paths:
       description: |
         OpenAI-compatible chat completion endpoint for desktop apps. Authenticates via
         bearer token, optionally enhances the last user message using the per-client
-        enhancement pipeline, and forwards to Ollama. Supports both streaming (SSE)
+        enhancement pipeline, and forwards to the LLM server. Supports both streaming (SSE)
         and non-streaming responses.
 
         Enhancement behavior is controlled by the API key config:
@@ -570,26 +570,26 @@ paths:
                   message: "Invalid API key"
                   type: "invalid_request_error"
         '502':
-          description: Ollama unreachable or returned an error
+          description: LLM server unreachable or returned an error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpenAIError'
         '503':
-          description: Circuit breaker open (Ollama temporarily unavailable)
+          description: Circuit breaker open (LLM server temporarily unavailable)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpenAIError'
               example:
                 error:
-                  message: "Service temporarily unavailable — Ollama circuit breaker open"
+                  message: "Service temporarily unavailable — LLM server circuit breaker open"
                   type: "server_error"
 
   /v1/models:
     get:
       summary: List available models
-      description: Returns available Ollama models in OpenAI-compatible format.
+      description: Returns available local models in OpenAI-compatible format.
       operationId: listModels
       tags:
         - OpenAI Proxy
@@ -620,7 +620,7 @@ paths:
         '401':
           description: Missing or invalid bearer token
         '502':
-          description: Cannot reach Ollama
+          description: Cannot reach LLM server
 
   /v1/api-keys/reload:
     post:
@@ -644,7 +644,7 @@ paths:
                     type: integer
                     example: 5
 
-  /ollama/reset:
+  /llm/reset:
     post:
       summary: Reset enhancement service
       description: Reset the enhancement service cache and statistics
@@ -874,7 +874,7 @@ paths:
     post:
       summary: Generate documentation
       description: |
-        Multi-step documentation pipeline that enhances a prompt with Ollama,
+        Multi-step documentation pipeline that enhances a prompt with the LLM server,
         structures output via Sequential Thinking MCP server, and writes to
         the Obsidian vault using Desktop Commander.
       operationId: generateDocumentation
@@ -939,7 +939,7 @@ components:
           properties:
             router:
               type: string
-            ollama:
+            llm_server:
               type: string
             cache:
               type: object
@@ -1214,7 +1214,7 @@ components:
       properties:
         model:
           type: string
-          description: Ollama model name
+          description: LLM model name
           example: "llama3.2:latest"
         messages:
           type: array
