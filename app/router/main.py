@@ -4,7 +4,7 @@ PromptHub Router - Main FastAPI Application
 A centralized MCP router that provides:
 - MCP server lifecycle management (install, start, stop, monitor)
 - Unified MCP server access
-- Prompt enhancement via Ollama
+- Prompt enhancement via local LLM server
 - Response caching (L1 memory, L2 semantic)
 - Circuit breaker resilience
 """
@@ -23,7 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from router.audit import audit_admin_action, setup_audit_logging
 from router.config import get_settings
 from router.dashboard import create_dashboard_router
-from router.enhancement import EnhancementService, OllamaConfig
+from router.enhancement import EnhancementService, LLMConfig
 from router.memory import MemoryMCPClient, create_memory_router, get_session_storage
 from router.middleware import (
     ActivityLoggingMiddleware,
@@ -179,14 +179,14 @@ async def lifespan(app: FastAPI):
     # Initialize circuit breaker registry
     circuit_breakers = CircuitBreakerRegistry()
 
-    # Initialize enhancement service with Ollama config from .env
-    ollama_config = OllamaConfig(
-        base_url=f"http://{settings.ollama_host}:{settings.ollama_port}",
-        timeout=float(settings.ollama_timeout),
+    # Initialize enhancement service with LLM config from .env
+    llm_config = LLMConfig(
+        base_url=f"http://{settings.llm_host}:{settings.llm_port}/v1",
+        timeout=float(settings.llm_timeout),
     )
     enhancement_service = EnhancementService(
         rules_path=settings.enhancement_rules_config,
-        ollama_config=ollama_config,
+        llm_config=llm_config,
         cache_max_size=500,
         cache_ttl=7200.0,
         cache_persistent=settings.cache_persistent,
@@ -207,8 +207,8 @@ async def lifespan(app: FastAPI):
     )
 
     # Initialize orchestrator agent (qwen3:14b)
-    # Uses same Ollama instance as enhancement — separate CircuitBreaker
-    orchestrator_agent = get_orchestrator_agent(ollama_config)
+    # Uses same LLM server as enhancement — separate CircuitBreaker
+    orchestrator_agent = get_orchestrator_agent(llm_config)
     await orchestrator_agent.initialize()
     logger.info(f"Orchestrator agent initialized (model: qwen3:14b)")
 
@@ -399,20 +399,20 @@ _openai_api_key_manager = ApiKeyManager(config_path=_openai_settings.api_keys_co
 _openai_api_key_manager.load()
 
 
-async def _get_ollama_info():
-    """Get Ollama models and API client summary for dashboard."""
+async def _get_llm_info():
+    """Get LLM server models and API client summary for dashboard."""
     import httpx
 
     models = []
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.get(
-                f"http://{_openai_settings.ollama_host}:{_openai_settings.ollama_port}/v1/models"
+                f"http://{_openai_settings.llm_host}:{_openai_settings.llm_port}/v1/models"
             )
             if resp.status_code == 200:
                 models = resp.json().get("data", [])
     except Exception:
-        pass  # Ollama unreachable — models will be empty
+        pass  # LLM server unreachable — models will be empty
 
     api_keys = [
         {"client_name": cfg.client_name, "enhance": cfg.enhance, "description": cfg.description}
@@ -520,7 +520,7 @@ dashboard_router = create_dashboard_router(
     start_server=_start_server,
     stop_server=_stop_server,
     get_circuit_breakers=_get_circuit_breakers,
-    get_ollama_info=_get_ollama_info,
+    get_llm_info=_get_llm_info,
     reload_api_keys=_reload_api_keys,
     get_memory_info=_get_memory_info,
     get_tool_registry_info=_get_tool_registry_info,
@@ -533,8 +533,8 @@ openai_compat_router = create_openai_compat_router(
     enhancement_service=lambda: enhancement_service,
     circuit_breakers=lambda: circuit_breakers,
     api_key_manager=_openai_api_key_manager,
-    ollama_base_url=f"http://{_openai_settings.ollama_host}:{_openai_settings.ollama_port}/v1",
-    ollama_timeout=float(_openai_settings.ollama_timeout),
+    llm_base_url=f"http://{_openai_settings.llm_host}:{_openai_settings.llm_port}/v1",
+    llm_timeout=float(_openai_settings.llm_timeout),
 )
 app.include_router(openai_compat_router)
 

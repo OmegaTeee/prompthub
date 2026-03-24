@@ -39,7 +39,7 @@ def create_dashboard_router(
     start_server: Callable[[str], Any],
     stop_server: Callable[[str], Any],
     get_circuit_breakers: Callable[[], dict[str, Any]],
-    get_ollama_info: Callable[[], Any] | None = None,
+    get_llm_info: Callable[[], Any] | None = None,
     reload_api_keys: Callable[[], Any] | None = None,
     get_memory_info: Callable[[], Any] | None = None,
     get_tool_registry_info: Callable[[], Any] | None = None,
@@ -57,7 +57,7 @@ def create_dashboard_router(
         start_server: Function to start a server by name
         stop_server: Function to stop a server by name
         get_circuit_breakers: Function to get circuit breaker states
-        get_ollama_info: Function to get Ollama models and API keys summary
+        get_llm_info: Function to get LLM server models and API keys summary
         reload_api_keys: Function to reload API keys from config
         get_memory_info: Function to get session memory stats
         get_tool_registry_info: Function to get tool registry stats
@@ -146,7 +146,7 @@ def create_dashboard_router(
                     "total_cached": cache_stats.get("size", 0),
                     "max_size": cache_stats.get("max_size", 0),
                 },
-                "ollama_healthy": stats.get("ollama_healthy", False),
+                "llm_healthy": stats.get("llm_healthy", False),
                 "circuit_breaker": circuit_breaker,
             },
         )
@@ -395,16 +395,16 @@ def create_dashboard_router(
                 content={"status": "error", "message": str(e)}
             )
 
-    @router.get("/ollama-partial", response_class=HTMLResponse)
-    async def ollama_partial(request: Request):
-        """HTMX partial: Ollama models and API clients."""
-        if not get_ollama_info:
-            return HTMLResponse("<p class='text-muted'>Ollama panel not configured</p>")
+    @router.get("/llm-partial", response_class=HTMLResponse)
+    async def llm_partial(request: Request):
+        """HTMX partial: LLM server models and API clients."""
+        if not get_llm_info:
+            return HTMLResponse("<p class='text-muted'>LLM panel not configured</p>")
 
-        info = await get_ollama_info()
+        info = await get_llm_info()
         return templates.TemplateResponse(
             request,
-            "partials/ollama.html",
+            "partials/llm-models.html",
             {
                 "models": info.get("models", []),
                 "api_keys": info.get("api_keys", []),
