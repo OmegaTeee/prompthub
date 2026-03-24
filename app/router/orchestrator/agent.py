@@ -13,6 +13,7 @@ Flow:
         → downstream client
 
 Fail-safe: any error or timeout returns the original prompt unchanged.
+Supports any OpenAI-compatible LLM server (Ollama, LM Studio, etc.).
 """
 
 import asyncio
@@ -23,7 +24,7 @@ import time
 from collections import OrderedDict
 from hashlib import sha256
 
-from router.enhancement.ollama import OllamaClient, OllamaConfig
+from router.enhancement.llm_client import LLMClient, LLMConfig
 from router.orchestrator.intent import (
     INTENT_SERVER_MAP,
     IntentCategory,
@@ -85,9 +86,9 @@ class OrchestratorAgent:
         result = await agent.process(prompt, client_name="vscode")
     """
 
-    def __init__(self, ollama_config: OllamaConfig | None = None):
-        self._config = ollama_config or OllamaConfig()
-        self._client = OllamaClient(self._config)
+    def __init__(self, llm_config: LLMConfig | None = None):
+        self._config = llm_config or LLMConfig()
+        self._client = LLMClient(self._config)
         self._breaker = CircuitBreaker(
             name="orchestrator",
             config=CircuitBreakerConfig(
@@ -109,13 +110,13 @@ class OrchestratorAgent:
             has_model = await self._client.has_model(MODEL)
             if not has_model:
                 logger.warning(
-                    f"Orchestrator model '{MODEL}' not found in Ollama. "
-                    f"Pull with: ollama pull {MODEL}. "
+                    f"Orchestrator model '{MODEL}' not found on LLM server. "
+                    f"Load it in LM Studio or your model server. "
                     f"Orchestrator will pass-through until model is available."
                 )
                 self._healthy = False
         else:
-            logger.warning("Ollama unavailable — orchestrator disabled until Ollama starts.")
+            logger.warning("LLM server unavailable — orchestrator disabled until server starts.")
 
     async def close(self) -> None:
         await self._client.close()
@@ -144,11 +145,11 @@ class OrchestratorAgent:
             # Re-probe with cooldown to avoid flooding Ollama when it's down
             now = time.monotonic()
             if now - self._last_probe_time < HEALTH_PROBE_COOLDOWN:
-                return OrchestratorResult.pass_through(prompt, "Ollama unavailable")
+                return OrchestratorResult.pass_through(prompt, "LLM server unavailable")
             self._last_probe_time = now
             self._healthy = await self._client.is_healthy()
             if not self._healthy:
-                return OrchestratorResult.pass_through(prompt, "Ollama unavailable")
+                return OrchestratorResult.pass_through(prompt, "LLM server unavailable")
 
         # Cache check
         key = _cache_key(prompt, client_name)
@@ -209,10 +210,12 @@ class OrchestratorAgent:
             raise
 
         try:
-            response = await self._client.generate(
+            response = await self._client.chat_completion(
                 model=MODEL,
-                prompt=user_msg,
-                system=SYSTEM_PROMPT,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_msg},
+                ],
                 temperature=TEMPERATURE,
                 max_tokens=MAX_TOKENS,
             )
@@ -220,7 +223,8 @@ class OrchestratorAgent:
         except Exception as e:
             self._breaker.record_failure(e)
             raise
-        raw = _strip_think_blocks(response.response)
+        content = response.choices[0].message.content
+        raw = _strip_think_blocks(content)
 
         try:
             data = json.loads(raw)
@@ -272,9 +276,9 @@ class OrchestratorAgent:
 _agent: OrchestratorAgent | None = None
 
 
-def get_orchestrator_agent(ollama_config: OllamaConfig | None = None) -> OrchestratorAgent:
+def get_orchestrator_agent(llm_config: LLMConfig | None = None) -> OrchestratorAgent:
     """Get or create the global OrchestratorAgent instance."""
     global _agent
     if _agent is None:
-        _agent = OrchestratorAgent(ollama_config)
+        _agent = OrchestratorAgent(llm_config)
     return _agent
