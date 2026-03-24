@@ -93,8 +93,8 @@ def test_app(api_key_manager, mock_enhancement_service, mock_circuit_breakers):
         enhancement_service=lambda: mock_enhancement_service,
         circuit_breakers=lambda: mock_circuit_breakers,
         api_key_manager=api_key_manager,
-        ollama_base_url="http://localhost:11434/v1",
-        ollama_timeout=30.0,
+        llm_base_url="http://localhost:1234/v1",
+        llm_timeout=30.0,
     )
     app.include_router(router)
     return app
@@ -269,10 +269,11 @@ class TestAuthEndpoints:
         body = response.json()
         assert "error" in body["detail"]
 
-    def test_models_without_auth_returns_401(self, client):
-        """GET /v1/models without auth returns 401."""
+    def test_models_no_auth_required(self, client):
+        """GET /v1/models is unauthenticated (model listing is non-sensitive)."""
         response = client.get("/v1/models")
-        assert response.status_code == 401
+        # Returns 200 with models list or 502 if LLM server unreachable in tests
+        assert response.status_code in [200, 502]
 
     def test_api_keys_reload_no_auth_required(self, client):
         """POST /v1/api-keys/reload works without auth (admin endpoint)."""

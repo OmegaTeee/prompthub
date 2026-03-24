@@ -15,7 +15,7 @@ markers = [
     "integration: Integration tests (require PromptHub running)",
     "unit: Unit tests (no external dependencies)",
     "slow: Slow tests (may take >1 second)",
-    "requires_ollama: Tests that require Ollama to be running",
+    "requires_llm: Tests that require a local LLM server to be running",
 ]
 
 [tool.coverage.run]

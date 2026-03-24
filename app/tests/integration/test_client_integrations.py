@@ -274,7 +274,7 @@ class TestCrossClientFeatures:
             for client_name, expected_model in expected_models.items():
                 try:
                     response = await client.post(
-                        "/ollama/enhance",
+                        "/llm/enhance",
                         headers={"X-Client-Name": client_name},
                         json={"prompt": "test prompt for model routing"}
                     )

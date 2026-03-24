@@ -15,7 +15,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from router.enhancement.ollama_openai import OpenAICompatConfig
+from router.enhancement.llm_client import LLMConfig as OpenAICompatConfig
 from router.enhancement.service import (
     EnhancementResult,
     EnhancementRule,
@@ -303,9 +303,9 @@ class TestEnhanceWithFallback:
     @pytest.mark.asyncio
     async def test_ollama_success_no_cloud_attempt(self, service):
         """When Ollama succeeds, cloud client is never called."""
-        service._ollama = AsyncMock()
-        service._ollama.generate = AsyncMock(
-            return_value=MagicMock(response="enhanced by ollama"),
+        service._llm = AsyncMock()
+        service._llm.generate_from_prompt = AsyncMock(
+            return_value="enhanced by llm",
         )
         cloud_mock = AsyncMock()
         service._cloud_client = cloud_mock
@@ -313,20 +313,20 @@ class TestEnhanceWithFallback:
         await service.initialize()
         result = await service.enhance("test prompt", client_name="perplexity")
 
-        assert result.enhanced == "enhanced by ollama"
-        assert result.provider == "ollama"
+        assert result.enhanced == "enhanced by llm"
+        assert result.provider == "llm"
         cloud_mock.generate_from_prompt.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_ollama_fail_free_ok_cloud_success(self, service):
         """Ollama connection error + free_ok client → cloud fallback succeeds."""
-        from router.enhancement.ollama import OllamaConnectionError
+        from router.enhancement.llm_client import LLMConnectionError as OllamaConnectionError
 
-        service._ollama = AsyncMock()
-        service._ollama.generate = AsyncMock(
+        service._llm = AsyncMock()
+        service._llm.generate_from_prompt = AsyncMock(
             side_effect=OllamaConnectionError("Connection refused"),
         )
-        service._ollama.is_healthy = AsyncMock(return_value=False)
+        service._llm.is_healthy = AsyncMock(return_value=False)
 
         service._cloud_client = AsyncMock()
         service._cloud_client.generate_from_prompt = AsyncMock(
@@ -342,13 +342,13 @@ class TestEnhanceWithFallback:
     @pytest.mark.asyncio
     async def test_ollama_fail_local_only_no_cloud(self, service):
         """Ollama fails + local_only client → returns original, no cloud."""
-        from router.enhancement.ollama import OllamaConnectionError
+        from router.enhancement.llm_client import LLMConnectionError as OllamaConnectionError
 
-        service._ollama = AsyncMock()
-        service._ollama.generate = AsyncMock(
+        service._llm = AsyncMock()
+        service._llm.generate_from_prompt = AsyncMock(
             side_effect=OllamaConnectionError("Connection refused"),
         )
-        service._ollama.is_healthy = AsyncMock(return_value=False)
+        service._llm.is_healthy = AsyncMock(return_value=False)
 
         cloud_mock = AsyncMock()
         service._cloud_client = cloud_mock
@@ -363,8 +363,8 @@ class TestEnhanceWithFallback:
     @pytest.mark.asyncio
     async def test_ollama_breaker_open_cloud_fallback(self, service):
         """Ollama circuit breaker open + free_ok → cloud fallback."""
-        service._ollama = AsyncMock()
-        service._ollama.is_healthy = AsyncMock(return_value=False)
+        service._llm = AsyncMock()
+        service._llm.is_healthy = AsyncMock(return_value=False)
 
         # Trip the Ollama circuit breaker
         for _ in range(3):
@@ -384,18 +384,18 @@ class TestEnhanceWithFallback:
     @pytest.mark.asyncio
     async def test_ollama_fail_cloud_disabled(self, tmp_path, enhancement_rules_file):
         """Ollama fails + cloud disabled → returns original."""
-        from router.enhancement.ollama import OllamaConnectionError
+        from router.enhancement.llm_client import LLMConnectionError as OllamaConnectionError
 
         service = _make_service(
             tmp_path,
             enhancement_rules_file=enhancement_rules_file,
             openrouter_enabled=False,
         )
-        service._ollama = AsyncMock()
-        service._ollama.generate = AsyncMock(
+        service._llm = AsyncMock()
+        service._llm.generate_from_prompt = AsyncMock(
             side_effect=OllamaConnectionError("Connection refused"),
         )
-        service._ollama.is_healthy = AsyncMock(return_value=False)
+        service._llm.is_healthy = AsyncMock(return_value=False)
 
         await service.initialize()
         result = await service.enhance("test prompt", client_name="perplexity")
@@ -406,13 +406,13 @@ class TestEnhanceWithFallback:
     @pytest.mark.asyncio
     async def test_ollama_fail_cloud_fail_returns_original(self, service):
         """Both Ollama and cloud fail → returns original with combined error."""
-        from router.enhancement.ollama import OllamaConnectionError
+        from router.enhancement.llm_client import LLMConnectionError as OllamaConnectionError
 
-        service._ollama = AsyncMock()
-        service._ollama.generate = AsyncMock(
+        service._llm = AsyncMock()
+        service._llm.generate_from_prompt = AsyncMock(
             side_effect=OllamaConnectionError("Connection refused"),
         )
-        service._ollama.is_healthy = AsyncMock(return_value=False)
+        service._llm.is_healthy = AsyncMock(return_value=False)
 
         service._cloud_client = AsyncMock()
         service._cloud_client.generate_from_prompt = AsyncMock(
@@ -429,8 +429,8 @@ class TestEnhanceWithFallback:
     @pytest.mark.asyncio
     async def test_cached_result_skips_both(self, service):
         """Cached result returns immediately — no Ollama or cloud call."""
-        service._ollama = AsyncMock()
-        service._ollama.is_healthy = AsyncMock(return_value=True)
+        service._llm = AsyncMock()
+        service._llm.is_healthy = AsyncMock(return_value=True)
 
         cloud_mock = AsyncMock()
         service._cloud_client = cloud_mock
@@ -445,14 +445,14 @@ class TestEnhanceWithFallback:
 
         assert result.enhanced == "cached result"
         assert result.cached is True
-        service._ollama.generate.assert_not_called()
+        service._llm.generate_from_prompt.assert_not_called()
         cloud_mock.generate_from_prompt.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_disabled_enhancement_skips_both(self, service):
         """Disabled enhancement returns original — no cloud attempt."""
-        service._ollama = AsyncMock()
-        service._ollama.is_healthy = AsyncMock(return_value=True)
+        service._llm = AsyncMock()
+        service._llm.is_healthy = AsyncMock(return_value=True)
 
         cloud_mock = AsyncMock()
         service._cloud_client = cloud_mock
@@ -476,11 +476,11 @@ class TestEnhancementResultProvider:
         result = EnhancementResult(original="test", enhanced="test")
         assert result.provider is None
 
-    def test_ollama_provider(self):
+    def test_llm_provider(self):
         result = EnhancementResult(
-            original="test", enhanced="enhanced", provider="ollama",
+            original="test", enhanced="enhanced", provider="llm",
         )
-        assert result.provider == "ollama"
+        assert result.provider == "llm"
 
     def test_openrouter_provider(self):
         result = EnhancementResult(

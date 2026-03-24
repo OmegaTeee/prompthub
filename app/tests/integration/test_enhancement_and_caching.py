@@ -33,7 +33,7 @@ class TestPromptEnhancement:
 
             for client_name, expected_model in clients_and_models:
                 response = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": client_name},
                     json={"prompt": "Explain async/await"}
                 )
@@ -59,7 +59,7 @@ class TestPromptEnhancement:
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
             response = await client.post(
-                "/ollama/enhance",
+                "/llm/enhance",
                 headers={"X-Client-Name": "vscode"},
                 json={"prompt": "array sorting"}
             )
@@ -83,7 +83,7 @@ class TestPromptEnhancement:
         """
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
             response = await client.post(
-                "/ollama/enhance",
+                "/llm/enhance",
                 headers={"X-Client-Name": "raycast"},
                 json={"prompt": "disk usage"}
             )
@@ -115,7 +115,7 @@ class TestPromptEnhancement:
 
             try:
                 response = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "test"},
                     json={"prompt": original_prompt}
                 )
@@ -155,7 +155,7 @@ class TestPromptEnhancement:
         # Use longer timeout since Ollama might be slow
         async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=30.0) as client:
             response = await client.post(
-                "/ollama/enhance",
+                "/llm/enhance",
                 headers={"X-Client-Name": "test"},
                 json={"prompt": "test"}
             )
@@ -190,7 +190,7 @@ class TestCaching:
             # First request (cache miss)
             try:
                 response1 = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "claude-desktop"},
                     json={"prompt": prompt}
                 )
@@ -205,7 +205,7 @@ class TestCaching:
 
             # Second request (cache hit)
             response2 = await client.post(
-                "/ollama/enhance",
+                "/llm/enhance",
                 headers={"X-Client-Name": "claude-desktop"},
                 json={"prompt": prompt}
             )
@@ -238,7 +238,7 @@ class TestCaching:
             # Enhance for claude-desktop
             try:
                 resp_cd = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "claude-desktop"},
                     json={"prompt": prompt}
                 )
@@ -254,7 +254,7 @@ class TestCaching:
             # Enhance for vscode (same prompt, different client → different cache key)
             try:
                 resp_vs = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "vscode"},
                     json={"prompt": prompt}
                 )
@@ -287,7 +287,7 @@ class TestCaching:
             # Request 1 (miss)
             try:
                 resp1 = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "test"},
                     json={"prompt": prompt}
                 )
@@ -299,7 +299,7 @@ class TestCaching:
 
             # Request 2 (hit)
             resp2 = await client.post(
-                "/ollama/enhance",
+                "/llm/enhance",
                 headers={"X-Client-Name": "test"},
                 json={"prompt": prompt}
             )
@@ -327,7 +327,7 @@ class TestCaching:
             # Populate cache
             try:
                 resp1 = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "test"},
                     json={"prompt": prompt}
                 )
@@ -344,7 +344,7 @@ class TestCaching:
             # Request again — should NOT be cached
             try:
                 resp2 = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "test"},
                     json={"prompt": prompt}
                 )
@@ -373,7 +373,7 @@ class TestCaching:
             # Populate cache
             try:
                 resp1 = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "test"},
                     json={"prompt": prompt}
                 )
@@ -386,7 +386,7 @@ class TestCaching:
             # Bypass cache — also needs fresh Ollama call
             try:
                 resp2 = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "test"},
                     json={"prompt": prompt, "bypass_cache": True}
                 )
@@ -419,7 +419,7 @@ class TestEnhancementAndCachingIntegration:
 
             # First enhancement (cache miss — hits Ollama)
             response1 = await client.post(
-                "/ollama/enhance",
+                "/llm/enhance",
                 headers={"X-Client-Name": "claude-desktop"},
                 json={"prompt": original_prompt}
             )
@@ -431,7 +431,7 @@ class TestEnhancementAndCachingIntegration:
             # Second enhancement (cache hit — skips Ollama)
             start_time = time.time()
             response2 = await client.post(
-                "/ollama/enhance",
+                "/llm/enhance",
                 headers={"X-Client-Name": "claude-desktop"},
                 json={"prompt": original_prompt}
             )
@@ -468,7 +468,7 @@ class TestEnhancementAndCachingIntegration:
             # Enhance with claude-desktop
             try:
                 enh1 = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "claude-desktop"},
                     json={"prompt": test_prompt}
                 )
@@ -484,7 +484,7 @@ class TestEnhancementAndCachingIntegration:
             # Enhance with vscode (same prompt, different client → different cache key)
             try:
                 enh2 = await client.post(
-                    "/ollama/enhance",
+                    "/llm/enhance",
                     headers={"X-Client-Name": "vscode"},
                     json={"prompt": test_prompt}
                 )
@@ -505,7 +505,7 @@ class TestEnhancementAndCachingIntegration:
 
             # Re-request claude-desktop — should hit cache (same client + prompt)
             enh1_again = await client.post(
-                "/ollama/enhance",
+                "/llm/enhance",
                 headers={"X-Client-Name": "claude-desktop"},
                 json={"prompt": test_prompt}
             )
