@@ -35,7 +35,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("LLM_PORT", "OLLAMA_PORT"),
     )
     llm_model: str = Field(
-        default="qwen3.5:2b",
+        default="qwen/qwen3-4b-2507",
         validation_alias=AliasChoices("LLM_MODEL", "OLLAMA_MODEL"),
     )
     llm_timeout: int = Field(
