@@ -35,7 +35,7 @@ from router.resilience import CircuitBreaker, CircuitBreakerConfig, CircuitBreak
 logger = logging.getLogger(__name__)
 
 # ── Model config ──────────────────────────────────────────────────────────────
-MODEL = "lmstudio-community/Qwen3-14B-MLX-4bit"
+MODEL = "qwen3-14b-mlx"
 TIMEOUT_SECONDS = 2.5          # Hard ceiling — must not block enhancement
 MAX_TOKENS = 300               # Keep responses tight; we only need JSON
 TEMPERATURE = 0.1              # Low randomness for reliable structured output
