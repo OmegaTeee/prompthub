@@ -59,16 +59,20 @@ Abstract the internal layer from "Ollama" to "LLM". Delete native-only code. Kee
 | File | Changes |
 |---|---|
 | `app/router/enhancement/__init__.py` | Remove native Ollama exports. Export `LLMClient`, `LLMConfig`, `LLMConnectionError`, `LLMError`. |
-| `app/router/enhancement/service.py` | Remove native/openai mode switch. Always use OpenAI-compat client. Remove native error imports. |
-| `app/router/openai_compat/router.py` | Delete `_chat_via_native_api()` and `_ollama_base_from_v1()`. Non-streaming uses standard `/v1/chat/completions`. |
+| `app/router/enhancement/service.py` | Remove native/openai mode switch. Always use OpenAI-compat client. Remove native error imports. Remove `isinstance(self._ollama, OllamaOpenAIClient)` branching in `_enhance_with_ollama`. This is the most complex single-file change — effectively a rewrite of the enhancement method and its error handling. |
+| `app/router/openai_compat/router.py` | Delete `_chat_via_native_api()`, `_ollama_base_from_v1()`, and `stream_ollama_response` import. Remove native `/api/chat` streaming path — streaming goes through standard `/v1/chat/completions`. Rename `ollama_base_url` params, `_ollama_client` var, `resource_type="ollama"` audit strings. Non-streaming uses standard `/v1/chat/completions`. |
+| `app/router/openai_compat/models.py` | Update comment referencing `router.enhancement.ollama_openai`. |
 | `app/router/orchestrator/agent.py` | Switch from native `OllamaClient` to `LLMClient` (OpenAI-compat). Use `/v1/chat/completions` instead of `/api/generate`. |
 | `app/router/main.py` | Remove native `OllamaConfig` construction. Build one `LLMConfig` with OpenAI-compat URL. |
+| `app/router/pipelines/documentation.py` | Update docstrings: "Enhance prompt with Ollama" to "Enhance prompt with LLM". |
+| `app/router/routes/pipelines.py` | Update docstring: "Enhances it with Ollama" to "Enhances it with LLM". |
+| `app/router/memory/router.py` | Update docstrings: "Ollama enhancement" and "Generate context summary via Ollama" to LLM references. |
 
 ### Naming Updates
 
 | File | Changes |
 |---|---|
-| `app/router/config/settings.py` | `ollama_host` to `llm_host`, `ollama_port` to `llm_port`, `ollama_model` to `llm_model`, `ollama_timeout` to `llm_timeout`. Remove `ollama_api_mode`. Keep `OLLAMA_*` as env aliases for backward compatibility. Default port: `1234`. |
+| `app/router/config/settings.py` | `ollama_host` to `llm_host`, `ollama_port` to `llm_port`, `ollama_model` to `llm_model`, `ollama_timeout` to `llm_timeout`. Remove `ollama_api_mode`. Keep `OLLAMA_*` as env aliases via `AliasChoices`. Default port: `1234`. Update `model_post_init` host normalization to use new field names. |
 | `app/router/routes/enhancement.py` | Route paths: `/ollama/enhance` to `/llm/enhance`, `/ollama/stats` to `/llm/stats`, `/ollama/orchestrate` to `/llm/orchestrate`, `/ollama/reset` to `/llm/reset`. |
 | `app/router/routes/health.py` | Health response key: `"ollama"` to `"llm"`. |
 | `app/router/dashboard/router.py` | Panel endpoint: `/dashboard/ollama-partial` to `/dashboard/llm-partial`. |
@@ -78,6 +82,37 @@ Abstract the internal layer from "Ollama" to "LLM". Delete native-only code. Kee
 | `app/.env.example` | Document both old (`OLLAMA_*`) and new (`LLM_*`) variable names. |
 | `app/router/enhancement/context_window.py` | Update source comment from `/api/show` to `/v1/models`. |
 | `scripts/open-webui/start.sh` | Port default and health check URL. |
+| `scripts/prompthub-start.zsh` | Update "Starting Ollama" message, `pgrep -x "ollama"`, `ollama serve` references. Note: this script is Ollama-specific startup — may be retired or made backend-configurable. |
+| `scripts/prompthub-kill.zsh` | Update "kill Ollama" message, `killall ollama` references. Same note as above. |
+| `docs/api/openapi.yaml` | Update `/ollama/*` endpoint paths to `/llm/*`. |
+
+### Documentation Updates
+
+These files contain Ollama references that must be updated to stay accurate for AI agent context:
+
+| File | Changes |
+|---|---|
+| `CLAUDE.md` | Update module table (`enhancement/` description), architecture section, settings table, API endpoints list, env var references (~12 occurrences). |
+| `.claude/steering/product.md` | Update Ollama references to "local LLM server". |
+| `.claude/steering/tech.md` | Update stack references, Ollama-specific patterns. |
+| `.claude/steering/structure.md` | Update module descriptions mentioning Ollama. |
+
+User guides (`docs/guides/01-09`) and architecture docs (`docs/architecture/ADR-*`) contain historical Ollama references. These are follow-up tasks — not blocking for the code migration.
+
+### Test Files
+
+All test files with Ollama imports or references that need updating:
+
+| File | Changes |
+|---|---|
+| `app/tests/test_enhancement.py` | Update imports from `ollama`/`ollama_openai` to `llm_client`. Update class names. |
+| `app/tests/test_openai_compat.py` | Update `stream_ollama_response` import, mock paths. |
+| `app/tests/test_endpoints.py` | Update `/ollama/*` route paths to `/llm/*`. |
+| `app/tests/test_cloud_fallback.py` | Update Ollama error class imports. |
+| `app/tests/unit/test_orchestrator.py` | Update `OllamaClient` import to `LLMClient`. |
+| `app/tests/integration/test_enhancement_and_caching.py` | Update enhancement client imports and mock paths. |
+| `app/tests/integration/test_client_integrations.py` | Update any Ollama references in integration assertions. |
+| `app/pyproject.toml` | Update `requires_ollama` test marker to `requires_llm`. |
 
 ### Unchanged
 
@@ -95,7 +130,24 @@ All MCP infrastructure, tool registry, memory, cache, audit, security alerts, br
 | `OLLAMA_TIMEOUT` | `LLM_TIMEOUT` (alias: `OLLAMA_TIMEOUT`) | `120` |
 | `OLLAMA_API_MODE` | Deleted | Only one mode now |
 
-Alias resolution: if both `LLM_HOST` and `OLLAMA_HOST` are set, `LLM_HOST` wins. Pydantic `validation_alias` handles this.
+Alias resolution: if both `LLM_HOST` and `OLLAMA_HOST` are set, `LLM_HOST` wins. Implementation uses Pydantic v2 `AliasChoices` — the first alias that matches in the environment wins:
+
+```python
+from pydantic import AliasChoices, Field
+
+class Settings(BaseSettings):
+    llm_host: str = Field(
+        default="localhost",
+        validation_alias=AliasChoices("LLM_HOST", "OLLAMA_HOST"),
+    )
+    llm_port: int = Field(
+        default=1234,
+        validation_alias=AliasChoices("LLM_PORT", "OLLAMA_PORT"),
+    )
+    # ... same pattern for llm_model, llm_timeout
+```
+
+Note: `validation_alias` overrides default env var resolution, so both names must be listed explicitly in `AliasChoices`. The `model_post_init` host normalization block must also reference the new `llm_host` field name.
 
 ### Health Check
 
