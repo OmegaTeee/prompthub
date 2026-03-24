@@ -8,7 +8,6 @@ pkill -f "uvicorn router.main:app" || echo "[PromptHub] No router process found"
 echo "[PromptHub] Killing MCP bridge (prompthub-bridge.js)..."
 pkill -f "prompthub-bridge.js" || echo "[PromptHub] No bridge process found"
 
-echo "[PromptHub] Optionally kill Ollama (local models)..."
-echo "[PromptHub]   To stop Ollama as well, run:  killall ollama"
+echo "[PromptHub] Note: LM Studio is managed via its own GUI — close it separately if needed."
 
 echo "[PromptHub] Done."

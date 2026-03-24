@@ -8,11 +8,14 @@ LOG_DIR="$ROOT/logs"
 
 mkdir -p "$LOG_DIR"
 
-echo "[PromptHub] Starting Ollama (if not already running)..."
-if ! pgrep -x "ollama" >/dev/null 2>&1; then
-  ollama serve >/dev/null 2>&1 &!
-  sleep 2
+LLM_PORT="${LLM_PORT:-1234}"
+echo "[PromptHub] Checking LLM server on port ${LLM_PORT}..."
+if ! curl -sf "http://127.0.0.1:${LLM_PORT}/v1/models" > /dev/null 2>&1; then
+  echo "[PromptHub] LLM server not responding on port ${LLM_PORT}"
+  echo "[PromptHub]   Start LM Studio and enable the server in the Developer tab"
+  exit 1
 fi
+echo "[PromptHub] LLM server healthy on port ${LLM_PORT}"
 
 echo "[PromptHub] Activating venv..."
 cd "$APP_DIR"

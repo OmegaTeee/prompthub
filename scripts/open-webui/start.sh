@@ -2,7 +2,7 @@
 # start.sh — Start Open WebUI connected to PromptHub
 #
 # Prerequisites:
-#   - Ollama running on port 11434
+#   - LLM server (LM Studio) running on port 1234
 #   - PromptHub router running on port 9090
 #   - uvx installed (pipx/uv)
 #
@@ -19,7 +19,7 @@ LOG_FILE="${PROMPTHUB_ROOT}/logs/openwebui.log"
 
 # Defaults — env vars override config file, config file overrides hardcoded defaults
 PROMPTHUB_URL="${PROMPTHUB_URL:-http://127.0.0.1:9090}"
-OLLAMA_PORT="${OLLAMA_PORT:-11434}"
+LLM_PORT="${LLM_PORT:-1234}"
 
 # Read settings from config file first, then apply env var / fallback defaults
 CONFIG_PORT=""
@@ -40,9 +40,9 @@ echo "  Data Dir:     ~/.open-webui"
 echo "  Log:          $LOG_FILE"
 echo ""
 
-# Check Ollama
-if ! curl -sf "http://127.0.0.1:${OLLAMA_PORT}/" >/dev/null 2>&1; then
-    echo "WARNING: Ollama not responding on port ${OLLAMA_PORT}"
+# Check LLM server
+if ! curl -sf "http://127.0.0.1:${LLM_PORT}/v1/models" >/dev/null 2>&1; then
+    echo "WARNING: LLM server not responding on port ${LLM_PORT}"
     echo "  Open WebUI will start but model loading may fail."
     echo ""
 fi
