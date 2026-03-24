@@ -355,17 +355,24 @@
   },
   "free_models": [
     "qwen/qwen3-coder:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
     "deepseek/deepseek-r1-0528:free",
     "meta-llama/llama-3.3-70b-instruct:free",
     "mistralai/devstral-2512:free",
     "mistralai/mistral-small-3.1-24b-instruct:free"
   ],
   "local_models": {
+    "qwen3.5:2b": {
+      "category": "general",
+      "cloud_upgrade": "meta-llama/llama-3.3-70b-instruct",
+      "cloud_equivalent": "mistralai/mistral-small-3.1-24b-instruct",
+      "note": "Default enhancement model (replaced gemma3:4b) — cloud upgrade is Llama 3.3 70B, equivalent is Mistral Small 24B (both free tier)"
+    },
     "gemma3:4b": {
       "category": "general",
       "cloud_upgrade": "meta-llama/llama-3.3-70b-instruct",
       "cloud_equivalent": "mistralai/mistral-small-3.1-24b-instruct",
-      "note": "Fast local default — cloud upgrade is Llama 3.3 70B, equivalent is Mistral Small 24B (both free tier)"
+      "note": "Former default enhancement model — replaced by qwen3.5:2b"
     },
     "gemma3:27b": {
       "category": "general",

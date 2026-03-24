@@ -2,7 +2,7 @@
 
 ## Summary
 
-The PromptHub project has been successfully migrated from `~/Code/woolly/` to `~/.local/share/prompthub/` with full history and context preservation.
+The PromptHub project has been successfully migrated from `~/Code/woolly/` to `~/prompthub/` with full history and context preservation.
 
 **Status**: ✅ Complete | **Date**: 2026-02-17 | **Impact**: Zero disruption
 
@@ -23,20 +23,20 @@ The PromptHub project has been successfully migrated from `~/Code/woolly/` to `~
 
 ### After Migration
 ```
-~/.local/share/prompthub/         ← New canonical location
+~/prompthub/         ← New canonical location
 ├── app/                          # Python FastAPI router
 ├── clients/                      # Client setup scripts
 ├── mcps/                         # Node.js MCP servers
 └── ...                           # All original files
 
-~/Code/woolly → ~/.local/share/prompthub  ← Symlink (forwarding)
+~/Code/woolly → ~/prompthub  ← Symlink (forwarding)
 ```
 
 ---
 
 ## Why This Migration
 
-1. **Consolidation**: PromptHub lives alongside other user tools and configs in `~/.local/share/`
+1. **Consolidation**: PromptHub lives alongside other user tools and configs in `~/`
 2. **Elimination of Duplication**: Single source of truth, no conflicting references
 3. **History Preservation**: All conversations and context maintained
 4. **Clean Forwarding**: Old paths still work via symlinks
@@ -105,7 +105,7 @@ Everything continues to work from **both** old and new paths:
 ```bash
 # These are equivalent:
 open ~/Code/woolly/CLAUDE.md
-open ~/.local/share/prompthub/CLAUDE.md
+open ~/prompthub/CLAUDE.md
 
 # Both access the SAME file
 ```
@@ -114,7 +114,7 @@ open ~/.local/share/prompthub/CLAUDE.md
 
 ## Cleanup Actions Taken
 
-✅ **Symlink Created**: `~/Code/woolly/` → `~/.local/share/prompthub/`
+✅ **Symlink Created**: `~/Code/woolly/` → `~/prompthub/`
 ✅ **Claude Contexts Consolidated**: VSCode & stargazing-waterfall archived
 ✅ **Git History Backed Up**: Bundle + full directory backup created
 ✅ **Documentation Created**: This file + MIGRATION-INFO.txt
@@ -146,10 +146,10 @@ ls ~/Code/woolly/app/router/main.py
 cat ~/Code/woolly/CLAUDE.md | head -5
 
 # 3. Confirm both paths access same file
-diff <(ls ~/Code/woolly/app) <(ls ~/.local/share/prompthub/app)
+diff <(ls ~/Code/woolly/app) <(ls ~/prompthub/app)
 
 # 4. Test app startup
-cd ~/.local/share/prompthub/app
+cd ~/prompthub/app
 uvicorn router.main:app --port 9090 &
 curl http://localhost:9090/health
 ```
@@ -167,12 +167,12 @@ If you've set up PromptHub in Claude Desktop:
 
 | Item | Status | Location |
 |------|--------|----------|
-| Python code | ✅ Preserved | `~/.local/share/prompthub/app/` |
-| MCP servers | ✅ Preserved | `~/.local/share/prompthub/mcps/` |
-| Client setup | ✅ Preserved | `~/.local/share/prompthub/clients/` |
+| Python code | ✅ Preserved | `~/prompthub/app/` |
+| MCP servers | ✅ Preserved | `~/prompthub/mcps/` |
+| Client setup | ✅ Preserved | `~/prompthub/clients/` |
 | Git history | ✅ Backed Up | `/Users/visualval/Code/woolly.full-backup/.git/` |
 | Conversation history | ✅ Preserved | `~/.claude/projects/-Users-visualval--cursor-worktrees-woolly--Workspace--eoz/` |
-| Old references | ✅ Forwarded | `~/Code/woolly/ → ~/.local/share/prompthub/` |
+| Old references | ✅ Forwarded | `~/Code/woolly/ → ~/prompthub/` |
 
 ---
 
@@ -188,7 +188,7 @@ ls -lh ~/Code/woolly
 ### Issue: "Can't find configs after migration"
 **Solution**: Configs are in the same place relative to project root
 ```bash
-cd ~/.local/share/prompthub/app
+cd ~/prompthub/app
 cat configs/mcp-servers.json  # Still works
 ```
 
@@ -209,7 +209,7 @@ readlink ~/.claude/projects/-Users-visualval--local-share-prompthub
 
 1. **If keeping old backups**: Move them to archival storage if space is needed
 2. **If updating documentation**: Update any internal READMEs mentioning `~/Code/woolly/` to note symlink behavior
-3. **If publishing**: Update any external documentation to direct users to `~/.local/share/prompthub/`
+3. **If publishing**: Update any external documentation to direct users to `~/prompthub/`
 
 ---
 
@@ -217,4 +217,4 @@ readlink ~/.claude/projects/-Users-visualval--local-share-prompthub
 
 All conversation history is preserved in Claude project context. The migration is completely transparent and backward-compatible.
 
-**Key Takeaway**: You can reference the code from either path, but internally everything is now in `~/.local/share/prompthub/`.
+**Key Takeaway**: You can reference the code from either path, but internally everything is now in `~/prompthub/`.

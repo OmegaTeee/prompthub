@@ -16,6 +16,7 @@
     "ms-vscode.vscode-speech",
     "anthropic.claude-code",
     "openai.chatgpt",
+    "tamasfe.even-better-toml",
   ],
   "unwantedRecommendations": [
     "ms-pyright.pyright",

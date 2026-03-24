@@ -1,7 +1,7 @@
 # PromptHub Project Review: Out-of-Date Content Report
 
 **Date**: February 17, 2026
-**Location**: `~/.local/share/prompthub/`
+**Location**: `~/prompthub/`
 **Review Scope**: All `.sh` and `.md` files for outdated content, broken references, and accuracy
 
 ---
@@ -93,7 +93,7 @@ Line 32: **Enhancement Model:** Qwen3-Coder (code-first)
 **File**: `/clients/SCRIPTS-README.md` (line 42)
 **Issue**:
 ```markdown
-"command": "/Users/user/.local/share/prompthub/scripts/mcps/obsidian-mcp-tools.sh"
+"command": "/Users/user/prompthub/scripts/mcps/obsidian-mcp-tools.sh"
 ```
 
 **Status**: This is an example path showing variable substitution (`/Users/user/`). This is intentional and correct for documentation purposes. However, it could be clearer.
@@ -226,7 +226,7 @@ In `/clients/SCRIPTS-README.md`:
 
 **Grade: A- (Excellent)**
 
-The PromptHub project is **well-documented and actively maintained**. The migration to `~/.local/share/prompthub/` appears complete and successful. All critical infrastructure is in place and properly described.
+The PromptHub project is **well-documented and actively maintained**. The migration to `~/prompthub/` appears complete and successful. All critical infrastructure is in place and properly described.
 
 **Key Strengths**:
 - Comprehensive CHANGELOG with semantic versioning
@@ -248,8 +248,8 @@ The PromptHub project is **well-documented and actively maintained**. The migrat
 
 ```bash
 # Update these two files to fix inconsistencies:
-~/.local/share/prompthub/clients/README.md          # Line 32: Model name
-~/.local/share/prompthub/.github/copilot-instructions.md  # Line 21: Module name
+~/prompthub/clients/README.md          # Line 32: Model name
+~/prompthub/.github/copilot-instructions.md  # Line 21: Module name
 ```
 
 ---

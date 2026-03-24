@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # Ollama
     ollama_host: str = "localhost"
     ollama_port: int = 11434
-    ollama_model: str = "gemma3:4b"
+    ollama_model: str = "qwen3.5:2b"
     ollama_timeout: int = 120
     ollama_api_mode: str = "native"  # "native" or "openai" - API format to use
 

@@ -143,9 +143,3 @@ tar -czf prompthub-configs-$(date +%Y%m%d).tar.gz configs/
 tar -xzf prompthub-configs-20260130.tar.gz
 ```
 
-## Documentation
-
-For detailed setup and usage, see the Obsidian vault at `~/Vault/PromptHub/`:
-- Integrations: `~/Vault/PromptHub/Integrations/`
-- Testing: `~/Vault/PromptHub/Testing/`
-- Migration: `~/Vault/PromptHub/Migration/`

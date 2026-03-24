@@ -195,7 +195,7 @@ These guides focus on end-user experience. For technical/developer documentation
 
 ## 📞 Support
 
-1. **Check the logs:** `tail ~/.local/share/prompthub/logs/router-stderr.log`
+1. **Check the logs:** `tail ~/prompthub/logs/router-stderr.log`
 2. **Run diagnostics:** `python -m cli diagnose`
 3. **Search this documentation** using Command+F
 4. **Read the Troubleshooting Guide** — covers 95% of common issues

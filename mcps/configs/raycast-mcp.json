@@ -3,12 +3,13 @@
     "prompthub": {
       "command": "node",
       "args": [
-        "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
+        "/Users/visualval/prompthub/mcps/prompthub-bridge.js"
       ],
       "env": {
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
         "CLIENT_NAME": "raycast",
-        "AUTHORIZATION": "Bearer sk-prompthub-raycast-001"
+        "AUTHORIZATION": "Bearer sk-prompthub-raycast-001",
+        "SERVERS": "duckduckgo,sequential-thinking,desktop-commander,context7"
       }
     }
   }

@@ -75,10 +75,16 @@ logs/**/*.log
 # Local configs (keep examples, ignore actual)
 app/configs/*.local.json
 
-# Secrets
+# Secrets & API keys
 *.pem
 *.key
 credentials.json
+mcps/prompthub-api-keys.json
+mcps/prompthub-config.env
+
+# Claude Code local settings
+.claude/settings.local.json
+app/.claude/
 
 # Qdrant data (Phase 2.1+)
 qdrant_data/

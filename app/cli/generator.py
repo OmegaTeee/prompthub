@@ -34,8 +34,8 @@ class ConfigGenerator:
         router_url: str = "http://127.0.0.1:9090",
     ):
         if workspace_root is None:
-            # Default: prompthub lives at ~/.local/share/prompthub
-            workspace_root = Path.home() / ".local" / "share" / "prompthub"
+            # Default: prompthub lives at ~/prompthub
+            workspace_root = Path.home() / "prompthub"
 
         self.workspace_root = workspace_root.resolve()
         self.bridge_path = (

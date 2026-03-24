@@ -1,0 +1,31 @@
+{
+  "servers": {
+    "open-terminal": {
+      "name": "Open Terminal MCP",
+      "description": "Terminal, filesystem, and process tools via Open Terminal in MCP mode.",
+      "transport": "stdio",
+      "command": "open-terminal",
+      "args": ["mcp"],
+      "cwd": "/Users/visualval/prompthub/mcp/",
+      "env": {
+        "NODE_ENV": "production",
+        "LANG": "en_US.UTF-8",
+        "PATH": "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
+      },
+      "restart": {
+        "mode": "on_failure",
+        "max_restarts": 5,
+        "backoff_seconds": 2
+      },
+      "metadata": {
+        "tags": ["terminal", "filesystem", "process"],
+        "risk_level": "dangerous",
+        "default_profile": "dev"
+      },
+      "timeouts": {
+        "startup_ms": 10000,
+        "call_ms": 60000
+      }
+    }
+  }
+}

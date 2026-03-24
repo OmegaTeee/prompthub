@@ -7,8 +7,10 @@ and forwarded to Ollama with circuit breaker protection.
 """
 
 import logging
+import time
 from typing import Any
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -198,7 +200,8 @@ def create_openai_compat_router(
                     # Enhancement failure is non-fatal — proceed with original
                     logger.warning("Enhancement failed for %s: %s", client_name, e)
 
-        # Build Ollama payload
+        # Build Ollama payload (think:false is applied downstream in
+        # streaming.py and _chat_via_native_api via Ollama's native API)
         payload: dict[str, Any] = {
             "model": body.model,
             "messages": messages,
@@ -227,13 +230,11 @@ def create_openai_compat_router(
             )
 
         # --- Non-streaming response ---
+        # Route through Ollama's native /api/chat with think:false
+        # (Ollama's /v1/ ignores think:false, wasting tokens on reasoning)
         try:
-            response = await _ollama_client.chat_completion(
-                model=body.model,
-                messages=messages,
-                temperature=body.temperature,
-                max_tokens=body.max_tokens,
-                stream=False,
+            result = await _chat_via_native_api(
+                ollama_base_url, payload, ollama_timeout,
             )
             if breaker:
                 breaker.record_success()
@@ -245,9 +246,9 @@ def create_openai_compat_router(
                 status="success",
                 stream=False,
             )
-            return response.model_dump()
+            return result
 
-        except (OllamaOpenAIConnectionError, OllamaOpenAIError) as e:
+        except (OllamaOpenAIConnectionError, OllamaOpenAIError, httpx.HTTPError) as e:
             if breaker:
                 breaker.record_failure(e)
             audit_event(
@@ -266,10 +267,13 @@ def create_openai_compat_router(
             )
 
     @router.get("/models")
-    async def list_models(
-        api_key: ApiKeyConfig = Depends(authenticate),
-    ):
-        """List available Ollama models in OpenAI format."""
+    async def list_models():
+        """List available Ollama models in OpenAI format.
+
+        Unauthenticated — model listing is non-sensitive and clients
+        like Raycast call this without a bearer token during provider
+        discovery.
+        """
         try:
             models = await _ollama_client.list_models()
             return {"object": "list", "data": models}
@@ -283,6 +287,15 @@ def create_openai_compat_router(
                     }
                 },
             )
+
+    @router.get("/api/version")
+    async def api_version():
+        """Ollama-compatible version endpoint.
+
+        Raycast probes this to verify the provider is alive.
+        Returns a minimal version response to prevent 404 errors.
+        """
+        return {"version": "0.1.0"}
 
     @router.post("/api-keys/reload")
     async def reload_api_keys():
@@ -349,3 +362,70 @@ async def _stream_with_breaker(
         error_msg = str(e).replace('"', '\\"')
         yield f'data: {{"error": {{"message": "{error_msg}"}}}}\n\n'
         yield "data: [DONE]\n\n"
+
+
+async def _chat_via_native_api(
+    ollama_v1_url: str,
+    payload: dict,
+    timeout: float,
+) -> dict:
+    """Non-streaming chat via Ollama's native /api/chat (supports think:false).
+
+    Translates the OpenAI-format payload to Ollama native format,
+    calls /api/chat, and returns an OpenAI-compatible response dict.
+    """
+    from router.openai_compat.streaming import _ollama_base_from_v1
+
+    base = _ollama_base_from_v1(ollama_v1_url)
+    url = f"{base}/api/chat"
+
+    native_payload: dict = {
+        "model": payload.get("model", ""),
+        "messages": payload.get("messages", []),
+        "stream": False,
+        "think": False,
+    }
+    options: dict = {}
+    if payload.get("temperature") is not None:
+        options["temperature"] = payload["temperature"]
+    if payload.get("top_p") is not None:
+        options["top_p"] = payload["top_p"]
+    if payload.get("max_tokens") is not None:
+        options["num_predict"] = payload["max_tokens"]
+    if payload.get("stop") is not None:
+        options["stop"] = payload["stop"]
+    if options:
+        native_payload["options"] = options
+
+    async with httpx.AsyncClient(timeout=httpx.Timeout(timeout)) as client:
+        resp = await client.post(url, json=native_payload)
+        resp.raise_for_status()
+        data = resp.json()
+
+    msg = data.get("message", {})
+    model = data.get("model", payload.get("model", ""))
+    prompt_tokens = data.get("prompt_eval_count", 0)
+    completion_tokens = data.get("eval_count", 0)
+    reason = data.get("done_reason", "stop")
+
+    return {
+        "id": f"chatcmpl-{int(time.time())}",
+        "object": "chat.completion",
+        "created": int(time.time()),
+        "model": model,
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": msg.get("role", "assistant"),
+                    "content": msg.get("content", ""),
+                },
+                "finish_reason": "length" if reason == "length" else "stop",
+            }
+        ],
+        "usage": {
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": prompt_tokens + completion_tokens,
+        },
+    }

@@ -9,4 +9,4 @@ if [[ -z "${OBSIDIAN_API_KEY}" ]]; then
     exit 1
 fi
 
-exec "${HOME}/.local/share/prompthub/mcps/obsidian-mcp-tools/bin/mcp-server" "$@"
+exec "${HOME}/prompthub/mcps/obsidian-mcp-tools/bin/mcp-server" "$@"

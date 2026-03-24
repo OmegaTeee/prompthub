@@ -1,16 +1,30 @@
 # Client Application Settings
 
-Reference copies of client application configurations — editor settings, agent configs, and integration examples. These are **not** MCP bridge configs (those live in [`mcps/configs/`](../mcps/configs/)).
+Source-of-truth client application configurations — editor settings, agent configs, and integration examples. These are **not** MCP bridge configs (those live in [`mcps/configs/`](../mcps/configs/)).
+
+Client apps read these files through symlinks from their expected config paths.
 
 ## Contents
 
-| File | Client | Purpose |
-|---|---|---|
-| `vscode-ide.json` | VS Code | Editor settings (diff, formatting, extensions) |
-| `codex-config.toml` | Codex CLI | Model selection, token limits, reasoning effort |
-| `copilot-oai-extention-example.json` | GitHub Copilot | OAI extension export (reference) |
-| `openclaw-config.json` | OpenClaw | Full app config snapshot (model, auth, diagnostics) |
-| `open-webui-example.toml` | Open WebUI | MCPO server configuration example |
+| File | Client | Symlinked from | Type |
+|---|---|---|---|
+| `raycast-ai-providers.yaml` | Raycast AI Chat | `~/.config/raycast/ai/providers.yaml` | Live (symlinked) |
+| `openclaw-config.json` | OpenClaw | `~/.openclaw/openclaw.json` | Live (symlinked) |
+| `codex-config.toml` | Codex CLI | `~/.codex/config.toml` | Live (symlinked) |
+| `vscode-ide.json` | VS Code | `~/Library/.../Code/User/settings.json` | Reference (symlink inward) |
+| `copilot-oai-extention-example.json` | GitHub Copilot | — | Example |
+| `open-webui-example.toml` | Open WebUI | — | Example |
+
+## Symlink Convention
+
+```
+clients/openclaw-config.json          ← real file (git-tracked)
+~/.openclaw/openclaw.json             ← symlink → ~/prompthub/clients/openclaw-config.json
+```
+
+**Source in the project, symlink at the client location.** This ensures `git diff` shows actual changes and configs are versioned.
+
+**Exception:** `vscode-ide.json` is a backwards symlink (project → VS Code settings.json) because VS Code's `settings.json` is a shared system file not owned by this project.
 
 ## Relationship to MCP Configs
 
@@ -23,11 +37,5 @@ clients/               Client app settings — how the client itself is configur
 ```
 
 Most clients need both:
-- An MCP bridge config in `mcps/configs/` installed to the client's config path
-- Application settings tuned for the client's capabilities
-
-## Notes
-
-- **`openclaw-config.json`** is a snapshot — the live config is at `~/.openclaw/openclaw.json`. Update the snapshot after significant changes to keep it in sync.
-- **`vscode-ide.json`** captures workspace-level VS Code settings. The live version is `.vscode/settings.json` at the project root.
-- Files here are reference copies for version control and onboarding. The CLI (`python -m cli install`) handles MCP bridge config installation.
+- An MCP bridge config in `mcps/configs/` symlinked to the client's MCP config path
+- Application settings here symlinked to the client's app config path

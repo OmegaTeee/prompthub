@@ -1,14 +1,14 @@
 ---
-title: "Model Card: gemma3:4b — Default Enhancement Model"
+title: "Model Card: gemma3:4b — Former Default Enhancement Model"
 status: final
 created: 2026-03-23
 updated: 2026-03-23
-tags: [llm, gemma3, model-card, enhancement, default]
+tags: [llm, gemma3, model-card, enhancement, fallback]
 ---
 
 # gemma3:4b
 
-Google's 4.3B dense transformer. The workhorse enhancement model — fast enough to run on every request without noticeable latency, and small enough to stay warm alongside the orchestrator.
+Google's 4.3B dense transformer. Former default enhancement model, replaced by `qwen3.5:2b` which offers better instruction-following at lower resource cost. Retained as fallback (second position in fallback chain) and for comparison testing.
 
 ## Ollama Manifest
 

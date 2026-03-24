@@ -63,7 +63,8 @@ tags: [relevant, topic, tags]
 | File | Status | Model | PromptHub Role |
 |---|---|---|---|
 | `llm-qwen3-14b-model-card.md` | final | qwen3:14b (14.8B) | Orchestrator + OpenClaw primary |
-| `llm-gemma3-4b-model-card.md` | final | gemma3:4b (4.3B) | Default enhancement (6 clients) |
+| `llm-qwen35-2b-model-card.md` | final | qwen3.5:2b (2.3B) | Default enhancement (6 clients) + Raycast Chat |
+| `llm-gemma3-4b-model-card.md` | final | gemma3:4b (4.3B) | Former default enhancement (fallback) |
 | `llm-gemma3-27b-model-card.md` | final | gemma3:27b (27.4B) | Claude Desktop enhancement |
 | `llm-qwen3-coder-30b-model-card.md` | final | qwen3-coder:30b (30.5B MoE) | Claude Code enhancement |
 | `llm-bge-m3-model-card.md` | final | bge-m3 (567M) | Embeddings (future RAG) |

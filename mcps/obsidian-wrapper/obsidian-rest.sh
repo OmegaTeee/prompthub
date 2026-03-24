@@ -16,6 +16,6 @@ OBSIDIAN_PORT="27124"
 export OBSIDIAN_PORT
 
 # Activate virtual environment and run mcp-obsidian
-PROMPTHUB_DIR="${HOME}/.local/share/prompthub"
+PROMPTHUB_DIR="${HOME}/prompthub"
 source "${PROMPTHUB_DIR}/.venv/bin/activate"
 exec python -m mcp_obsidian "$@"

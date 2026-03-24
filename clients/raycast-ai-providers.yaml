@@ -1,0 +1,33 @@
+providers:
+  - id: prompthub
+    name: local-router
+    base_url: http://localhost:9090/v1
+    api_keys:
+      PROMPTHUB_KEY: sk-prompthub-raycast-001
+    models:
+      - id: qwen3:14b
+        name: qwen3 14b
+        context: 40960
+        description: 14.8B dense transformer. Reliable tool-calling, reasoning, and structured output. Use for complex tasks.
+        provider: PROMPTHUB_KEY
+        abilities:
+          tools:
+            supported: true
+          reasoning_effort:
+            supported: true
+          system_message:
+            supported: true
+      - id: qwen3.5:2b
+        name: qwen3.5 2b
+        context: 262144
+        description: 2.3B hybrid model. Fast text rewriting, tone changes, and simple chat. 256K context with vision.
+        provider: PROMPTHUB_KEY
+        abilities:
+          tools:
+            supported: true
+          vision:
+            supported: true
+          reasoning_effort:
+            supported: true
+          system_message:
+            supported: true

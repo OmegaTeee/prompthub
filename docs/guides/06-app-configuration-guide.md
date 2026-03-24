@@ -176,7 +176,7 @@ Leave it empty (the default) to expose all servers. Restart the router after cha
 3. Choose "OpenAI Compatible" and fill in:
    - **Model Provider:** OpenAI Compatible
    - **API Endpoint:** `http://localhost:9090/v1`
-   - **API Key:** `sk-prompthub-copilot-001` (or your key)
+   - **API Key:** `sk-prompthub-raycast-001` (or your key)
    - **Model:** `gemma3:27b` (or your preferred model)
 4. Test it: open Raycast (`Cmd+Space`), type "Ask AI," and send a question.
 
@@ -531,4 +531,4 @@ This gives you several benefits:
 
 ---
 
-**Next:** See the **Troubleshooting Guide** if your configuration is not working.
+**Next:** See the [Troubleshooting Guide](05-troubleshooting-guide.md) if your configuration is not working.

@@ -17,9 +17,10 @@ Headers:
 - `X-Enhance: true`
 
 Body (JSON-RPC):
-
+```json
 {
   "jsonrpc": "2.0",
   "method": "tools.call",
   "params": { "prompt": "Summarize this text..." }
 }
+```

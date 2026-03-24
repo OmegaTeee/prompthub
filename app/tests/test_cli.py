@@ -13,10 +13,14 @@ from pydantic import ValidationError
 
 from cli.generator import ConfigGenerator
 from cli.installer import ConfigInstaller
-from cli.models import BridgeConfig, ClientType, build_open_webui_config, wrap_for_client
+from cli.models import (
+    BridgeConfig,
+    ClientType,
+    build_open_webui_config,
+    wrap_for_client,
+)
 from cli.profiles import ProfileLoader
 from cli.validator import ConfigValidator
-
 
 # ── BridgeConfig path safety ────────────────────────────────────────
 
@@ -61,7 +65,7 @@ class TestBridgeConfigPathSafety:
 
     def test_accepts_valid_config(self):
         config = BridgeConfig(
-            args=["/Users/test/.local/share/prompthub/mcps/bridge.js"],
+            args=["/Users/test/prompthub/mcps/bridge.js"],
             env={"PROMPTHUB_URL": "http://127.0.0.1:9090"},
         )
         assert config.command == "node"

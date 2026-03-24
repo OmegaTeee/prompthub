@@ -38,17 +38,26 @@ python -m cli diagnose
 
 ## Config Files
 
-MCP bridge configs only — each tells a client how to connect to PromptHub via the stdio bridge. Client application settings live in [`clients/`](../../clients/) at the project root.
+Source-of-truth MCP bridge configs. Each tells a client how to connect to PromptHub via the stdio bridge. Client apps read these through symlinks from their expected config paths. Client application settings live in [`clients/`](../../clients/) at the project root.
 
-| File | Client | Format | Notes |
-|------|--------|--------|-------|
-| `claude-desktop.json` | Claude Desktop | `mcpServers` | Bridge config with server/tool filters |
-| `claude-code.json` | Claude Code | `mcpServers` | CLI bridge config |
-| `copilot.json` | GitHub Copilot | `servers` | Copilot MCP format |
-| `raycast.json` | Raycast | `mcpServers` | Bridge config for Raycast MCP |
-| `perplexity.json` | Perplexity | Bare entry | Uses `useBuiltInNode: true` |
-| `openclaw-mcps.json` | OpenClaw | `mcpServers` | Bridge + skills-mcp |
-| `mcp-inspector.json` | MCP Inspector | `mcpServers` | For testing bridge in isolation |
+| File | Client | Symlinked from | Format |
+|------|--------|----------------|--------|
+| `claude-desktop.json` | Claude Desktop | `~/Library/.../Claude/claude_desktop_config.json` | `mcpServers` |
+| `claude-code.json` | Claude Code | `.mcp.json` (project root) | `mcpServers` |
+| `copilot.json` | GitHub Copilot | `~/Library/.../Code/User/mcp.json` | `servers` |
+| `raycast-mcp.json` | Raycast | `~/.config/raycast/mcp.json` | `mcpServers` |
+| `openclaw-mcps.json` | OpenClaw | `~/.openclaw/mcp-config.json` | `mcpServers` |
+| `perplexity.json` | Perplexity | — | Bare entry (`useBuiltInNode: true`) |
+| `mcp-inspector.json` | MCP Inspector | — | `mcpServers` (testing only) |
+
+### Symlink Convention
+
+```
+mcps/configs/claude-desktop.json                          ← real file (git-tracked)
+~/Library/.../Claude/claude_desktop_config.json           ← symlink → ~/prompthub/mcps/configs/claude-desktop.json
+```
+
+**Source in the project, symlink at the client location.** Edit configs here; clients read through the symlink.
 
 ## How It Works
 
