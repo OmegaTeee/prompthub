@@ -34,7 +34,7 @@ PromptHub can start automatically at login. To check or enable this:
 To start it by hand from Terminal, run these commands:
 
 ```bash
-cd ~/prompthub
+cd ~/prompthub/app
 source .venv/bin/activate
 uvicorn router.main:app --host 127.0.0.1 --port 9090
 ```

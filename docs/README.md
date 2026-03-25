@@ -29,10 +29,6 @@ uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
 - **[features/MEMORY-SYSTEM-COMPLETE.md](features/MEMORY-SYSTEM-COMPLETE.md)** — Session memory and context management
 - **[modules/README.md#tool-registry](modules/README.md#tool-registry)** — Tool registry cache and bridge schema minification
 
-#### User Guides
-
-User-facing guides live in the Obsidian vault at `~/Vault`.
-
-##### Contributing
+#### Contributing
 
 See the project [README.md](../README.md) and [CLAUDE.md](../CLAUDE.md).
