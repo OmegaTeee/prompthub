@@ -103,7 +103,7 @@ DELETE /sessions/{id}/memory/{key}       Delete memory block
 
 ```
 GET    /sessions/{id}/context            Full session context (facts + blocks + MCP graph)
-POST   /sessions/{id}/summarize          Generate context summary via Ollama
+POST   /sessions/{id}/summarize          Generate context summary via LLM
 ```
 
 ### Dashboard
@@ -317,7 +317,7 @@ Created for common queries:
 
 ## Future Enhancements
 
-1. **Semantic Search** — Integrate with Ollama embeddings for semantic fact search
+1. **Semantic Search** — Integrate with LLM embeddings for semantic fact search
 2. **Memory Expiry** — Auto-expire facts based on age or relevance scores
 3. **Batch Operations** — `/sessions/{id}/facts/batch` for bulk uploads
 4. **GraphQL API** — Alternative to REST for complex queries

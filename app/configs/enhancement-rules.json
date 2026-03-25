@@ -67,7 +67,6 @@
   },
   "fallback_chain": [
     "qwen/qwen3-4b-2507",
-    "qwen/qwen3-4b-2507",
     null
   ]
 }

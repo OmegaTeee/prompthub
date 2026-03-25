@@ -10,7 +10,7 @@ tags: [llm, bge-m3, model-card, embeddings, rag]
 
 BAAI General Embedding (BGE) M3 model. A multilingual, multi-granularity embedding model for semantic similarity and retrieval. Not a generative model — produces vector representations of text.
 
-## Ollama Manifest
+## Model Manifest
 
 ```
 Architecture:     bert (encoder-only)
@@ -63,4 +63,4 @@ Could embed incoming prompts and map them to model lanes based on task-type clus
 - **Tiny footprint**: At 1.2 GB with F16 precision, this model can coexist with any other model in the stack. It adds negligible VRAM pressure.
 - **F16 is intentional**: Embedding models should not be quantized — the vector quality directly affects retrieval accuracy. Keep at F16.
 - **Not used yet**: This model is installed in preparation for the RAG improvement plan. No PromptHub code currently calls it.
-- **Alternative use**: Ollama exposes `bge-m3` at `POST /api/embed`. External tools (Open WebUI RAG, LangChain) can use it directly without going through PromptHub.
+- **Alternative use**: LM Studio exposes `bge-m3-mlx` via `/v1/embeddings`. External tools (Open WebUI RAG, LangChain) can use it directly without going through PromptHub.

@@ -98,6 +98,18 @@
       "health_check_interval": 30,
       "description": "Chrome DevTools Protocol debugging, profiling, and browser automation"
     },
+    "perplexity-comet": {
+      "package": "perplexity-comet-mcp",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/perplexity-comet-mcp/dist/index.js"],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": false,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Perplexity research via Comet browser CDP bridge"
+    },
     "browsermcp": {
       "package": "@browsermcp/mcp",
       "transport": "stdio",
