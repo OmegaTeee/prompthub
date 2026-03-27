@@ -23,7 +23,7 @@ from router.enhancement.llm_client import (
     LLMError,
 )
 from router.openai_compat.auth import ApiKeyManager
-from router.openai_compat.models import ApiKeyConfig, ChatCompletionRequest
+from router.openai_compat.models import ApiKeyConfig, ChatCompletionRequest, ResponsesRequest
 from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
@@ -324,6 +324,160 @@ def create_openai_compat_router(
             status="success",
         )
         return {"message": "API keys reloaded", "count": api_key_manager.key_count}
+
+    @router.post("/responses")
+    async def responses(
+        body: ResponsesRequest,
+        request: Request,
+        api_key: ApiKeyConfig = Depends(authenticate),
+    ):
+        """OpenAI Responses API endpoint (non-streaming).
+
+        Translates Responses API format to Chat Completions, proxies to
+        LLM server, and wraps the result back into Responses API shape.
+        """
+        client_name = api_key.client_name
+
+        audit_event(
+            event_type="openai_proxy",
+            action="responses",
+            resource_type="llm",
+            resource_name=body.model,
+            status="initiated",
+            client_name=client_name,
+        )
+
+        # Reject streaming — not supported
+        if body.stream:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": {
+                        "message": "Streaming not supported for /v1/responses. Disable streaming in your client.",
+                        "type": "invalid_request_error",
+                    }
+                },
+            )
+
+        # Guard: reject placeholder model names
+        if not body.model or body.model in ("string", "model", "") or " " in body.model:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'gemma-3-4b').",
+            )
+
+        # Circuit breaker check
+        cb_registry = circuit_breakers()
+        breaker = cb_registry.get("llm-proxy") if cb_registry else None
+        if breaker:
+            try:
+                breaker.check()
+            except Exception:
+                audit_event(
+                    event_type="openai_proxy",
+                    action="responses",
+                    resource_type="llm",
+                    resource_name=body.model,
+                    status="failed",
+                    error="Circuit breaker open",
+                )
+                raise HTTPException(
+                    status_code=503,
+                    detail={
+                        "error": {
+                            "message": "Service temporarily unavailable — LLM circuit breaker open",
+                            "type": "server_error",
+                        }
+                    },
+                )
+
+        # Translate Responses API input → Chat Completions messages
+        messages = _translate_responses_to_messages(body.input, body.instructions)
+
+        # Enhancement: optionally enhance the last user message
+        svc = enhancement_service() if api_key.enhance else None
+        if svc:
+            privacy_override = None
+            raw_privacy = request.headers.get("X-Privacy-Level")
+            if raw_privacy:
+                try:
+                    from router.enhancement import PrivacyLevel
+                    privacy_override = PrivacyLevel(raw_privacy)
+                except ValueError:
+                    logger.warning("Invalid X-Privacy-Level: %s", raw_privacy)
+
+            last_user_idx = _find_last_user_message(messages)
+            if last_user_idx is not None:
+                original = messages[last_user_idx]["content"]
+                try:
+                    result = await svc.enhance(
+                        prompt=original,
+                        client_name=client_name,
+                        privacy_override=privacy_override,
+                    )
+                    if result.was_enhanced:
+                        messages[last_user_idx] = {
+                            **messages[last_user_idx],
+                            "content": result.enhanced,
+                        }
+                except Exception as e:
+                    logger.warning("Enhancement failed for %s: %s", client_name, e)
+
+        # Forward to LLM server
+        try:
+            response = await _llm_client.chat_completion(
+                model=body.model,
+                messages=messages,
+                temperature=body.temperature,
+                max_tokens=body.max_output_tokens,
+            )
+            if breaker:
+                breaker.record_success()
+
+            audit_event(
+                event_type="openai_proxy",
+                action="responses",
+                resource_type="llm",
+                resource_name=body.model,
+                status="success",
+            )
+
+            return _build_responses_response(response.model_dump())
+
+        except LLMConnectionError as e:
+            if breaker:
+                breaker.record_failure(e)
+            audit_event(
+                event_type="openai_proxy",
+                action="responses",
+                resource_type="llm",
+                resource_name=body.model,
+                status="failed",
+                error=str(e),
+            )
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "error": {"message": f"Cannot reach LLM server: {e}", "type": "server_error"}
+                },
+            )
+        except (LLMError, httpx.HTTPError) as e:
+            if breaker:
+                breaker.record_failure(e)
+            audit_event(
+                event_type="openai_proxy",
+                action="responses",
+                resource_type="llm",
+                resource_name=body.model,
+                status="failed",
+                error=str(e),
+            )
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "error": {"message": str(e), "type": "server_error"}
+                },
+            )
 
     return router
 

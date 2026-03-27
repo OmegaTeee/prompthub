@@ -490,3 +490,129 @@ class TestBuildResponsesResponse:
 
         assert result["output_text"] == "Hi"
         assert result["usage"] is None
+
+
+# =============================================================================
+# Responses Endpoint Tests
+# =============================================================================
+
+
+from unittest.mock import patch
+
+
+class TestResponsesEndpoint:
+    """Test POST /v1/responses endpoint behavior."""
+
+    def test_missing_auth_returns_401(self, client):
+        """Request without Authorization header returns 401."""
+        response = client.post(
+            "/v1/responses",
+            json={"model": "gemma-3-4b", "input": "Hello"},
+        )
+        assert response.status_code == 401
+
+    def test_invalid_token_returns_401(self, client):
+        """Request with invalid bearer token returns 401."""
+        response = client.post(
+            "/v1/responses",
+            json={"model": "gemma-3-4b", "input": "Hello"},
+            headers={"Authorization": "Bearer sk-invalid-garbage"},
+        )
+        assert response.status_code == 401
+
+    def test_stream_true_returns_400(self, client):
+        """Streaming is not supported — returns 400."""
+        response = client.post(
+            "/v1/responses",
+            json={"model": "gemma-3-4b", "input": "Hello", "stream": True},
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 400
+        assert "streaming" in response.json()["detail"]["error"]["message"].lower()
+
+    def test_invalid_model_returns_422(self, client):
+        """Placeholder model name returns 422."""
+        response = client.post(
+            "/v1/responses",
+            json={"model": "string", "input": "Hello"},
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 422
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_string_input_success(self, mock_chat, client):
+        """String input returns valid Responses API format."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-test",
+            object="chat.completion",
+            created=1700000000,
+            model="gemma-3-4b",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="Hello!"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
+        )
+
+        response = client.post(
+            "/v1/responses",
+            json={"model": "gemma-3-4b", "input": "Hi there"},
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["object"] == "response"
+        assert data["id"].startswith("resp_")
+        assert data["output_text"] == "Hello!"
+        assert data["output"][0]["type"] == "message"
+        assert data["usage"]["input_tokens"] == 5
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_array_input_with_instructions(self, mock_chat, client):
+        """Array input with instructions translates correctly."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-test2",
+            object="chat.completion",
+            created=1700000000,
+            model="gemma-3-4b",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="Sure!"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 10, "completion_tokens": 2, "total_tokens": 12},
+        )
+
+        response = client.post(
+            "/v1/responses",
+            json={
+                "model": "gemma-3-4b",
+                "input": [{"role": "user", "content": "Help me"}],
+                "instructions": "Be concise",
+            },
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 200
+
+        # Verify instructions were prepended as system message
+        call_kwargs = mock_chat.call_args
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
+        assert messages[0] == {"role": "system", "content": "Be concise"}
+        assert messages[1] == {"role": "user", "content": "Help me"}
