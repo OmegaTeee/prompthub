@@ -338,6 +338,32 @@ def _find_last_user_message(messages: list[dict[str, str]]) -> int | None:
     return None
 
 
+def _translate_responses_to_messages(
+    input_data: str | list[dict[str, str]],
+    instructions: str | None,
+) -> list[dict[str, str]]:
+    """Convert Responses API input + instructions to Chat Completions messages.
+
+    Args:
+        input_data: String (single user message) or array of message dicts.
+        instructions: Optional system prompt to prepend.
+
+    Returns:
+        List of message dicts for Chat Completions API.
+    """
+    messages: list[dict[str, str]] = []
+
+    if instructions:
+        messages.append({"role": "system", "content": instructions})
+
+    if isinstance(input_data, str):
+        messages.append({"role": "user", "content": input_data})
+    else:
+        messages.extend(input_data)
+
+    return messages
+
+
 async def _stream_with_breaker(
     payload: dict,
     breaker: Any,

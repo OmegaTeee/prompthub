@@ -17,7 +17,7 @@ from fastapi.testclient import TestClient
 
 from router.openai_compat.auth import ApiKeyManager
 from router.openai_compat.models import ApiKeyConfig, ApiKeysRegistry, ChatCompletionRequest, ResponsesRequest
-from router.openai_compat.router import _find_last_user_message, create_openai_compat_router
+from router.openai_compat.router import _find_last_user_message, _translate_responses_to_messages, create_openai_compat_router
 
 
 # =============================================================================
@@ -345,3 +345,143 @@ class TestResponsesRequest:
         assert req.top_p is None
         assert req.max_output_tokens is None
         assert req.stream is False
+
+
+# =============================================================================
+# Translation Helper Tests
+# =============================================================================
+
+
+class TestTranslateResponsesToMessages:
+    """Test Responses API input → Chat Completions messages translation."""
+
+    def test_string_input(self):
+        """String input becomes a single user message."""
+        messages = _translate_responses_to_messages("Hello world", instructions=None)
+        assert messages == [{"role": "user", "content": "Hello world"}]
+
+    def test_string_input_with_instructions(self):
+        """Instructions prepended as system message."""
+        messages = _translate_responses_to_messages(
+            "Hello", instructions="Be concise"
+        )
+        assert messages == [
+            {"role": "system", "content": "Be concise"},
+            {"role": "user", "content": "Hello"},
+        ]
+
+    def test_array_input(self):
+        """Array input passed through as messages."""
+        input_msgs = [
+            {"role": "user", "content": "First"},
+            {"role": "assistant", "content": "Response"},
+            {"role": "user", "content": "Second"},
+        ]
+        messages = _translate_responses_to_messages(input_msgs, instructions=None)
+        assert messages == input_msgs
+
+    def test_array_input_with_instructions(self):
+        """Instructions prepended before array messages."""
+        input_msgs = [{"role": "user", "content": "Hello"}]
+        messages = _translate_responses_to_messages(
+            input_msgs, instructions="You are helpful"
+        )
+        assert len(messages) == 2
+        assert messages[0] == {"role": "system", "content": "You are helpful"}
+        assert messages[1] == {"role": "user", "content": "Hello"}
+
+
+# =============================================================================
+# Response Builder Tests
+# =============================================================================
+
+
+class TestBuildResponsesResponse:
+    """Test Chat Completions result → Responses API response wrapping."""
+
+    def test_basic_response(self):
+        """Wraps a simple completion into Responses format."""
+        chat_response = {
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1700000000,
+            "model": "gemma-3-4b",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": "Hello there!"},
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 10,
+                "completion_tokens": 5,
+                "total_tokens": 15,
+            },
+        }
+        result = _build_responses_response(chat_response)
+
+        assert result["object"] == "response"
+        assert result["id"].startswith("resp_")
+        assert result["model"] == "gemma-3-4b"
+        assert result["output_text"] == "Hello there!"
+        assert len(result["output"]) == 1
+        assert result["output"][0]["type"] == "message"
+        assert result["output"][0]["content"][0]["type"] == "output_text"
+        assert result["output"][0]["content"][0]["text"] == "Hello there!"
+        assert result["usage"]["input_tokens"] == 10
+        assert result["usage"]["output_tokens"] == 5
+        assert result["usage"]["total_tokens"] == 15
+
+    def test_response_with_reasoning(self):
+        """Includes thinking block when reasoning_content is present."""
+        chat_response = {
+            "id": "chatcmpl-456",
+            "object": "chat.completion",
+            "created": 1700000000,
+            "model": "qwen3-coder:30b",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "The answer is 42.",
+                        "reasoning_content": "Let me think step by step...",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 20,
+                "completion_tokens": 30,
+                "total_tokens": 50,
+            },
+        }
+        result = _build_responses_response(chat_response)
+
+        assert len(result["output"][0]["content"]) == 2
+        assert result["output"][0]["content"][0]["type"] == "thinking"
+        assert result["output"][0]["content"][0]["thinking"] == "Let me think step by step..."
+        assert result["output"][0]["content"][1]["type"] == "output_text"
+        assert result["output"][0]["content"][1]["text"] == "The answer is 42."
+        assert result["output_text"] == "The answer is 42."
+
+    def test_response_without_usage(self):
+        """Handles missing usage gracefully."""
+        chat_response = {
+            "id": "chatcmpl-789",
+            "object": "chat.completion",
+            "created": 1700000000,
+            "model": "gemma-3-4b",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": "Hi"},
+                    "finish_reason": "stop",
+                }
+            ],
+        }
+        result = _build_responses_response(chat_response)
+
+        assert result["output_text"] == "Hi"
+        assert result["usage"] is None
