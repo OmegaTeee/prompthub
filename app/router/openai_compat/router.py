@@ -8,6 +8,7 @@ and forwarded to the LLM server with circuit breaker protection.
 
 import logging
 import uuid
+from collections.abc import Callable
 from typing import Any
 
 import httpx
@@ -23,8 +24,11 @@ from router.enhancement.llm_client import (
     LLMError,
 )
 from router.openai_compat.auth import ApiKeyManager
-from router.openai_compat.models import ApiKeyConfig, ChatCompletionRequest, ResponsesRequest
-from collections.abc import Callable
+from router.openai_compat.models import (
+    ApiKeyConfig,
+    ChatCompletionRequest,
+    ResponsesRequest,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +60,7 @@ def create_openai_compat_router(
     router = APIRouter(prefix="/v1", tags=["openai-compat"])
 
     # Shared LLM client for non-streaming requests
-    _llm_client = LLMClient(
-        LLMConfig(base_url=llm_base_url, timeout=llm_timeout)
-    )
+    _llm_client = LLMClient(LLMConfig(base_url=llm_base_url, timeout=llm_timeout))
 
     # --- Auth dependency (closure over api_key_manager) ---
 
@@ -169,10 +171,12 @@ def create_openai_compat_router(
             if raw_privacy:
                 try:
                     from router.enhancement import PrivacyLevel
+
                     privacy_override = PrivacyLevel(raw_privacy)
                 except ValueError:
                     logger.warning(
-                        "Invalid X-Privacy-Level: %s", raw_privacy,
+                        "Invalid X-Privacy-Level: %s",
+                        raw_privacy,
                     )
 
             last_user_idx = _find_last_user_message(messages)
@@ -215,9 +219,7 @@ def create_openai_compat_router(
         # --- Streaming response ---
         if body.stream:
             return StreamingResponse(
-                _stream_with_breaker(
-                    payload, breaker, _llm_client, body.model
-                ),
+                _stream_with_breaker(payload, breaker, _llm_client, body.model),
                 media_type="text/event-stream",
                 headers={
                     "Cache-Control": "no-cache",
@@ -260,7 +262,10 @@ def create_openai_compat_router(
             raise HTTPException(
                 status_code=502,
                 detail={
-                    "error": {"message": f"Cannot reach LLM server: {e}", "type": "server_error"}
+                    "error": {
+                        "message": f"Cannot reach LLM server: {e}",
+                        "type": "server_error",
+                    }
                 },
             )
         except (LLMError, httpx.HTTPError) as e:
@@ -276,9 +281,7 @@ def create_openai_compat_router(
             )
             raise HTTPException(
                 status_code=502,
-                detail={
-                    "error": {"message": str(e), "type": "server_error"}
-                },
+                detail={"error": {"message": str(e), "type": "server_error"}},
             )
 
     @router.get("/models")
@@ -402,6 +405,7 @@ def create_openai_compat_router(
             if raw_privacy:
                 try:
                     from router.enhancement import PrivacyLevel
+
                     privacy_override = PrivacyLevel(raw_privacy)
                 except ValueError:
                     logger.warning("Invalid X-Privacy-Level: %s", raw_privacy)
@@ -420,6 +424,11 @@ def create_openai_compat_router(
                             **messages[last_user_idx],
                             "content": result.enhanced,
                         }
+                        logger.info(
+                            "Enhanced last user message for client=%s cached=%s",
+                            client_name,
+                            result.cached,
+                        )
                 except Exception as e:
                     logger.warning("Enhancement failed for %s: %s", client_name, e)
 
@@ -458,7 +467,10 @@ def create_openai_compat_router(
             raise HTTPException(
                 status_code=502,
                 detail={
-                    "error": {"message": f"Cannot reach LLM server: {e}", "type": "server_error"}
+                    "error": {
+                        "message": f"Cannot reach LLM server: {e}",
+                        "type": "server_error",
+                    }
                 },
             )
         except (LLMError, httpx.HTTPError) as e:
@@ -474,9 +486,7 @@ def create_openai_compat_router(
             )
             raise HTTPException(
                 status_code=502,
-                detail={
-                    "error": {"message": str(e), "type": "server_error"}
-                },
+                detail={"error": {"message": str(e), "type": "server_error"}},
             )
 
     return router
@@ -572,7 +582,9 @@ async def _stream_with_breaker(
 ):
     """Stream chat completion via OpenAI-compat /v1/chat/completions."""
     try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(llm_client.config.timeout)) as client:
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(llm_client.config.timeout)
+        ) as client:
             async with client.stream(
                 "POST",
                 f"{llm_client.config.base_url}/chat/completions",
