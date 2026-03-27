@@ -17,7 +17,12 @@ from fastapi.testclient import TestClient
 
 from router.openai_compat.auth import ApiKeyManager
 from router.openai_compat.models import ApiKeyConfig, ApiKeysRegistry, ChatCompletionRequest, ResponsesRequest
-from router.openai_compat.router import _find_last_user_message, _translate_responses_to_messages, create_openai_compat_router
+from router.openai_compat.router import (
+    _build_responses_response,
+    _find_last_user_message,
+    _translate_responses_to_messages,
+    create_openai_compat_router,
+)
 
 
 # =============================================================================

@@ -7,6 +7,7 @@ and forwarded to the LLM server with circuit breaker protection.
 """
 
 import logging
+import uuid
 from typing import Any
 
 import httpx
@@ -362,6 +363,51 @@ def _translate_responses_to_messages(
         messages.extend(input_data)
 
     return messages
+
+
+def _build_responses_response(chat_response: dict) -> dict:
+    """Wrap a Chat Completions response dict into Responses API format.
+
+    Args:
+        chat_response: Raw dict from LLMClient.chat_completion().model_dump()
+
+    Returns:
+        Dict matching the OpenAI Responses API shape.
+    """
+    message = chat_response["choices"][0]["message"]
+    text = message.get("content", "")
+    reasoning = message.get("reasoning_content")
+
+    content_blocks = []
+    if reasoning:
+        content_blocks.append({"type": "thinking", "thinking": reasoning})
+    content_blocks.append({"type": "output_text", "text": text})
+
+    # Map usage field names: prompt_tokens → input_tokens
+    raw_usage = chat_response.get("usage")
+    usage = None
+    if raw_usage:
+        usage = {
+            "input_tokens": raw_usage.get("prompt_tokens", 0),
+            "output_tokens": raw_usage.get("completion_tokens", 0),
+            "total_tokens": raw_usage.get("total_tokens", 0),
+        }
+
+    return {
+        "id": f"resp_{uuid.uuid4().hex[:24]}",
+        "object": "response",
+        "created_at": chat_response.get("created", 0),
+        "model": chat_response.get("model", ""),
+        "output": [
+            {
+                "type": "message",
+                "role": "assistant",
+                "content": content_blocks,
+            }
+        ],
+        "output_text": text,
+        "usage": usage,
+    }
 
 
 async def _stream_with_breaker(
