@@ -34,3 +34,47 @@ class ApiKeysRegistry(BaseModel):
     """Registry of API keys loaded from config file."""
 
     keys: dict[str, ApiKeyConfig] = Field(default_factory=dict)
+
+
+class ResponsesRequest(BaseModel):
+    """OpenAI Responses API request body.
+
+    Translates to Chat Completions internally. Accepts string or
+    message-array input, with optional system instructions.
+    """
+
+    model: str
+    input: str | list[dict[str, str]]
+    instructions: str | None = None
+    temperature: float = 0.7
+    max_output_tokens: int | None = None
+    top_p: float | None = None
+    stream: bool = False
+
+
+class ResponsesContentBlock(BaseModel):
+    """Content block in a Responses API output message."""
+
+    type: str  # "output_text" or "thinking"
+    text: str | None = None
+    thinking: str | None = None
+
+
+class ResponsesOutputMessage(BaseModel):
+    """Output message in Responses API format."""
+
+    type: str = "message"
+    role: str = "assistant"
+    content: list[ResponsesContentBlock]
+
+
+class ResponsesResponse(BaseModel):
+    """OpenAI Responses API response body."""
+
+    id: str
+    object: str = "response"
+    created_at: int
+    model: str
+    output: list[ResponsesOutputMessage]
+    output_text: str
+    usage: dict[str, int] | None = None

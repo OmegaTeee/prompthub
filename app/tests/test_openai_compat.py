@@ -16,7 +16,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from router.openai_compat.auth import ApiKeyManager
-from router.openai_compat.models import ApiKeyConfig, ApiKeysRegistry, ChatCompletionRequest
+from router.openai_compat.models import ApiKeyConfig, ApiKeysRegistry, ChatCompletionRequest, ResponsesRequest
 from router.openai_compat.router import _find_last_user_message, create_openai_compat_router
 
 
@@ -291,3 +291,57 @@ class TestApiKeysReload:
         data = response.json()
         assert data["count"] == 2
         assert data["message"] == "API keys reloaded"
+
+
+# =============================================================================
+# Responses API Model Tests
+# =============================================================================
+
+
+class TestResponsesRequest:
+    """Test Responses API request model parsing."""
+
+    def test_string_input(self):
+        """String input is accepted."""
+        req = ResponsesRequest(model="gemma-3-4b", input="Hello world")
+        assert req.input == "Hello world"
+        assert req.instructions is None
+        assert req.stream is False
+
+    def test_array_input(self):
+        """Array of message objects is accepted."""
+        req = ResponsesRequest(
+            model="gemma-3-4b",
+            input=[
+                {"role": "user", "content": "Hello"},
+                {"role": "assistant", "content": "Hi there"},
+            ],
+        )
+        assert isinstance(req.input, list)
+        assert len(req.input) == 2
+
+    def test_with_instructions(self):
+        """Instructions field maps to system prompt."""
+        req = ResponsesRequest(
+            model="gemma-3-4b",
+            input="Hello",
+            instructions="Be concise",
+        )
+        assert req.instructions == "Be concise"
+
+    def test_max_output_tokens(self):
+        """max_output_tokens is accepted (maps to max_tokens)."""
+        req = ResponsesRequest(
+            model="gemma-3-4b",
+            input="Hello",
+            max_output_tokens=500,
+        )
+        assert req.max_output_tokens == 500
+
+    def test_defaults(self):
+        """Default values are sensible."""
+        req = ResponsesRequest(model="gemma-3-4b", input="Hi")
+        assert req.temperature == 0.7
+        assert req.top_p is None
+        assert req.max_output_tokens is None
+        assert req.stream is False
