@@ -2,6 +2,8 @@
 PromptHub CLI — MCP Config Manager.
 
 Commands:
+    discover    Scan for installed AI clients
+    setup       Auto-configure all discovered clients
     generate    Print config JSON for a client
     install     Merge config into client's active config file
     validate    Check installed config for issues
@@ -36,6 +38,135 @@ def _resolve_workspace(workspace: Path | None) -> Path:
     if workspace:
         return workspace.resolve()
     return Path.home() / ".local" / "share" / "prompthub"
+
+
+# ── discover ─────────────────────────────────────────────────────────
+
+
+@app.command()
+def discover() -> None:
+    """Scan for installed AI clients and show their PromptHub status."""
+    from cli.discovery import discover_clients
+
+    results = discover_clients()
+    installed = [r for r in results if r.installed]
+
+    typer.echo()
+    for r in results:
+        if r.installed:
+            if r.prompthub_configured:
+                badge = "READY"
+            elif r.config_exists:
+                badge = "FOUND"
+            else:
+                badge = "FOUND"
+            typer.echo(
+                f"  {badge:>10}  {r.client_type.value:<20} "
+                f"{r.detection_method}"
+            )
+            config_note = (
+                "prompthub configured"
+                if r.prompthub_configured
+                else ("config exists" if r.config_exists else "no config yet")
+            )
+            typer.echo(
+                f"  {'':10}  {'':20} {config_note}"
+            )
+        else:
+            typer.echo(
+                f"  {'---':>10}  {r.client_type.value:<20} not installed"
+            )
+        typer.echo()
+
+    configured = sum(1 for r in results if r.prompthub_configured)
+    typer.echo(
+        f"  {len(installed)} clients found, "
+        f"{configured} already configured"
+    )
+    unconfigured = [
+        r for r in installed if not r.prompthub_configured
+    ]
+    if unconfigured:
+        names = ", ".join(r.client_type.value for r in unconfigured)
+        typer.echo(f"  Unconfigured: {names}")
+        typer.echo(
+            "\n  Run `python -m cli setup` to configure all found clients"
+        )
+
+
+# ── setup ────────────────────────────────────────────────────────────
+
+
+@app.command()
+def setup(
+    dry_run: Annotated[
+        bool,
+        typer.Option(
+            "--dry-run", "-n",
+            help="Show planned actions without executing",
+        ),
+    ] = False,
+    workspace: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--workspace", "-w", help="PromptHub workspace root"
+        ),
+    ] = None,
+    central_dir: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--central-dir",
+            help="Directory for consolidated configs "
+            "(default: ~/.prompthub/clients/)",
+        ),
+    ] = None,
+) -> None:
+    """Auto-discover clients, generate configs, and symlink/merge."""
+    from cli.discovery import discover_installed
+    from cli.setup import execute_setup, plan_setup
+
+    ws = _resolve_workspace(workspace)
+    discovered = discover_installed()
+
+    if not discovered:
+        typer.echo("  No AI clients detected. Nothing to configure.")
+        raise typer.Exit(0)
+
+    typer.echo(f"\n  Found {len(discovered)} clients. Planning setup...\n")
+
+    actions = plan_setup(discovered, central_dir=central_dir)
+
+    for i, action in enumerate(actions, 1):
+        typer.echo(
+            f"  [{i}/{len(actions)}] {action.client_type.value:<20} "
+            f"strategy: {action.strategy}"
+        )
+        typer.echo(f"         central:  {action.central_path}")
+        typer.echo(f"         target:   {action.target_path}")
+        typer.echo()
+
+    if dry_run:
+        typer.echo("  (dry run — no changes will be made)\n")
+
+    results = execute_setup(
+        actions, workspace_root=ws, dry_run=dry_run
+    )
+
+    typer.echo("  Results:\n")
+    succeeded = sum(1 for a in results if a.success)
+    for action in results:
+        icon = "OK" if action.success else "FAIL"
+        typer.echo(
+            f"  [{icon:>4}] {action.client_type.value:<20} "
+            f"{action.message}"
+        )
+
+    typer.echo(
+        f"\n  {succeeded}/{len(results)} clients configured.\n"
+    )
+
+    if succeeded < len(results):
+        raise typer.Exit(1)
 
 
 # ── generate ─────────────────────────────────────────────────────────
