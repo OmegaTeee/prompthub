@@ -6,7 +6,7 @@ Lightweight local-first service orchestration layer for macOS — central router
 
 Service provides a single local router (`localhost:9090`) that:
 - Manages MCP servers centrally (configure once, use everywhere)
-- Enhances prompts via Ollama before forwarding to AI services
+ - Enhances prompts via LM Studio before forwarding to AI services
 - Provides circuit breakers for graceful degradation
 - Caches responses for performance
 
@@ -16,7 +16,7 @@ Service provides a single local router (`localhost:9090`) that:
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phase 2 | **Complete** | Core router, caching, circuit breakers, Ollama enhancement |
+| Phase 2 | **Complete** | Core router, caching, circuit breakers, LM Studio enhancement |
 | Phase 2.5 | **Complete** | MCP server management, stdio bridges |
 | Phase 3 | **Complete** | Desktop integration, config generators, documentation pipeline |
 | Phase 4 | **Complete** | HTMX dashboard with real-time monitoring |
@@ -28,7 +28,7 @@ Service provides a single local router (`localhost:9090`) that:
 - Python 3.11+
 - Node.js 20+ (for MCP servers)
 - Docker Desktop or Colima
-- Ollama running locally (`ollama serve`)
+- LM Studio running locally (`lms server start`)
 
 ### Development
 
@@ -104,36 +104,36 @@ See **[docs/](docs/)** for technical documentation:
 
 ### Prompt Enhancement
 
-Prompts pass through a local Ollama model before reaching the AI service. Each client gets a tailored system prompt and model:
+Prompts pass through a local LM Studio model before reaching the AI service. Each client gets a tailored system prompt and model:
 
 | Client | Model | Tuning |
 |--------|-------|--------|
-| Claude Desktop | deepseek-r1 | Structured reasoning, Markdown |
-| VS Code / Claude Code | qwen2.5-coder | Code-first, file paths, minimal prose |
-| Raycast | llama3.2 | Action-oriented, CLI commands, under 200 words |
-| Obsidian | llama3.2 | Markdown with `[[wikilinks]]` and `#tags` |
+| Claude Desktop | qwen/qwen3-4b-2507 | Structured reasoning, Markdown |
+| VS Code / Claude Code | qwen/qwen3-4b-2507 | Code-first, file paths, minimal prose |
+| Raycast | qwen/qwen3-4b-2507 | Action-oriented, CLI commands, under 200 words |
+| Obsidian | qwen/qwen3-4b-2507 | Markdown with `[[wikilinks]]` and `#tags` |
 
-Enhancement is optional per-client and fails gracefully — if Ollama is unreachable, the original prompt passes through unchanged. Configure models and system prompts in `app/configs/enhancement-rules.json`.
+Enhancement is optional per-client and fails gracefully — if LM Studio is unreachable, the original prompt passes through unchanged. Configure models and system prompts in `app/configs/enhancement-rules.json`.
 
 ### OpenAI-Compatible API Proxy
 
-Any app that speaks the OpenAI API can connect to local Ollama models through PromptHub's `/v1/` endpoints. Supports `POST /v1/chat/completions` (streaming and non-streaming) and `GET /v1/models`. Authenticated via bearer tokens, with optional prompt enhancement applied before forwarding.
+Any app that speaks the OpenAI API can connect to local LM Studio models through PromptHub's `/v1/` endpoints. Supports `POST /v1/chat/completions` (streaming and non-streaming) and `GET /v1/models`. Authenticated via bearer tokens, with optional prompt enhancement applied before forwarding.
 
 Use this to connect VS Code chat, Cursor, Raycast AI, or any OpenAI-compatible client to local models without changing their configuration beyond the base URL and API key.
 
 ### Circuit Breakers
 
-Every MCP server and the Ollama service is wrapped in a circuit breaker. When a service fails 3 times, the circuit opens and requests return immediately with a fallback — no hanging, no timeouts piling up. After 30 seconds, one test request probes recovery. On success, full traffic resumes automatically.
+Every MCP server and the LM Studio service is wrapped in a circuit breaker. When a service fails 3 times, the circuit opens and requests return immediately with a fallback — no hanging, no timeouts piling up. After 30 seconds, one test request probes recovery. On success, full traffic resumes automatically.
 
 Monitor and reset breakers via `GET /circuit-breakers` and `POST /circuit-breakers/{name}/reset`.
 
 ### Caching
 
-Enhanced prompts are cached in an in-memory LRU store (up to 1,000 entries, 1-hour TTL). Cache keys are SHA-256 hashes of the prompt content, providing exact-match deduplication. Repeated identical prompts return instantly without hitting Ollama.
+Enhanced prompts are cached in an in-memory LRU store (up to 1,000 entries, 1-hour TTL). Cache keys are SHA-256 hashes of the prompt content, providing exact-match deduplication. Repeated identical prompts return instantly without hitting LM Studio.
 
 ### Dashboard
 
-HTMX-powered monitoring UI at `localhost:9090/dashboard` with auto-refreshing panels for service health (5s), cache and Ollama status (10s), and request activity (3s). Includes quick actions to clear cache and restart individual MCP servers.
+HTMX-powered monitoring UI at `localhost:9090/dashboard` with auto-refreshing panels for service health (5s), cache and LM Studio status (10s), and request activity (3s). Includes quick actions to clear cache and restart individual MCP servers.
 
 ## MCP Servers
 
@@ -209,8 +209,8 @@ security add-generic-password -a $USER -s obsidian_api_key -w YOUR_API_KEY
 Copy `app/.env.example` to `app/.env` and configure:
 
 ```bash
-OLLAMA_HOST=host.docker.internal
-OLLAMA_PORT=11434
+LM_STUDIO_HOST=host.docker.internal
+LM_STUDIO_PORT=1234
 ROUTER_PORT=9090
 ```
 
@@ -251,7 +251,7 @@ GET /health/{server}
   "status": "healthy",
   "services": {
     "router": "up",
-    "ollama": "up",
+    "lm_studio": "up",
     "cache": {"status": "up", "hit_rate": 0.82, "size": 145}
   },
   "servers": {
@@ -321,18 +321,18 @@ curl -X POST http://localhost:9090/mcp/context7/tools/call \
 #### Prompt Enhancement
 
 ```bash
-# Enhance prompt with Ollama
-POST /ollama/enhance
+# Enhance prompt with LM Studio
+POST /llm/enhance
 {
   "prompt": "Explain JWT authentication",
   "bypass_cache": false
 }
 
 # Headers:
-X-Client-Name: claude-desktop  # Routes to deepseek-r1
-X-Client-Name: vscode          # Routes to qwen2.5-coder
-X-Client-Name: raycast         # Routes to llama3.2
-X-Client-Name: obsidian        # Routes to llama3.2 with markdown
+X-Client-Name: claude-desktop  # Routes to qwen/qwen3-4b-2507
+X-Client-Name: vscode          # Routes to qwen/qwen3-4b-2507
+X-Client-Name: raycast         # Routes to qwen/qwen3-4b-2507
+X-Client-Name: obsidian        # Routes to qwen/qwen3-4b-2507 with markdown
 ```
 
 **Example Response:**
@@ -341,7 +341,7 @@ X-Client-Name: obsidian        # Routes to llama3.2 with markdown
 {
   "original": "Explain JWT authentication",
   "enhanced": "Provide a comprehensive explanation of JWT...",
-  "model": "deepseek-r1:latest",
+  "model": "qwen/qwen3-4b-2507",
   "cached": false,
   "was_enhanced": true,
   "error": null

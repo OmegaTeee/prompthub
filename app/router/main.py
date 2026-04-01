@@ -183,6 +183,11 @@ async def lifespan(app: FastAPI):
     llm_config = LLMConfig(
         base_url=f"http://{settings.llm_host}:{settings.llm_port}/v1",
         timeout=float(settings.llm_timeout),
+        extra_headers=(
+            {"Authorization": f"Bearer {settings.llm_api_key}"}
+            if settings.llm_api_key
+            else {}
+        ),
     )
     enhancement_service = EnhancementService(
         rules_path=settings.enhancement_rules_config,
@@ -206,11 +211,16 @@ async def lifespan(app: FastAPI):
         supervisor=supervisor,
     )
 
-    # Initialize orchestrator agent (qwen3:14b)
+    # Initialize orchestrator agent (thinking model)
     # Uses same LLM server as enhancement — separate CircuitBreaker
-    orchestrator_agent = get_orchestrator_agent(llm_config)
+    orchestrator_agent = get_orchestrator_agent(
+        llm_config, model=settings.llm_orchestrator_model
+    )
     await orchestrator_agent.initialize()
-    logger.info(f"Orchestrator agent initialized (model: qwen3:14b)")
+    logger.info(
+        "Orchestrator agent initialized (model: %s)",
+        settings.llm_orchestrator_model,
+    )
 
     yield
 
@@ -341,49 +351,31 @@ async def _clear_cache():
             raise
 
 
-async def _restart_server(name: str):
-    """Restart a server for dashboard."""
+async def _server_action(action: str, name: str) -> None:
+    """Execute an audited server lifecycle action (start/stop/restart)."""
     if not supervisor:
         raise ValueError("Supervisor not initialized")
 
-    audit_admin_action(action="restart", server_name=name, status="initiated")
-
+    op = getattr(supervisor, f"{action}_server")
+    audit_admin_action(action=action, server_name=name, status="initiated")
     try:
-        await supervisor.restart_server(name)
-        audit_admin_action(action="restart", server_name=name, status="success")
+        await op(name)
+        audit_admin_action(action=action, server_name=name, status="success")
     except Exception as e:
-        audit_admin_action(action="restart", server_name=name, status="failed", error=str(e))
+        audit_admin_action(action=action, server_name=name, status="failed", error=str(e))
         raise
+
+
+async def _restart_server(name: str):
+    await _server_action("restart", name)
 
 
 async def _start_server(name: str):
-    """Start a server for dashboard."""
-    if not supervisor:
-        raise ValueError("Supervisor not initialized")
-
-    audit_admin_action(action="start", server_name=name, status="initiated")
-
-    try:
-        await supervisor.start_server(name)
-        audit_admin_action(action="start", server_name=name, status="success")
-    except Exception as e:
-        audit_admin_action(action="start", server_name=name, status="failed", error=str(e))
-        raise
+    await _server_action("start", name)
 
 
 async def _stop_server(name: str):
-    """Stop a server for dashboard."""
-    if not supervisor:
-        raise ValueError("Supervisor not initialized")
-
-    audit_admin_action(action="stop", server_name=name, status="initiated")
-
-    try:
-        await supervisor.stop_server(name)
-        audit_admin_action(action="stop", server_name=name, status="success")
-    except Exception as e:
-        audit_admin_action(action="stop", server_name=name, status="failed", error=str(e))
-        raise
+    await _server_action("stop", name)
 
 
 def _get_circuit_breakers():
@@ -535,6 +527,7 @@ openai_compat_router = create_openai_compat_router(
     api_key_manager=_openai_api_key_manager,
     llm_base_url=f"http://{_openai_settings.llm_host}:{_openai_settings.llm_port}/v1",
     llm_timeout=float(_openai_settings.llm_timeout),
+    llm_api_key=_openai_settings.llm_api_key,
 )
 app.include_router(openai_compat_router)
 

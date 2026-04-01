@@ -29,6 +29,8 @@ PromptHub works with any app that supports one of these:
 
 ### Configuration
 
+**Note:** If PromptHub is already running as a LaunchAgent, you can skip this section. Use these steps only if you're running PromptHub manually for testing.
+
 1. Open this file in a text editor:
    ```
    ~/Library/Application Support/Claude/claude_desktop_config.json
@@ -90,7 +92,7 @@ This is the easier setup. It gives you chat access through PromptHub.
    {
      "chat.openaiCompatibleEndpoint": "http://localhost:9090/v1",
      "chat.openaiCompatibleApiKey": "sk-prompthub-code-001",
-     "chat.openaiCompatibleModel": "gemma3:27b"
+     "chat.openaiCompatibleModel": "qwen/qwen3-4b-2507"
    }
    ```
 
@@ -142,7 +144,7 @@ Think of it like a phone with two lines -- one for talking, one for actions.
    - URL: `http://127.0.0.1:9090/mcp-direct/mcp`
    - No auth required (this is a local-only endpoint).
 
-3. Select a model in the chat dropdown (e.g., `gemma3:4b` for fast responses).
+3. Select a model in the chat dropdown (e.g., `qwen/qwen3-4b-2507` for fast responses).
 
 ### Filtering Tools with GATEWAY_SERVERS
 
@@ -158,7 +160,7 @@ Leave it empty (the default) to expose all servers. Restart the router after cha
 ### Performance Tips
 
 - **Turn off enhancement:** Set `"enhance": false` in `api-keys.json` for the Open WebUI key. This skips the prompt rewrite step.
-- **Use smaller models:** `gemma3:4b` is fastest. `gemma3:27b` is more capable but slower.
+- **Use smaller models:** `qwen/qwen3-4b-2507` is fastest. `qwen/qwen3-4b-2507` is more capable but slower.
 - **Reduce tool count:** Use `GATEWAY_SERVERS` to limit exposed tools. Fewer tools means the model picks the right one faster.
 
 **Key takeaways:**
@@ -177,7 +179,7 @@ Leave it empty (the default) to expose all servers. Restart the router after cha
    - **Model Provider:** OpenAI Compatible
    - **API Endpoint:** `http://localhost:9090/v1`
    - **API Key:** `sk-prompthub-raycast-001` (or your key)
-   - **Model:** `gemma3:27b` (or your preferred model)
+   - **Model:** `qwen/qwen3-4b-2507` (or your preferred model)
 4. Test it: open Raycast (`Cmd+Space`), type "Ask AI," and send a question.
 
 **Key takeaways:**
@@ -194,7 +196,7 @@ Leave it empty (the default) to expose all servers. Restart the router after cha
 import requests
 import json
 
-def call_prompthub(prompt, model="gemma3:27b"):
+def call_prompthub(prompt, model="qwen/qwen3-4b-2507"):
     url = "http://localhost:9090/v1/chat/completions"
     headers = {
         "Authorization": "Bearer sk-prompthub-code-001",
@@ -221,7 +223,7 @@ print(result['choices'][0]['message']['content'])
 #!/bin/bash
 
 PROMPT="$1"
-MODEL="${2:-gemma3:27b}"
+MODEL="${2:-qwen/qwen3-4b-2507}"
 API_KEY="sk-prompthub-code-001"
 
 curl -s http://localhost:9090/v1/chat/completions \
@@ -257,7 +259,7 @@ chmod +x prompthub.sh
 3. In the plugin settings, configure:
    - API endpoint: `http://localhost:9090/v1`
    - API key: `sk-prompthub-code-001`
-   - Model: `gemma3:27b`
+   - Model: `qwen/qwen3-4b-2507`
 4. In your notes, type `/ai` and ask a question. Results appear inline.
 
 ---
@@ -280,7 +282,7 @@ You can create a macOS Quick Action that sends selected text to PromptHub. This 
      -H "Authorization: Bearer $API_KEY" \
      -H "Content-Type: application/json" \
      -d "{
-       \"model\": \"gemma3:27b\",
+       \"model\": \"qwen/qwen3-4b-2507\",
        \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT\"}]
      }" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['choices'][0]['message']['content'])"
    ```
@@ -307,7 +309,7 @@ Here is a macro that pops up a prompt box, sends your text to PromptHub, and pas
      -H "Authorization: Bearer $API_KEY" \
      -H "Content-Type: application/json" \
      -d "{
-       \"model\": \"gemma3:27b\",
+       \"model\": \"qwen/qwen3-4b-2507\",
        \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT\"}]
      }" | python3 -c "import sys, json; print(json.load(sys.stdin)['choices'][0]['message']['content'])"
 
@@ -336,7 +338,7 @@ async function callPromptHub(prompt) {
     const response = await axios.post(
       'http://localhost:9090/v1/chat/completions',
       {
-        model: 'gemma3:27b',
+        model: 'qwen/qwen3-4b-2507',
         messages: [{ role: 'user', content: prompt }]
       },
       {
@@ -376,7 +378,7 @@ These steps work for any HTTP client:
 3. Set the body (JSON):
    ```json
    {
-     "model": "gemma3:27b",
+     "model": "qwen/qwen3-4b-2507",
      "messages": [
        {
          "role": "user",
@@ -417,17 +419,17 @@ These steps work for any HTTP client:
 
 1. List available models:
    ```bash
-   ollama list
-   ```
+  lms ls
+  ```
 2. Download the missing model:
-   ```bash
-   ollama pull gemma3:27b
-   ```
+  ```bash
+  lms get qwen/qwen3-4b-2507
+  ```
 
 ### "Enhancement is slow"
 
 1. Turn off enhancement for that app's key in `api-keys.json`.
-2. Or switch to a faster model: `gemma3:4b`.
+2. Check if LM Studio is busy with other tasks: run `lms ps`.
 
 **Key takeaways:**
 - Most connection issues come down to PromptHub not running or a wrong API key.
@@ -474,12 +476,7 @@ This gives you several benefits:
 
 ### For Faster Responses
 
-1. Use lighter models:
-   ```
-   gemma3:4b   (fastest)
-   gemma3:7b   (fast)
-   gemma3:27b  (more capable, slower)
-   ```
+1. All clients use `qwen/qwen3-4b-2507`, which is fast and capable.
 
 2. Turn off enhancement if you do not need it:
    ```json
@@ -487,32 +484,27 @@ This gives you several benefits:
    ```
 
 3. Keep fewer models loaded in memory:
-   ```bash
-   # See what is loaded
-   ollama list
+  ```bash
+  # See what is loaded
+  lms ls
 
-   # Remove unused models
-   ollama rm model-name
-   ```
+  # Remove unused models
+  lms rm model-name
+  ```
 
 ### For Better Results
 
-1. Use larger models (they are slower but more thoughtful):
-   ```
-   gemma3:27b
-   ```
-
-2. Turn on enhancement (adds context to your prompts):
+1. Turn on enhancement (adds context to your prompts):
    ```json
    "enhance": true
    ```
 
-3. Give the model context in your prompts. For example:
+2. Give the model context in your prompts. For example:
    > "I am a Python developer. Write a function that..."
 
 **Key takeaways:**
-- Smaller models are faster; larger models give better answers.
-- Enhancement adds a rewrite step that can improve quality at the cost of speed.
+- Enhancement adds a rewrite step that can improve quality at the cost of a small delay.
+- Giving the model context in your prompts helps it produce better answers.
 
 ---
 

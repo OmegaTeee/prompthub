@@ -362,52 +362,17 @@
     "mistralai/mistral-small-3.1-24b-instruct:free"
   ],
   "local_models": {
-    "qwen3.5:2b": {
+    "qwen/qwen3-4b-2507": {
       "category": "general",
       "cloud_upgrade": "meta-llama/llama-3.3-70b-instruct",
       "cloud_equivalent": "mistralai/mistral-small-3.1-24b-instruct",
-      "note": "Default enhancement model (replaced gemma3:4b) — cloud upgrade is Llama 3.3 70B, equivalent is Mistral Small 24B (both free tier)"
+      "note": "Default enhancement model — cloud upgrade is Llama 3.3 70B, equivalent is Mistral Small 24B (both free tier)"
     },
-    "gemma3:4b": {
-      "category": "general",
-      "cloud_upgrade": "meta-llama/llama-3.3-70b-instruct",
-      "cloud_equivalent": "mistralai/mistral-small-3.1-24b-instruct",
-      "note": "Former default enhancement model — replaced by qwen3.5:2b"
-    },
-    "gemma3:27b": {
-      "category": "general",
-      "cloud_upgrade": "deepseek/deepseek-r1-0528",
-      "cloud_equivalent": "meta-llama/llama-3.3-70b-instruct",
-      "note": "High-quality local model — cloud upgrade is full DeepSeek R1 671B, equivalent is Llama 3.3 70B (free tier)"
-    },
-    "qwen3-coder:30b": {
-      "category": "coding",
-      "cloud_upgrade": "qwen/qwen3-coder",
-      "cloud_equivalent": "mistralai/devstral-2512",
-      "note": "Local coding model — cloud upgrade is Qwen3 Coder 480B MoE, equivalent is Devstral 2512 (free tier)"
-    },
-    "qwen3:14b": {
+    "qwen/qwen3-4b-thinking-2507": {
       "category": "reasoning",
       "cloud_upgrade": "deepseek/deepseek-r1-0528",
       "cloud_equivalent": "deepseek/deepseek-r1-distill-qwen-14b",
-      "note": "Orchestrator model — cloud upgrade is full R1, equivalent is R1 14B distill"
-    },
-    "qwen2.5-coder:32b": {
-      "category": "coding",
-      "cloud_upgrade": "qwen/qwen3-coder",
-      "cloud_equivalent": "qwen/qwen-2.5-coder-32b-instruct"
-    },
-    "deepseek-r1:latest": {
-      "category": "reasoning",
-      "cloud_upgrade": "deepseek/deepseek-r1-0528",
-      "cloud_equivalent": "deepseek/deepseek-r1-distill-qwen-14b",
-      "note": "Local model is 8B distill — cloud equivalent is 14B distill, cloud upgrade is full 671B"
-    },
-    "llama3.2:latest": {
-      "category": "general",
-      "cloud_upgrade": "meta-llama/llama-3.3-70b-instruct",
-      "cloud_equivalent": null,
-      "note": "Local model is 3B — smallest cloud Llama is 70B, huge quality gap"
+      "note": "Orchestrator / thinking model — cloud upgrade is full DeepSeek R1 671B, equivalent is R1 14B distill"
     }
   }
 }

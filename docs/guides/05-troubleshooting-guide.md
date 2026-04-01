@@ -20,7 +20,7 @@ You should see output like this:
 
 ```
 Router is healthy
-Ollama is running
+LM Studio is running
 Database is accessible
 API keys are loaded
 All systems operational
@@ -96,24 +96,24 @@ Open http://localhost:9090 in your browser. Look at the **Status** section. Gree
 
 ---
 
-### "Ollama connection failed"
+### "LM Studio connection failed"
 
-**Problem:** PromptHub cannot reach Ollama. Ollama is the engine that runs your AI models. If it is not running, no model requests will work.
+**Problem:** PromptHub cannot reach LM Studio. LM Studio is the engine that runs your AI models. If it is not running, no model requests will work.
 
 **Fix -- work through these steps in order:**
 
-1. Check if Ollama is running:
+1. Check if LM Studio is running:
    ```bash
    lsof -i :11434
    ```
-   If nothing appears, Ollama is not running.
+   If nothing appears, LM Studio is not running.
 
-2. Start Ollama:
+2. Start LM Studio:
    ```bash
-   ollama serve
+   lms server start
    ```
 
-3. Test Ollama directly:
+3. Test LM Studio directly:
    ```bash
    curl http://localhost:11434/api/tags
    ```
@@ -121,21 +121,21 @@ Open http://localhost:9090 in your browser. Look at the **Status** section. Gree
 
 4. Confirm installed models:
    ```bash
-   ollama list
+   lms ls
    ```
 
-5. If Ollama is stuck or crashing, restart it:
+5. If LM Studio is stuck or crashing, restart it:
    ```bash
-   killall ollama
+   lms server stop || true
    sleep 2
-   ollama serve
+   lms server start
    ```
 
 ---
 
 ### "401 Unauthorized" or "Missing bearer token"
 
-**Problem:** Your API key is missing, misspelled, or not loaded. Think of it like entering the wrong password at a door.
+**Problem:** Your API key is missing, misspelled, or not loaded. A bearer token is a security code in the format `Authorization: Bearer sk-YOUR-KEY`. Think of it like entering the wrong password at a door.
 
 **Fix -- work through these steps in order:**
 
@@ -168,20 +168,20 @@ Open http://localhost:9090 in your browser. Look at the **Status** section. Gree
 
 ### "404 Model not found"
 
-**Problem:** You asked for a model that Ollama does not have. It is like requesting a book the library has not stocked yet.
+**Problem:** You asked for a model that LM Studio does not have. It is like requesting a book the library has not stocked yet.
 
 **Fix -- work through these steps in order:**
 
 1. List the models you have:
    ```bash
-   ollama list
+   lms ls
    ```
 
 2. Download the model you need:
    ```bash
-   ollama pull gemma3:27b
+   lms get qwen/qwen3-4b-2507
    ```
-   Replace `gemma3:27b` with whatever model you want.
+   Replace `qwen/qwen3-4b-2507` with whatever model you want.
 
 3. Confirm it shows up through the API:
    ```bash
@@ -189,7 +189,7 @@ Open http://localhost:9090 in your browser. Look at the **Status** section. Gree
      -H "Authorization: Bearer sk-your-key"
    ```
 
-4. Large models take time to download. Check progress in the Ollama output.
+4. Large models take time to download. Check progress in the LM Studio output.
 
 ---
 
@@ -204,13 +204,13 @@ Open http://localhost:9090 in your browser. Look at the **Status** section. Gree
    curl -X POST http://localhost:9090/v1/api-keys/reload
    ```
 
-2. Switch to a smaller, faster model like `gemma3:4b`.
+2. Check if LM Studio is busy with other tasks: run `lms ps`.
 
 3. Check your system resources:
    ```bash
    top -o %CPU
    ```
-   If Ollama is using more than 80% CPU, your system is overloaded.
+   If LM Studio is using more than 80% CPU, your system is overloaded.
 
 4. Avoid running multiple large models at the same time.
 
@@ -354,9 +354,10 @@ Open http://localhost:9090 in your browser. Look at the **Status** section. Gree
 
 2. Restart everything from scratch:
    ```bash
-   killall uvicorn ollama
+   killall uvicorn || true
+   lms server stop || true
    sleep 3
-   ollama serve &
+   lms server start &
    sleep 3
    cd ~/prompthub
    uvicorn router.main:app --host 127.0.0.1 --port 9090
@@ -410,7 +411,7 @@ This checks all major systems and reports what is healthy and what is not.
 2. Click the **Health Check** button.
 3. It tests:
    - Router running
-   - Ollama responsive
+   - LM Studio responsive
    - Database accessible
    - API keys loaded
 
@@ -418,15 +419,17 @@ This checks all major systems and reports what is healthy and what is not.
 
 When in doubt, a clean restart often fixes the problem:
 
+sleep 2
 ```bash
-# Stop all processes
-killall uvicorn ollama 2>/dev/null
+# Stop uvicorn and the LM Studio server (if running)
+killall uvicorn 2>/dev/null || true
+lms server stop || true
 
 # Wait for them to shut down
 sleep 3
 
-# Start fresh
-ollama serve &
+# Start LM Studio and PromptHub
+lms server start &
 sleep 2
 cd ~/prompthub
 source .venv/bin/activate
@@ -444,10 +447,10 @@ uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
 
 | Symptom | First Try | Second Try |
 |---------|-----------|-----------|
-| Cannot access dashboard | Restart PromptHub | Check if Ollama is running |
+| Cannot access dashboard | Restart PromptHub | Check if LM Studio is running |
 | Enhancement slow | Disable it | Use smaller model |
 | API returns 401 | Check API key format | Reload keys |
-| API returns 404 | List models with `ollama list` | Pull missing model |
+| API returns 404 | List models with `lms ls` | Pull missing model |
 | Database locked | Restart PromptHub | Check `lsof \| grep memory.db` |
 | Timeout errors | Disable enhancement | Increase timeout in settings |
 | Port in use | Kill process on port | Use different port |

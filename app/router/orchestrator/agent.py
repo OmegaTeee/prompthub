@@ -1,5 +1,5 @@
 """
-Orchestrator Agent — local reasoning layer using qwen3:14b.
+Orchestrator Agent — local reasoning layer using qwen3-4b-thinking.
 
 Sits upstream of EnhancementService. Classifies intent, injects
 session context within a token budget, and annotates prompts with
@@ -7,13 +7,13 @@ routing hints before they reach the enhancement layer.
 
 Flow:
     incoming prompt
-        → OrchestratorAgent.process()  (qwen3:14b, 2s timeout)
+        → OrchestratorAgent.process()  (qwen3-4b-thinking, 2s timeout)
         → OrchestratorResult (intent + annotated_prompt)
-        → EnhancementService.enhance() (gemma3:4b, fast rewrite)
+        → EnhancementService.enhance() (qwen3-4b, fast rewrite)
         → downstream client
 
 Fail-safe: any error or timeout returns the original prompt unchanged.
-Supports any OpenAI-compatible LLM server (Ollama, LM Studio, etc.).
+Supports any OpenAI-compatible LLM server (LM Studio, Ollama, etc.).
 """
 
 import asyncio
@@ -35,7 +35,7 @@ from router.resilience import CircuitBreaker, CircuitBreakerConfig, CircuitBreak
 logger = logging.getLogger(__name__)
 
 # ── Model config ──────────────────────────────────────────────────────────────
-MODEL = "qwen3-14b-mlx"
+DEFAULT_MODEL = "qwen/qwen3-4b-thinking-2507"
 TIMEOUT_SECONDS = 2.5          # Hard ceiling — must not block enhancement
 MAX_TOKENS = 300               # Keep responses tight; we only need JSON
 TEMPERATURE = 0.1              # Low randomness for reliable structured output
@@ -71,6 +71,28 @@ def _strip_think_blocks(text: str) -> str:
     return _THINK_RE.sub("", text).strip()
 
 
+def _parse_json_response(raw: str) -> dict | None:
+    """Parse JSON from LLM output, with fallback regex extraction.
+
+    Returns parsed dict, or None if no valid JSON found.
+    """
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if not match:
+        logger.warning("Orchestrator returned non-JSON: %s", raw[:120])
+        return None
+
+    try:
+        return json.loads(match.group())
+    except json.JSONDecodeError:
+        logger.warning("Orchestrator extracted invalid JSON: %s", match.group()[:120])
+        return None
+
+
 def _cache_key(prompt: str, client_name: str | None) -> str:
     payload = f"{client_name or ''}:{prompt}"
     return sha256(payload.encode()).hexdigest()[:16]
@@ -78,7 +100,7 @@ def _cache_key(prompt: str, client_name: str | None) -> str:
 
 class OrchestratorAgent:
     """
-    Wraps qwen3:14b to classify intent and annotate prompts.
+    Wraps qwen3-4b-thinking to classify intent and annotate prompts.
 
     Usage:
         agent = OrchestratorAgent()
@@ -86,9 +108,14 @@ class OrchestratorAgent:
         result = await agent.process(prompt, client_name="vscode")
     """
 
-    def __init__(self, llm_config: LLMConfig | None = None):
+    def __init__(
+        self,
+        llm_config: LLMConfig | None = None,
+        model: str | None = None,
+    ):
         self._config = llm_config or LLMConfig()
         self._client = LLMClient(self._config)
+        self._model = model or DEFAULT_MODEL
         self._breaker = CircuitBreaker(
             name="orchestrator",
             config=CircuitBreakerConfig(
@@ -107,10 +134,10 @@ class OrchestratorAgent:
         """Check model availability. Logs warning if model not found."""
         self._healthy = await self._client.is_healthy()
         if self._healthy:
-            has_model = await self._client.has_model(MODEL)
+            has_model = await self._client.has_model(self._model)
             if not has_model:
                 logger.warning(
-                    f"Orchestrator model '{MODEL}' not found on LLM server. "
+                    f"Orchestrator model '{self._model}' not found on LLM server. "
                     f"Load it in LM Studio or your model server. "
                     f"Orchestrator will pass-through until model is available."
                 )
@@ -142,7 +169,7 @@ class OrchestratorAgent:
             OrchestratorResult — falls back to pass-through on any failure
         """
         if not self._healthy:
-            # Re-probe with cooldown to avoid flooding Ollama when it's down
+            # Re-probe with cooldown to avoid flooding LLM server when it's down
             now = time.monotonic()
             if now - self._last_probe_time < HEALTH_PROBE_COOLDOWN:
                 return OrchestratorResult.pass_through(prompt, "LLM server unavailable")
@@ -203,7 +230,7 @@ class OrchestratorAgent:
         return "\n".join(parts)
 
     async def _call_model(self, user_msg: str, original_prompt: str) -> OrchestratorResult:
-        """Call qwen3:14b via circuit breaker and parse JSON response."""
+        """Call thinking model via circuit breaker and parse JSON response."""
         try:
             self._breaker.check()
         except CircuitBreakerError:
@@ -211,7 +238,7 @@ class OrchestratorAgent:
 
         try:
             response = await self._client.chat_completion(
-                model=MODEL,
+                model=self._model,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": user_msg},
@@ -226,20 +253,9 @@ class OrchestratorAgent:
         content = response.choices[0].message.content
         raw = _strip_think_blocks(content)
 
-        try:
-            data = json.loads(raw)
-        except json.JSONDecodeError:
-            # Try to extract JSON from a partially wrapped response
-            match = re.search(r"\{.*\}", raw, re.DOTALL)
-            if match:
-                try:
-                    data = json.loads(match.group())
-                except json.JSONDecodeError:
-                    logger.warning(f"Orchestrator extracted invalid JSON: {match.group()[:120]}")
-                    return OrchestratorResult.pass_through(original_prompt, "parse_error")
-            else:
-                logger.warning(f"Orchestrator returned non-JSON: {raw[:120]}")
-                return OrchestratorResult.pass_through(original_prompt, "parse_error")
+        data = _parse_json_response(raw)
+        if data is None:
+            return OrchestratorResult.pass_through(original_prompt, "parse_error")
 
         # Validate intent field
         try:
@@ -276,9 +292,12 @@ class OrchestratorAgent:
 _agent: OrchestratorAgent | None = None
 
 
-def get_orchestrator_agent(llm_config: LLMConfig | None = None) -> OrchestratorAgent:
+def get_orchestrator_agent(
+    llm_config: LLMConfig | None = None,
+    model: str | None = None,
+) -> OrchestratorAgent:
     """Get or create the global OrchestratorAgent instance."""
     global _agent
     if _agent is None:
-        _agent = OrchestratorAgent(llm_config)
+        _agent = OrchestratorAgent(llm_config, model=model)
     return _agent

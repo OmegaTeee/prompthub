@@ -2,16 +2,16 @@
 
 ## What This Guide Covers
 
-PromptHub can stand in for the OpenAI API. Any app that talks to OpenAI can talk to PromptHub instead, using your local Ollama models.
+PromptHub can stand in for the OpenAI API. Any app that talks to OpenAI can talk to PromptHub instead, using your local LM Studio models.
 
-Think of it like a translator: your app speaks "OpenAI," and PromptHub translates that into "Ollama" behind the scenes.
+Think of it like a translator: your app speaks "OpenAI," and PromptHub translates that into "LM Studio" behind the scenes.
 
 ### Why Use This?
 
 - **Save money** -- Use free local models instead of paying for API calls.
 - **Keep your data private** -- Everything stays on your computer.
 - **Get faster responses** -- Local models skip the internet round-trip.
-- **Stay flexible** -- Switch Ollama models without touching app settings.
+- **Stay flexible** -- Switch LM Studio models without touching app settings.
 
 **Key takeaways:**
 - PromptHub mimics the OpenAI API so your apps work without changes.
@@ -53,7 +53,7 @@ Every app that supports the OpenAI API needs three settings. Fill them in like t
 | ------- | ---------------------------------------- |
 | API URL | `http://localhost:9090/v1`               |
 | API Key | `sk-prompthub-xxxx-xxx` (from step 1)   |
-| Model   | Any model in Ollama (e.g., `gemma3:27b`) |
+| Model   | Any model in LM Studio (e.g., `qwen/qwen3-4b-2507`) |
 
 ### Step 3: Test the Connection
 
@@ -64,7 +64,7 @@ curl -s http://localhost:9090/v1/models \
   -H "Authorization: Bearer sk-prompthub-code-001"
 ```
 
-You should see a list of models available in Ollama. If you get an error, see the Troubleshooting section at the end of this guide.
+You should see a list of models available in LM Studio. If you get an error, see the Troubleshooting section at the end of this guide.
 
 **Key takeaways:**
 - You need an API key, the PromptHub URL, and a model name.
@@ -81,14 +81,14 @@ To see which models you have, use either of these commands:
 curl http://localhost:9090/v1/models \
   -H "Authorization: Bearer sk-prompthub-code-001"
 
-# Or directly through Ollama
-ollama list
+# Or directly through LM Studio
+lms ls
 ```
 
 To download a new model:
 
 ```bash
-ollama pull gemma3:27b
+lms get qwen/qwen3-4b-2507
 ```
 
 Once the download finishes, the model appears in PromptHub automatically. No restart needed.
@@ -106,7 +106,7 @@ curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-code-001" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gemma3:27b",
+    "model": "qwen/qwen3-4b-2507",
     "messages": [
       {"role": "user", "content": "Hello, how are you?"}
     ]
@@ -115,7 +115,7 @@ curl -s http://localhost:9090/v1/chat/completions \
 
 ### Use Enhancement
 
-Enhancement means PromptHub rewrites your prompt to get better results before sending it to Ollama. Think of it like having an editor polish your question before asking the expert.
+Enhancement means PromptHub rewrites your prompt to get better results before sending it to LM Studio. Think of it like having an editor polish your question before asking the expert.
 
 If enhancement is turned on for your API key, it happens automatically:
 
@@ -124,7 +124,7 @@ curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-code-001" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gemma3:27b",
+    "model": "qwen/qwen3-4b-2507",
     "messages": [
       {"role": "system", "content": "You are helpful"},
       {"role": "user", "content": "Write a Python function"}
@@ -148,7 +148,7 @@ curl -s http://localhost:9090/v1/chat/completions \
     ```json
     {
       "chat.models": [{
-        "id": "gemma3:27b",
+        "id": "qwen/qwen3-4b-2507",
         "provider": "openaiCompatible",
         "url": "http://localhost:9090/v1",
         "apiKey": "sk-prompthub-code-001"
@@ -166,7 +166,7 @@ curl -s http://localhost:9090/v1/chat/completions \
 4. Fill in:
    - **URL:** `http://localhost:9090/v1`
    - **API Key:** `sk-prompthub-code-001`
-   - **Model:** `gemma3:27b`
+   - **Model:** `qwen/qwen3-4b-2507`
 
 ### Custom Python Script
 
@@ -180,7 +180,7 @@ headers = {
     "Content-Type": "application/json"
 }
 data = {
-    "model": "gemma3:27b",
+    "model": "qwen/qwen3-4b-2507",
     "messages": [
         {"role": "user", "content": "Hello!"}
     ]
@@ -247,19 +247,14 @@ Edit `~/prompthub/configs/enhancement-rules.json`:
 
 ```json
 {
-  "default": { "model": "gemma3:4b" },
+  "default": { "model": "qwen/qwen3-4b-2507" },
   "clients": {
-    "my-app": { "model": "gemma3:27b" }
+    "my-app": { "model": "qwen/qwen3-4b-2507" }
   }
 }
 ```
 
-Here is what this means:
-
-- **By default**, the lightweight `gemma3:4b` handles enhancement (fast, less powerful).
-- **For `my-app`**, the larger `gemma3:27b` handles enhancement (slower, more capable).
-
-Think of it like choosing between a quick spellcheck and a thorough copy edit.
+All clients now use the same enhancement model (`qwen/qwen3-4b-2507`). You can still define per-client entries to customize the system prompt or timeout.
 
 ---
 
@@ -280,13 +275,13 @@ Think of it like choosing between a quick spellcheck and a thorough copy edit.
 
 ### "404 Model not found"
 
-**Problem:** The model you requested is not installed in Ollama.
+**Problem:** The model you requested is not installed in LM Studio.
 
 **Fix:**
 
 ```bash
 # Download the model
-ollama pull gemma3:27b
+lms get qwen/qwen3-4b-2507
 
 # Confirm it appears in PromptHub
 curl http://localhost:9090/v1/models \
@@ -311,34 +306,35 @@ uvicorn router.main:app --host 127.0.0.1 --port 9090
 **Fix:**
 
 1. Turn off enhancement: set `"enhance": false` in `api-keys.json`.
-2. Or switch to a faster model: use `gemma3:4b` instead of `gemma3:27b`.
+2. Check if LM Studio is busy with other tasks: run `lms ps`.
 
 ### "Model loading error"
 
-**Problem:** Ollama is busy loading another model or the model files are corrupted.
+**Problem:** LM Studio is busy loading another model or the model files are corrupted.
 
 **Fix:**
 
 ```bash
-# Restart Ollama
-killall ollama
-ollama serve
+# Stop the LM Studio server (if running)
+lms server stop || true
+# Start the LM Studio server
+lms server start
 
 # Re-download the model if needed
-ollama pull gemma3:27b
+lms get qwen/qwen3-4b-2507
 ```
 
 ---
 
 ## Common Questions
 
-**Q: Can I use both OpenAI AND Ollama models?**
+**Q: Can I use both OpenAI AND LM Studio models?**
 
-A: PromptHub forwards requests to Ollama. If you need OpenAI models, connect your app directly to OpenAI's API.
+A: PromptHub forwards requests to LM Studio. If you need OpenAI models, connect your app directly to OpenAI's API.
 
 **Q: Is there a rate limit?**
 
-A: There is no hard limit. Heavy usage may slow your computer since Ollama runs locally.
+A: There is no hard limit. Heavy usage may slow your computer since LM Studio runs locally.
 
 **Q: Can multiple apps use the same API key?**
 
@@ -352,12 +348,12 @@ A: Create a new one in `api-keys.json`. Lost keys cannot be recovered, so store 
 
 ## Performance Tips
 
-- **Use lightweight models** like `gemma3:4b` for faster responses.
+- **Use lightweight models** like `qwen/qwen3-4b-2507` for faster responses.
 - **Enable caching** so repeated queries return instantly.
-- **Watch your RAM** -- PromptHub and Ollama together can use a lot of memory.
+- **Watch your RAM** -- PromptHub and LM Studio together can use a lot of memory.
 - **Unload unused models** to free resources:
   ```bash
-  ollama rm model-name
+  lms rm model-name
   ```
 
 ---

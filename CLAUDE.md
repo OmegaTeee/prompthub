@@ -85,7 +85,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 | `resilience/`        | Circuit breaker (CLOSED → OPEN → HALF_OPEN states)                                                                |
 | `cache/`             | L1 in-memory LRU + L2 SQLite persistent write-through cache                                                       |
 | `enhancement/`       | LLM HTTP client (OpenAI-compat), per-client prompt enhancement, cloud fallback via OpenRouter, token budget truncation |
-| `orchestrator/`      | Pre-enhancement intent classifier (qwen3:14b) — classifies prompts, suggests tools, annotates for enhancement     |
+| `orchestrator/`      | Pre-enhancement intent classifier — classifies prompts, suggests tools, annotates for enhancement                  |
 | `openai_compat/`     | OpenAI-compatible `/v1/` proxy with bearer auth and optional enhancement                                          |
 | `memory/`            | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync)                              |
 | `tool_registry/`     | MCP tool definition cache (SQLite-backed snapshots, automatic archival, cache-through proxy)                      |
@@ -117,7 +117,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - **FastMCP bridges**: MCP servers communicate via FastMCP Client + StdioTransport
 - **Factory-with-getter-callables**: Route modules use `create_X_router(get_service=lambda: service)` to defer global resolution past lifespan init
 - **Tiered timeouts**: httpx client (120s) → middleware (60s default, 180s for slow paths) → LLM keep_alive (5min)
-- **Task-specific models**: Per-client enhancement models (gemma3:4b default, gemma3:27b for claude-desktop, qwen3-coder:30b for claude-code) with orchestrator agent (qwen3:14b) for intent classification (see ADR-008, supersedes ADR-006)
+- **Model roles**: All clients use the same enhancement model (`qwen/qwen3-4b-2507`) with a separate thinking variant (`qwen/qwen3-4b-thinking-2507`) for the orchestrator agent's intent classification (see ADR-008)
 - **Privacy boundary**: `PrivacyLevel` enum (`local_only`, `free_ok`, `any`) controls whether prompts leave localhost (see ADR-007)
 - **Cloud fallback**: When the LLM server fails, `free_ok`/`any` clients fall back to OpenRouter free-tier; `local_only` never leaves localhost
 - **Tool registry cache-through**: `tools/list` responses cached in SQLite (24h TTL), served from cache on subsequent requests; old snapshots archived automatically for long-term access
@@ -130,7 +130,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - `app/configs/enhancement-rules.json` - Per-client enhancement system prompts, privacy_level, model, temperature, max_tokens
 - `app/configs/api-keys.json` - Bearer tokens for OpenAI-compatible proxy (client_name, enhance flag)
 - `app/configs/cloud-models.json` - Cloud fallback model mapping (local models → free-tier cloud equivalents)
-- `app/.env` - Runtime settings (`LLM_HOST`, `LLM_PORT`, `LLM_MODEL`, `LLM_TIMEOUT`, `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, etc. — old `OLLAMA_*` names still work as aliases)
+- `app/.env` - Runtime settings (`LLM_HOST`, `LLM_PORT`, `LLM_MODEL`, `LLM_ORCHESTRATOR_MODEL`, `LLM_TIMEOUT`, `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, etc. — old `OLLAMA_*` names still work as aliases)
 
 ### Persistent Data Directory (`~/.prompthub/`)
 
@@ -157,8 +157,8 @@ POST /servers/{name}/stop       Stop server
 POST /mcp/{server}/{path}       Proxy JSON-RPC to MCP server
 POST /mcp-direct/mcp            Streamable HTTP endpoint (FastMCP gateway)
 POST /llm/enhance               Enhance prompt via LLM server (X-Client-Name, X-Privacy-Level headers)
-                                Response includes: provider ("ollama"|"openrouter"), privacy_level
-POST /llm/orchestrate           Classify intent and annotate prompt (qwen3:14b orchestrator)
+                                Response includes: provider ("lm-studio"|"openrouter"), privacy_level
+POST /llm/orchestrate           Classify intent and annotate prompt (thinking model orchestrator)
 POST /sessions                  Create session (memory system)
 GET  /sessions/{id}/context     Full session context (facts + blocks + MCP graph)
 GET  /dashboard                 HTMX monitoring dashboard (servers, cache, LLM server, memory panels)

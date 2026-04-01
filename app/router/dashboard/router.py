@@ -335,65 +335,39 @@ def create_dashboard_router(
         await clear_cache()
         return {"status": "success", "message": "Cache cleared"}
 
-    @router.post("/actions/restart/{server}")
-    async def restart_server_action(server: str):
-        """Restart an MCP server."""
-        # Validate server name
+    async def _validated_server_action(
+        server: str, action_name: str, operation: Callable,
+    ) -> dict | JSONResponse:
+        """Validate server name, execute operation, return JSON result."""
         is_valid, error_msg = await _validate_server_name(server)
         if not is_valid:
             return JSONResponse(
                 status_code=400,
-                content={"status": "error", "message": error_msg}
+                content={"status": "error", "message": error_msg},
             )
-
         try:
-            await restart_server(server)
-            return {"status": "success", "message": f"{server} restarted"}
+            await operation(server)
+            return {"status": "success", "message": f"{server} {action_name}"}
         except Exception as e:
             return JSONResponse(
                 status_code=500,
-                content={"status": "error", "message": str(e)}
+                content={"status": "error", "message": str(e)},
             )
+
+    @router.post("/actions/restart/{server}")
+    async def restart_server_action(server: str):
+        """Restart an MCP server."""
+        return await _validated_server_action(server, "restarted", restart_server)
 
     @router.post("/actions/start/{server}")
     async def start_server_action(server: str):
         """Start an MCP server."""
-        # Validate server name
-        is_valid, error_msg = await _validate_server_name(server)
-        if not is_valid:
-            return JSONResponse(
-                status_code=400,
-                content={"status": "error", "message": error_msg}
-            )
-
-        try:
-            await start_server(server)
-            return {"status": "success", "message": f"{server} started"}
-        except Exception as e:
-            return JSONResponse(
-                status_code=500,
-                content={"status": "error", "message": str(e)}
-            )
+        return await _validated_server_action(server, "started", start_server)
 
     @router.post("/actions/stop/{server}")
     async def stop_server_action(server: str):
         """Stop an MCP server."""
-        # Validate server name
-        is_valid, error_msg = await _validate_server_name(server)
-        if not is_valid:
-            return JSONResponse(
-                status_code=400,
-                content={"status": "error", "message": error_msg}
-            )
-
-        try:
-            await stop_server(server)
-            return {"status": "success", "message": f"{server} stopped"}
-        except Exception as e:
-            return JSONResponse(
-                status_code=500,
-                content={"status": "error", "message": str(e)}
-            )
+        return await _validated_server_action(server, "stopped", stop_server)
 
     @router.get("/llm-partial", response_class=HTMLResponse)
     async def llm_partial(request: Request):

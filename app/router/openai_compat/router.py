@@ -6,6 +6,7 @@ Requests are authenticated via bearer tokens, optionally enhanced,
 and forwarded to the LLM server with circuit breaker protection.
 """
 
+import json
 import logging
 import uuid
 from collections.abc import Callable
@@ -41,6 +42,7 @@ def create_openai_compat_router(
     api_key_manager: ApiKeyManager,
     llm_base_url: str = "http://localhost:1234/v1",
     llm_timeout: float = 120.0,
+    llm_api_key: str | None = None,
 ) -> APIRouter:
     """Create the OpenAI-compatible API router with injected dependencies.
 
@@ -53,6 +55,7 @@ def create_openai_compat_router(
         api_key_manager: Manages bearer token validation (loaded at module level)
         llm_base_url: LLM server's OpenAI-compat base URL
         llm_timeout: Timeout for LLM requests in seconds
+        llm_api_key: Optional API key for authenticating with the LLM server
 
     Returns:
         Configured APIRouter for /v1/ endpoints
@@ -60,7 +63,17 @@ def create_openai_compat_router(
     router = APIRouter(prefix="/v1", tags=["openai-compat"])
 
     # Shared LLM client for non-streaming requests
-    _llm_client = LLMClient(LLMConfig(base_url=llm_base_url, timeout=llm_timeout))
+    _llm_client = LLMClient(
+        LLMConfig(
+            base_url=llm_base_url,
+            timeout=llm_timeout,
+            extra_headers=(
+                {"Authorization": f"Bearer {llm_api_key}"}
+                if llm_api_key
+                else {}
+            ),
+        )
+    )
 
     # --- Auth dependency (closure over api_key_manager) ---
 
@@ -103,6 +116,58 @@ def create_openai_compat_router(
 
         return config
 
+    # --- Shared enhancement helper ---
+
+    async def _maybe_enhance(
+        messages: list[dict[str, str]],
+        request: Request,
+        api_key_cfg: ApiKeyConfig,
+    ) -> list[dict[str, str]]:
+        """Optionally enhance the last user message in-place.
+
+        Returns the (possibly modified) messages list. Enhancement failure
+        is non-fatal — returns original messages on any error.
+        """
+        svc = enhancement_service() if api_key_cfg.enhance else None
+        if not svc:
+            return messages
+
+        privacy_override = None
+        raw_privacy = request.headers.get("X-Privacy-Level")
+        if raw_privacy:
+            try:
+                from router.enhancement import PrivacyLevel
+
+                privacy_override = PrivacyLevel(raw_privacy)
+            except ValueError:
+                logger.warning("Invalid X-Privacy-Level: %s", raw_privacy)
+
+        last_user_idx = _find_last_user_message(messages)
+        if last_user_idx is not None:
+            original = messages[last_user_idx]["content"]
+            try:
+                result = await svc.enhance(
+                    prompt=original,
+                    client_name=api_key_cfg.client_name,
+                    privacy_override=privacy_override,
+                )
+                if result.was_enhanced:
+                    messages[last_user_idx] = {
+                        **messages[last_user_idx],
+                        "content": result.enhanced,
+                    }
+                    logger.info(
+                        "Enhanced last user message for client=%s cached=%s",
+                        api_key_cfg.client_name,
+                        result.cached,
+                    )
+            except Exception as e:
+                logger.warning(
+                    "Enhancement failed for %s: %s", api_key_cfg.client_name, e
+                )
+
+        return messages
+
     # --- Endpoints ---
 
     @router.post("/chat/completions")
@@ -132,7 +197,7 @@ def create_openai_compat_router(
         if not body.model or body.model in ("string", "model", "") or " " in body.model:
             raise HTTPException(
                 status_code=422,
-                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'gemma3:4b').",
+                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen/qwen3-4b-2507').",
             )
 
         # Circuit breaker check
@@ -162,45 +227,7 @@ def create_openai_compat_router(
 
         # Enhancement: optionally enhance the last user message
         messages = [msg.copy() for msg in body.messages]
-
-        svc = enhancement_service() if api_key.enhance else None
-        if svc:
-            # Parse privacy header override
-            privacy_override = None
-            raw_privacy = request.headers.get("X-Privacy-Level")
-            if raw_privacy:
-                try:
-                    from router.enhancement import PrivacyLevel
-
-                    privacy_override = PrivacyLevel(raw_privacy)
-                except ValueError:
-                    logger.warning(
-                        "Invalid X-Privacy-Level: %s",
-                        raw_privacy,
-                    )
-
-            last_user_idx = _find_last_user_message(messages)
-            if last_user_idx is not None:
-                original = messages[last_user_idx]["content"]
-                try:
-                    result = await svc.enhance(
-                        prompt=original,
-                        client_name=client_name,
-                        privacy_override=privacy_override,
-                    )
-                    if result.was_enhanced:
-                        messages[last_user_idx] = {
-                            **messages[last_user_idx],
-                            "content": result.enhanced,
-                        }
-                        logger.info(
-                            "Enhanced last user message for client=%s cached=%s",
-                            client_name,
-                            result.cached,
-                        )
-                except Exception as e:
-                    # Enhancement failure is non-fatal — proceed with original
-                    logger.warning("Enhancement failed for %s: %s", client_name, e)
+        messages = await _maybe_enhance(messages, request, api_key)
 
         # Build payload for LLM server
         payload: dict[str, Any] = {
@@ -248,41 +275,8 @@ def create_openai_compat_router(
             )
             return response.model_dump()
 
-        except LLMConnectionError as e:
-            if breaker:
-                breaker.record_failure(e)
-            audit_event(
-                event_type="openai_proxy",
-                action="chat_completion",
-                resource_type="llm",
-                resource_name=body.model,
-                status="failed",
-                error=str(e),
-            )
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "error": {
-                        "message": f"Cannot reach LLM server: {e}",
-                        "type": "server_error",
-                    }
-                },
-            )
-        except (LLMError, httpx.HTTPError) as e:
-            if breaker:
-                breaker.record_failure(e)
-            audit_event(
-                event_type="openai_proxy",
-                action="chat_completion",
-                resource_type="llm",
-                resource_name=body.model,
-                status="failed",
-                error=str(e),
-            )
-            raise HTTPException(
-                status_code=502,
-                detail={"error": {"message": str(e), "type": "server_error"}},
-            )
+        except (LLMConnectionError, LLMError, httpx.HTTPError) as e:
+            _handle_llm_error(e, breaker, "chat_completion", body.model)
 
     @router.get("/models")
     async def list_models():
@@ -366,7 +360,7 @@ def create_openai_compat_router(
         if not body.model or body.model in ("string", "model", "") or " " in body.model:
             raise HTTPException(
                 status_code=422,
-                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'gemma-3-4b').",
+                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen/qwen3-4b-2507').",
             )
 
         # Circuit breaker check
@@ -396,48 +390,14 @@ def create_openai_compat_router(
 
         # Translate Responses API input → Chat Completions messages
         messages = _translate_responses_to_messages(body.input, body.instructions)
-
-        # Enhancement: optionally enhance the last user message
-        svc = enhancement_service() if api_key.enhance else None
-        if svc:
-            privacy_override = None
-            raw_privacy = request.headers.get("X-Privacy-Level")
-            if raw_privacy:
-                try:
-                    from router.enhancement import PrivacyLevel
-
-                    privacy_override = PrivacyLevel(raw_privacy)
-                except ValueError:
-                    logger.warning("Invalid X-Privacy-Level: %s", raw_privacy)
-
-            last_user_idx = _find_last_user_message(messages)
-            if last_user_idx is not None:
-                original = messages[last_user_idx]["content"]
-                try:
-                    result = await svc.enhance(
-                        prompt=original,
-                        client_name=client_name,
-                        privacy_override=privacy_override,
-                    )
-                    if result.was_enhanced:
-                        messages[last_user_idx] = {
-                            **messages[last_user_idx],
-                            "content": result.enhanced,
-                        }
-                        logger.info(
-                            "Enhanced last user message for client=%s cached=%s",
-                            client_name,
-                            result.cached,
-                        )
-                except Exception as e:
-                    logger.warning("Enhancement failed for %s: %s", client_name, e)
+        messages = await _maybe_enhance(messages, request, api_key)
 
         # Forward to LLM server
         try:
             response = await _llm_client.chat_completion(
                 model=body.model,
                 messages=messages,
-                temperature=body.temperature,
+                temperature=body.temperature if body.temperature is not None else 0.7,
                 max_tokens=body.max_output_tokens,
             )
             if breaker:
@@ -453,46 +413,50 @@ def create_openai_compat_router(
 
             return _build_responses_response(response.model_dump())
 
-        except LLMConnectionError as e:
-            if breaker:
-                breaker.record_failure(e)
-            audit_event(
-                event_type="openai_proxy",
-                action="responses",
-                resource_type="llm",
-                resource_name=body.model,
-                status="failed",
-                error=str(e),
-            )
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "error": {
-                        "message": f"Cannot reach LLM server: {e}",
-                        "type": "server_error",
-                    }
-                },
-            )
-        except (LLMError, httpx.HTTPError) as e:
-            if breaker:
-                breaker.record_failure(e)
-            audit_event(
-                event_type="openai_proxy",
-                action="responses",
-                resource_type="llm",
-                resource_name=body.model,
-                status="failed",
-                error=str(e),
-            )
-            raise HTTPException(
-                status_code=502,
-                detail={"error": {"message": str(e), "type": "server_error"}},
-            )
+        except (LLMConnectionError, LLMError, httpx.HTTPError) as e:
+            _handle_llm_error(e, breaker, "responses", body.model)
 
     return router
 
 
 # --- Helper functions ---
+
+
+def _handle_llm_error(
+    e: Exception,
+    breaker: Any,
+    action: str,
+    model: str,
+) -> None:
+    """Record failure and raise HTTPException for LLM errors.
+
+    Shared by /chat/completions and /responses endpoints.
+    Always raises — does not return.
+    """
+    if breaker:
+        breaker.record_failure(e)
+    audit_event(
+        event_type="openai_proxy",
+        action=action,
+        resource_type="llm",
+        resource_name=model,
+        status="failed",
+        error=str(e),
+    )
+    if isinstance(e, LLMConnectionError):
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": {
+                    "message": f"Cannot reach LLM server: {e}",
+                    "type": "server_error",
+                }
+            },
+        )
+    raise HTTPException(
+        status_code=502,
+        detail={"error": {"message": str(e), "type": "server_error"}},
+    )
 
 
 def _find_last_user_message(messages: list[dict[str, str]]) -> int | None:
@@ -503,18 +467,38 @@ def _find_last_user_message(messages: list[dict[str, str]]) -> int | None:
     return None
 
 
+def _flatten_content(content: str | list[dict]) -> str:
+    """Flatten Responses API content to a plain string.
+
+    Content can be a string or an array of content blocks like:
+    [{"type": "input_text", "text": "hello"}]
+
+    Extracts and joins the text from all blocks.
+    """
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, dict):
+                parts.append(block.get("text", ""))
+        return "".join(parts)
+    return str(content)
+
+
 def _translate_responses_to_messages(
-    input_data: str | list[dict[str, str]],
+    input_data: str | list[dict],
     instructions: str | None,
 ) -> list[dict[str, str]]:
     """Convert Responses API input + instructions to Chat Completions messages.
 
     Args:
         input_data: String (single user message) or array of message dicts.
+            Message content may be a string or array of content blocks.
         instructions: Optional system prompt to prepend.
 
     Returns:
-        List of message dicts for Chat Completions API.
+        List of message dicts for Chat Completions API (content always string).
     """
     messages: list[dict[str, str]] = []
 
@@ -524,7 +508,11 @@ def _translate_responses_to_messages(
     if isinstance(input_data, str):
         messages.append({"role": "user", "content": input_data})
     else:
-        messages.extend(input_data)
+        for msg in input_data:
+            messages.append({
+                "role": msg.get("role", "user"),
+                "content": _flatten_content(msg.get("content", "")),
+            })
 
     return messages
 
@@ -538,9 +526,28 @@ def _build_responses_response(chat_response: dict) -> dict:
     Returns:
         Dict matching the OpenAI Responses API shape.
     """
-    message = chat_response["choices"][0]["message"]
+    choices = chat_response.get("choices") or []
+    if not choices:
+        return {
+            "id": f"resp_{uuid.uuid4().hex[:24]}",
+            "object": "response",
+            "created_at": chat_response.get("created", 0),
+            "model": chat_response.get("model", ""),
+            "output": [
+                {
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [{"type": "output_text", "text": ""}],
+                }
+            ],
+            "output_text": "",
+            "usage": None,
+        }
+
+    message = choices[0].get("message", {})
     text = message.get("content", "")
-    reasoning = message.get("reasoning_content")
+    # LM Studio uses "reasoning" (v0.3.23+), others use "reasoning_content"
+    reasoning = message.get("reasoning") or message.get("reasoning_content")
 
     content_blocks = []
     if reasoning:
@@ -617,6 +624,5 @@ async def _stream_with_breaker(
             status="failed",
             error=str(e),
         )
-        error_msg = str(e).replace('"', '\\"')
-        yield f'data: {{"error": {{"message": "{error_msg}"}}}}\n\n'
+        yield f"data: {json.dumps({'error': {'message': str(e)}})}\n\n"
         yield "data: [DONE]\n\n"

@@ -17,9 +17,12 @@ from fastapi.testclient import TestClient
 
 from router.openai_compat.auth import ApiKeyManager
 from router.openai_compat.models import ApiKeyConfig, ApiKeysRegistry, ChatCompletionRequest, ResponsesRequest
+from router.enhancement.llm_client import LLMConnectionError, LLMError
 from router.openai_compat.router import (
     _build_responses_response,
     _find_last_user_message,
+    _flatten_content,
+    _handle_llm_error,
     _translate_responses_to_messages,
     create_openai_compat_router,
 )
@@ -616,3 +619,174 @@ class TestResponsesEndpoint:
         messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
         assert messages[0] == {"role": "system", "content": "Be concise"}
         assert messages[1] == {"role": "user", "content": "Help me"}
+
+
+# =============================================================================
+# _handle_llm_error Tests
+# =============================================================================
+
+
+class TestHandleLlmError:
+    """Test the shared LLM error handler extracted from both endpoints."""
+
+    def test_connection_error_raises_502_with_prefix(self):
+        """LLMConnectionError produces 'Cannot reach LLM server' message."""
+        from fastapi import HTTPException
+
+        with pytest.raises(HTTPException) as exc_info:
+            _handle_llm_error(
+                LLMConnectionError("Connection refused"),
+                breaker=None,
+                action="chat_completion",
+                model="test-model",
+            )
+        assert exc_info.value.status_code == 502
+        assert "Cannot reach LLM server" in exc_info.value.detail["error"]["message"]
+
+    def test_generic_llm_error_raises_502(self):
+        """LLMError produces a plain error message."""
+        from fastapi import HTTPException
+
+        with pytest.raises(HTTPException) as exc_info:
+            _handle_llm_error(
+                LLMError("Model overloaded"),
+                breaker=None,
+                action="responses",
+                model="test-model",
+            )
+        assert exc_info.value.status_code == 502
+        assert exc_info.value.detail["error"]["message"] == "Model overloaded"
+
+    def test_records_breaker_failure(self):
+        """Circuit breaker records failure when provided."""
+        from fastapi import HTTPException
+
+        breaker = MagicMock()
+        err = LLMError("timeout")
+
+        with pytest.raises(HTTPException):
+            _handle_llm_error(err, breaker, "chat_completion", "test-model")
+
+        breaker.record_failure.assert_called_once_with(err)
+
+    def test_no_breaker_does_not_crash(self):
+        """None breaker is handled gracefully."""
+        from fastapi import HTTPException
+
+        with pytest.raises(HTTPException):
+            _handle_llm_error(
+                LLMError("err"), breaker=None, action="responses", model="m"
+            )
+
+
+# =============================================================================
+# _flatten_content Tests
+# =============================================================================
+
+
+class TestFlattenContent:
+    """Test Responses API content flattening."""
+
+    def test_string_passthrough(self):
+        assert _flatten_content("hello world") == "hello world"
+
+    def test_empty_string(self):
+        assert _flatten_content("") == ""
+
+    def test_single_text_block(self):
+        blocks = [{"type": "input_text", "text": "hello"}]
+        assert _flatten_content(blocks) == "hello"
+
+    def test_multiple_text_blocks(self):
+        blocks = [
+            {"type": "input_text", "text": "hello "},
+            {"type": "input_text", "text": "world"},
+        ]
+        assert _flatten_content(blocks) == "hello world"
+
+    def test_block_without_text_key(self):
+        """Blocks missing 'text' field produce empty string."""
+        blocks = [{"type": "image", "url": "https://example.com/img.png"}]
+        assert _flatten_content(blocks) == ""
+
+    def test_mixed_blocks(self):
+        """Text blocks extracted, non-text blocks silently skipped."""
+        blocks = [
+            {"type": "input_text", "text": "describe "},
+            {"type": "image", "url": "https://example.com/img.png"},
+            {"type": "input_text", "text": "this image"},
+        ]
+        assert _flatten_content(blocks) == "describe this image"
+
+    def test_empty_list(self):
+        assert _flatten_content([]) == ""
+
+
+# =============================================================================
+# _build_responses_response Tests (edge cases)
+# =============================================================================
+
+
+class TestBuildResponsesEdgeCases:
+    """Test edge cases in the Responses API response builder."""
+
+    def test_empty_choices_returns_empty_response(self):
+        """Empty choices array returns valid empty response structure."""
+        result = _build_responses_response({"choices": [], "created": 0, "model": "m"})
+        assert result["output_text"] == ""
+        assert result["object"] == "response"
+        assert result["id"].startswith("resp_")
+
+    def test_reasoning_field_lm_studio(self):
+        """LM Studio 'reasoning' field is captured."""
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "answer", "reasoning": "I thought about it"}}],
+            "created": 0,
+            "model": "m",
+        })
+        blocks = result["output"][0]["content"]
+        assert blocks[0] == {"type": "thinking", "thinking": "I thought about it"}
+        assert blocks[1] == {"type": "output_text", "text": "answer"}
+
+    def test_reasoning_content_field_openrouter(self):
+        """OpenRouter 'reasoning_content' field is captured as fallback."""
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "answer", "reasoning_content": "deep thought"}}],
+            "created": 0,
+            "model": "m",
+        })
+        blocks = result["output"][0]["content"]
+        assert blocks[0] == {"type": "thinking", "thinking": "deep thought"}
+
+    def test_no_reasoning_omits_thinking_block(self):
+        """No reasoning field produces only output_text block."""
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "just text"}}],
+            "created": 0,
+            "model": "m",
+        })
+        blocks = result["output"][0]["content"]
+        assert len(blocks) == 1
+        assert blocks[0] == {"type": "output_text", "text": "just text"}
+
+    def test_usage_mapping(self):
+        """prompt_tokens maps to input_tokens."""
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "ok"}}],
+            "created": 0,
+            "model": "m",
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+        })
+        assert result["usage"] == {
+            "input_tokens": 10,
+            "output_tokens": 5,
+            "total_tokens": 15,
+        }
+
+    def test_missing_usage_is_none(self):
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "ok"}}],
+            "created": 0,
+            "model": "m",
+        })
+        assert result["usage"] is None

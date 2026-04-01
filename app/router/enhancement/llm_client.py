@@ -9,6 +9,7 @@ This allows drop-in replacement of OpenAI with local LLM models.
 """
 
 import asyncio
+import json
 import logging
 from typing import Any
 
@@ -51,7 +52,7 @@ class ChatCompletionResponse(BaseModel):
     created: int
     model: str
     choices: list[ChatCompletionChoice]
-    usage: dict[str, int] | None = None
+    usage: dict[str, Any] | None = None
 
 
 class LLMError(Exception):
@@ -224,7 +225,14 @@ class LLMClient:
                     raise LLMModelError(f"Model '{model}' not found")
 
                 response.raise_for_status()
-                data = response.json()
+                try:
+                    data = response.json()
+                except json.JSONDecodeError:
+                    body_preview = response.text[:200] if response.text else "(empty)"
+                    raise LLMError(
+                        f"LLM server returned non-JSON response "
+                        f"(status {response.status_code}): {body_preview}"
+                    )
 
                 return ChatCompletionResponse(
                     id=data.get("id", ""),

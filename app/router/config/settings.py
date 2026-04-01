@@ -42,6 +42,14 @@ class Settings(BaseSettings):
         default=120,
         validation_alias=AliasChoices("LLM_TIMEOUT", "OLLAMA_TIMEOUT"),
     )
+    llm_orchestrator_model: str = Field(
+        default="qwen/qwen3-4b-thinking-2507",
+        validation_alias=AliasChoices("LLM_ORCHESTRATOR_MODEL"),
+    )
+    llm_api_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("LLM_API_KEY"),
+    )
 
     # Data directory — persistent storage for cache, activity log, memory db
     # Defaults to ~/.prompthub (XDG-style user data dir, survives reboots)

@@ -13,6 +13,7 @@ from router.orchestrator.agent import (
     CHARS_PER_TOKEN,
     CONTEXT_TOKEN_BUDGET,
     OrchestratorAgent,
+    _parse_json_response,
     _strip_think_blocks,
 )
 from router.orchestrator.intent import IntentCategory, OrchestratorResult
@@ -44,6 +45,50 @@ def test_strip_think_blocks_multiline():
 def test_strip_think_blocks_no_block():
     raw = '{"intent": "general"}'
     assert _strip_think_blocks(raw) == raw
+
+
+# ── _parse_json_response ──────────────────────────────────────────────────────
+
+
+def test_parse_json_valid():
+    data = _parse_json_response('{"intent": "code", "confidence": 0.9}')
+    assert data == {"intent": "code", "confidence": 0.9}
+
+
+def test_parse_json_with_preamble():
+    """Regex fallback extracts JSON from wrapped text."""
+    raw = 'Here is my analysis:\n{"intent": "general"}\nDone.'
+    data = _parse_json_response(raw)
+    assert data is not None
+    assert data["intent"] == "general"
+
+
+def test_parse_json_with_think_tags_stripped():
+    """Works with raw output after think blocks are stripped."""
+    raw = '{"intent": "search", "suggested_tools": ["duckduckgo"]}'
+    data = _parse_json_response(raw)
+    assert data["suggested_tools"] == ["duckduckgo"]
+
+
+def test_parse_json_empty_string():
+    assert _parse_json_response("") is None
+
+
+def test_parse_json_plain_text():
+    assert _parse_json_response("I don't know how to respond as JSON") is None
+
+
+def test_parse_json_malformed_json():
+    """Partial JSON that looks like a dict but isn't parseable."""
+    assert _parse_json_response("{intent: code}") is None
+
+
+def test_parse_json_nested_braces():
+    """Regex greedily matches outermost braces."""
+    raw = '{"intent": "code", "context_hints": ["use {curly} brackets"]}'
+    data = _parse_json_response(raw)
+    assert data is not None
+    assert data["intent"] == "code"
 
 
 # ── pass_through factory ──────────────────────────────────────────────────────

@@ -89,7 +89,7 @@ This overrides the global and per-app settings for that one request only.
 
 ## Enhancement Models
 
-An enhancement model is the local AI that rewrites your prompt. It is a small, specialized model that runs on your Mac through Ollama. Think of it as a dedicated writing assistant that lives on your computer.
+An enhancement model is the local AI that rewrites your prompt. It is a small, specialized model that runs on your Mac through LM Studio. Think of it as a dedicated writing assistant that lives on your computer.
 
 Enhancement models:
 
@@ -103,22 +103,22 @@ Different apps can use different models. For example, you might want a lightweig
 
 1. Open `~/prompthub/configs/enhancement-rules.json`.
 2. Find your app under `"clients"`.
-3. Change the `"model"` value to any model available in Ollama.
+3. Change the `"model"` value to any model available in LM Studio.
 
 ```json
 {
   "clients": {
-    "vscode": { "model": "gemma3:4b" },
-    "claude-desktop": { "model": "gemma3:27b" }
+    "vscode": { "model": "qwen/qwen3-4b-2507" },
+    "claude-desktop": { "model": "qwen/qwen3-4b-2507" }
   }
 }
 ```
 
 **Key points:**
 
-- Enhancement models run locally via Ollama.
-- Each app can use a different model.
-- Smaller models are faster; larger models produce better rewrites.
+- Enhancement models run locally via LM Studio.
+- All clients use the same enhancement model (`qwen/qwen3-4b-2507`) by default.
+- You can override the model per client if needed.
 
 ## When to Use Enhancement
 
@@ -139,8 +139,7 @@ Different apps can use different models. For example, you might want a lightweig
 
 Enhancement adds a small delay because PromptHub rewrites your prompt before sending it to the main model.
 
-- **Lightweight models** (e.g., `gemma3:4b`): 1-2 seconds.
-- **Larger models** (e.g., `gemma3:27b`): 3-5 seconds.
+- **The enhancement model** (`qwen/qwen3-4b-2507`): 1-2 seconds.
 
 For most workflows, the improvement in response quality is worth the wait.
 
@@ -148,8 +147,7 @@ For most workflows, the improvement in response quality is worth the wait.
 
 ### Enhancement feels slow
 
-- Switch to a faster model. Use `gemma3:4b` instead of `gemma3:27b`.
-- Check if Ollama is busy with other tasks. Run `ollama ps` to see active models.
+- Check if LM Studio is busy with other tasks. Run `lms ps` to see active models.
 - Disable enhancement for that app if speed is critical.
 
 ### No visible improvement
@@ -167,16 +165,16 @@ For most workflows, the improvement in response quality is worth the wait.
 - Make sure the enhancement model is downloaded:
 
   ```bash
-  ollama pull gemma3:4b
+  lms get qwen/qwen3-4b-2507
   ```
 
-- Verify Ollama is running:
+- Verify LM Studio is running:
 
   ```bash
-  ollama serve
+  lms server start
   ```
 
-- If you use cloud-based enhancement, check your internet connection.
+-- If you use cloud-based enhancement, check your internet connection.
 
 ## Advanced: Custom Enhancement Rules
 

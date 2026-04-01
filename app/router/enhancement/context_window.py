@@ -36,14 +36,9 @@ logger = logging.getLogger(__name__)
 # Source: model metadata (context_length from model manifest)
 # ---------------------------------------------------------------------------
 MODEL_CONTEXT_TOKENS: dict[str, int] = {
-    "gemma3:4b":       131_072,
-    "gemma3:27b":      131_072,
-    "qwen3-coder:30b": 262_144,
-    "qwen3:14b":        40_960,
-    "bge-m3:latest":     8_192,
-    "llama3.2:3b":       8_192,
-    "llama3.2:latest":   8_192,
-    "_default":          8_192,
+    "qwen/qwen3-4b-2507":          262_144,
+    "qwen/qwen3-4b-thinking-2507": 262_144,
+    "_default":                      8_192,
 }
 
 # ---------------------------------------------------------------------------
@@ -71,7 +66,7 @@ class TokenBudget:
     Example
     -------
         budget = TokenBudget(
-            model="gemma3:4b",
+            model="qwen/qwen3-4b-2507",
             max_response_tokens=500,
             system_prompt="Rewrite the following prompt...",
         )

@@ -79,10 +79,9 @@ def create_dashboard_router(
 
 | Role | Model | Purpose |
 |------|-------|---------|
-| Enhancement (default) | `gemma3:4b` | Fast prompt rewriting |
-| Enhancement (claude-desktop) | `gemma3:27b` | Higher-quality rewriting |
-| Enhancement (claude-code) | `qwen3-coder:30b` | Code-specialized rewriting |
-| Orchestrator | `qwen3:14b` | Intent classification, tool suggestions |
+| Enhancement (all clients) | `qwen/qwen3-4b-2507` | Fast prompt rewriting |
+| Orchestrator | `qwen/qwen3-4b-thinking-2507` | Intent classification, tool suggestions |
+| Embedding (standby) | `text-embedding-nomic-embed-text-v1.5` | Future RAG pipeline |
 
 ### Circuit Breaker States
 `CLOSED` (normal) → 3 failures → `OPEN` (reject all) → 30s → `HALF_OPEN` (test one) → success → `CLOSED`

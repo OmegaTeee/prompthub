@@ -2,7 +2,7 @@
 
 Get PromptHub running and connected to your first app. This takes about five minutes.
 
-PromptHub is a local hub that connects your AI-powered apps to Ollama models through one endpoint. Think of it like a power strip: you plug all your tools into one place, and PromptHub handles the wiring.
+PromptHub is a local hub that connects your AI-powered apps to LM Studio models through one endpoint. Think of it like a power strip: you plug all your tools into one place, and PromptHub handles the wiring.
 
 ---
 
@@ -11,10 +11,11 @@ PromptHub is a local hub that connects your AI-powered apps to Ollama models thr
 You need four things installed on your Mac before you start:
 
 1. **Homebrew** — the macOS package manager. If you do not have it, visit [brew.sh](https://brew.sh).
-2. **Ollama** — runs AI models locally. Install it from [ollama.com](https://ollama.com), then pull a model:
-   ```bash
-   ollama pull gemma3:4b
-   ```
+2. **LM Studio** — runs AI models locally. Install it from https://lmstudio.ai/ and use the `lms` CLI to download a model. Example:
+  ```bash
+  # Download a model to the local LM Studio instance
+  lms get <model-identifier>
+  ```
 3. **Node.js** — needed for the MCP bridge:
    ```bash
    brew install node
@@ -75,7 +76,7 @@ Run the start script:
 
 The script does four things for you:
 
-1. Starts Ollama if it is not already running.
+1. Starts the LM Studio server (using `lms server start` / `lms daemon up`) if it is not already running.
 2. Activates the Python virtual environment.
 3. Launches the router on `http://127.0.0.1:9090`.
 4. Runs a health check and lists your available models.
@@ -185,7 +186,7 @@ Add this to your VS Code `settings.json`:
 {
   "chat.models": [
     {
-      "id": "gemma3:27b",
+      "id": "qwen/qwen3-4b-2507",
       "provider": "openaiCompatible",
       "url": "http://localhost:9090/v1",
       "apiKey": "sk-prompthub-code-001"
@@ -205,7 +206,7 @@ curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-code-001" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gemma3:4b",
+    "model": "qwen/qwen3-4b-2507",
     "messages": [
       {"role": "user", "content": "Hello from PromptHub!"}
     ]
@@ -226,10 +227,11 @@ To stop the router and MCP bridge:
 ~/prompthub/scripts/prompthub-kill.zsh
 ```
 
-This stops PromptHub but leaves Ollama running. To stop Ollama too:
+This stops PromptHub but leaves the LM Studio server running. To stop LM Studio too:
 
 ```bash
-killall ollama
+# Stop the LM Studio server/daemon
+lms server stop
 ```
 
 To restart from scratch:

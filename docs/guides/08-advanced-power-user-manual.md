@@ -15,23 +15,23 @@ Edit `~/prompthub/configs/enhancement-rules.json`:
 ```json
 {
   "default": {
-    "model": "gemma3:4b",
+    "model": "qwen/qwen3-4b-2507",
     "system_prompt": null,
     "timeout": 120
   },
   "clients": {
     "my-technical-app": {
-      "model": "qwen2.5-coder:32b",
+      "model": "qwen/qwen3-4b-2507",
       "system_prompt": "You are a technical expert. Enhance prompts for code quality.",
       "timeout": 180
     },
     "my-creative-app": {
-      "model": "gemma3:27b",
+      "model": "qwen/qwen3-4b-2507",
       "system_prompt": "You are a creative writer. Enhance prompts for literary quality.",
       "timeout": 120
     },
     "my-fast-app": {
-      "model": "gemma3:4b",
+      "model": "qwen/qwen3-4b-2507",
       "system_prompt": null,
       "enabled": false
     }
@@ -43,30 +43,28 @@ Edit `~/prompthub/configs/enhancement-rules.json`:
 
 | Option | What it does |
 |--------|-------------|
-| `model` | Which Ollama model to use for enhancement |
+| `model` | Which LM Studio model to use for enhancement |
 | `system_prompt` | Custom instructions that guide how enhancement works (optional) |
 | `timeout` | How many seconds to wait before giving up |
 | `enabled` | Set to `false` to turn off enhancement for a specific client |
 
-### Available Models
+### Current Enhancement Model
+
+All clients now use the same model for enhancement:
 
 | Model | Speed | Strength |
 |-------|-------|----------|
-| `gemma3:4b` | Fast (1-2 seconds) | Good enough for most tasks |
-| `gemma3:27b` | Slower (3-5 seconds) | More powerful and detailed |
-| `qwen2.5-coder:32b` | Slower | Specialized for code |
-| `mistral:latest` | Fast | Capable all-rounder |
-| `llama3:27b` | Medium | General purpose, balanced |
+| `qwen/qwen3-4b-2507` | Fast (1-2 seconds) | Good for all enhancement tasks |
 
-To download a new model:
+To download the model:
 
 ```bash
-ollama pull qwen2.5-coder:32b
+lms get qwen/qwen3-4b-2507
 ```
 
 **Key points:**
-- Each app can use a different enhancement model.
-- Faster models (4b) work well for casual use; larger models (27b+) give better results for important tasks.
+- All clients share the same enhancement model (`qwen/qwen3-4b-2507`).
+- Per-client entries let you customize the system prompt, timeout, or disable enhancement.
 - Set `enabled: false` to skip enhancement for apps that do not need it.
 
 ---
@@ -139,7 +137,7 @@ Some models take longer to respond. Increase the timeout for slow models so Prom
 {
   "clients": {
     "slow-client": {
-      "model": "mistral:large",
+      "model": "qwen/qwen3-4b-2507",
       "timeout": 300
     }
   }
@@ -210,10 +208,9 @@ You can fine-tune PromptHub's behavior by editing the `.env` file. Think of thes
 
 ```bash
 # API Configuration
-OLLAMA_API_MODE=openai              # or "native"
-OLLAMA_HOST=localhost
-OLLAMA_PORT=11434
-OLLAMA_TIMEOUT=120
+LLM_HOST=localhost
+LLM_PORT=1234
+LLM_TIMEOUT=120
 
 # Enhancement
 AUTO_ENHANCE_MCP=true
@@ -243,7 +240,7 @@ CIRCUIT_BREAKER_ENABLED=true
 ```
 
 **Key points:**
-- `OLLAMA_TIMEOUT` controls how long PromptHub waits for Ollama before giving up.
+- `LLM_TIMEOUT` controls how long PromptHub waits for LM Studio before giving up.
 - `CACHE_TTL` sets how many seconds cached responses stay valid.
 - `LOG_LEVEL` at `DEBUG` gives the most detail; `INFO` is the normal setting.
 
@@ -285,11 +282,11 @@ The circuit breaker protects PromptHub from wasting time on a service that is do
 CIRCUIT_BREAKER_ENABLED=true
 ```
 
-Here is what happens if Ollama crashes:
+Here is what happens if LM Studio crashes:
 1. First failure: PromptHub tries once more.
 2. Second failure: PromptHub temporarily stops sending requests.
 3. After 60 seconds: PromptHub tries again cautiously.
-4. Once Ollama responds: Normal operation resumes.
+4. Once LM Studio responds: Normal operation resumes.
 
 **Key points:**
 - More workers means more concurrent requests. Match workers to CPU cores.
@@ -432,7 +429,7 @@ BASE_URL="http://localhost:9090"
 
 function ask() {
     local prompt="$1"
-    local model="${2:-gemma3:27b}"
+    local model="${2:-qwen/qwen3-4b-2507}"
 
     curl -s "$BASE_URL/v1/chat/completions" \
         -H "Authorization: Bearer $API_KEY" \
@@ -489,44 +486,44 @@ Schedule recurring PromptHub tasks using cron:
    ```bash
    grep "enhancement" ~/prompthub/logs/router-stderr.log
    ```
-2. If Ollama crashed, restart it:
-   ```bash
-   killall ollama
-   sleep 2
-   ollama serve &
-   ```
+1. If LM Studio crashed, restart it:
+  ```bash
+  lms server stop || true
+  sleep 2
+  lms server start &
+  ```
 
 ### "Circuit breaker keeps triggering"
 
-This means Ollama is struggling to keep up. Try one of these fixes:
+This means LM Studio is struggling to keep up. Try one of these fixes:
 
 1. Increase the timeout in `.env`:
-   ```bash
-   OLLAMA_TIMEOUT=300
-   ```
-2. Give Ollama more system resources (close other heavy apps).
-3. Reduce the number of concurrent requests.
+  ```bash
+  LM_STUDIO_TIMEOUT=300
+  ```
+1. Give LM Studio more system resources (close other heavy apps).
+1. Reduce the number of concurrent requests.
 
 ### "High memory usage"
 
 1. Check what is using memory:
-   ```bash
-   ps aux | grep ollama
-   ps aux | grep uvicorn
-   ```
-2. See which models are loaded:
-   ```bash
-   ollama list | grep "SIZE"
-   ```
-3. Unload models you are not using:
-   ```bash
-   ollama rm gemma3:4b
-   ```
+  ```bash
+  ps aux | grep lms
+  ps aux | grep uvicorn
+  ```
+1. See which models are loaded:
+  ```bash
+  lms ls | grep "SIZE"
+  ```
+1. Unload models you are not using:
+  ```bash
+  lms rm model-name
+  ```
 
 **Key points:**
 - Check logs first when something breaks.
 - Circuit breaker warnings mean a downstream service is unstable.
-- Unload unused Ollama models to free up memory.
+- Unload unused LM Studio models to free up memory.
 
 ---
 
@@ -623,7 +620,7 @@ Typical request times on an M2 Mac:
 - Enable enhancement for quality-critical tasks.
 - Monitor the `memory.db` file size regularly.
 - Use debug logging when troubleshooting.
-- Keep Ollama and PromptHub updated.
+  - Keep LM Studio and PromptHub updated.
 
 **Do not:**
 - Use extremely large models unless you need them.

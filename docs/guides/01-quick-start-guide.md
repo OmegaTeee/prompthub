@@ -18,7 +18,7 @@ With PromptHub you can:
 Make sure you have these three things ready:
 
 1. **PromptHub installed** on your Mac.
-2. **Ollama running** for local AI features. Launch it from your Applications folder or run `ollama serve` in Terminal.
+2. **LM Studio running** for local AI features. Launch it from your Applications folder or run `lms server start` in Terminal.
 3. **An internet connection** if you plan to use cloud features like the Claude API.
 
 ## Getting Started
@@ -87,7 +87,7 @@ The dashboard gives you a bird's-eye view of the whole system.
 Click the **Health Check** button on the dashboard. It verifies four things:
 
 1. The router is running.
-2. Ollama is responding.
+2. LM Studio is responding.
 3. The database is accessible.
 4. API keys are loaded.
 
@@ -111,7 +111,7 @@ If you see that response, PromptHub is ready to go.
 **Key points:**
 
 - The `/health` endpoint is the fastest way to check if PromptHub is running.
-- A healthy response means the router, Ollama, and database are all working.
+- A healthy response means the router, LM Studio, and database are all working.
 
 ## What to Do Next
 
