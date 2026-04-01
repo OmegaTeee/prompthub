@@ -18,15 +18,16 @@ Welcome! This folder contains everything you need to get the most out of PromptH
 ## 🔧 Integration & Setup
 
 ### Connecting Your Apps
-- **[App Configuration Guide](06-app-configuration-guide.md)** — Step-by-step setup for Claude, VS Code, Raycast, and more (15 min read)
+- **[Client Setup Guide](06-client-configuration-guide.md)** — MCP configs, AI providers, API keys, and enhancement rules for Claude, VS Code, Raycast, LM Studio, Open WebUI, and more (15 min read)
+- **[API Integration Examples](../api/integration-examples.md)** — Python, Node.js, curl, Automator, Keyboard Maestro, Postman (developer reference)
 
 Supported apps include:
-- Claude for Mac
-- VS Code
+- Claude Desktop / Claude Code
+- VS Code / Cursor
 - Raycast
-- Python scripts
-- Bash scripts
-- Custom tools
+- LM Studio
+- Open WebUI
+- Obsidian
 
 ---
 
@@ -70,11 +71,11 @@ Topics:
 - Privacy: [Session Memory Guide — Privacy](03-session-memory-guide.md#privacy-and-data)
 
 ### Connecting Apps
-- Overview: [App Configuration Guide](06-app-configuration-guide.md)
-- Claude: [App Configuration — Claude](06-app-configuration-guide.md#claude-desktop)
-- VS Code: [App Configuration — VS Code](06-app-configuration-guide.md#vs-code)
-- Raycast: [App Configuration — Raycast](06-app-configuration-guide.md#raycast)
-- Custom apps: [App Configuration — Generic Setup](06-app-configuration-guide.md#generic-http-client-setup)
+- Overview: [App Configuration Guide](06-client-configuration-guide.md)
+- Claude: [App Configuration — Claude](06-client-configuration-guide.md#claude-desktop)
+- VS Code: [App Configuration — VS Code](06-client-configuration-guide.md#vs-code)
+- Raycast: [App Configuration — Raycast](06-client-configuration-guide.md#raycast)
+- Custom apps: [App Configuration — Generic Setup](06-client-configuration-guide.md#generic-http-client-setup)
 
 ### Using the API
 - Overview: [OpenAI API Guide](04-openai-api-guide.md)
@@ -129,7 +130,7 @@ Topics:
 A: [Quick Start Guide](01-quick-start-guide.md) — takes 5 minutes
 
 **Q: How do I connect my app?**
-A: [App Configuration Guide](06-app-configuration-guide.md) — covers all popular apps
+A: [App Configuration Guide](06-client-configuration-guide.md) — covers all popular apps
 
 **Q: Is PromptHub better than [alternative]?**
 A: [Why PromptHub](07-why-prompthub-comparison.md) — detailed comparison
@@ -155,8 +156,8 @@ A: Yes, completely local. See [Session Memory — Privacy](03-session-memory-gui
 
 These guides focus on end-user experience. For technical/developer documentation, see:
 - `../architecture/` — System design and decisions
-- `../api/` — API specification (OpenAPI 3.0)
-- `../features/` — Feature deep-dives (Memory System, Ollama, etc.)
+- `../api/` — API specification (OpenAPI 3.0) and integration examples
+- `../features/` — Feature deep-dives (Memory System, LM Studio, etc.)
 - `../modules/` — Module documentation
 
 ---
@@ -167,7 +168,7 @@ These guides focus on end-user experience. For technical/developer documentation
 → [Quick Start Guide](01-quick-start-guide.md) (5 min)
 
 ### "I want to use it with my favorite app"
-→ [Quick Start](01-quick-start-guide.md) → [App Configuration](06-app-configuration-guide.md)
+→ [Quick Start](01-quick-start-guide.md) → [App Configuration](06-client-configuration-guide.md)
 
 ### "I want to understand all the features"
 → [Quick Start](01-quick-start-guide.md) → [Enhancement](02-prompt-enhancement-user-guide.md) → [Memory](03-session-memory-guide.md) → [API](04-openai-api-guide.md)

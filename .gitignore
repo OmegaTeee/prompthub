@@ -84,7 +84,15 @@ mcps/prompthub-config.env
 
 # Claude Code local settings
 .claude/settings.local.json
+.claude/plugins.json
+.claude/plugins/
 app/.claude/
+
+# Firecrawl cache (web scraping output)
+.firecrawl/
+
+# Obsidian metadata (docs vault)
+docs/.obsidian/
 
 # Qdrant data (Phase 2.1+)
 qdrant_data/

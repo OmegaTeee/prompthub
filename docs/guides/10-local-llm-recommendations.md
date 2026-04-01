@@ -282,4 +282,4 @@ Engine:     mlx-llm v1.4.0 (LLMs), llama.cpp v2.8.0 (embeddings)
 
 ---
 
-*For PromptHub configuration details, see the [App Configuration Guide](06-app-configuration-guide.md). For OpenAI-compatible proxy setup, see the [OpenAI API Guide](04-openai-api-guide.md). For LM Studio documentation, visit [lmstudio.ai/docs](https://lmstudio.ai/docs).*
+*For PromptHub configuration details, see the [Client Setup Guide](06-client-configuration-guide.md). For OpenAI-compatible proxy setup, see the [OpenAI API Guide](04-openai-api-guide.md). For LM Studio documentation, visit [lmstudio.ai/docs](https://lmstudio.ai/docs).*
