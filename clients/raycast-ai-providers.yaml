@@ -1,0 +1,65 @@
+providers:
+  - id: lm-studio
+    name: lm-studio
+    base_url: http://10.188.1.192:1234/v1
+    api_keys:
+      PROMPTHUB_KEY: sk-prompthub-raycast-001
+    models:
+      - id: qwen/qwen3-4b-thinking-2507
+        name: Qwen3 4B Thinking - LM Studio
+        context: 262144
+        description: Markedly better general capabilities, such as instruction following, tool usage, text generation, and alignment with human preferences.
+        provider: PROMPTHUB_KEY
+        abilities:
+          tools:
+            supported: true
+          reasoning_effort:
+            supported: true
+          system_message:
+            supported: true
+      - id: qwen/qwen3-4b-2507
+        name: Qwen3 4B Instruct - LM Studio
+        context: 262144
+        description: Non-thinking mode featuring significant improvements in general capabilities including instruction following, logical reasoning, text comprehension, mathematics, science, coding and tool usage.
+        provider: PROMPTHUB_KEY
+        abilities:
+          tools:
+            supported: true
+          vision:
+            supported: true
+          reasoning_effort:
+            supported: true
+          system_message:
+            supported: true
+  - id: prompthub-oai
+    name: prompthub-oai
+    base_url: http://localhost:9090/v1
+    api_keys:
+      PROMPTHUB_KEY: sk-prompthub-raycast-001
+    models:
+      - id: qwen/qwen3-4b-thinking-2507
+        name: Qwen3 4B Thinking - PromptHub
+        context: 262144
+        description: Markedly better general capabilities, such as instruction following, tool usage, text generation, and alignment with human preferences.
+        provider: PROMPTHUB_KEY
+        abilities:
+          tools:
+            supported: true
+          reasoning_effort:
+            supported: true
+          system_message:
+            supported: true
+      - id: qwen/qwen3-4b-2507
+        name: Qwen3 4B Instruct - PromptHub
+        context: 262144
+        description: Non-thinking mode featuring significant improvements in general capabilities including instruction following, logical reasoning, text comprehension, mathematics, science, coding and tool usage.
+        provider: PROMPTHUB_KEY
+        abilities:
+          tools:
+            supported: true
+          vision:
+            supported: true
+          reasoning_effort:
+            supported: true
+          system_message:
+            supported: true

@@ -33,11 +33,17 @@ class ConfigInstaller:
         """
         Merge generated config into the client's config file.
 
+        For bridge-based clients the generated ``prompthub`` entry is
+        merged into the existing ``mcpServers`` (or ``mcp.servers``)
+        section.  Open WebUI is an exception -- its config is a
+        standalone settings file written without merge.
+
         Args:
             client_type: Target client
             generated: Output from ConfigGenerator.generate()
             config_path: Override config file path (uses client default)
-            force: Replace entire mcpServers section
+            force: Replace entire mcpServers section (ignored for
+                Open WebUI, which always overwrites)
             dry_run: Return merged config without writing
 
         Returns:
@@ -57,7 +63,10 @@ class ConfigInstaller:
                 )
 
         # Merge based on client type
-        if client_type == ClientType.vscode:
+        if client_type == ClientType.open_webui:
+            # Open WebUI: standalone settings file, no merge needed
+            merged = generated
+        elif client_type == ClientType.vscode:
             merged = self._merge_vscode(existing, generated, force)
         else:
             merged = self._merge_standard(existing, generated, force)

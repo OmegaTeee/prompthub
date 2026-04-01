@@ -38,7 +38,7 @@ def create_memory_router(
     Args:
         get_storage: Callable that returns SessionStorage instance
         get_mcp_client: Callable that returns MemoryMCPClient instance
-        get_enhancement_service: Optional callable for Ollama enhancement
+        get_enhancement_service: Optional callable for LLM server enhancement
 
     Returns:
         APIRouter configured with /sessions endpoints
@@ -258,10 +258,10 @@ def create_memory_router(
             mcp_graph_summary=mcp_graph_summary,
         )
 
-    # POST /sessions/{id}/summarize — Generate context summary via Ollama
+    # POST /sessions/{id}/summarize — Generate context summary via LLM server
     @router.post("/{session_id}/summarize")
     async def summarize_session(session_id: str) -> dict:
-        """Generate a context summary via Ollama."""
+        """Generate a context summary via LLM server."""
         storage = get_storage()
         session = await storage.get_session(session_id)
 

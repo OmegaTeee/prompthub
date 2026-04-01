@@ -24,18 +24,18 @@ def create_health_router(
         svc = get_enhancement_service()
         server_summary = sup.get_status_summary() if sup else {}
 
-        ollama_status = "unknown"
+        llm_status = "unknown"
         cache_stats = {}
         if svc:
             stats = await svc.get_stats()
-            ollama_status = "up" if stats.get("ollama_healthy") else "down"
+            llm_status = "up" if stats.get("llm_healthy") else "down"
             cache_stats = stats.get("cache", {})
 
         return {
             "status": "healthy",
             "services": {
                 "router": "up",
-                "ollama": ollama_status,
+                "llm": llm_status,
                 "cache": {
                     "status": "up",
                     "hit_rate": cache_stats.get("hits", 0)

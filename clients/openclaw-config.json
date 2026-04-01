@@ -1,0 +1,210 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.22",
+    "lastTouchedAt": "2026-03-23T17:18:50.214Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-03-23T17:18:50.177Z",
+    "lastRunVersion": "2026.3.22",
+    "lastRunCommand": "configure",
+    "lastRunMode": "local"
+  },
+  "diagnostics": {
+    "enabled": true,
+    "cacheTrace": {
+      "enabled": true,
+      "filePath": "/Users/visualval/.openclaw",
+      "includeMessages": true,
+      "includePrompt": true,
+      "includeSystem": true
+    }
+  },
+  "logging": {
+    "consoleLevel": "info",
+    "redactSensitive": "tools"
+  },
+  "update": {
+    "channel": "stable"
+  },
+  "auth": {
+    "profiles": {
+      "github-copilot:github": {
+        "provider": "github-copilot",
+        "mode": "token"
+      },
+      "ollama:default": {
+        "provider": "ollama",
+        "mode": "api_key"
+      }
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "ollama": {
+        "baseUrl": "http://127.0.0.1:11434",
+        "apiKey": "OLLAMA_API_KEY",
+        "api": "ollama",
+        "models": [
+          {
+            "id": "qwen3:14b",
+            "name": "qwen3:14b",
+            "reasoning": true,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 40960,
+            "maxTokens": 8192
+          },
+          {
+            "id": "gemma3:27b",
+            "name": "gemma3:27b",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 131072,
+            "maxTokens": 8192
+          },
+          {
+            "id": "gemma3:4b",
+            "name": "gemma3:4b",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 131072,
+            "maxTokens": 8192
+          },
+          {
+            "id": "qwen3-coder:30b",
+            "name": "qwen3-coder:30b",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 262144,
+            "maxTokens": 8192
+          },
+          {
+            "id": "bge-m3:latest",
+            "name": "bge-m3:latest",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 8192,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "ollama/qwen3:14b",
+        "fallbacks": [
+          "github-copilot/gpt-4o",
+          "openrouter/auto",
+          "ollama/qwen3:14b"
+        ]
+      },
+      "models": {
+        "github-copilot/gpt-4o": {},
+        "ollama/qwen3:14b": {}
+      },
+      "workspace": "/Users/visualval/.openclaw/workspace",
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    }
+  },
+  "tools": {
+  },
+  "mcp": {
+    "servers": {
+      "prompthub": {
+        "type": "stdio",
+        "command": "node",
+        "args": [
+          "/Users/visualval/prompthub/mcps/prompthub-bridge.js"
+        ],
+        "env": {
+          "PROMPTHUB_URL": "http://127.0.0.1:9090",
+          "AUTHORIZATION": "Bearer sk-prompthub-openclaw-001",
+          "CLIENT_NAME": "openclaw",
+          "SERVERS": "duckduckgo,sequential-thinking,desktop-commander,browsermcp,context7"
+        }
+      },
+      "skills-mcp": {
+        "type": "stdio",
+        "command": "npx",
+        "args": [
+          "-y",
+          "skills-mcp",
+          "-s",
+          "/Users/visualval/.claude/skills"
+        ]
+      }
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "f32d85c26bbaf89233875903faf325fd957ac4751cff9b94",
+      "allowTailscale": true
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    }
+  },
+  "plugins": {
+    "entries": {
+    }
+  }
+}

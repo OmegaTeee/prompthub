@@ -9,13 +9,11 @@ configs/
 ├── README.md                              # This file
 ├── enhancement-rules.json                 # PromptHub: Prompt enhancement rules
 ├── mcp-servers.json                       # PromptHub: MCP server registry
-├── mcp-servers-keyring.json.example       # PromptHub: Credential management
 ├── logrotate.conf                         # System: Log rotation (Linux)
 └── logrotate-macos.conf                   # System: Log rotation (macOS)
 ```
 
-> **Note:** Desktop client configurations (Claude Desktop, Raycast, MCP Inspector) live in
-> [`mcps/configs/`](../../mcps/configs/README.md), co-located with the MCP bridge.
+> **Note:** Desktop client configurations (Claude Desktop, Raycast, MCP Inspector) live in [`mcps/configs/`](../../mcps/configs/README.md), co-located with the MCP bridge.
 
 ## Configuration Types
 
@@ -23,9 +21,7 @@ configs/
 Core PromptHub router settings:
 - **`enhancement-rules.json`** - Per-client Ollama models and system prompts
 - **`mcp-servers.json`** - MCP server lifecycle (command, args, auto_start)
-- **`mcp-servers-keyring.json.example`** - Secure credential storage
-
-**When to modify:** Adding MCP servers, changing enhancement behavior, or managing credentials.
+**When to modify:** Adding MCP servers or changing enhancement behavior.
 
 ### 🔧 System Configurations (root)
 Infrastructure and logging:
@@ -71,12 +67,24 @@ vim configs/enhancement-rules.json
 
 **Configure credentials:**
 
-```bash
-# Copy example
-cp configs/mcp-servers-keyring.json.example configs/mcp-servers-keyring.json
+Credentials are stored in macOS Keychain and referenced inline in `mcp-servers.json`:
 
-# Add credentials (automatically stored in macOS Keychain)
-vim configs/mcp-servers-keyring.json
+```json
+{
+  "env": {
+    "MY_API_KEY": {
+      "source": "keyring",
+      "service": "prompthub",
+      "key": "my_api_key"
+    }
+  }
+}
+```
+
+Store a credential:
+
+```bash
+python3 -c "import keyring; keyring.set_password('prompthub', 'my_api_key', 'YOUR_VALUE')"
 ```
 
 ## Configuration Philosophy
@@ -123,11 +131,7 @@ echo "app/configs/*.local.json" >> .gitignore
 
 ### Secrets Management
 
-```bash
-# Never commit credentials
-git add configs/mcp-servers-keyring.json.example  # Example only
-echo "configs/mcp-servers-keyring.json" >> .gitignore  # Actual secrets
-```
+Credentials live in macOS Keychain, not in config files. The `mcp-servers.json` `env` blocks use `{"source": "keyring"}` references that are resolved at server startup — no secrets on disk.
 
 ### Backup
 
@@ -139,9 +143,3 @@ tar -czf prompthub-configs-$(date +%Y%m%d).tar.gz configs/
 tar -xzf prompthub-configs-20260130.tar.gz
 ```
 
-## Documentation
-
-For detailed setup and usage, see the Obsidian vault at `~/Vault/PromptHub/`:
-- Integrations: `~/Vault/PromptHub/Integrations/`
-- Testing: `~/Vault/PromptHub/Testing/`
-- Migration: `~/Vault/PromptHub/Migration/`

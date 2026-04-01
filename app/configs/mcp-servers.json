@@ -17,7 +17,9 @@
       "transport": "stdio",
       "command": "node",
       "args": ["./mcps/node_modules/@wonderwhy-er/desktop-commander/dist/index.js"],
-      "env": {},
+      "env": {
+        "CLIENT_IP_ENCRYPTION_KEY": "3765aa62cca47c2929675c3a5e644775"
+      },
       "auto_start": true,
       "restart_on_failure": true,
       "max_restarts": 3,
@@ -80,23 +82,45 @@
       "health_check_interval": 30,
       "description": "Obsidian vault operations via MCP Tools plugin"
     },
-    "perplexity": {
-      "package": "@perplexity-ai/mcp-server",
+    "chrome-devtools-mcp": {
+      "package": "chrome-devtools-mcp",
       "transport": "stdio",
       "command": "node",
-      "args": ["./mcps/node_modules/@perplexity-ai/mcp-server/dist/index.js"],
-      "env": {
-        "PERPLEXITY_API_KEY": {
-          "source": "keyring",
-          "service": "prompthub",
-          "key": "perplexity_api_key"
-        }
-      },
+      "args": [
+        "./mcps/node_modules/chrome-devtools-mcp/build/src/bin/chrome-devtools-mcp.js",
+        "--browserUrl", "http://127.0.0.1:9222",
+        "--usageStatistics", "false"
+      ],
+      "env": {},
       "auto_start": false,
-      "restart_on_failure": true,
+      "restart_on_failure": false,
       "max_restarts": 3,
       "health_check_interval": 30,
-      "description": "Perplexity AI search, reasoning, and deep research via Sonar models"
+      "description": "Chrome DevTools Protocol debugging, profiling, and browser automation"
+    },
+    "perplexity-comet": {
+      "package": "perplexity-comet-mcp",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/perplexity-comet-mcp/dist/index.js"],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": false,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Perplexity research via Comet browser CDP bridge"
+    },
+    "browsermcp": {
+      "package": "@browsermcp/mcp",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/@browsermcp/mcp/dist/index.js"],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": false,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Browser automation via Chrome extension WebSocket bridge"
     }
   }
 }

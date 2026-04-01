@@ -6,12 +6,14 @@ Validates:
 - Required env vars
 - Bridge file existence
 - URL format (127.0.0.1, not localhost)
+- Open WebUI connection settings (api_base_url, api_key cross-check)
 """
 
 import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -195,3 +197,97 @@ class ConfigValidator:
                             f"mcpServers.{name}.args",
                         )
                     )
+
+    def validate_open_webui(
+        self,
+        config: dict[str, Any],
+        configs_dir: Path | None = None,
+    ) -> ValidationResult:
+        """
+        Validate Open WebUI connection settings.
+
+        Checks performed:
+        - ``open_webui`` section exists
+        - ``api_base_url`` is present and uses 127.0.0.1 (not localhost)
+        - ``api_key`` is present
+        - ``api_key`` exists in ``api-keys.json`` (when *configs_dir*
+          is provided)
+
+        Args:
+            config: Parsed JSON from the Open WebUI settings file.
+            configs_dir: Path to the ``app/configs/`` directory.
+                When supplied, the API key is cross-checked against
+                ``api-keys.json``.
+
+        Returns:
+            ValidationResult with any errors or warnings found.
+        """
+        result = ValidationResult()
+
+        ow = config.get("open_webui", {})
+        if not ow:
+            result.issues.append(
+                ValidationIssue(
+                    "error",
+                    "Missing 'open_webui' section in config",
+                    "open_webui",
+                )
+            )
+            return result
+
+        # Check API base URL uses 127.0.0.1
+        api_url = ow.get("api_base_url", "")
+        if "localhost" in api_url:
+            result.issues.append(
+                ValidationIssue(
+                    "warning",
+                    f"api_base_url uses 'localhost': {api_url!r}. "
+                    "Use '127.0.0.1' to avoid DNS/IPv6 issues.",
+                    "open_webui.api_base_url",
+                )
+            )
+
+        if not api_url:
+            result.issues.append(
+                ValidationIssue(
+                    "error",
+                    "api_base_url is missing",
+                    "open_webui.api_base_url",
+                )
+            )
+
+        # Check API key is present
+        api_key = ow.get("api_key", "")
+        if not api_key:
+            result.issues.append(
+                ValidationIssue(
+                    "error",
+                    "api_key is missing",
+                    "open_webui.api_key",
+                )
+            )
+
+        # Check API key exists in api-keys.json
+        if api_key and configs_dir:
+            keys_path = configs_dir / "api-keys.json"
+            if keys_path.exists():
+                try:
+                    keys_data = json.loads(keys_path.read_text())
+                    if api_key not in keys_data.get("keys", {}):
+                        result.issues.append(
+                            ValidationIssue(
+                                "error",
+                                f"API key {api_key!r} not found in api-keys.json",
+                                "open_webui.api_key",
+                            )
+                        )
+                except json.JSONDecodeError:
+                    result.issues.append(
+                        ValidationIssue(
+                            "warning",
+                            "Could not parse api-keys.json",
+                            "api-keys.json",
+                        )
+                    )
+
+        return result

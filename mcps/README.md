@@ -48,7 +48,7 @@ Installed via `npm install` in this directory:
 
 All servers are configured in [`../app/configs/mcp-servers.json`](../app/configs/mcp-servers.json).
 
-Servers requiring API keys use wrapper scripts in [`../app/scripts/`](../app/scripts/) that load credentials from macOS Keychain.
+Servers requiring API keys use wrapper scripts in [`../scripts/`](../scripts/) that load credentials from macOS Keychain.
 
 ## Adding New MCP Servers
 
@@ -94,7 +94,7 @@ Example configurations available in [`../configs/mcp-servers.json.examples`](../
 Run the validation script to verify all servers are installed:
 
 ```bash
-../app/scripts/validate-mcp-servers.sh
+../scripts/router/validate-mcp-servers.sh
 ```
 
 This checks:

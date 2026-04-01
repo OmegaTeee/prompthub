@@ -39,7 +39,7 @@ env/
 *.swp
 *.swo
 *~
-.config/
+.history/
 
 # Environment variables
 .env
@@ -75,22 +75,32 @@ logs/**/*.log
 # Local configs (keep examples, ignore actual)
 app/configs/*.local.json
 
-# Secrets
+# Secrets & API keys
 *.pem
 *.key
 credentials.json
+mcps/prompthub-api-keys.json
+mcps/prompthub-config.env
+
+# Claude Code local settings
+.claude/settings.local.json
+.claude/plugins.json
+.claude/plugins/
+app/.claude/
+
+# Firecrawl cache (web scraping output)
+.firecrawl/
+
+# Obsidian metadata (docs vault)
+docs/.obsidian/
 
 # Qdrant data (Phase 2.1+)
 qdrant_data/
+
+# Open WebUI secret key (generated on first run)
+.webui_secret_key
 
 # Temporary files
 *.tmp
 *.temp
 /tmp/
-
-# Claude Code agent specs (generated, not tracked)
-.claude/agents/kfc/
-.claude/settings.json
-.claude/settings.local.json
-.claude/settings/
-.claude/system-prompts/

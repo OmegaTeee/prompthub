@@ -1,0 +1,102 @@
+<!-- Open WebUI Panel -->
+<div class="panel-header">
+  <h3>Open WebUI</h3>
+  <span class="text-sm text-muted">
+    {% if status == "up" %}
+      <span class="badge badge-success">Connected</span>
+    {% else %}
+      <span class="badge badge-danger">Offline</span>
+    {% endif %}
+  </span>
+</div>
+
+{% if error %}
+<div class="error-message">
+  Error loading Open WebUI info: {{ error }}
+</div>
+{% else %}
+<div class="owui-info">
+  <div class="owui-detail">
+    <span class="owui-label">API Base URL</span>
+    <span class="owui-value font-mono text-sm">{{ api_base_url }}</span>
+  </div>
+  <div class="owui-detail">
+    <span class="owui-label">MCP Endpoint</span>
+    <span class="owui-value font-mono text-sm">{{ mcp_endpoint }}</span>
+  </div>
+  <div class="owui-detail">
+    <span class="owui-label">Port</span>
+    <span class="owui-value font-mono">{{ port }}</span>
+  </div>
+  {% if recent_activity > 0 %}
+  <div class="owui-detail">
+    <span class="owui-label">Recent Requests</span>
+    <span class="owui-value">{{ recent_activity }}</span>
+  </div>
+  {% endif %}
+</div>
+
+{% if status == "up" %}
+<div class="owui-actions">
+  <a href="http://localhost:{{ port }}" target="_blank" class="btn btn-sm btn-primary font-mono">
+    Open WebUI &#x2197;
+  </a>
+</div>
+{% endif %}
+{% endif %}
+
+<style>
+.owui-info {
+  margin: 12px 0;
+}
+
+.owui-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.owui-detail:last-child {
+  border-bottom: none;
+}
+
+.owui-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.owui-value {
+  color: var(--color-text-primary);
+}
+
+.owui-actions {
+  margin-top: 12px;
+  text-align: right;
+}
+
+.btn-sm {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background: var(--color-accent, #4a90d9);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.badge-danger {
+  background: #fde8e8;
+  color: #8b3333;
+}
+</style>

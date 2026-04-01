@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "prompthub-bridge": {
+      "command": "node",
+      "args": [
+        "/Users/visualval/prompthub/mcps/prompthub-bridge.js"
+      ],
+      "env": {
+        "AUTHORIZATION": "Bearer sk-prompthub-lm-studio-001",
+        "CLIENT_NAME": "lm-studio",
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "SERVERS": "memory,context7,sequential-thinking,desktop-commander",
+        "EXCLUDE_TOOLS": "duckduckgo,perplexity-comet"
+      }
+    }
+  }
+}

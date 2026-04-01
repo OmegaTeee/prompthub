@@ -1,19 +1,20 @@
 {
   // ── Python environment ──────────────────────────────────
   // The project lives in app/ with its own venv
-  "python.defaultInterpreterPath": "/Users/visualval/.local/share/prompthub/app/.venv/bin/python",
+  "python.defaultInterpreterPath": "/Users/visualval/prompthub/app/.venv/bin/python",
   "python.envFile": "${workspaceFolder}/app/.env",
+  "python.terminal.useEnvFile": true,
   "python-envs.pythonProjects": [
     {
       "path": "${workspaceFolder}/app/",
       "envManager": "ms-python.python:venv",
       "packageManager": "ms-python.python:pip"
     },
-    {
-      "path": "",
-      "envManager": "ms-python.python:pipenv",
-      "packageManager": "ms-python.python:pip"
-    }
+    // {
+    //   "path": "",
+    //   "envManager": "ms-python.python:pipenv",
+    //   "packageManager": "ms-python.python:pip"
+    // }
   ],
   "python.terminal.activateEnvironment": true,
   // ── Static analysis (Pylance) ───────────────────────────
@@ -43,17 +44,31 @@
   "ruff.configuration": "${workspaceFolder}/app/pyproject.toml",
   "ruff.cwd": "${workspaceFolder}/app",
   // ── Editor preferences ──────────────────────────────────
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
   "files.exclude": {
     "**/__pycache__": true,
     "**/.pytest_cache": true,
-    "**/.mypy_cache": true,
-    "clients": true
+    "**/.mypy_cache": true
   },
-  // ── Markdown settings ────────────────────────────----───
-  "markdownlint.configFile": ".vscode/.markdownlint-cli2.jsonc",
-  "markdown.styles": [
-    ".vscode/markdown.css"
-  ]
+  "terminal.integrated.defaultProfile.osx": "PromptHub",
+  "terminal.integrated.profiles.osx": {
+    "PromptHub": {
+      "path": "/bin/zsh",
+      "args": [
+        "-l"
+      ],
+      "cwd": "${workspaceFolder}"
+    }
+  },
+  "chat.mcp.serverSampling": {
+    "prompthub": {
+      "allowedModels": [
+        "*"
+      ]
+    }
+  },
+  "chat.tools.terminal.autoApprove": {
+    "/Users/visualval/prompthub/app/.venv/bin/python": true,
+    "git add": true,
+    "git commit": true
+  }
 }

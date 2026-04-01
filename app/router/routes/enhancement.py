@@ -1,4 +1,4 @@
-"""Prompt enhancement (Ollama) endpoints."""
+"""Prompt enhancement (LLM) endpoints."""
 
 import logging
 from collections.abc import Callable
@@ -46,7 +46,7 @@ def create_enhancement_router(
 ) -> APIRouter:
     router = APIRouter(tags=["enhancement"])
 
-    @router.post("/ollama/enhance")
+    @router.post("/llm/enhance")
     async def enhance_prompt(
         body: EnhanceRequest,
         x_client_name: str | None = Header(None, alias="X-Client-Name"),
@@ -55,7 +55,7 @@ def create_enhancement_router(
         ),
     ):
         """
-        Enhance a prompt via Ollama.
+        Enhance a prompt via the LLM server.
 
         Headers:
             X-Client-Name: Client identifier for rule selection
@@ -92,7 +92,7 @@ def create_enhancement_router(
             "error": result.error,
         }
 
-    @router.get("/ollama/stats")
+    @router.get("/llm/stats")
     async def enhancement_stats():
         """Get enhancement service statistics."""
         svc = get_enhancement_service()
@@ -100,7 +100,7 @@ def create_enhancement_router(
             raise HTTPException(503, "Enhancement service not initialized")
         return await svc.get_stats()
 
-    @router.post("/ollama/orchestrate", response_model=OrchestrateResponse)
+    @router.post("/llm/orchestrate", response_model=OrchestrateResponse)
     async def orchestrate_prompt(
         body: OrchestrateRequest,
         x_client_name: str | None = Header(None, alias="X-Client-Name"),
@@ -139,7 +139,7 @@ def create_enhancement_router(
             "error": result.error,
         }
 
-    @router.post("/ollama/reset")
+    @router.post("/llm/reset")
     async def reset_enhancement():
         """Reset enhancement service (clear cache and circuit breaker)."""
         svc = get_enhancement_service()

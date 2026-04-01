@@ -3,28 +3,33 @@
 Provides /v1/chat/completions and /v1/models endpoints that desktop apps
 (Cursor, Raycast, Obsidian) can use as a drop-in OpenAI replacement.
 Requests are authenticated via bearer tokens, optionally enhanced,
-and forwarded to Ollama with circuit breaker protection.
+and forwarded to the LLM server with circuit breaker protection.
 """
 
+import json
 import logging
+import uuid
+from collections.abc import Callable
 from typing import Any
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from router.audit import audit_event
-from router.enhancement.ollama_openai import (
-    OllamaOpenAIClient,
-    OllamaOpenAIConnectionError,
-    OllamaOpenAIError,
-    OpenAICompatConfig,
+from router.enhancement.llm_client import (
+    LLMClient,
+    LLMConfig,
+    LLMConnectionError,
+    LLMError,
 )
 from router.openai_compat.auth import ApiKeyManager
-from router.openai_compat.models import ApiKeyConfig, ChatCompletionRequest
-from collections.abc import Callable
-
-from router.openai_compat.streaming import stream_ollama_response
+from router.openai_compat.models import (
+    ApiKeyConfig,
+    ChatCompletionRequest,
+    ResponsesRequest,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +40,9 @@ def create_openai_compat_router(
     enhancement_service: Callable[[], Any],
     circuit_breakers: Callable[[], Any],
     api_key_manager: ApiKeyManager,
-    ollama_base_url: str = "http://localhost:11434/v1",
-    ollama_timeout: float = 120.0,
+    llm_base_url: str = "http://localhost:1234/v1",
+    llm_timeout: float = 120.0,
+    llm_api_key: str | None = None,
 ) -> APIRouter:
     """Create the OpenAI-compatible API router with injected dependencies.
 
@@ -47,17 +53,26 @@ def create_openai_compat_router(
         enhancement_service: Callable returning EnhancementService (may return None before startup)
         circuit_breakers: Callable returning CircuitBreakerRegistry (may return None before startup)
         api_key_manager: Manages bearer token validation (loaded at module level)
-        ollama_base_url: Ollama's OpenAI-compat base URL
-        ollama_timeout: Timeout for Ollama requests in seconds
+        llm_base_url: LLM server's OpenAI-compat base URL
+        llm_timeout: Timeout for LLM requests in seconds
+        llm_api_key: Optional API key for authenticating with the LLM server
 
     Returns:
         Configured APIRouter for /v1/ endpoints
     """
     router = APIRouter(prefix="/v1", tags=["openai-compat"])
 
-    # Shared Ollama client for non-streaming requests
-    _ollama_client = OllamaOpenAIClient(
-        OpenAICompatConfig(base_url=ollama_base_url, timeout=ollama_timeout)
+    # Shared LLM client for non-streaming requests
+    _llm_client = LLMClient(
+        LLMConfig(
+            base_url=llm_base_url,
+            timeout=llm_timeout,
+            extra_headers=(
+                {"Authorization": f"Bearer {llm_api_key}"}
+                if llm_api_key
+                else {}
+            ),
+        )
     )
 
     # --- Auth dependency (closure over api_key_manager) ---
@@ -101,6 +116,58 @@ def create_openai_compat_router(
 
         return config
 
+    # --- Shared enhancement helper ---
+
+    async def _maybe_enhance(
+        messages: list[dict[str, str]],
+        request: Request,
+        api_key_cfg: ApiKeyConfig,
+    ) -> list[dict[str, str]]:
+        """Optionally enhance the last user message in-place.
+
+        Returns the (possibly modified) messages list. Enhancement failure
+        is non-fatal — returns original messages on any error.
+        """
+        svc = enhancement_service() if api_key_cfg.enhance else None
+        if not svc:
+            return messages
+
+        privacy_override = None
+        raw_privacy = request.headers.get("X-Privacy-Level")
+        if raw_privacy:
+            try:
+                from router.enhancement import PrivacyLevel
+
+                privacy_override = PrivacyLevel(raw_privacy)
+            except ValueError:
+                logger.warning("Invalid X-Privacy-Level: %s", raw_privacy)
+
+        last_user_idx = _find_last_user_message(messages)
+        if last_user_idx is not None:
+            original = messages[last_user_idx]["content"]
+            try:
+                result = await svc.enhance(
+                    prompt=original,
+                    client_name=api_key_cfg.client_name,
+                    privacy_override=privacy_override,
+                )
+                if result.was_enhanced:
+                    messages[last_user_idx] = {
+                        **messages[last_user_idx],
+                        "content": result.enhanced,
+                    }
+                    logger.info(
+                        "Enhanced last user message for client=%s cached=%s",
+                        api_key_cfg.client_name,
+                        result.cached,
+                    )
+            except Exception as e:
+                logger.warning(
+                    "Enhancement failed for %s: %s", api_key_cfg.client_name, e
+                )
+
+        return messages
+
     # --- Endpoints ---
 
     @router.post("/chat/completions")
@@ -112,14 +179,14 @@ def create_openai_compat_router(
         """OpenAI-compatible chat completion endpoint.
 
         Supports both streaming (SSE) and non-streaming modes.
-        Optionally enhances the last user message before forwarding to Ollama.
+        Optionally enhances the last user message before forwarding to LLM server.
         """
         client_name = api_key.client_name
 
         audit_event(
             event_type="openai_proxy",
             action="chat_completion",
-            resource_type="ollama",
+            resource_type="llm",
             resource_name=body.model,
             status="initiated",
             client_name=client_name,
@@ -130,12 +197,12 @@ def create_openai_compat_router(
         if not body.model or body.model in ("string", "model", "") or " " in body.model:
             raise HTTPException(
                 status_code=422,
-                detail=f"Invalid model name: '{body.model}'. Provide a valid Ollama model (e.g. 'gemma3:4b').",
+                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen/qwen3-4b-2507').",
             )
 
         # Circuit breaker check
         cb_registry = circuit_breakers()
-        breaker = cb_registry.get("ollama-proxy") if cb_registry else None
+        breaker = cb_registry.get("llm-proxy") if cb_registry else None
         if breaker:
             try:
                 breaker.check()
@@ -143,7 +210,7 @@ def create_openai_compat_router(
                 audit_event(
                     event_type="openai_proxy",
                     action="chat_completion",
-                    resource_type="ollama",
+                    resource_type="llm",
                     resource_name=body.model,
                     status="failed",
                     error="Circuit breaker open",
@@ -152,7 +219,7 @@ def create_openai_compat_router(
                     status_code=503,
                     detail={
                         "error": {
-                            "message": "Service temporarily unavailable — Ollama circuit breaker open",
+                            "message": "Service temporarily unavailable — LLM circuit breaker open",
                             "type": "server_error",
                         }
                     },
@@ -160,45 +227,9 @@ def create_openai_compat_router(
 
         # Enhancement: optionally enhance the last user message
         messages = [msg.copy() for msg in body.messages]
+        messages = await _maybe_enhance(messages, request, api_key)
 
-        svc = enhancement_service() if api_key.enhance else None
-        if svc:
-            # Parse privacy header override
-            privacy_override = None
-            raw_privacy = request.headers.get("X-Privacy-Level")
-            if raw_privacy:
-                try:
-                    from router.enhancement import PrivacyLevel
-                    privacy_override = PrivacyLevel(raw_privacy)
-                except ValueError:
-                    logger.warning(
-                        "Invalid X-Privacy-Level: %s", raw_privacy,
-                    )
-
-            last_user_idx = _find_last_user_message(messages)
-            if last_user_idx is not None:
-                original = messages[last_user_idx]["content"]
-                try:
-                    result = await svc.enhance(
-                        prompt=original,
-                        client_name=client_name,
-                        privacy_override=privacy_override,
-                    )
-                    if result.was_enhanced:
-                        messages[last_user_idx] = {
-                            **messages[last_user_idx],
-                            "content": result.enhanced,
-                        }
-                        logger.info(
-                            "Enhanced last user message for client=%s cached=%s",
-                            client_name,
-                            result.cached,
-                        )
-                except Exception as e:
-                    # Enhancement failure is non-fatal — proceed with original
-                    logger.warning("Enhancement failed for %s: %s", client_name, e)
-
-        # Build Ollama payload
+        # Build payload for LLM server
         payload: dict[str, Any] = {
             "model": body.model,
             "messages": messages,
@@ -215,9 +246,7 @@ def create_openai_compat_router(
         # --- Streaming response ---
         if body.stream:
             return StreamingResponse(
-                _stream_with_breaker(
-                    ollama_base_url, payload, ollama_timeout, breaker, body.model
-                ),
+                _stream_with_breaker(payload, breaker, _llm_client, body.model),
                 media_type="text/event-stream",
                 headers={
                     "Cache-Control": "no-cache",
@@ -228,61 +257,57 @@ def create_openai_compat_router(
 
         # --- Non-streaming response ---
         try:
-            response = await _ollama_client.chat_completion(
+            response = await _llm_client.chat_completion(
                 model=body.model,
                 messages=messages,
                 temperature=body.temperature,
                 max_tokens=body.max_tokens,
-                stream=False,
             )
             if breaker:
                 breaker.record_success()
             audit_event(
                 event_type="openai_proxy",
                 action="chat_completion",
-                resource_type="ollama",
+                resource_type="llm",
                 resource_name=body.model,
                 status="success",
                 stream=False,
             )
             return response.model_dump()
 
-        except (OllamaOpenAIConnectionError, OllamaOpenAIError) as e:
-            if breaker:
-                breaker.record_failure(e)
-            audit_event(
-                event_type="openai_proxy",
-                action="chat_completion",
-                resource_type="ollama",
-                resource_name=body.model,
-                status="failed",
-                error=str(e),
-            )
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "error": {"message": str(e), "type": "server_error"}
-                },
-            )
+        except (LLMConnectionError, LLMError, httpx.HTTPError) as e:
+            _handle_llm_error(e, breaker, "chat_completion", body.model)
 
     @router.get("/models")
-    async def list_models(
-        api_key: ApiKeyConfig = Depends(authenticate),
-    ):
-        """List available Ollama models in OpenAI format."""
+    async def list_models():
+        """List available models in OpenAI format.
+
+        Unauthenticated — model listing is non-sensitive and clients
+        like Raycast call this without a bearer token during provider
+        discovery.
+        """
         try:
-            models = await _ollama_client.list_models()
+            models = await _llm_client.list_models()
             return {"object": "list", "data": models}
         except Exception as e:
             raise HTTPException(
                 status_code=502,
                 detail={
                     "error": {
-                        "message": f"Cannot reach Ollama: {e}",
+                        "message": f"Cannot reach LLM server: {e}",
                         "type": "server_error",
                     }
                 },
             )
+
+    @router.get("/api/version")
+    async def api_version():
+        """Version endpoint for client discovery.
+
+        Raycast probes this to verify the provider is alive.
+        Returns a minimal version response to prevent 404 errors.
+        """
+        return {"version": "0.1.0"}
 
     @router.post("/api-keys/reload")
     async def reload_api_keys():
@@ -297,10 +322,141 @@ def create_openai_compat_router(
         )
         return {"message": "API keys reloaded", "count": api_key_manager.key_count}
 
+    @router.post("/responses")
+    async def responses(
+        body: ResponsesRequest,
+        request: Request,
+        api_key: ApiKeyConfig = Depends(authenticate),
+    ):
+        """OpenAI Responses API endpoint (non-streaming).
+
+        Translates Responses API format to Chat Completions, proxies to
+        LLM server, and wraps the result back into Responses API shape.
+        """
+        client_name = api_key.client_name
+
+        audit_event(
+            event_type="openai_proxy",
+            action="responses",
+            resource_type="llm",
+            resource_name=body.model,
+            status="initiated",
+            client_name=client_name,
+        )
+
+        # Reject streaming — not supported
+        if body.stream:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": {
+                        "message": "Streaming not supported for /v1/responses. Disable streaming in your client.",
+                        "type": "invalid_request_error",
+                    }
+                },
+            )
+
+        # Guard: reject placeholder model names
+        if not body.model or body.model in ("string", "model", "") or " " in body.model:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen/qwen3-4b-2507').",
+            )
+
+        # Circuit breaker check
+        cb_registry = circuit_breakers()
+        breaker = cb_registry.get("llm-proxy") if cb_registry else None
+        if breaker:
+            try:
+                breaker.check()
+            except Exception:
+                audit_event(
+                    event_type="openai_proxy",
+                    action="responses",
+                    resource_type="llm",
+                    resource_name=body.model,
+                    status="failed",
+                    error="Circuit breaker open",
+                )
+                raise HTTPException(
+                    status_code=503,
+                    detail={
+                        "error": {
+                            "message": "Service temporarily unavailable — LLM circuit breaker open",
+                            "type": "server_error",
+                        }
+                    },
+                )
+
+        # Translate Responses API input → Chat Completions messages
+        messages = _translate_responses_to_messages(body.input, body.instructions)
+        messages = await _maybe_enhance(messages, request, api_key)
+
+        # Forward to LLM server
+        try:
+            response = await _llm_client.chat_completion(
+                model=body.model,
+                messages=messages,
+                temperature=body.temperature if body.temperature is not None else 0.7,
+                max_tokens=body.max_output_tokens,
+            )
+            if breaker:
+                breaker.record_success()
+
+            audit_event(
+                event_type="openai_proxy",
+                action="responses",
+                resource_type="llm",
+                resource_name=body.model,
+                status="success",
+            )
+
+            return _build_responses_response(response.model_dump())
+
+        except (LLMConnectionError, LLMError, httpx.HTTPError) as e:
+            _handle_llm_error(e, breaker, "responses", body.model)
+
     return router
 
 
 # --- Helper functions ---
+
+
+def _handle_llm_error(
+    e: Exception,
+    breaker: Any,
+    action: str,
+    model: str,
+) -> None:
+    """Record failure and raise HTTPException for LLM errors.
+
+    Shared by /chat/completions and /responses endpoints.
+    Always raises — does not return.
+    """
+    if breaker:
+        breaker.record_failure(e)
+    audit_event(
+        event_type="openai_proxy",
+        action=action,
+        resource_type="llm",
+        resource_name=model,
+        status="failed",
+        error=str(e),
+    )
+    if isinstance(e, LLMConnectionError):
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": {
+                    "message": f"Cannot reach LLM server: {e}",
+                    "type": "server_error",
+                }
+            },
+        )
+    raise HTTPException(
+        status_code=502,
+        detail={"error": {"message": str(e), "type": "server_error"}},
+    )
 
 
 def _find_last_user_message(messages: list[dict[str, str]]) -> int | None:
@@ -311,41 +467,162 @@ def _find_last_user_message(messages: list[dict[str, str]]) -> int | None:
     return None
 
 
+def _flatten_content(content: str | list[dict]) -> str:
+    """Flatten Responses API content to a plain string.
+
+    Content can be a string or an array of content blocks like:
+    [{"type": "input_text", "text": "hello"}]
+
+    Extracts and joins the text from all blocks.
+    """
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, dict):
+                parts.append(block.get("text", ""))
+        return "".join(parts)
+    return str(content)
+
+
+def _translate_responses_to_messages(
+    input_data: str | list[dict],
+    instructions: str | None,
+) -> list[dict[str, str]]:
+    """Convert Responses API input + instructions to Chat Completions messages.
+
+    Args:
+        input_data: String (single user message) or array of message dicts.
+            Message content may be a string or array of content blocks.
+        instructions: Optional system prompt to prepend.
+
+    Returns:
+        List of message dicts for Chat Completions API (content always string).
+    """
+    messages: list[dict[str, str]] = []
+
+    if instructions:
+        messages.append({"role": "system", "content": instructions})
+
+    if isinstance(input_data, str):
+        messages.append({"role": "user", "content": input_data})
+    else:
+        for msg in input_data:
+            messages.append({
+                "role": msg.get("role", "user"),
+                "content": _flatten_content(msg.get("content", "")),
+            })
+
+    return messages
+
+
+def _build_responses_response(chat_response: dict) -> dict:
+    """Wrap a Chat Completions response dict into Responses API format.
+
+    Args:
+        chat_response: Raw dict from LLMClient.chat_completion().model_dump()
+
+    Returns:
+        Dict matching the OpenAI Responses API shape.
+    """
+    choices = chat_response.get("choices") or []
+    if not choices:
+        return {
+            "id": f"resp_{uuid.uuid4().hex[:24]}",
+            "object": "response",
+            "created_at": chat_response.get("created", 0),
+            "model": chat_response.get("model", ""),
+            "output": [
+                {
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [{"type": "output_text", "text": ""}],
+                }
+            ],
+            "output_text": "",
+            "usage": None,
+        }
+
+    message = choices[0].get("message", {})
+    text = message.get("content", "")
+    # LM Studio uses "reasoning" (v0.3.23+), others use "reasoning_content"
+    reasoning = message.get("reasoning") or message.get("reasoning_content")
+
+    content_blocks = []
+    if reasoning:
+        content_blocks.append({"type": "thinking", "thinking": reasoning})
+    content_blocks.append({"type": "output_text", "text": text})
+
+    # Map usage field names: prompt_tokens → input_tokens
+    raw_usage = chat_response.get("usage")
+    usage = None
+    if raw_usage:
+        usage = {
+            "input_tokens": raw_usage.get("prompt_tokens", 0),
+            "output_tokens": raw_usage.get("completion_tokens", 0),
+            "total_tokens": raw_usage.get("total_tokens", 0),
+        }
+
+    return {
+        "id": f"resp_{uuid.uuid4().hex[:24]}",
+        "object": "response",
+        "created_at": chat_response.get("created", 0),
+        "model": chat_response.get("model", ""),
+        "output": [
+            {
+                "type": "message",
+                "role": "assistant",
+                "content": content_blocks,
+            }
+        ],
+        "output_text": text,
+        "usage": usage,
+    }
+
+
 async def _stream_with_breaker(
-    ollama_base_url: str,
     payload: dict,
-    timeout: float,
     breaker: Any,
+    llm_client: LLMClient,
     model: str,
 ):
-    """Wrap the SSE stream with circuit breaker recording and audit logging."""
+    """Stream chat completion via OpenAI-compat /v1/chat/completions."""
     try:
-        async for chunk in stream_ollama_response(
-            ollama_base_url=ollama_base_url,
-            payload=payload,
-            timeout=timeout,
-        ):
-            yield chunk
-        breaker.record_success()
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(llm_client.config.timeout)
+        ) as client:
+            async with client.stream(
+                "POST",
+                f"{llm_client.config.base_url}/chat/completions",
+                json=payload,
+                headers=llm_client.config.extra_headers or {},
+            ) as response:
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if line.strip():
+                        yield f"{line}\n\n"
+        if breaker:
+            breaker.record_success()
         audit_event(
             event_type="openai_proxy",
             action="chat_completion",
-            resource_type="ollama",
+            resource_type="llm",
             resource_name=model,
             status="success",
             stream=True,
         )
     except Exception as e:
-        breaker.record_failure(e)
+        if breaker:
+            breaker.record_failure(e)
         logger.error("Streaming error for model=%s: %s", model, e)
         audit_event(
             event_type="openai_proxy",
             action="chat_completion",
-            resource_type="ollama",
+            resource_type="llm",
             resource_name=model,
             status="failed",
             error=str(e),
         )
-        error_msg = str(e).replace('"', '\\"')
-        yield f'data: {{"error": {{"message": "{error_msg}"}}}}\n\n'
+        yield f"data: {json.dumps({'error': {'message': str(e)}})}\n\n"
         yield "data: [DONE]\n\n"

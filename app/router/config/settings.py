@@ -7,24 +7,49 @@ Settings are loaded from environment variables and .env file.
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     """Application settings with environment variable support."""
 
-    model_config = {"env_file": ".env", "env_prefix": "", "case_sensitive": False}
+    model_config = {
+        "env_file": ".env",
+        "env_prefix": "",
+        "case_sensitive": False,
+        "extra": "ignore",  # tolerate legacy env vars (e.g. OLLAMA_API_MODE)
+    }
 
     # Server
     host: str = "0.0.0.0"
     port: int = 9090
 
-    # Ollama
-    ollama_host: str = "host.docker.internal"
-    ollama_port: int = 11434
-    ollama_model: str = "llama3.2:3b"
-    ollama_timeout: int = 30
-    ollama_api_mode: str = "native"  # "native" or "openai" - API format to use
+    # Local LLM server (LM Studio, Ollama, or any OpenAI-compatible server)
+    llm_host: str = Field(
+        default="localhost",
+        validation_alias=AliasChoices("LLM_HOST", "OLLAMA_HOST"),
+    )
+    llm_port: int = Field(
+        default=1234,
+        validation_alias=AliasChoices("LLM_PORT", "OLLAMA_PORT"),
+    )
+    llm_model: str = Field(
+        default="qwen/qwen3-4b-2507",
+        validation_alias=AliasChoices("LLM_MODEL", "OLLAMA_MODEL"),
+    )
+    llm_timeout: int = Field(
+        default=120,
+        validation_alias=AliasChoices("LLM_TIMEOUT", "OLLAMA_TIMEOUT"),
+    )
+    llm_orchestrator_model: str = Field(
+        default="qwen/qwen3-4b-thinking-2507",
+        validation_alias=AliasChoices("LLM_ORCHESTRATOR_MODEL"),
+    )
+    llm_api_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("LLM_API_KEY"),
+    )
 
     # Data directory — persistent storage for cache, activity log, memory db
     # Defaults to ~/.prompthub (XDG-style user data dir, survives reboots)
@@ -65,6 +90,11 @@ class Settings(BaseSettings):
     # Auto-detected if not set via WORKSPACE_ROOT env var
     workspace_root: str = ""
 
+    # MCP Gateway — filter which servers are exposed via /mcp-direct/mcp
+    # Comma-separated list of server names (empty = all servers)
+    # e.g. GATEWAY_SERVERS="context7,duckduckgo,sequential-thinking"
+    gateway_servers: str = ""
+
     # Logging
     log_level: str = "info"
 
@@ -94,14 +124,14 @@ class Settings(BaseSettings):
         if not self.audit_checksum_path:
             self.audit_checksum_path = str(data / "audit_checksums.json")
 
-        # Normalize ollama_host: strip scheme and port if present
-        # (handles OLLAMA_HOST=http://localhost:11434 from system env)
-        host = self.ollama_host
+        # Normalize llm_host: strip scheme and port if present
+        # (handles LLM_HOST=http://localhost:1234 from system env)
+        host = self.llm_host
         if "://" in host:
             host = host.split("://", 1)[1]
         if ":" in host:
             host = host.split(":", 1)[0]
-        self.ollama_host = host
+        self.llm_host = host
 
 
 @lru_cache

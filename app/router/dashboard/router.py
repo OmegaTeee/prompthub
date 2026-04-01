@@ -39,10 +39,11 @@ def create_dashboard_router(
     start_server: Callable[[str], Any],
     stop_server: Callable[[str], Any],
     get_circuit_breakers: Callable[[], dict[str, Any]],
-    get_ollama_info: Callable[[], Any] | None = None,
+    get_llm_info: Callable[[], Any] | None = None,
     reload_api_keys: Callable[[], Any] | None = None,
     get_memory_info: Callable[[], Any] | None = None,
     get_tool_registry_info: Callable[[], Any] | None = None,
+    get_open_webui_info: Callable[[], Any] | None = None,
 ) -> APIRouter:
     """
     Create the dashboard router with injected dependencies.
@@ -56,10 +57,11 @@ def create_dashboard_router(
         start_server: Function to start a server by name
         stop_server: Function to stop a server by name
         get_circuit_breakers: Function to get circuit breaker states
-        get_ollama_info: Function to get Ollama models and API keys summary
+        get_llm_info: Function to get LLM server models and API keys summary
         reload_api_keys: Function to reload API keys from config
         get_memory_info: Function to get session memory stats
         get_tool_registry_info: Function to get tool registry stats
+        get_open_webui_info: Function to get Open WebUI connection status
 
     Returns:
         Configured APIRouter for dashboard endpoints
@@ -144,7 +146,7 @@ def create_dashboard_router(
                     "total_cached": cache_stats.get("size", 0),
                     "max_size": cache_stats.get("max_size", 0),
                 },
-                "ollama_healthy": stats.get("ollama_healthy", False),
+                "llm_healthy": stats.get("llm_healthy", False),
                 "circuit_breaker": circuit_breaker,
             },
         )
@@ -333,76 +335,50 @@ def create_dashboard_router(
         await clear_cache()
         return {"status": "success", "message": "Cache cleared"}
 
-    @router.post("/actions/restart/{server}")
-    async def restart_server_action(server: str):
-        """Restart an MCP server."""
-        # Validate server name
+    async def _validated_server_action(
+        server: str, action_name: str, operation: Callable,
+    ) -> dict | JSONResponse:
+        """Validate server name, execute operation, return JSON result."""
         is_valid, error_msg = await _validate_server_name(server)
         if not is_valid:
             return JSONResponse(
                 status_code=400,
-                content={"status": "error", "message": error_msg}
+                content={"status": "error", "message": error_msg},
             )
-
         try:
-            await restart_server(server)
-            return {"status": "success", "message": f"{server} restarted"}
+            await operation(server)
+            return {"status": "success", "message": f"{server} {action_name}"}
         except Exception as e:
             return JSONResponse(
                 status_code=500,
-                content={"status": "error", "message": str(e)}
+                content={"status": "error", "message": str(e)},
             )
+
+    @router.post("/actions/restart/{server}")
+    async def restart_server_action(server: str):
+        """Restart an MCP server."""
+        return await _validated_server_action(server, "restarted", restart_server)
 
     @router.post("/actions/start/{server}")
     async def start_server_action(server: str):
         """Start an MCP server."""
-        # Validate server name
-        is_valid, error_msg = await _validate_server_name(server)
-        if not is_valid:
-            return JSONResponse(
-                status_code=400,
-                content={"status": "error", "message": error_msg}
-            )
-
-        try:
-            await start_server(server)
-            return {"status": "success", "message": f"{server} started"}
-        except Exception as e:
-            return JSONResponse(
-                status_code=500,
-                content={"status": "error", "message": str(e)}
-            )
+        return await _validated_server_action(server, "started", start_server)
 
     @router.post("/actions/stop/{server}")
     async def stop_server_action(server: str):
         """Stop an MCP server."""
-        # Validate server name
-        is_valid, error_msg = await _validate_server_name(server)
-        if not is_valid:
-            return JSONResponse(
-                status_code=400,
-                content={"status": "error", "message": error_msg}
-            )
+        return await _validated_server_action(server, "stopped", stop_server)
 
-        try:
-            await stop_server(server)
-            return {"status": "success", "message": f"{server} stopped"}
-        except Exception as e:
-            return JSONResponse(
-                status_code=500,
-                content={"status": "error", "message": str(e)}
-            )
+    @router.get("/llm-partial", response_class=HTMLResponse)
+    async def llm_partial(request: Request):
+        """HTMX partial: LLM server models and API clients."""
+        if not get_llm_info:
+            return HTMLResponse("<p class='text-muted'>LLM panel not configured</p>")
 
-    @router.get("/ollama-partial", response_class=HTMLResponse)
-    async def ollama_partial(request: Request):
-        """HTMX partial: Ollama models and API clients."""
-        if not get_ollama_info:
-            return HTMLResponse("<p class='text-muted'>Ollama panel not configured</p>")
-
-        info = await get_ollama_info()
+        info = await get_llm_info()
         return templates.TemplateResponse(
             request,
-            "partials/ollama.html",
+            "partials/llm-models.html",
             {
                 "models": info.get("models", []),
                 "api_keys": info.get("api_keys", []),
@@ -490,6 +466,50 @@ def create_dashboard_router(
                 request,
                 "partials/tool-registry.html",
                 {"stats": {}, "snapshots": [], "error": str(e)},
+            )
+
+    @router.get("/open-webui-partial", response_class=HTMLResponse)
+    async def open_webui_partial(request: Request):
+        """HTMX partial: Open WebUI connection status."""
+        if not get_open_webui_info:
+            return templates.TemplateResponse(
+                request,
+                "partials/open-webui.html",
+                {
+                    "status": "down",
+                    "api_base_url": "",
+                    "mcp_endpoint": "",
+                    "port": 3000,
+                    "recent_activity": 0,
+                },
+            )
+
+        try:
+            info = await get_open_webui_info()
+            return templates.TemplateResponse(
+                request,
+                "partials/open-webui.html",
+                {
+                    "status": info.get("status", "down"),
+                    "api_base_url": info.get("api_base_url", ""),
+                    "mcp_endpoint": info.get("mcp_endpoint", ""),
+                    "port": info.get("port", 3000),
+                    "recent_activity": info.get("recent_activity", 0),
+                },
+            )
+        except Exception as e:
+            logger.warning("Error loading Open WebUI info: %s", e)
+            return templates.TemplateResponse(
+                request,
+                "partials/open-webui.html",
+                {
+                    "status": "down",
+                    "api_base_url": "",
+                    "mcp_endpoint": "",
+                    "port": 3000,
+                    "recent_activity": 0,
+                    "error": str(e),
+                },
             )
 
     @router.get("/token-budget-partial", response_class=HTMLResponse)

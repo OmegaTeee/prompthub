@@ -33,7 +33,7 @@ class TestHealthEndpoints:
 
             # Verify services
             assert data["services"]["router"] == "up"
-            assert data["services"]["ollama"] in ["up", "down"]
+            assert data["services"]["llm"] in ["up", "down"]
 
             # Verify servers summary
             assert "total" in data["servers"]
@@ -233,7 +233,7 @@ class TestBuildSpecCriteria:
 
             # All required services should be listed
             assert "router" in data["services"]
-            assert "ollama" in data["services"]
+            assert "llm" in data["services"]
             assert "cache" in data["services"]
             assert "servers" in data
 

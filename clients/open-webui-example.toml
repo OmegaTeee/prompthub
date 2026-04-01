@@ -1,0 +1,46 @@
+servers:
+  open-terminal:
+    # Human-friendly name and description for UIs
+    name: "Open Terminal MCP"
+    description: "Terminal, filesystem, and process tools via Open Terminal in MCP mode."
+
+    # Transport: stdio MCP server
+    transport: "stdio"
+
+    # Command to launch the MCP server
+    command: "open-terminal"
+    args:
+      - "mcp"
+      # add extra flags here if OT supports them, e.g.:
+      # - "--config"
+      # - "/path/to/open-terminal.config.json"
+
+    # Working directory (sandbox root for commands)
+    cwd: "/Users/visualval/prompthub"   # adjust to your sandbox/project root
+
+    # Environment passed through to the server
+    env:
+      NODE_ENV: "production"
+      LANG: "en_US.UTF-8"
+      # Optionally pass through a limited PATH
+      PATH: "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
+
+    # Optional: restart policy if your router supports it
+    restart:
+      mode: "on_failure"      # or "always" / "never"
+      max_restarts: 5
+      backoff_seconds: 2
+
+    # Optional: router-specific metadata for routing & safety
+    metadata:
+      tags:
+        - "terminal"
+        - "filesystem"
+        - "process"
+      risk_level: "dangerous"  # so you can gate it by profile
+      default_profile: "dev"
+
+    # Optional: per-server timeouts
+    timeouts:
+      startup_ms: 10000        # fail server if it doesn't init in 10s
+      call_ms: 60000           # max per-tool call duration

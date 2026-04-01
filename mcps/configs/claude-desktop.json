@@ -1,1 +1,34 @@
-/Users/visualval/Library/Application Support/Claude/claude_desktop_config.json
+{
+  "mcpServers": {
+    "prompthub-bridge": {
+      "command": "node",
+      "args": [
+        "/Users/visualval/prompthub/mcps/prompthub-bridge.js"
+      ],
+      "env": {
+        "AUTHORIZATION": "Bearer sk-prompthub-claude-desktop-001",
+        "CLIENT_NAME": "claude-desktop",
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "SERVERS": "sequential-thinking,desktop-commander,context7",
+        "EXCLUDE_TOOLS": "duckduckgo,perplexity"
+      }
+    }
+  },
+  "preferences": {
+    "quickEntryShortcut": "off",
+    "launchPreviewPersistSession": true,
+    "localAgentModeTrustedFolders": [
+      "/Users/visualval/Library/AppSupport/",
+      "/Users/visualval/PromptHub",
+      "/Users/visualval/Vault",
+      "/Users/visualval/Raycast"
+    ],
+    "coworkScheduledTasksEnabled": true,
+    "ccdScheduledTasksEnabled": true,
+    "sidebarMode": "code",
+    "bypassPermissionsModeEnabled": true,
+    "dockBounceEnabled": true,
+    "coworkWebSearchEnabled": true,
+    "keepAwakeEnabled": true
+  }
+}

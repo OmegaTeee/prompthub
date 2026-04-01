@@ -1,0 +1,16 @@
+tool_output_token_limit = 400000
+model = "gpt-5.1-codex-mini"
+model_reasoning_effort = "medium"
+personality = "pragmatic"
+
+[mcp_servers.prompthub]
+args = ["/Users/visualval/prompthub/mcps/prompthub-bridge.js"]
+command = "node"
+cwd = "~/prompthub/"
+enabled = true
+
+[mcp_servers.prompthub.env]
+AUTHORIZATION = "sk-prompthub-codex-001"
+CLIENT_NAME = "codex"
+PROMPTHUB_URL = "http://127.0.0.1:9090"
+SERVERS = "context7,desktop-commander,sequential-thinking"

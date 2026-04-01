@@ -16,8 +16,16 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from router.openai_compat.auth import ApiKeyManager
-from router.openai_compat.models import ApiKeyConfig, ApiKeysRegistry, ChatCompletionRequest
-from router.openai_compat.router import _find_last_user_message, create_openai_compat_router
+from router.openai_compat.models import ApiKeyConfig, ApiKeysRegistry, ChatCompletionRequest, ResponsesRequest
+from router.enhancement.llm_client import LLMConnectionError, LLMError
+from router.openai_compat.router import (
+    _build_responses_response,
+    _find_last_user_message,
+    _flatten_content,
+    _handle_llm_error,
+    _translate_responses_to_messages,
+    create_openai_compat_router,
+)
 
 
 # =============================================================================
@@ -93,8 +101,8 @@ def test_app(api_key_manager, mock_enhancement_service, mock_circuit_breakers):
         enhancement_service=lambda: mock_enhancement_service,
         circuit_breakers=lambda: mock_circuit_breakers,
         api_key_manager=api_key_manager,
-        ollama_base_url="http://localhost:11434/v1",
-        ollama_timeout=30.0,
+        llm_base_url="http://localhost:1234/v1",
+        llm_timeout=30.0,
     )
     app.include_router(router)
     return app
@@ -269,10 +277,11 @@ class TestAuthEndpoints:
         body = response.json()
         assert "error" in body["detail"]
 
-    def test_models_without_auth_returns_401(self, client):
-        """GET /v1/models without auth returns 401."""
+    def test_models_no_auth_required(self, client):
+        """GET /v1/models is unauthenticated (model listing is non-sensitive)."""
         response = client.get("/v1/models")
-        assert response.status_code == 401
+        # Returns 200 with models list or 502 if LLM server unreachable in tests
+        assert response.status_code in [200, 502]
 
     def test_api_keys_reload_no_auth_required(self, client):
         """POST /v1/api-keys/reload works without auth (admin endpoint)."""
@@ -290,3 +299,494 @@ class TestApiKeysReload:
         data = response.json()
         assert data["count"] == 2
         assert data["message"] == "API keys reloaded"
+
+
+# =============================================================================
+# Responses API Model Tests
+# =============================================================================
+
+
+class TestResponsesRequest:
+    """Test Responses API request model parsing."""
+
+    def test_string_input(self):
+        """String input is accepted."""
+        req = ResponsesRequest(model="gemma-3-4b", input="Hello world")
+        assert req.input == "Hello world"
+        assert req.instructions is None
+        assert req.stream is False
+
+    def test_array_input(self):
+        """Array of message objects is accepted."""
+        req = ResponsesRequest(
+            model="gemma-3-4b",
+            input=[
+                {"role": "user", "content": "Hello"},
+                {"role": "assistant", "content": "Hi there"},
+            ],
+        )
+        assert isinstance(req.input, list)
+        assert len(req.input) == 2
+
+    def test_with_instructions(self):
+        """Instructions field maps to system prompt."""
+        req = ResponsesRequest(
+            model="gemma-3-4b",
+            input="Hello",
+            instructions="Be concise",
+        )
+        assert req.instructions == "Be concise"
+
+    def test_max_output_tokens(self):
+        """max_output_tokens is accepted (maps to max_tokens)."""
+        req = ResponsesRequest(
+            model="gemma-3-4b",
+            input="Hello",
+            max_output_tokens=500,
+        )
+        assert req.max_output_tokens == 500
+
+    def test_defaults(self):
+        """Default values are sensible."""
+        req = ResponsesRequest(model="gemma-3-4b", input="Hi")
+        assert req.temperature == 0.7
+        assert req.top_p is None
+        assert req.max_output_tokens is None
+        assert req.stream is False
+
+
+# =============================================================================
+# Translation Helper Tests
+# =============================================================================
+
+
+class TestTranslateResponsesToMessages:
+    """Test Responses API input → Chat Completions messages translation."""
+
+    def test_string_input(self):
+        """String input becomes a single user message."""
+        messages = _translate_responses_to_messages("Hello world", instructions=None)
+        assert messages == [{"role": "user", "content": "Hello world"}]
+
+    def test_string_input_with_instructions(self):
+        """Instructions prepended as system message."""
+        messages = _translate_responses_to_messages(
+            "Hello", instructions="Be concise"
+        )
+        assert messages == [
+            {"role": "system", "content": "Be concise"},
+            {"role": "user", "content": "Hello"},
+        ]
+
+    def test_array_input(self):
+        """Array input passed through as messages."""
+        input_msgs = [
+            {"role": "user", "content": "First"},
+            {"role": "assistant", "content": "Response"},
+            {"role": "user", "content": "Second"},
+        ]
+        messages = _translate_responses_to_messages(input_msgs, instructions=None)
+        assert messages == input_msgs
+
+    def test_array_input_with_instructions(self):
+        """Instructions prepended before array messages."""
+        input_msgs = [{"role": "user", "content": "Hello"}]
+        messages = _translate_responses_to_messages(
+            input_msgs, instructions="You are helpful"
+        )
+        assert len(messages) == 2
+        assert messages[0] == {"role": "system", "content": "You are helpful"}
+        assert messages[1] == {"role": "user", "content": "Hello"}
+
+
+# =============================================================================
+# Response Builder Tests
+# =============================================================================
+
+
+class TestBuildResponsesResponse:
+    """Test Chat Completions result → Responses API response wrapping."""
+
+    def test_basic_response(self):
+        """Wraps a simple completion into Responses format."""
+        chat_response = {
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1700000000,
+            "model": "gemma-3-4b",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": "Hello there!"},
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 10,
+                "completion_tokens": 5,
+                "total_tokens": 15,
+            },
+        }
+        result = _build_responses_response(chat_response)
+
+        assert result["object"] == "response"
+        assert result["id"].startswith("resp_")
+        assert result["model"] == "gemma-3-4b"
+        assert result["output_text"] == "Hello there!"
+        assert len(result["output"]) == 1
+        assert result["output"][0]["type"] == "message"
+        assert result["output"][0]["content"][0]["type"] == "output_text"
+        assert result["output"][0]["content"][0]["text"] == "Hello there!"
+        assert result["usage"]["input_tokens"] == 10
+        assert result["usage"]["output_tokens"] == 5
+        assert result["usage"]["total_tokens"] == 15
+
+    def test_response_with_reasoning(self):
+        """Includes thinking block when reasoning_content is present."""
+        chat_response = {
+            "id": "chatcmpl-456",
+            "object": "chat.completion",
+            "created": 1700000000,
+            "model": "qwen3-coder:30b",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "The answer is 42.",
+                        "reasoning_content": "Let me think step by step...",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 20,
+                "completion_tokens": 30,
+                "total_tokens": 50,
+            },
+        }
+        result = _build_responses_response(chat_response)
+
+        assert len(result["output"][0]["content"]) == 2
+        assert result["output"][0]["content"][0]["type"] == "thinking"
+        assert result["output"][0]["content"][0]["thinking"] == "Let me think step by step..."
+        assert result["output"][0]["content"][1]["type"] == "output_text"
+        assert result["output"][0]["content"][1]["text"] == "The answer is 42."
+        assert result["output_text"] == "The answer is 42."
+
+    def test_response_without_usage(self):
+        """Handles missing usage gracefully."""
+        chat_response = {
+            "id": "chatcmpl-789",
+            "object": "chat.completion",
+            "created": 1700000000,
+            "model": "gemma-3-4b",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": "Hi"},
+                    "finish_reason": "stop",
+                }
+            ],
+        }
+        result = _build_responses_response(chat_response)
+
+        assert result["output_text"] == "Hi"
+        assert result["usage"] is None
+
+
+# =============================================================================
+# Responses Endpoint Tests
+# =============================================================================
+
+
+from unittest.mock import patch
+
+
+class TestResponsesEndpoint:
+    """Test POST /v1/responses endpoint behavior."""
+
+    def test_missing_auth_returns_401(self, client):
+        """Request without Authorization header returns 401."""
+        response = client.post(
+            "/v1/responses",
+            json={"model": "gemma-3-4b", "input": "Hello"},
+        )
+        assert response.status_code == 401
+
+    def test_invalid_token_returns_401(self, client):
+        """Request with invalid bearer token returns 401."""
+        response = client.post(
+            "/v1/responses",
+            json={"model": "gemma-3-4b", "input": "Hello"},
+            headers={"Authorization": "Bearer sk-invalid-garbage"},
+        )
+        assert response.status_code == 401
+
+    def test_stream_true_returns_400(self, client):
+        """Streaming is not supported — returns 400."""
+        response = client.post(
+            "/v1/responses",
+            json={"model": "gemma-3-4b", "input": "Hello", "stream": True},
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 400
+        assert "streaming" in response.json()["detail"]["error"]["message"].lower()
+
+    def test_invalid_model_returns_422(self, client):
+        """Placeholder model name returns 422."""
+        response = client.post(
+            "/v1/responses",
+            json={"model": "string", "input": "Hello"},
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 422
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_string_input_success(self, mock_chat, client):
+        """String input returns valid Responses API format."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-test",
+            object="chat.completion",
+            created=1700000000,
+            model="gemma-3-4b",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="Hello!"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
+        )
+
+        response = client.post(
+            "/v1/responses",
+            json={"model": "gemma-3-4b", "input": "Hi there"},
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["object"] == "response"
+        assert data["id"].startswith("resp_")
+        assert data["output_text"] == "Hello!"
+        assert data["output"][0]["type"] == "message"
+        assert data["usage"]["input_tokens"] == 5
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_array_input_with_instructions(self, mock_chat, client):
+        """Array input with instructions translates correctly."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-test2",
+            object="chat.completion",
+            created=1700000000,
+            model="gemma-3-4b",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="Sure!"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 10, "completion_tokens": 2, "total_tokens": 12},
+        )
+
+        response = client.post(
+            "/v1/responses",
+            json={
+                "model": "gemma-3-4b",
+                "input": [{"role": "user", "content": "Help me"}],
+                "instructions": "Be concise",
+            },
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 200
+
+        # Verify instructions were prepended as system message
+        call_kwargs = mock_chat.call_args
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
+        assert messages[0] == {"role": "system", "content": "Be concise"}
+        assert messages[1] == {"role": "user", "content": "Help me"}
+
+
+# =============================================================================
+# _handle_llm_error Tests
+# =============================================================================
+
+
+class TestHandleLlmError:
+    """Test the shared LLM error handler extracted from both endpoints."""
+
+    def test_connection_error_raises_502_with_prefix(self):
+        """LLMConnectionError produces 'Cannot reach LLM server' message."""
+        from fastapi import HTTPException
+
+        with pytest.raises(HTTPException) as exc_info:
+            _handle_llm_error(
+                LLMConnectionError("Connection refused"),
+                breaker=None,
+                action="chat_completion",
+                model="test-model",
+            )
+        assert exc_info.value.status_code == 502
+        assert "Cannot reach LLM server" in exc_info.value.detail["error"]["message"]
+
+    def test_generic_llm_error_raises_502(self):
+        """LLMError produces a plain error message."""
+        from fastapi import HTTPException
+
+        with pytest.raises(HTTPException) as exc_info:
+            _handle_llm_error(
+                LLMError("Model overloaded"),
+                breaker=None,
+                action="responses",
+                model="test-model",
+            )
+        assert exc_info.value.status_code == 502
+        assert exc_info.value.detail["error"]["message"] == "Model overloaded"
+
+    def test_records_breaker_failure(self):
+        """Circuit breaker records failure when provided."""
+        from fastapi import HTTPException
+
+        breaker = MagicMock()
+        err = LLMError("timeout")
+
+        with pytest.raises(HTTPException):
+            _handle_llm_error(err, breaker, "chat_completion", "test-model")
+
+        breaker.record_failure.assert_called_once_with(err)
+
+    def test_no_breaker_does_not_crash(self):
+        """None breaker is handled gracefully."""
+        from fastapi import HTTPException
+
+        with pytest.raises(HTTPException):
+            _handle_llm_error(
+                LLMError("err"), breaker=None, action="responses", model="m"
+            )
+
+
+# =============================================================================
+# _flatten_content Tests
+# =============================================================================
+
+
+class TestFlattenContent:
+    """Test Responses API content flattening."""
+
+    def test_string_passthrough(self):
+        assert _flatten_content("hello world") == "hello world"
+
+    def test_empty_string(self):
+        assert _flatten_content("") == ""
+
+    def test_single_text_block(self):
+        blocks = [{"type": "input_text", "text": "hello"}]
+        assert _flatten_content(blocks) == "hello"
+
+    def test_multiple_text_blocks(self):
+        blocks = [
+            {"type": "input_text", "text": "hello "},
+            {"type": "input_text", "text": "world"},
+        ]
+        assert _flatten_content(blocks) == "hello world"
+
+    def test_block_without_text_key(self):
+        """Blocks missing 'text' field produce empty string."""
+        blocks = [{"type": "image", "url": "https://example.com/img.png"}]
+        assert _flatten_content(blocks) == ""
+
+    def test_mixed_blocks(self):
+        """Text blocks extracted, non-text blocks silently skipped."""
+        blocks = [
+            {"type": "input_text", "text": "describe "},
+            {"type": "image", "url": "https://example.com/img.png"},
+            {"type": "input_text", "text": "this image"},
+        ]
+        assert _flatten_content(blocks) == "describe this image"
+
+    def test_empty_list(self):
+        assert _flatten_content([]) == ""
+
+
+# =============================================================================
+# _build_responses_response Tests (edge cases)
+# =============================================================================
+
+
+class TestBuildResponsesEdgeCases:
+    """Test edge cases in the Responses API response builder."""
+
+    def test_empty_choices_returns_empty_response(self):
+        """Empty choices array returns valid empty response structure."""
+        result = _build_responses_response({"choices": [], "created": 0, "model": "m"})
+        assert result["output_text"] == ""
+        assert result["object"] == "response"
+        assert result["id"].startswith("resp_")
+
+    def test_reasoning_field_lm_studio(self):
+        """LM Studio 'reasoning' field is captured."""
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "answer", "reasoning": "I thought about it"}}],
+            "created": 0,
+            "model": "m",
+        })
+        blocks = result["output"][0]["content"]
+        assert blocks[0] == {"type": "thinking", "thinking": "I thought about it"}
+        assert blocks[1] == {"type": "output_text", "text": "answer"}
+
+    def test_reasoning_content_field_openrouter(self):
+        """OpenRouter 'reasoning_content' field is captured as fallback."""
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "answer", "reasoning_content": "deep thought"}}],
+            "created": 0,
+            "model": "m",
+        })
+        blocks = result["output"][0]["content"]
+        assert blocks[0] == {"type": "thinking", "thinking": "deep thought"}
+
+    def test_no_reasoning_omits_thinking_block(self):
+        """No reasoning field produces only output_text block."""
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "just text"}}],
+            "created": 0,
+            "model": "m",
+        })
+        blocks = result["output"][0]["content"]
+        assert len(blocks) == 1
+        assert blocks[0] == {"type": "output_text", "text": "just text"}
+
+    def test_usage_mapping(self):
+        """prompt_tokens maps to input_tokens."""
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "ok"}}],
+            "created": 0,
+            "model": "m",
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+        })
+        assert result["usage"] == {
+            "input_tokens": 10,
+            "output_tokens": 5,
+            "total_tokens": 15,
+        }
+
+    def test_missing_usage_is_none(self):
+        result = _build_responses_response({
+            "choices": [{"message": {"content": "ok"}}],
+            "created": 0,
+            "model": "m",
+        })
+        assert result["usage"] is None

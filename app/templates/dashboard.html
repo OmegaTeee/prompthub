@@ -63,14 +63,14 @@
           <div class="loading">Loading stats</div>
         </div>
 
-        <!-- Ollama & API Clients -->
+        <!-- Local Models & API Clients -->
         <div
           class="card"
-          hx-get="/dashboard/ollama-partial"
+          hx-get="/dashboard/llm-partial"
           hx-trigger="load, every 30s"
           hx-swap="innerHTML"
         >
-          <div class="loading">Loading Ollama info</div>
+          <div class="loading">Loading LLM info</div>
         </div>
 
         <!-- Session Memory -->
@@ -91,6 +91,16 @@
           hx-swap="innerHTML"
         >
           <div class="loading">Loading tool registry</div>
+        </div>
+
+        <!-- Open WebUI -->
+        <div
+          class="card"
+          hx-get="/dashboard/open-webui-partial"
+          hx-trigger="load, every 15s"
+          hx-swap="innerHTML"
+        >
+          <div class="loading">Loading Open WebUI status</div>
         </div>
 
         <!-- Token Budget -->

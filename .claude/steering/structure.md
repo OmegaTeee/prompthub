@@ -16,7 +16,7 @@ prompthub/
 │   │   ├── clients/              # Config generators (Claude, VS Code, Raycast)
 │   │   ├── config/               # Pydantic Settings, JSON config loading
 │   │   ├── dashboard/            # HTMX monitoring UI (factory router)
-│   │   ├── enhancement/          # Ollama HTTP clients, per-client rules, cloud fallback (OpenRouter)
+│   │   ├── enhancement/          # LLM HTTP client (OpenAI-compat), per-client rules, cloud fallback (OpenRouter)
 │   │   ├── orchestrator/         # Pre-enhancement intent classifier (qwen3:14b)
 │   │   ├── middleware/            # Audit context, activity logging
 │   │   ├── memory/               # Session memory (SQLite-backed facts, blocks, MCP sync)
@@ -29,17 +29,17 @@ prompthub/
 │   ├── configs/                  # Runtime configs (mcp-servers.json, enhancement-rules.json, api-keys.json)
 │   ├── templates/                # Jinja2 templates (dashboard HTML)
 │   ├── scripts/                  # Shell scripts (dev, manual tests)
-│   ├── docs/                     # Developer documentation
-│   │   ├── api/                  # OpenAPI spec + API overview
-│   │   ├── architecture/         # 8 ADRs
-│   │   ├── modules/              # Module docs (servers/ + coverage analysis)
-│   │   ├── features/             # Completed feature docs
-│   │   ├── audit/                # 3-phase audit implementation
-│   │   ├── reviews/              # Code reviews and planning
-│   │   └── archive/              # Historical docs
 │   ├── pyproject.toml
 │   ├── requirements.txt
 │   └── Dockerfile
+├── docs/                         # Developer/engineering docs, ADRs, and user guides
+│   ├── api/                      # OpenAPI spec + API overview
+│   ├── architecture/             # ADRs and transport adapter docs
+│   ├── modules/                  # Module docs (servers/ + coverage analysis)
+│   ├── features/                 # Completed feature docs
+│   ├── guides/                   # User-facing setup and integration guides
+│   ├── audit/                    # 3-phase audit implementation
+│   └── archive/                  # Historical docs
 ├── mcps/                         # Node.js MCP servers + unified bridge + client configs
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
 │   ├── configs/                  # Desktop client configs (Claude, Raycast, Inspector)
@@ -73,8 +73,8 @@ prompthub/
 | `servers/` | MCP server lifecycle (spawn, bridge, registry, supervisor) | config/ |
 | `resilience/` | Circuit breaker state machine | — |
 | `cache/` | LRU cache with hit/miss tracking | — |
-| `enhancement/` | Ollama clients, per-client model routing | cache/, resilience/ |
-| `orchestrator/` | Intent classification, prompt annotation, tool suggestion | enhancement/ (OllamaClient), resilience/ |
+| `enhancement/` | LLM client, per-client model routing | cache/, resilience/ |
+| `orchestrator/` | Intent classification, prompt annotation, tool suggestion | enhancement/ (LLMClient), resilience/ |
 | `openai_compat/` | Bearer auth, SSE streaming, /v1 endpoints | enhancement/, resilience/ |
 | `dashboard/` | HTMX templates, real-time partials | servers/, cache/, enhancement/ |
 | `middleware/` | Audit context propagation, activity logging | — |
@@ -84,9 +84,10 @@ prompthub/
 
 ## Documentation Split
 
-| Location | Content | Audience |
-|----------|---------|----------|
-| `app/docs/` | ADRs, API specs, module docs, audit reports, feature completions | Developers |
-| `~/Vault/PromptHub/` | Setup guides, integrations, workflows, troubleshooting | Users |
-| `CLAUDE.md` | AI agent instructions | Claude Code |
-| `.claude/steering/` | Product, tech, structure guidance | All AI agents |
+| Location | Content | Audience | Reading Level |
+|----------|---------|----------|---------------|
+| `docs/guides/` | Setup guides, integrations, workflows, troubleshooting | General users | Grade 9–10 (see `user-manual` agent) |
+| `docs/` (other) | ADRs, API specs, module docs, audit reports, feature completions | Developers | Technical |
+| `~/Vault/PromptHub/` | Personal notes, extended workflows | Users | — |
+| `CLAUDE.md` | AI agent instructions | Claude Code | Technical |
+| `.claude/steering/` | Product, tech, structure guidance | All AI agents | Technical |

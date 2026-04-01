@@ -13,10 +13,14 @@ from pydantic import ValidationError
 
 from cli.generator import ConfigGenerator
 from cli.installer import ConfigInstaller
-from cli.models import BridgeConfig, ClientType, wrap_for_client
+from cli.models import (
+    BridgeConfig,
+    ClientType,
+    build_open_webui_config,
+    wrap_for_client,
+)
 from cli.profiles import ProfileLoader
 from cli.validator import ConfigValidator
-
 
 # ── BridgeConfig path safety ────────────────────────────────────────
 
@@ -61,7 +65,7 @@ class TestBridgeConfigPathSafety:
 
     def test_accepts_valid_config(self):
         config = BridgeConfig(
-            args=["/Users/test/.local/share/prompthub/mcps/bridge.js"],
+            args=["/Users/test/prompthub/mcps/bridge.js"],
             env={"PROMPTHUB_URL": "http://127.0.0.1:9090"},
         )
         assert config.command == "node"
@@ -101,6 +105,127 @@ class TestClientType:
         assert ClientType.claude_desktop.value == "claude-desktop"
         assert ClientType.claude_code.value == "claude-code"
         assert ClientType.raycast.value == "raycast"
+        assert ClientType.open_webui.value == "open-webui"
+
+    def test_config_path_open_webui(self):
+        path = ClientType.open_webui.config_path()
+        assert path.name == "open-webui.json"
+        assert ".prompthub" in str(path)
+
+
+# ── Open WebUI config ──────────────────────────────────────────────
+
+
+class TestOpenWebUI:
+    """Open WebUI produces connection settings, not bridge configs."""
+
+    def test_build_open_webui_config(self):
+        config = build_open_webui_config()
+        assert "open_webui" in config
+        ow = config["open_webui"]
+        assert "api_base_url" in ow
+        assert "mcp_endpoint" in ow
+        assert "api_key" in ow
+        assert "127.0.0.1" in ow["api_base_url"]
+
+    def test_build_open_webui_config_custom_url(self):
+        config = build_open_webui_config(
+            router_url="http://127.0.0.1:8080",
+            api_key="sk-custom",
+            port=8000,
+        )
+        ow = config["open_webui"]
+        assert "8080" in ow["api_base_url"]
+        assert ow["api_key"] == "sk-custom"
+        assert ow["port"] == 8000
+
+    def test_generate_open_webui(self, tmp_path):
+        """ConfigGenerator.generate() returns connection settings for open_webui."""
+        bridge = tmp_path / "mcps" / "prompthub-bridge.js"
+        bridge.parent.mkdir(parents=True)
+        bridge.write_text("#!/usr/bin/env node\n")
+
+        gen = ConfigGenerator(workspace_root=tmp_path)
+        config = gen.generate(ClientType.open_webui)
+
+        assert "open_webui" in config
+        assert "mcpServers" not in config
+        assert "mcp" not in config
+
+    def test_validate_open_webui_valid(self, tmp_path):
+        """Validate a correct Open WebUI config."""
+        # Create api-keys.json
+        configs = tmp_path / "configs"
+        configs.mkdir()
+        keys = {
+            "keys": {
+                "sk-prompthub-openwebui-001": {
+                    "client_name": "open-webui",
+                    "enhance": True,
+                }
+            }
+        }
+        (configs / "api-keys.json").write_text(json.dumps(keys))
+
+        config = {
+            "open_webui": {
+                "api_base_url": "http://127.0.0.1:9090/v1",
+                "mcp_endpoint": "http://127.0.0.1:9090/mcp-direct/mcp",
+                "api_key": "sk-prompthub-openwebui-001",
+                "port": 3000,
+            }
+        }
+
+        validator = ConfigValidator()
+        result = validator.validate_open_webui(config, configs_dir=configs)
+        assert result.ok
+
+    def test_validate_open_webui_missing_key(self):
+        """Missing api_key is an error."""
+        config = {
+            "open_webui": {
+                "api_base_url": "http://127.0.0.1:9090/v1",
+                "api_key": "",
+            }
+        }
+
+        validator = ConfigValidator()
+        result = validator.validate_open_webui(config)
+        assert not result.ok
+        assert any("api_key" in i.message for i in result.errors)
+
+    def test_validate_open_webui_localhost_warning(self):
+        """localhost in api_base_url is a warning."""
+        config = {
+            "open_webui": {
+                "api_base_url": "http://localhost:9090/v1",
+                "api_key": "sk-test",
+            }
+        }
+
+        validator = ConfigValidator()
+        result = validator.validate_open_webui(config)
+        assert result.warnings
+        assert any("localhost" in w.message for w in result.warnings)
+
+    def test_validate_open_webui_key_not_in_registry(self, tmp_path):
+        """API key not found in api-keys.json is an error."""
+        configs = tmp_path / "configs"
+        configs.mkdir()
+        keys = {"keys": {"sk-other": {"client_name": "other"}}}
+        (configs / "api-keys.json").write_text(json.dumps(keys))
+
+        config = {
+            "open_webui": {
+                "api_base_url": "http://127.0.0.1:9090/v1",
+                "api_key": "sk-missing",
+            }
+        }
+
+        validator = ConfigValidator()
+        result = validator.validate_open_webui(config, configs_dir=configs)
+        assert not result.ok
+        assert any("not found" in i.message for i in result.errors)
 
 
 # ── wrap_for_client ─────────────────────────────────────────────────

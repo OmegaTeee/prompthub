@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PromptHub is a centralized MCP (Model Context Protocol) router for macOS. It provides a single local endpoint (`localhost:9090`) that manages MCP servers, enhances prompts via Ollama, and provides resilience patterns.
+PromptHub is a centralized MCP (Model Context Protocol) router for macOS. It provides a single local endpoint (`localhost:9090`) that manages MCP servers, enhances prompts via local LLM server, and provides resilience patterns.
 
 ## Workspace Structure
 
@@ -18,14 +18,21 @@ prompthub/                        # Workspace root
 │   ├── tests/                    # Pytest suite
 │   ├── configs/                  # Runtime configs (mcp-servers.json, api-keys.json, etc.)
 │   ├── templates/                # Jinja2 + HTMX templates (dashboard, partials)
-│   ├── scripts/                  # Shell scripts and LaunchAgent plist
-│   ├── docs/                     # Developer/engineering docs and ADRs
 │   ├── pyproject.toml
 │   ├── requirements.txt
 │   └── Dockerfile
-├── mcps/                         # MCP servers (Node.js bridge) + client configs
+├── scripts/                      # Shell scripts, LaunchAgent plists, manual tests
+├── docs/                         # Developer/engineering docs, ADRs, and user guides
+│   ├── architecture/             # ADRs and transport adapter docs
+│   ├── guides/                   # User-facing setup and integration guides
+│   ├── api/                      # OpenAPI spec and API reference
+│   ├── modules/                  # Module documentation
+│   ├── audit/                    # Audit system docs
+│   └── archive/                  # Historical docs
+├── clients/                      # Client application settings (editor prefs, agent configs, examples)
+├── mcps/                         # MCP servers (Node.js bridge) + MCP bridge configs
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
-│   ├── configs/                  # Desktop client configs (Claude, Raycast, Inspector)
+│   ├── configs/                  # MCP bridge configs (Claude, Raycast, OpenClaw, Inspector)
 │   └── package.json              # npm dependencies
 ├── logs/                         # LaunchAgent stdout/stderr logs
 └── .claude/ .github/ .vscode/    # Workspace-level configs
@@ -77,12 +84,12 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 | `servers/`           | MCP server lifecycle via FastMCP (spawn, monitor, restart stdio processes)                                        |
 | `resilience/`        | Circuit breaker (CLOSED → OPEN → HALF_OPEN states)                                                                |
 | `cache/`             | L1 in-memory LRU + L2 SQLite persistent write-through cache                                                       |
-| `enhancement/`       | Ollama HTTP client (native + OpenAI-compat), per-client prompt enhancement, cloud fallback via OpenRouter, token budget truncation |
-| `orchestrator/`      | Pre-enhancement intent classifier (qwen3:14b) — classifies prompts, suggests tools, annotates for enhancement     |
+| `enhancement/`       | LLM HTTP client (OpenAI-compat), per-client prompt enhancement, cloud fallback via OpenRouter, token budget truncation |
+| `orchestrator/`      | Pre-enhancement intent classifier — classifies prompts, suggests tools, annotates for enhancement                  |
 | `openai_compat/`     | OpenAI-compatible `/v1/` proxy with bearer auth and optional enhancement                                          |
 | `memory/`            | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync)                              |
 | `tool_registry/`     | MCP tool definition cache (SQLite-backed snapshots, automatic archival, cache-through proxy)                      |
-| `dashboard/`         | HTMX observability UI (servers, cache, circuit breakers, Ollama, memory, tool registry panels)                    |
+| `dashboard/`         | HTMX observability UI (servers, cache, circuit breakers, Local Models, memory, tool registry panels)              |
 | `pipelines/`         | Workflow orchestration (documentation generation)                                                                 |
 | `clients/`           | Config generators for desktop apps (delegates to `cli/` for bridge configs)                                       |
 | `cli/`               | MCP Config Manager CLI — generate, install, validate, diff, list, diagnose (Typer)                                |
@@ -109,10 +116,10 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - **Circuit breaker**: 3 failures → OPEN, 30s → HALF_OPEN, success → CLOSED
 - **FastMCP bridges**: MCP servers communicate via FastMCP Client + StdioTransport
 - **Factory-with-getter-callables**: Route modules use `create_X_router(get_service=lambda: service)` to defer global resolution past lifespan init
-- **Tiered timeouts**: httpx client (120s) → middleware (60s default, 180s for slow paths) → Ollama keep_alive (5min)
-- **Task-specific models**: Per-client enhancement models (gemma3:4b default, gemma3:27b for claude-desktop, qwen3-coder:30b for claude-code) with orchestrator agent (qwen3:14b) for intent classification (see ADR-008, supersedes ADR-006)
+- **Tiered timeouts**: httpx client (120s) → middleware (60s default, 180s for slow paths) → LLM keep_alive (5min)
+- **Model roles**: All clients use the same enhancement model (`qwen/qwen3-4b-2507`) with a separate thinking variant (`qwen/qwen3-4b-thinking-2507`) for the orchestrator agent's intent classification (see ADR-008)
 - **Privacy boundary**: `PrivacyLevel` enum (`local_only`, `free_ok`, `any`) controls whether prompts leave localhost (see ADR-007)
-- **Cloud fallback**: When Ollama fails, `free_ok`/`any` clients fall back to OpenRouter free-tier; `local_only` never leaves localhost
+- **Cloud fallback**: When the LLM server fails, `free_ok`/`any` clients fall back to OpenRouter free-tier; `local_only` never leaves localhost
 - **Tool registry cache-through**: `tools/list` responses cached in SQLite (24h TTL), served from cache on subsequent requests; old snapshots archived automatically for long-term access
 - **Schema minification**: Bridge strips verbose fields (`description`, `title`, `examples`, `default`) from tool `inputSchema` before sending to LLM clients, reducing context usage by ~67%
 - **Token budget**: Enhancement input capped at 4,096 tokens via `TokenBudget` — truncates at word boundaries with notice; prevents wasting context on prompt rewrites
@@ -123,7 +130,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - `app/configs/enhancement-rules.json` - Per-client enhancement system prompts, privacy_level, model, temperature, max_tokens
 - `app/configs/api-keys.json` - Bearer tokens for OpenAI-compatible proxy (client_name, enhance flag)
 - `app/configs/cloud-models.json` - Cloud fallback model mapping (local models → free-tier cloud equivalents)
-- `app/.env` - Runtime settings (OLLAMA_TIMEOUT=120, OPENROUTER_ENABLED, OPENROUTER_API_KEY, etc.)
+- `app/.env` - Runtime settings (`LLM_HOST`, `LLM_PORT`, `LLM_MODEL`, `LLM_ORCHESTRATOR_MODEL`, `LLM_TIMEOUT`, `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, etc. — old `OLLAMA_*` names still work as aliases)
 
 ### Persistent Data Directory (`~/.prompthub/`)
 
@@ -149,15 +156,15 @@ POST /servers/{name}/start      Start server
 POST /servers/{name}/stop       Stop server
 POST /mcp/{server}/{path}       Proxy JSON-RPC to MCP server
 POST /mcp-direct/mcp            Streamable HTTP endpoint (FastMCP gateway)
-POST /ollama/enhance            Enhance prompt via Ollama (X-Client-Name, X-Privacy-Level headers)
-                                Response includes: provider ("ollama"|"openrouter"), privacy_level
-POST /ollama/orchestrate        Classify intent and annotate prompt (qwen3:14b orchestrator)
+POST /llm/enhance               Enhance prompt via LLM server (X-Client-Name, X-Privacy-Level headers)
+                                Response includes: provider ("lm-studio"|"openrouter"), privacy_level
+POST /llm/orchestrate           Classify intent and annotate prompt (thinking model orchestrator)
 POST /sessions                  Create session (memory system)
 GET  /sessions/{id}/context     Full session context (facts + blocks + MCP graph)
-GET  /dashboard                 HTMX monitoring dashboard (servers, cache, Ollama, memory panels)
+GET  /dashboard                 HTMX monitoring dashboard (servers, cache, LLM server, memory panels)
 POST /pipelines/documentation   Generate docs from codebase
-POST /v1/chat/completions       OpenAI-compatible proxy → Ollama (bearer auth, optional enhancement)
-GET  /v1/models                 List Ollama models (OpenAI format)
+POST /v1/chat/completions       OpenAI-compatible proxy → LLM server (bearer auth, optional enhancement)
+GET  /v1/models                 List local models (OpenAI format)
 GET  /audit/activity            Query persistent activity log
 GET  /security/alerts           Recent security alerts
 GET  /tools                     List all cached tool snapshots (tool registry)
@@ -225,10 +232,10 @@ Query API: `GET /audit/activity?client_id=admin&limit=50`
 ### Documentation
 
 - **User Guides**: Obsidian vault (`~/Vault/PromptHub/`) - Setup, configuration, integrations
-- **Developer Docs**: `app/docs/` - Architecture, audit system, security
-- **Audit Implementation**: `app/docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md`
+- **Developer Docs**: `docs/` - Architecture, audit system, security
+- **Audit Implementation**: `docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md`
 
-For detailed audit system documentation, see `app/docs/audit/`
+For detailed audit system documentation, see `docs/audit/`
 
 ## Steering Documents
 
@@ -244,5 +251,19 @@ Steering documents guide AI agents with project-specific conventions and pattern
 
 - `code-docs`: Improve docstrings, comments, and type hints for existing code without changing behavior.
 - `user-manual`: Generate user-facing documentation (Quickstart, Usage, Examples) based on the current codebase.
+
+### Post-implementation documentation queue
+
+**IMPORTANT — Active directive:** After completing any feature, fix, or structural change, evaluate the decision table below and proactively ask the user: *"Should I run the doc queue? Based on this change I'd update: [list applicable steps]."* Do not skip this prompt. Do not wait for the user to remember.
+
+| Change type | 1. CHANGELOG.md | 2. Code docs (`code-docs` agent) | 3. User guide (`user-manual` agent) |
+|---|---|---|---|
+| New feature | Yes | Yes | Yes — create/update in `docs/guides/` |
+| Bug fix | Yes | If code changed | If user-facing |
+| Refactor | If notable | Yes | No |
+| Config change | Yes | No | If user-facing |
+| Test-only | No | No | No |
+
+Steps are independent and can run in parallel. See `AGENTS.md` § "Post-Implementation Documentation Queue" for full details, flow diagram, and agent prompts.
 
 These documents provide focused guidance for AI agents working on this codebase and should be referenced during onboarding and complex tasks.

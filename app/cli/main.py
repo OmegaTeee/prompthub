@@ -182,11 +182,40 @@ def validate(
         Optional[Path],
         typer.Option("--config", "-c", help="Override config file path"),
     ] = None,
+    workspace: Annotated[
+        Optional[Path],
+        typer.Option("--workspace", "-w", help="PromptHub workspace root"),
+    ] = None,
 ) -> None:
-    """Validate installed MCP config for common issues."""
+    """
+    Validate installed MCP config for common issues.
+
+    For bridge-based clients, checks path safety, env vars, and bridge
+    file existence.  For Open WebUI, validates connection settings
+    (api_base_url, api_key) and cross-checks the key against
+    api-keys.json.
+    """
     path = config_path or client.config_path()
     validator = ConfigValidator()
-    result = validator.validate_file(path)
+
+    if client == ClientType.open_webui:
+        # Open WebUI uses HTTP connection settings, not a stdio bridge.
+        # Delegate to the dedicated validator instead of validate_file().
+        if not path.exists():
+            typer.echo(f"  Config file not found: {path}")
+            raise typer.Exit(1)
+        try:
+            config = json.loads(path.read_text())
+        except json.JSONDecodeError as e:
+            typer.echo(f"  Invalid JSON: {e}")
+            raise typer.Exit(1)
+
+        ws = _resolve_workspace(workspace)
+        result = validator.validate_open_webui(
+            config, configs_dir=ws / "app" / "configs"
+        )
+    else:
+        result = validator.validate_file(path)
 
     if result.ok and not result.warnings:
         typer.echo(f"  {path}")
