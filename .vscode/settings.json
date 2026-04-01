@@ -50,6 +50,12 @@
     "**/.mypy_cache": true
   },
   "terminal.integrated.defaultProfile.osx": "PromptHub",
+  "terminal.integrated.cwd": "app",
+  // "terminal.integrated.enablePersistentSessions": false,
+  "terminal.integrated.env.osx": {
+    "PATH": "${workspaceFolder}/app/.venv/bin:${env:PATH}",
+    "USERHOME": "/Users/visualval"
+  },
   "terminal.integrated.profiles.osx": {
     "PromptHub": {
       "path": "/bin/zsh",
@@ -67,8 +73,8 @@
     }
   },
   "chat.tools.terminal.autoApprove": {
-    "/Users/visualval/prompthub/app/.venv/bin/python": true,
-    "git add": true,
-    "git commit": true
-  }
+    "/Users/visualval/.local/share/prompthub/app/.venv/bin/python": true
+  },
+  "explorer.excludeGitIgnore": false,
+  "explorer.autoReveal": false
 }

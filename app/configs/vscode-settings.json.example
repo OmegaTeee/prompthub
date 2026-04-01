@@ -1,0 +1,14 @@
+{
+  "claude.mcp.servers": {
+    "prompthub": {
+      "id": "prompthub",
+      "name": "prompthub",
+      "url": "http://localhost:9090",
+      "enhance": true,
+      "transport": "http",
+      "headers": {
+        "X-Client-Name": "vscode"
+      }
+    }
+  }
+}

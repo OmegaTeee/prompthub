@@ -29,7 +29,7 @@ PromptHub fixes all of these problems. It acts as a central hub that sits betwee
 - One configuration works for unlimited apps.
 - Automatic prompt improvement rewrites your requests for better results.
 - Remembers information across conversations using sessions and memory.
-- Saves money by using free local Ollama models.
+- Saves money by using free local LM Studio models.
 - Works offline for many tasks.
 - Complete privacy: everything stays on your Mac.
 - No vendor lock-in thanks to an open protocol.
@@ -38,7 +38,7 @@ PromptHub fixes all of these problems. It acts as a central hub that sits betwee
 **Weaknesses:**
 - Requires maintenance as an extra service running on your Mac.
 - Advanced features have a learning curve.
-- Depends on Ollama for prompt enhancement.
+- Depends on LM Studio for prompt enhancement.
 
 **Best for:**
 - People using multiple apps with AI.
@@ -95,7 +95,7 @@ Think of this like plugging each appliance directly into a different wall outlet
 ```
 Your Computer
 ├── LLM Studio (GUI)
-└── Ollama (runs models)
+└── LM Studio (runs models)
 ```
 
 Think of this like a personal kitchen: everything you need is in one room, but you cannot serve food to anyone outside it.
@@ -236,8 +236,8 @@ Assume you make 500 AI requests per month.
 - Cost: $0 (your computer runs the models)
 - **Total: $0/month**
 
-**Using PromptHub:**
-- Local models via Ollama: $0
+-**Using PromptHub:**
+- Local models via LM Studio: $0
 - Enhancement (local): $0
 - **Total: $0/month**
 
@@ -304,7 +304,7 @@ Assume you make 500 AI requests per month.
 **Why not PromptHub:**
 - You are only using one app (VS Code).
 - You do not need prompt enhancement.
-- Using local Ollama directly is the simpler path.
+- Using local LM Studio directly is the simpler path.
 
 ---
 
@@ -349,7 +349,7 @@ Assume you make 500 AI requests per month.
 
 **Key points:**
 - Writers and teams with multiple apps benefit most from PromptHub.
-- Solo developers using one app are better served by LLM Studio or direct Ollama.
+- Solo developers using one app are better served by LLM Studio.
 - Enterprise teams save the most money and complexity with PromptHub.
 
 ---
@@ -372,9 +372,9 @@ Already using something else? Here is how to switch to PromptHub.
 
 ### From LLM Studio to PromptHub
 
-1. Keep LLM Studio and Ollama running (PromptHub uses Ollama too).
+1. Keep LM Studio running (PromptHub uses LM Studio as the local provider).
 2. Install PromptHub.
-3. Configure your apps to talk to PromptHub instead of Ollama directly.
+3. Configure your apps to talk to PromptHub instead of LM Studio directly.
 4. Add session memory to carry context across conversations.
 5. Enable enhancement to improve prompt quality.
 

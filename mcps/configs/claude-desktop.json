@@ -9,8 +9,8 @@
         "AUTHORIZATION": "Bearer sk-prompthub-claude-desktop-001",
         "CLIENT_NAME": "claude-desktop",
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
-        "SERVERS": "sequential-thinking,desktop-commander,context7",
-        "EXCLUDE_TOOLS": "duckduckgo,perplexity"
+        "SERVERS": "memory,context7,sequential-thinking,desktop-commander",
+        "EXCLUDE_TOOLS": "duckduckgo,perplexity-comet"
       }
     }
   },
@@ -18,10 +18,11 @@
     "quickEntryShortcut": "off",
     "launchPreviewPersistSession": true,
     "localAgentModeTrustedFolders": [
+      "/Users/visualval/Code",
       "/Users/visualval/Library/AppSupport/",
-      "/Users/visualval/PromptHub",
-      "/Users/visualval/Vault",
-      "/Users/visualval/Raycast"
+      "/Users/visualval/prompthub",
+      "/Users/visualval/raycast",
+      "/Users/visualval/Vault"
     ],
     "coworkScheduledTasksEnabled": true,
     "ccdScheduledTasksEnabled": true,

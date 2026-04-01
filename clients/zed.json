@@ -1,0 +1,118 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "scroll_beyond_last_line": "vertical_scroll_margin",
+  "show_wrap_guides": false,
+  "agent_buffer_font_size": 13.0,
+  "agent_ui_font_size": 15.0,
+  "ui_font_family": "TT Text",
+  "buffer_line_height": "comfortable",
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Zed (Default)",
+    "dark": "Zed (Default)",
+  },
+  "edit_predictions": {
+    "open_ai_compatible_api": {
+      "prompt_format": "qwen",
+    },
+    "provider": "open_ai_compatible_api",
+  },
+  "language_models": {
+    "openai_compatible": {},
+  },
+  "context_servers": {
+    "prompthub": {
+      "enabled": true,
+      "remote": false,
+      "command": "node",
+      "args": ["/Users/visualval/prompthub/mcps/prompthub-bridge.js"],
+      "env": {
+        "AUTHORIZATION": "Bearer sk-lm-kDGwUvuD:XDCAUJUNxCPLHYPwOtIG",
+        "CLIENT_NAME": "default",
+        "PROMPTHUB_URL": "http://10.188.1.192:1234",
+        "SERVERS": "memory,context7,sequential-thinking,desktop-commander,perplexity-comet",
+      },
+    },
+  },
+  "session": {
+    "trust_all_worktrees": true,
+  },
+  "terminal": {
+    "font_family": "Lilex Nerd Font Mono",
+    "font_fallbacks": ["Lilex Nerd Font Propo", "Lilex"],
+    "cursor_shape": "bar",
+    "option_as_meta": true,
+  },
+  "project_panel": {
+    "hide_gitignore": false,
+    "auto_fold_dirs": false,
+  },
+  "agent": {
+    "inline_assistant_model": {
+      "provider": "copilot_chat",
+      "model": "gpt-5-mini",
+      "enable_thinking": false,
+    },
+    "play_sound_when_agent_done": true,
+    "tool_permissions": {
+      "default": "allow",
+      "tools": {},
+    },
+    "enabled": true,
+    "button": true,
+    "favorite_models": [],
+    "model_parameters": [],
+  },
+  "preview_tabs": {
+    "enabled": false,
+  },
+  "sticky_scroll": {
+    "enabled": false,
+  },
+  "gutter": {
+    "folds": true,
+  },
+  "scrollbar": {
+    "axes": {
+      "vertical": true,
+    },
+  },
+  "current_line_highlight": "all",
+  "cursor_blink": false,
+  "buffer_font_fallbacks": ["Lilex Nerd Font Propo", "Lilex"],
+  "buffer_font_family": "Lilex Nerd Font Mono",
+  "file_types": {
+    "json": ["*.{json,jsonc,jsonl}"],
+    "shellscript": [
+      "*.{env,envrc,bash_login,bash_logout,bash_profile,bashrc,sh,zlogin,zlogout,zprofile,zsh,zshenv,zshrc,}",
+    ],
+    "markdown": ["*.{md,mdx}"],
+    "xml": ["*.{xml,uxml}"],
+    "vue": ["*.vue"],
+    "plistEditor.bplistedit": ["*.plist"],
+    "typescript": ["*.{js,jsx,ts,tsx,cjs,mjs}"],
+    "yaml": ["*.{yml,yaml,colors}"],
+    "chatagent": ["*.agent.md"],
+    "html": ["*.{html,htmx,htm,html5}"],
+    "prompt": ["*.prompt.md"],
+    "css": ["*.{css,scss,sass,postcss,uss,styl}"],
+    "instructions": ["*.instructions.md"],
+  },
+  "linked_edits": true,
+  "tab_size": 2,
+  "base_keymap": "VSCode",
+  "ui_font_size": 15.0,
+  "buffer_font_size": 13.0,
+  "theme": {
+    "mode": "dark",
+    "light": "Ayu Light",
+    "dark": "Ayu Dark",
+  },
+}

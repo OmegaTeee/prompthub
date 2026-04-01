@@ -35,7 +35,10 @@ class ApiKeyManager:
             with open(self._config_path) as f:
                 data = json.load(f)
             self._registry = ApiKeysRegistry(**data)
-            logger.info("Loaded %d API keys for OpenAI-compatible proxy", len(self._registry.keys))
+            logger.info(
+                "Loaded %d API keys for OpenAI-compatible proxy",
+                len(self._registry.keys),
+            )
         except Exception as e:
             logger.error("Failed to load API keys config: %s", e)
 

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "prompthub": {
+      "url": "http://localhost:9090/mcp/prompthub",
+      "description": "Example Prompthub MCP server config",
+      "command": "curl",
+      "args": ["@-", "http://localhost:9090", "-H", "X-Client-Name: claude-desktop"]
+    }
+  }
+}

@@ -4,7 +4,7 @@ This guide explains the optional automatic prompt enhancement feature and how to
 
 Overview
 
-- PromptHub can enhance prompts using the configured Ollama/OpenAI-compatible service before forwarding JSON-RPC requests to MCP servers.
+- PromptHub can enhance prompts using the configured LM Studio/OpenAI-compatible service before forwarding JSON-RPC requests to MCP servers.
 
 - Enhancement is controlled by settings and request headers and honors per-client rules defined in `configs/enhancement-rules.json`.
 

@@ -1,0 +1,15 @@
+{
+  "type": "stdio",
+  "command": "node",
+  "args": [
+    "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
+  ],
+  "env": {
+    "AUTHORIZATION": "Bearer sk-prompthub-perplexity-001",
+    "CLIENT_NAME": "perplexity",
+    "PROMPTHUB_URL": "http://127.0.0.1:9090",
+    "SERVERS": "memory,sequential-thinking,desktop-commander,perplexity-comet",
+    "EXCLUDE_TOOLS": "duckduckgo,browsermcp"
+  },
+  "useBuiltInNode": true
+}

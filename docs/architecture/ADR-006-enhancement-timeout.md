@@ -4,10 +4,10 @@
 Superseded (timeout tuning retained; unified model replaced by task-specific model strategy)
 
 ## Context
-The prompt enhancement service was failing intermittently — working when Ollama had the model "hot" in VRAM but silently timing out on cold starts. The root cause was a compound failure across three independent timeout layers.
+The prompt enhancement service was failing intermittently — working when the LLM server had the model "hot" in VRAM but silently timing out on cold starts. The root cause was a compound failure across three independent timeout layers.
 
 ### Problem Statement
-Enhancement requests via `/ollama/enhance` were returning the original prompt (graceful degradation) instead of the enhanced version. Direct curl to Ollama at the same endpoint worked fine, making the failure hard to diagnose.
+Enhancement requests via `/llm/enhance` were returning the original prompt (graceful degradation) instead of the enhanced version. Direct curl to the LLM server at the same endpoint worked fine, making the failure hard to diagnose.
 
 ### Root Cause Analysis
 
@@ -47,7 +47,7 @@ Two changes:
 
 ### 1. Tiered timeout tuning
 - **httpx client**: 120s (from .env `OLLAMA_TIMEOUT=120`, covers cold model loads)
-- **Middleware**: 180s for `/ollama/enhance` and `/v1/chat/completions` (covers retries)
+- **Middleware**: 180s for `/llm/enhance` and `/v1/chat/completions` (covers retries)
 - **Default middleware**: 60s for all other paths (unchanged)
 
 ### 2. Unified enhancement model
@@ -70,13 +70,13 @@ All clients use `llama3.2:latest` for enhancement. Per-client differentiation is
 Ollama cold-loads measured at 30-45s for llama3.2 (3.2B Q4_K_M, 4.7GB). With generation time on top, worst case is ~60s. 120s provides 2x headroom for larger models or slower hardware.
 
 ### Why unified model?
-- Eliminates model swap overhead entirely (Ollama keeps one model warm)
+- Eliminates model swap overhead entirely (LLM server keeps one model warm)
 - Reduces cold-start probability (more requests = more frequent keep_alive refresh)
 - Per-client system prompts still provide differentiation
-- Can be re-expanded later if multi-GPU or Ollama model multiplexing is available
+- Can be re-expanded later if multi-GPU or LLM server model multiplexing is available
 
-### Why not increase Ollama keep_alive?
-- Ollama's `keep_alive` can be set per-model, but requires modifying every request or Modelfile
+### Why not increase LLM server keep_alive?
+- LLM server's `keep_alive` can be set per-model, but requires modifying every request or Modelfile
 - Doesn't solve the fundamental timeout mismatch
 - Keeping models permanently loaded wastes VRAM on a single-GPU setup
 
@@ -102,9 +102,9 @@ Ollama cold-loads measured at 30-45s for llama3.2 (3.2B Q4_K_M, 4.7GB). With gen
 ### Files Changed
 | File | Change |
 |------|--------|
-| `app/.env` | `OLLAMA_TIMEOUT=120` (was 30) |
-| `app/router/main.py` | Pass `OllamaConfig` from settings to `EnhancementService` |
-| `app/router/middleware/timeout.py` | Add `/ollama/enhance: 180s` to `EXTENDED_TIMEOUT_PATHS` |
+| `app/.env` | `LLM_TIMEOUT=120` (was 30) |
+| `app/router/main.py` | Pass `LLMConfig` from settings to `EnhancementService` |
+| `app/router/middleware/timeout.py` | Add `/llm/enhance: 180s` to `EXTENDED_TIMEOUT_PATHS` |
 | `app/configs/enhancement-rules.json` | All models → `llama3.2:latest` |
 
 ### Timeout Configuration
@@ -114,19 +114,19 @@ Ollama cold-loads measured at 30-45s for llama3.2 (3.2B Q4_K_M, 4.7GB). With gen
 EXTENDED_TIMEOUT_PATHS = {
     "/pipelines/documentation": 300.0,
     "/v1/chat/completions": 180.0,
-    "/ollama/enhance": 180.0,
+    "/llm/enhance": 180.0,
 }
 ```
 
 ```python
 # main.py — timeout propagation fix
-ollama_config = OllamaConfig(
-    base_url=f"http://{settings.ollama_host}:{settings.ollama_port}",
-    timeout=float(settings.ollama_timeout),  # was hardcoded 30.0
+llm_config = LLMConfig(
+    base_url=f"http://{settings.llm_host}:{settings.llm_port}",
+    timeout=float(settings.llm_timeout),  # was hardcoded 30.0
 )
 enhancement_service = EnhancementService(
     rules_path=settings.enhancement_rules_config,
-    ollama_config=ollama_config,
+    llm_config=llm_config,
 )
 ```
 

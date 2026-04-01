@@ -9,7 +9,7 @@ Rules for AI agents (Claude Code, Copilot) contributing to this project.
 | **Claude Code** | Primary implementer | Structural changes, new features, bulk edits, commits |
 | **Copilot**     | Inline assist       | Autocompletions, snippet generation, chat within IDE  |
 
-Copilot auto-loads `.github/copilot-instructions.md` (thin pointer to CLAUDE.md) and `.github/instructions/*.md` for context.
+Copilot auto-loads `.github/copilot-instructions.md` (thin pointer to CLAUDE.md) and `.github/instructions/*.md` for context. Copilot's MCP tools (memory, context7, sequential-thinking, desktop-commander, duckduckgo) are configured in `.github/mcp.json`.
 
 ## Rules
 
@@ -37,6 +37,8 @@ Rationale: Tracking files accumulate, go stale, and add noise to the steering co
 
 These files are loaded into agent context. Keep them concise. Do not add transient content (task lists, session notes, review checklists).
 
+`.claude/agents/` contains the agent spec files (`code-docs.md`, `user-manual.md`) referenced in the doc queue below.
+
 ### CHANGELOG.md
 
 - `[Unreleased]` collects changes between releases
@@ -50,6 +52,8 @@ These files are loaded into agent context. Keep them concise. Do not add transie
 | Developer docs | `docs/` | Claude Code |
 | API spec | `docs/api/openapi.yaml` | Claude Code |
 | Agent guidance | `.claude/steering/` | Claude Code |
+| Agent specs | `.claude/agents/` | Claude Code |
+| Client configs | `clients/` | Claude Code |
 | Project metadata | `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md` | Claude Code |
 
 ### Post-Implementation Documentation Queue

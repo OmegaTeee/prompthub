@@ -1,5 +1,7 @@
 """Pydantic models for OpenAI-compatible API proxy."""
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -43,10 +45,12 @@ class ResponsesRequest(BaseModel):
     message-array input, with optional system instructions.
     """
 
+    model_config = {"extra": "ignore"}
+
     model: str
-    input: str | list[dict[str, str]]
+    input: str | list[dict[str, Any]]
     instructions: str | None = None
-    temperature: float = 0.7
+    temperature: float | None = 0.7
     max_output_tokens: int | None = None
     top_p: float | None = None
     stream: bool = False

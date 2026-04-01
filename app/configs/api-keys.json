@@ -22,7 +22,7 @@
     },
     "sk-prompthub-copilot-001": {
       "client_name": "copilot",
-      "description": "Github Copilot",
+      "description": "GitHub Copilot",
       "enhance": false
     },
     "sk-prompthub-openwebui-001": {
@@ -44,6 +44,26 @@
       "client_name": "openclaw",
       "description": "OpenClaw Agent",
       "enhance": false
+    },
+    "sk-prompthub-jetbrains-001": {
+      "client_name": "jetbrains",
+      "description": "JetBrains IDE",
+      "enhance": false
+    },
+    "sk-prompthub-cherry-001": {
+      "client_name": "cherry",
+      "description": "Cherry Studio",
+      "enhance": false
+    },
+    "sk-prompthub-lm-studio-001": {
+      "client_name": "lm-studio",
+      "description": "LM Studio",
+      "enhance": false
+    },
+    "sk-prompthub-default-001": {
+      "client_name": "default",
+      "description": "Default key for testing and enhancement",
+      "enhance": true
     }
   }
 }

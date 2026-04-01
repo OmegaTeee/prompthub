@@ -3,7 +3,7 @@ providers:
     name: lm-studio
     base_url: http://10.188.1.192:1234/v1
     api_keys:
-      PROMPTHUB_KEY: sk-prompthub-raycast-001
+      PROMPTHUB_KEY: sk-lm-ZZYhwXz4:NXuUJerMlNLfgVLb3e3Y
     models:
       - id: qwen/qwen3-4b-thinking-2507
         name: Qwen3 4B Thinking - LM Studio
@@ -15,8 +15,6 @@ providers:
             supported: true
           reasoning_effort:
             supported: true
-          system_message:
-            supported: true
       - id: qwen/qwen3-4b-2507
         name: Qwen3 4B Instruct - LM Studio
         context: 262144
@@ -24,12 +22,6 @@ providers:
         provider: PROMPTHUB_KEY
         abilities:
           tools:
-            supported: true
-          vision:
-            supported: true
-          reasoning_effort:
-            supported: true
-          system_message:
             supported: true
   - id: prompthub-oai
     name: prompthub-oai
@@ -58,8 +50,6 @@ providers:
           tools:
             supported: true
           vision:
-            supported: true
-          reasoning_effort:
             supported: true
           system_message:
             supported: true

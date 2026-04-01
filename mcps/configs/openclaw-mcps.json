@@ -10,7 +10,7 @@
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
         "AUTHORIZATION": "Bearer sk-prompthub-openclaw-001",
         "CLIENT_NAME": "openclaw",
-        "SERVERS": "duckduckgo,sequential-thinking,desktop-commander,browsermcp,context7"
+        "SERVERS": "memory,sequential-thinking,desktop-commander,perplexity-comet"
       }
     },
     "skills-mcp": {

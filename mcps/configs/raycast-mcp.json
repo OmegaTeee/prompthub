@@ -9,7 +9,7 @@
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
         "CLIENT_NAME": "raycast",
         "AUTHORIZATION": "Bearer sk-prompthub-raycast-001",
-        "SERVERS": "duckduckgo,sequential-thinking,desktop-commander,context7"
+        "SERVERS": "sequential-thinking,desktop-commander,perplexity-comet"
       }
     }
   }

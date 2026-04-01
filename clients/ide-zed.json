@@ -1,0 +1,161 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "edit_predictions": {
+    "provider": "openai_compatible"
+  },
+  "language_models": {
+    "openai_compatible": {
+      "lm-studio": {
+        "api_url": "http://10.188.1.192:1234/v1",
+        "available_models": [
+          {
+            "name": "qwen/qwen3-4b-thinking-2507",
+            "display_name": "Qwen3 4B Thinking - LM Studio",
+            "context": 262144,
+            "description": "Markedly better general capabilities, such as instruction following, tool usage, text generation, and alignment with human preferences.",
+            "provider": "PROMPTHUB_KEY",
+            "capabilities": {
+              "tools": true,
+              "reasoning_effort": true,
+              "system_message": true
+            }
+          },
+          {
+            "name": "qwen/qwen3-4b-2507",
+            "display_name": "Qwen3 4B Instruct - LM Studio",
+            "context": 262144,
+            "description": "Non-thinking mode featuring significant improvements in general capabilities including instruction following, logical reasoning, text comprehension, mathematics, science, coding and tool usage.",
+            "provider": "PROMPTHUB_KEY",
+            "capabilities": {
+              "tools": true,
+              "vision": true,
+              "reasoning_effort": true,
+              "system_message": true
+            }
+          }
+        ]
+      }
+    }
+  },
+  "context_servers": {
+    "prompthub": {
+      "enabled": true,
+      "remote": false,
+      "command": "node",
+      "args": [
+        "/Users/visualval/prompthub/mcps/prompthub-bridge.js"
+      ],
+      "env": {
+        "AUTHORIZATION": "Bearer sk-prompthub-default-001",
+        "CLIENT_NAME": "default",
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "SERVERS": "memory,context7,sequential-thinking,desktop-commander,perplexity-comet"
+      }
+    }
+  },
+  "session": {
+    "trust_all_worktrees": true
+  },
+  "terminal": {
+    "font_family": "Lilex Nerd Font Mono",
+    "font_fallbacks": [
+      "Lilex Nerd Font Propo",
+      "Lilex",
+      "LigaDMMono-Regular",
+      "monospace"
+    ],
+    "cursor_shape": "bar",
+    "option_as_meta": true
+  },
+  "project_panel": {
+    "hide_gitignore": false,
+    "auto_fold_dirs": false
+  },
+  "agent": {
+    "enabled": true,
+    "button": true,
+    "favorite_models": [],
+    "model_parameters": []
+  },
+  "preview_tabs": {
+    "enabled": false
+  },
+  "sticky_scroll": {
+    "enabled": false
+  },
+  "gutter": {
+    "folds": true
+  },
+  "scrollbar": {
+    "axes": {
+      "vertical": true
+    }
+  },
+  "current_line_highlight": "all",
+  "cursor_blink": false,
+  "buffer_font_fallbacks": [
+    "Lilex Nerd Font Propo",
+    "Lilex",
+    "LigaDMMono-Regular",
+    "monospace"
+  ],
+  "buffer_font_family": "Lilex Nerd Font Mono",
+  "file_types": {
+    "json": [
+      "*.{json,jsonc,jsonl}"
+    ],
+    "shellscript": [
+      "*.{env,envrc,bash_login,bash_logout,bash_profile,bashrc,sh,zlogin,zlogout,zprofile,zsh,zshenv,zshrc,}"
+    ],
+    "markdown": [
+      "*.{md,mdx}"
+    ],
+    "xml": [
+      "*.{xml,uxml}"
+    ],
+    "vue": [
+      "*.vue"
+    ],
+    "plistEditor.bplistedit": [
+      "*.plist"
+    ],
+    "typescript": [
+      "*.{js,jsx,ts,tsx,cjs,mjs}"
+    ],
+    "yaml": [
+      "*.{yml,yaml,colors}"
+    ],
+    "chatagent": [
+      "*.agent.md"
+    ],
+    "html": [
+      "*.{html,htmx,htm,html5}"
+    ],
+    "prompt": [
+      "*.prompt.md"
+    ],
+    "css": [
+      "*.{css,scss,sass,postcss,uss,styl}"
+    ],
+    "instructions": [
+      "*.instructions.md"
+    ]
+  },
+  "linked_edits": true,
+  "tab_size": 2,
+  "base_keymap": "VSCode",
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "theme": {
+    "mode": "system",
+    "light": "Ayu Light",
+    "dark": "Ayu Dark"
+  }
+}

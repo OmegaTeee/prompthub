@@ -4,12 +4,12 @@
 Accepted
 
 ## Context
-PromptHub's prompt enhancement relies on a local Ollama instance. When Ollama is unavailable (cold start, circuit breaker open, timeout, crash), enhancement silently degrades — the original prompt passes through unchanged. For clients that don't require strict data locality, a cloud fallback can restore enhancement availability.
+PromptHub's prompt enhancement relies on a local LLM server (LM Studio, Ollama, or compatible). When the LLM server is unavailable (cold start, circuit breaker open, timeout, crash), enhancement silently degrades — the original prompt passes through unchanged. For clients that don't require strict data locality, a cloud fallback can restore enhancement availability.
 
 ### Requirements
 1. **Privacy-first**: Some clients must never send prompts to the cloud (`local_only`)
 2. **Cost-free default**: Fallback should work without paid API keys where possible
-3. **Independent failure domain**: Cloud circuit breaker separate from Ollama circuit breaker
+3. **Independent failure domain**: Cloud circuit breaker separate from LLM server circuit breaker
 4. **Transparent**: Response must indicate which provider served the enhancement
 
 ## Decision
@@ -27,7 +27,7 @@ Use **OpenRouter's free-tier models** as the cloud fallback provider, gated by t
 
 OpenRouter was chosen because:
 - **Free models available**: Models like `deepseek/deepseek-r1-0528:free` provide useful enhancement without cost
-- **Reuses existing code**: `OllamaOpenAIClient` works unmodified via the new `extra_headers` field on `OpenAICompatConfig`
+- **Reuses existing code**: `LLMClient` (OpenAI-compatible) works unmodified via the new `extra_headers` field on `OpenAICompatConfig`
 - **Model mapping**: `cloud-models.json` maps local model names to free-tier equivalents, so the fallback uses a comparable model
 - **Easy to swap**: If OpenRouter becomes unsuitable, changing `OPENROUTER_BASE_URL` to any OpenAI-compatible provider works
 
@@ -42,9 +42,9 @@ The `PrivacyLevel` enum (from Path C) controls fallback eligibility:
 
 ### Circuit Breaker
 A separate `CircuitBreaker` instance for OpenRouter:
-- **Failure threshold**: 2 (vs 3 for Ollama) — fail fast for external service
-- **Recovery timeout**: 60s (vs 30s for Ollama) — longer backoff for rate limits
-- **Independent**: Ollama failure doesn't affect cloud breaker and vice versa
+- **Failure threshold**: 2 (vs 3 for LLM server) — fail fast for external service
+- **Recovery timeout**: 60s (vs 30s for LLM server) — longer backoff for rate limits
+- **Independent**: LLM server failure doesn't affect cloud breaker and vice versa
 
 ## Implementation
 
@@ -91,7 +91,7 @@ OPENROUTER_DEFAULT_MODEL=deepseek/deepseek-r1-0528:free
 | File | Change |
 |------|--------|
 | `app/router/enhancement/service.py` | `_try_cloud_fallback()`, cloud client init, `provider` field |
-| `app/router/enhancement/ollama_openai.py` | `extra_headers` on `OpenAICompatConfig` |
+| `app/router/enhancement/openai_compat.py` | `extra_headers` on `OpenAICompatConfig` |
 | `app/router/config/settings.py` | 5 `OPENROUTER_*` settings |
 | `app/router/routes/enhancement.py` | `provider` in response |
 | `app/configs/cloud-models.json` | Model mapping |
@@ -107,7 +107,7 @@ OPENROUTER_DEFAULT_MODEL=deepseek/deepseek-r1-0528:free
 
 ### Negative
 - Free-tier rate limits (20 req/min on OpenRouter) may throttle high-volume clients
-- Cloud models may produce different quality output than local Ollama models
+- Cloud models may produce different quality output than local LLM server models
 - Requires API key creation (free but manual step)
 
 ### Neutral
