@@ -1,55 +1,106 @@
-# PromptHub llm.txt
+# PromptHub — Project Context for LLM Assistants
 
-This file is for LLMs and agents assisting with the PromptHub Router project.
+> This file is for external LLM tools (Perplexity, etc.) that read project files
+> via Desktop Commander or similar MCP tools. It provides a self-contained snapshot
+> of the project so you can give informed recommendations without reading the full codebase.
+>
+> Last updated: 2026-04-05
 
-## Project purpose
+## What this project is
 
-- PromptHub is a local router that:
-  - Manages and proxies multiple MCP servers via stdio.
-  - Exposes them to clients (Claude Desktop, VS Code, Raycast, etc.) over HTTP.
-  - Routes LLM requests to local models (Ollama) and optional cloud providers via OpenAI‑compatible APIs.
-- Core tech stack: Python 3.11+, FastAPI, Pydantic, Uvicorn, httpx, SQLite, HTMX. [cite:4]
+PromptHub is a local MCP (Model Context Protocol) router for macOS. It runs on
+localhost:9090 and provides:
 
-## Where to look first
+- **MCP server multiplexing** — One endpoint proxies 9 MCP servers (context7,
+  desktop-commander, sequential-thinking, memory, duckduckgo, obsidian-mcp-tools,
+  chrome-devtools-mcp, perplexity-comet, browsermcp) to any client
+- **Prompt enhancement** — Local LLM rewrites prompts per-client before they reach
+  the AI (different system prompts for code editors vs research tools vs image gen)
+- **OpenAI-compatible proxy** — `/v1/chat/completions` with bearer auth, so any
+  OpenAI-compatible client can use local models through PromptHub
+- **Resilience** — Circuit breakers, L1/L2 cache, cloud fallback via OpenRouter
 
-- High‑level architecture: `docs/architecture/README.md` and ADRs in `docs/architecture/`. [cite:4]
-- Developer docs index: `docs/README.md` and linked feature/module docs. [cite:4]
-- Python conventions for this repo: `docs/python-prompthub-guide.txt` (see adjacent guide).
+## Tech stack
 
-## Golden paths
+- **Backend**: Python 3.14, FastAPI, Pydantic, uvicorn, httpx, aiosqlite
+- **MCP bridge**: Node.js stdio bridge (`mcps/prompthub-bridge.js`) aggregating
+  all servers behind a single process
+- **Local LLM**: LM Studio (port 1234), OpenAI-compatible API
+- **Dashboard**: HTMX + Jinja2 templates at `/dashboard`
+- **Persistent storage**: SQLite databases under `~/.prompthub/`
 
-When changing or adding features, prefer these flows:
+## Current models (LM Studio)
 
-- HTTP/API surface:
-  - Add or update FastAPI routes under the router module, then call into a service layer function instead of doing work in the route handler.
-  - Keep request/response Pydantic models small and explicit.
-- MCP integration:
-  - Use existing FastMCPBridge and StdioTransport abstractions to talk to MCP servers.
-  - Respect naming and namespacing conventions for tools documented in the architecture docs. [cite:4]
-- LLM routing and enhancement:
-  - Use existing enhancement and routing services instead of adding ad‑hoc calls to Ollama or OpenRouter.
-  - Preserve OpenAI‑compatible request/response shapes for external clients. [cite:4]
+| Model ID | Params | Role |
+|---|---|---|
+| `qwen3-4b-instruct-2507` | 4B | Enhancement — prompt rewriting for all clients |
+| `qwen3-4b-thinking-2507` | 4B | Orchestrator — intent classification with CoT |
+| `deepseek/deepseek-r1-0528-qwen3-8b` | 8B | General use in Cherry Studio (not in PromptHub pipelines) |
+| `text-embedding-nomic-embed-text-v1.5` | 137M | Embedding (not currently wired into pipelines) |
 
-## Things to be careful with
+Both 4B models stay loaded (~5 GB total). DeepSeek loads on demand.
 
-Agents should treat these areas as sensitive and avoid large refactors without explicit instruction:
+## Directory structure
 
-- Circuit breaker implementation and state transitions.
-- Audit logging, integrity checks, and any SHA256 or checksum logic.
-- Configuration formats such as `mcp-servers.json`, `enhancement-rules.json`, and other JSON configs.
-- Security‑related code: keyring integration, context propagation, request correlation IDs, and access to credentials.
+```
+~/prompthub/                          # Project root (symlink to ~/.local/share/prompthub)
+├── app/                              # Python project (FastAPI router)
+│   ├── router/                       # Main package: routes/, config/, servers/, enhancement/,
+│   │                                 #   resilience/, cache/, orchestrator/, openai_compat/,
+│   │                                 #   memory/, tool_registry/, dashboard/, middleware/
+│   ├── tests/                        # pytest suite (314 tests passing)
+│   ├── configs/                      # Runtime JSON configs (mcp-servers, enhancement-rules,
+│   │                                 #   api-keys, cloud-models)
+│   └── templates/                    # Jinja2 + HTMX dashboard
+├── clients/                          # 13 per-client directories, each with:
+│   ├── <name>/mcp.json               #   MCP bridge config
+│   ├── <name>/setup.sh               #   Install script (symlink or manual instructions)
+│   ├── <name>/uninstall.sh           #   Reverse script (where applicable)
+│   └── <name>/README.md              #   Client-specific notes
+├── mcps/                             # Node.js MCP bridge + npm dependencies
+│   └── prompthub-bridge.js           # Stdio bridge aggregating all servers
+├── docs/                             # Developer docs, ADRs, user guides
+│   ├── architecture/                 # ADRs and design docs
+│   ├── guides/                       # User-facing setup and integration guides
+│   └── notes/                        # Working notes, model cards, plans
+├── scripts/                          # Shell scripts, LaunchAgent plists
+├── CLAUDE.md                         # Full dev guide for Claude Code / coding agents
+├── AGENTS.md                         # Multi-agent onboarding and conventions
+└── llm.txt                           # This file
+```
 
-If a change touches any of the above, prefer:
+## Supported clients
 
-- Small, well‑scoped edits.
-- Extra tests for failure cases.
-- Comments explaining why the change is safe.
+**Active** (7): Claude (Code + Desktop), Codex, LM Studio,
+Perplexity Desktop, Raycast, VS Code (includes Copilot)
 
-## Agent behavior guidelines
+**Placeholder** (4, `_` prefixed): Cherry Studio, JetBrains, Open WebUI,
+Zed — config directories exist but not fully wired
 
-- Prefer incremental improvements over large rewrites.
-- Match the existing style and patterns used in the module you are editing.
-- Keep async code non‑blocking: avoid new synchronous I/O in request paths.
-- When unsure about a decision, add a short comment with a question or TODO rather than guessing.
+## Key design decisions
 
-For detailed Python patterns specific to PromptHub (FastAPI, async, MCP bridge, OpenAI API, testing, observability), see `docs/python-prompthub-guide.txt`.
+- **Privacy boundary**: `PrivacyLevel` enum (local_only, free_ok, any) controls
+  whether prompts leave localhost. Most clients default to local_only.
+- **Cloud fallback**: When LM Studio is down, free_ok/any clients fall back to
+  OpenRouter free tier. local_only clients never use cloud.
+- **Single enhancement model**: All clients use the same model (`qwen3-4b-instruct-2507`)
+  with per-client system prompts and temperature settings.
+- **Schema minification**: Bridge strips verbose fields from tool schemas before
+  sending to LLM clients, reducing context by ~67%.
+- **Token budget**: Enhancement input capped at 4,096 tokens to prevent wasting
+  context on prompt rewrites.
+
+## Active concerns and TODOs
+
+- MCPs README is stale (lists 7 of 9 servers)
+- Evaluating @perplexity-ai/mcp-server vs existing perplexity-comet-mcp
+- @brave/brave-search-mcp-server scheduled for removal (unused)
+- Enhancement service has near-identical exception handlers (deferred refactor)
+- Lifespan init function is ~97 lines (deferred refactor)
+
+## Where to find more detail
+
+- Full developer guide: `CLAUDE.md` (architecture, API endpoints, config files, code style)
+- Agent conventions: `AGENTS.md` (roles, operating rules, doc queue, escalation)
+- Architecture decisions: `docs/architecture/ADR-*.md`
+- User guides: `docs/guides/`

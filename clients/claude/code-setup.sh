@@ -2,15 +2,15 @@
 set -euo pipefail
 
 # ── Claude Code setup ───────────────────────────────────────
-# Strategy: symlink (project-level mcp.json at repo root)
-# Source:   clients/claude-code/mcp.json
+# Strategy: copy (project-level mcp.json at repo root)
+# Source:   clients/claude/code-mcp.json
 # Target:   <repo-root>/mcp.json
 #
 # Claude Code reads mcp.json from the project root.
 # This script verifies the repo root file matches this config.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_CONFIG="$SCRIPT_DIR/mcp.json"
+REPO_CONFIG="$SCRIPT_DIR/code-mcp.json"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 APP_CONFIG="$REPO_ROOT/mcp.json"
 

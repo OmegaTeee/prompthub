@@ -1,4 +1,8 @@
-# Plan: Integrate `llm.txt` with PromptHub Router and MCP Bridge
+# Research: llm.txt Router Injection — Feasibility Sketch
+
+> **Status**: Evaluated, not implementing (2026-04-05)
+> **Source**: Perplexity research via Desktop Commander context gathering
+> **Moved from**: `docs/notes/plans/` (not an active plan)
 
 ## Goal
 
@@ -247,3 +251,68 @@ When guidance is loaded:
 ## Recommendation
 
 Implement this as a router-side instruction loader in the orchestration/enhancement path, not as part of MCP transport. That gives agents repo-specific context before they plan changes, while keeping FastMCPBridge focused on stdio lifecycle, JSON-RPC dispatch, and tool namespacing.
+
+---
+
+## Evaluation (2026-04-05)
+
+### Decision: Do not implement
+
+The sketch is architecturally sound but solves a problem that doesn't exist for
+the current model tier and client architecture.
+
+### Who actually benefits from llm.txt?
+
+There are two very different consumers of project context:
+
+| Consumer | Model tier | How they get context | Benefit from injection |
+|---|---|---|---|
+| Perplexity (via Desktop Commander) | Frontier (100B+) | Reads `llm.txt` on demand as a file | **High** — can reason about architecture, give strategic advice |
+| Claude Code, VS Code, Zed | Frontier (via MCP bridge) | Already has `CLAUDE.md` loaded | **None** — bridge proxies tool calls, no LLM in the loop |
+| Enhancement service | Local 4B | System prompt from `enhancement-rules.json` | **Low** — doing 1-sentence prompt rewrites, doesn't need project structure |
+| Cherry Studio, Open WebUI | Local 4B–8B (via `/v1/`) | User selects model directly | **Low** — users can paste context themselves |
+
+### Why bridge clients don't benefit
+
+The MCP bridge request flow:
+
+```
+Client → MCP bridge → PromptHub router → MCP server (tool call)
+                                        ↘ LM Studio (enhancement only)
+```
+
+Bridge clients (Claude Code, VS Code) already have full project context via
+CLAUDE.md. The bridge just proxies JSON-RPC tool calls to servers like context7
+and desktop-commander — no prompt processing happens there. The sketch correctly
+says "do NOT inject into bridge transport" (§ MCP bridge integration rule),
+which means bridge clients get zero benefit from this feature.
+
+### Why the enhancement path doesn't benefit
+
+The enhancement service uses a 4B model to rewrite prompts like
+"fix the auth bug" → "Fix the authentication middleware bug in the FastAPI router,
+focusing on session token handling." This is a mechanical rewrite — the model
+needs its system prompt ("rewrite to be clearer") and the user's input. Prepending
+80 lines of project architecture would:
+
+- Consume ~500 tokens of the 4,096 enhancement input cap (12% overhead)
+- Add latency for file reads on every request
+- Not improve rewrite quality (the model doesn't use project context for rewrites)
+
+### When this might become worth revisiting
+
+- **Larger local models (14B+)** that can reason about project architecture
+  during enhancement — e.g., a model that rewrites "fix the auth bug" into
+  "Fix the session token validation in `router/middleware/` — the audit system
+  at `security_alerts.py` depends on consistent request_id propagation"
+- **A dedicated "project-aware chat" endpoint** separate from enhancement,
+  where users explicitly ask the local model about the project
+- **Per-directory `llm.txt`** if the project grows into a monorepo with
+  independent submodules that need different context
+
+### What works today instead
+
+`llm.txt` as a **passive file** that Perplexity reads via Desktop Commander
+when you ask for project-aware research. This gives frontier-model reasoning
+over your project context without any router code changes. The file is also
+available for any future tool that follows the `llm.txt` convention.

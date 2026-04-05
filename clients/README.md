@@ -1,70 +1,77 @@
 # Client Configurations
 
-Per-client directories containing MCP bridge configs, application settings, knowledge files, and setup scripts.
+Per-client directories containing MCP bridge configs, setup scripts, and knowledge files.
+
+Active clients are unprefixed. Placeholder/draft clients use a `_` prefix — run `/client-setup` to wire them up.
 
 ## Structure
-
-Each client has its own directory:
 
 ```
 clients/
   <client-name>/
-    setup.sh            Setup script (symlink or instructions)
-    README.md           Setup instructions and external doc links
     mcp.json            MCP bridge config (source of truth)
-    provider.yaml       App-specific settings (if applicable)
-    <client>-llm.txt    LLM knowledge file (if applicable)
+    setup.sh            Install script (symlink, copy, or manual instructions)
+    uninstall.sh        Reverse script (removes symlink, restores backup)
+    README.md           Client-specific notes
+    <name>-llm.txt      LLM knowledge file (optional)
 ```
+
+## Active Clients
+
+| Directory | Transport | Strategy | Config Path |
+|-----------|-----------|----------|-------------|
+| `claude/` | bridge | symlink + copy | Desktop: `~/Library/.../Claude/claude_desktop_config.json`, Code: project root `mcp.json` |
+| `codex/` | bridge | symlink | `~/.codex/config.toml` |
+| `lm-studio/` | bridge | symlink | `~/.lmstudio/mcp.json` |
+| `perplexity-desktop/` | bridge | symlink | — |
+| `raycast/` | bridge | symlink | `~/.config/raycast/mcp.json` |
+| `vscode/` | bridge | merge | `~/Library/.../Code/.../mcp_settings.json` (includes Copilot configs) |
+| `default/` | bridge | template | Template scripts for new clients |
+
+Backward-compat symlinks: `claude-code` → `claude/`, `claude-desktop` → `claude/`
+
+## Placeholder Clients (`_` prefix)
+
+| Directory | Transport | Notes |
+|-----------|-----------|-------|
+| `_cherry-studio/` | bridge + http | Electron dialog, no standalone config file |
+| `_jetbrains/` | bridge | No enhancement rule yet |
+| `_open-webui/` | http (OpenAI proxy) | No MCP bridge — connects via `/v1/` |
+| `_zed/` | bridge | Manual paste (JSONC shared settings) |
 
 ## Setup
 
-Each client has a `setup.sh` that either creates a symlink or prints setup instructions:
-
 ```bash
-# Symlink clients (automated)
-./clients/lm-studio/setup.sh
-./clients/claude-desktop/setup.sh
-./clients/cursor/setup.sh
+# Run a client's setup script
+./clients/raycast/setup.sh           # creates symlink
+./clients/claude/desktop-setup.sh    # creates symlink
+./clients/claude/code-setup.sh       # copies config
 
-# Informational clients (prints instructions)
-./clients/zed/setup.sh
-./clients/cherry-studio/setup.sh
+# Reverse
+./clients/raycast/uninstall.sh       # removes symlink, restores backup
+./clients/raycast/uninstall.sh --purge  # also deletes backup
 ```
 
-## Diagnostics
+## Adding a New Client
 
-Check all client configs and system health:
+Use the `/client-setup` skill, or copy from `clients/default/`:
+
+```bash
+cp -r clients/default clients/<name>
+# Edit setup.sh and uninstall.sh — customize CLIENT_NAME, CONFIG_FILE, APP_CONFIG
+```
+
+## Symlink Convention
+
+```
+clients/raycast/mcp.json              ← real file (git-tracked)
+~/.config/raycast/mcp.json            ← symlink → ~/prompthub/clients/raycast/mcp.json
+```
+
+Source in the project, symlink at the client location. Run `setup.sh` to create the link; `uninstall.sh` to reverse it.
+
+## Diagnostics
 
 ```bash
 ./scripts/diagnose.sh
 ```
-
-## Clients
-
-| Directory | Transport | Setup | Config Path |
-|-----------|-----------|-------|-------------|
-| `claude-desktop/` | bridge | symlink | `~/Library/.../Claude/claude_desktop_config.json` |
-| `claude-code/` | bridge | copy | Project root `mcp.json` |
-| `cursor/` | bridge | symlink | `~/Library/.../Cursor/.../mcp.json` |
-| `vscode/` | bridge | manual | `~/Library/.../Code/.../mcp_settings.json` |
-| `raycast/` | bridge | symlink | `~/.config/raycast/mcp.json` |
-| `lm-studio/` | bridge | symlink | `~/.lmstudio/mcp.json` |
-| `zed/` | bridge | manual | `~/.config/zed/settings.json` |
-| `jetbrains/` | bridge | symlink | `~/.config/JetBrains/mcp.json` |
-| `cherry-studio/` | bridge + http | manual | GUI (LevelDB) |
-| `codex/` | bridge | manual | `~/.codex/config.toml` |
-| `open-webui/` | http | manual | Open WebUI admin panel |
-| `opencode/` | bridge | symlink | `~/.opencode.json` |
-| `copilot/` | bridge | manual | VS Code / project config |
-| `openclaw/` | bridge | -- | -- |
-| `perplexity-desktop/` | bridge | -- | -- |
-| `default/` | bridge | -- | Fallback for unrecognized clients |
-
-## Symlink convention
-
-```
-clients/lm-studio/mcp.json           <- real file (git-tracked)
-~/.lmstudio/mcp.json                 <- symlink -> ~/prompthub/clients/lm-studio/mcp.json
-```
-
-Source in the project, symlink at the client location. Run the client's `setup.sh` to create the link.

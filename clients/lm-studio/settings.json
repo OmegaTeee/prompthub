@@ -33,7 +33,7 @@
     "showRoleAndInsertButtons": false,
     "scrollLastMessageToTop": "scrollToTopNoLatch",
     "showTokenCountInChatListings": true,
-    "moveDeletedItemsToTrash": false,
+    "moveDeletedItemsToTrash": true,
     "sidebarSort": {
       "field": "createdAt",
       "direction": "desc"
@@ -48,11 +48,11 @@
   "developer": {
     "showExperimentalFeatures": false,
     "experimentalLoadPresets": false,
-    "backendDownloadChannel": "stable",
-    "appUpdateChannel": "stable",
     "showDebugInfoBlocksInChat": false,
     "showModelDownloadOptionData": false,
     "showResourceConsumptionWidget": false,
+    "backendDownloadChannel": "stable",
+    "appUpdateChannel": "stable",
     "allowDevelopmentPlugins": true,
     "unloadPreviousJITModelOnLoad": true,
     "jitModelTTL": {
@@ -84,8 +84,8 @@
     "speculativeDecoding": false
   },
   "toggledConfigDropdowns": [],
-  "userInterfaceComplexityLevel": 0,
   "developerMode": true,
+  "userInterfaceComplexityLevel": 0,
   "appFirstLoad": false,
   "autoLoadBundledLLM": true,
   "modelLoadingGuardrails": {
@@ -94,7 +94,8 @@
     "alwaysAllowLoadAnyway": false
   },
   "dismissedModals": [
-    "LM Link Sidebar Button Popover"
+    "LM Link Sidebar Button Popover",
+    "Trash Deletion Onboarding"
   ],
   "dismissedConversationSnackbars": [],
   "pre030ChatsMigrated": 3,

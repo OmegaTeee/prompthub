@@ -3,14 +3,14 @@ set -euo pipefail
 
 # ── Claude Desktop setup ────────────────────────────────────
 # Strategy: symlink (full config including preferences)
-# Source:   clients/claude-desktop/mcp.json
+# Source:   clients/claude/desktop-mcp.json
 # Target:   ~/Library/Application Support/Claude/claude_desktop_config.json
 #
 # Note: This file includes both mcpServers and preferences.
-# Edit clients/claude-desktop/mcp.json to change either.
+# Edit clients/claude/desktop-mcp.json to change either.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_CONFIG="$SCRIPT_DIR/mcp.json"
+REPO_CONFIG="$SCRIPT_DIR/desktop-mcp.json"
 APP_CONFIG="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 
 if [ ! -f "$REPO_CONFIG" ]; then
