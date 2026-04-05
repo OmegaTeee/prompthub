@@ -15,23 +15,23 @@ Edit `~/prompthub/configs/enhancement-rules.json`:
 ```json
 {
   "default": {
-    "model": "qwen/qwen3-4b-2507",
+    "model": "qwen3-4b-instruct-2507",
     "system_prompt": null,
     "timeout": 120
   },
   "clients": {
     "my-technical-app": {
-      "model": "qwen/qwen3-4b-2507",
+      "model": "qwen3-4b-instruct-2507",
       "system_prompt": "You are a technical expert. Enhance prompts for code quality.",
       "timeout": 180
     },
     "my-creative-app": {
-      "model": "qwen/qwen3-4b-2507",
+      "model": "qwen3-4b-instruct-2507",
       "system_prompt": "You are a creative writer. Enhance prompts for literary quality.",
       "timeout": 120
     },
     "my-fast-app": {
-      "model": "qwen/qwen3-4b-2507",
+      "model": "qwen3-4b-instruct-2507",
       "system_prompt": null,
       "enabled": false
     }
@@ -54,16 +54,16 @@ All clients now use the same model for enhancement:
 
 | Model | Speed | Strength |
 |-------|-------|----------|
-| `qwen/qwen3-4b-2507` | Fast (1-2 seconds) | Good for all enhancement tasks |
+| `qwen3-4b-instruct-2507` | Fast (1-2 seconds) | Good for all enhancement tasks |
 
 To download the model:
 
 ```bash
-lms get qwen/qwen3-4b-2507
+lms get qwen3-4b-instruct-2507
 ```
 
 **Key points:**
-- All clients share the same enhancement model (`qwen/qwen3-4b-2507`).
+- All clients share the same enhancement model (`qwen3-4b-instruct-2507`).
 - Per-client entries let you customize the system prompt, timeout, or disable enhancement.
 - Set `enabled: false` to skip enhancement for apps that do not need it.
 
@@ -137,7 +137,7 @@ Some models take longer to respond. Increase the timeout for slow models so Prom
 {
   "clients": {
     "slow-client": {
-      "model": "qwen/qwen3-4b-2507",
+      "model": "qwen3-4b-instruct-2507",
       "timeout": 300
     }
   }
@@ -429,7 +429,7 @@ BASE_URL="http://localhost:9090"
 
 function ask() {
     local prompt="$1"
-    local model="${2:-qwen/qwen3-4b-2507}"
+    local model="${2:-qwen3-4b-instruct-2507}"
 
     curl -s "$BASE_URL/v1/chat/completions" \
         -H "Authorization: Bearer $API_KEY" \

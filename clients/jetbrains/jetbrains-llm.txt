@@ -1,0 +1,258 @@
+# JetBrains IDEs -- llm.txt
+> Client knowledge file for LLMs configuring JetBrains IDEs with PromptHub.
+> Source: https://www.jetbrains.com/help/ai-assistant/mcp.html
+> Fetched: 2026-04-02
+
+
+## Overview
+
+JetBrains IDEs support the Model Context Protocol (MCP) through the AI Assistant plugin. By connecting to MCP servers, AI Assistant gains access to external tools and data sources. PromptHub connects as a single stdio-based MCP server that aggregates all configured backend servers behind one bridge.
+
+
+## IDE Compatibility
+
+MCP support requires the AI Assistant plugin. Compatible IDEs include:
+
+- IntelliJ IDEA (2024.3+)
+- WebStorm (2024.3+)
+- PyCharm (2024.3+)
+- GoLand (2024.3+)
+- PhpStorm (2024.3+)
+- CLion (2024.3+)
+- Rider (2024.3+)
+- RubyMine (2024.3+)
+- DataGrip (2024.3+)
+- Android Studio (based on IntelliJ 2024.3+)
+
+Starting with version 2025.2, JetBrains IDEs also include a built-in MCP
+server that exposes IDE tools to external clients (Claude Desktop, Cursor,
+VS Code, etc.).
+
+
+## Supported Transports
+
+1. **STDIO** -- IDE launches the MCP server as a subprocess and communicates
+   via standard input/output. Used for local servers like PromptHub bridge.
+
+2. **Streamable HTTP** -- IDE connects to a remote MCP server over HTTP.
+   Supports both request/response and streaming interactions.
+
+
+## Configuration Methods
+
+### Via Settings UI (recommended)
+
+1. Open Settings: File > Settings (Ctrl+Alt+S) / IntelliJ IDEA > Settings (Cmd+,)
+2. Navigate to: Languages & Frameworks > AI Assistant > Model Context Protocol (MCP)
+3. Click "+" (Add) to add a new server
+4. Paste the JSON configuration (see format below)
+5. Set "Server level" to Global or Project
+6. Click OK, then Apply
+
+Alternatively: type `/` in AI Chat and select "Add Command" to reach MCP
+settings directly.
+
+### Via mcp.json file
+
+JetBrains IDEs read MCP configurations from JSON files at two levels:
+
+**Global (all projects):**
+```
+# macOS
+~/Library/Application Support/JetBrains/<product><version>/options/mcp.json
+
+# Linux
+~/.config/JetBrains/<product><version>/options/mcp.json
+
+# Windows
+%APPDATA%\JetBrains\<product><version>\options\mcp.json
+```
+
+**Project-level:**
+```
+<project-root>/.idea/mcp.json
+```
+
+Note: The Settings UI is the recommended approach. Direct file editing is
+possible but the UI handles validation and immediate server startup.
+
+
+## JSON Configuration Format
+
+JetBrains uses the `"mcpServers"` wrapper key (not `"servers"`). The format
+for the configuration pasted into the Settings UI dialog:
+
+### Stdio server
+
+```json
+{
+  "mcpServers": {
+    "serverName": {
+      "command": "node",
+      "args": [
+        "/path/to/server-script.js",
+        "optional-argument"
+      ]
+    }
+  }
+}
+```
+
+Required fields:
+- `command` (string) -- executable to launch (e.g., `node`, `npx`, `docker`)
+- `args` (string[]) -- arguments passed to the command
+
+Optional:
+- `env` (object) -- environment variables (supported in the config)
+- Working directory can be set separately in the UI dialog
+
+### Remote HTTP server
+
+```json
+{
+  "mcpServers": {
+    "serverName": {
+      "url": "https://mcp.example.com/mcp"
+    }
+  }
+}
+```
+
+
+## PromptHub Bridge Config for JetBrains
+
+Paste this JSON into the "New MCP Server" dialog (Settings > AI Assistant >
+Model Context Protocol > Add):
+
+```json
+{
+  "mcpServers": {
+    "prompthub": {
+      "command": "node",
+      "args": ["/Users/<you>/prompthub/mcps/prompthub-bridge.js"],
+      "env": {
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "AUTHORIZATION": "Bearer sk-prompthub-jetbrains-001",
+        "CLIENT_NAME": "jetbrains",
+        "SERVERS": "memory,context7,sequential-thinking,desktop-commander,perplexity-comet"
+      }
+    }
+  }
+}
+```
+
+Set **Server level** to "Global" so the bridge is available across all projects.
+
+### Standalone mcp.json format
+
+If editing the project-level `.idea/mcp.json` directly, use this structure
+(note the different wrapper key):
+
+```json
+{
+  "servers": {
+    "prompthub": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/Users/<you>/prompthub/mcps/prompthub-bridge.js"],
+      "env": {
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "AUTHORIZATION": "Bearer sk-prompthub-jetbrains-001",
+        "CLIENT_NAME": "jetbrains",
+        "SERVERS": "memory,context7,sequential-thinking,desktop-commander,perplexity-comet"
+      }
+    }
+  }
+}
+```
+
+### Environment variables explained
+
+| Variable        | Purpose                                                       |
+|-----------------|---------------------------------------------------------------|
+| PROMPTHUB_URL   | PromptHub router endpoint (default: http://127.0.0.1:9090)   |
+| AUTHORIZATION   | Bearer token matching an entry in api-keys.json               |
+| CLIENT_NAME     | Client identifier for enhancement rules and audit logging     |
+| SERVERS         | Comma-separated list of MCP servers to expose (empty = all)   |
+| EXCLUDE_TOOLS   | Optional: comma-separated prefixed tool names to hide         |
+| MINIFY_SCHEMAS  | Strip verbose schema fields to save context (default: true)   |
+| DESC_MAX_LENGTH | Max chars for tool descriptions, 0 = no limit (default: 200) |
+
+
+## Using MCP Tools in AI Chat
+
+Once the server is connected (green status indicator in MCP settings):
+
+1. Open AI Chat (Alt+Enter or via the AI Assistant tool window)
+2. Tools from the bridge are available automatically
+3. AI Assistant triggers tools as needed when processing requests
+4. You can also invoke tools manually by typing `/` in the chat
+
+To review available tools: click the status icon next to the server name in
+the MCP settings page.
+
+
+## Verifying the Connection
+
+1. Open Settings > AI Assistant > Model Context Protocol
+2. Check the **Status** column next to your server:
+   - Green indicator = connected and running
+   - Red/yellow = error (check logs)
+3. Click the status icon to see the list of available tools
+
+### Debugging with logs
+
+1. Help > Show Log in Finder (macOS) / Show Log in Explorer (Windows)
+2. Open the `mcp/` folder inside the logs directory
+3. Each configured MCP server has its own log file
+
+
+## Gotchas and Tips
+
+1. **Two JSON formats**: The Settings UI dialog expects `"mcpServers"` as the
+   wrapper key. The project-level `.idea/mcp.json` file uses `"servers"` with
+   a `"type": "stdio"` field. These are different schemas -- do not mix them.
+
+2. **No trailing commas**: Unlike Zed, JetBrains config is strict JSON. No
+   comments, no trailing commas.
+
+3. **Node path**: Ensure `node` is resolvable from the IDE's process
+   environment. If the IDE was launched from the dock (not terminal), it may
+   not inherit your shell's PATH. Use an absolute path to node if needed:
+   `/usr/local/bin/node` or the output of `which node`.
+
+4. **Server level**: Set to "Global" for PromptHub since it is not
+   project-specific. Project-level servers are stored in `.idea/mcp.json`.
+
+5. **Reconnecting**: If the bridge becomes unresponsive, select the server in
+   MCP settings and click the Reconnect button (circular arrow icon).
+
+6. **Brave mode**: By default, tools that execute terminal commands require
+   user confirmation. Enable "brave mode" in Settings > AI Assistant >
+   MCP Server > Command execution to auto-approve. Use with caution.
+
+7. **AI Assistant plugin required**: MCP features require the AI Assistant
+   plugin to be installed and enabled. It ships bundled with 2024.3+ but
+   may need activation.
+
+8. **Symlink path**: Use `~/prompthub` (the symlink) rather than the full
+   `~/.local/share/prompthub` path in configurations.
+
+9. **Schema minification**: The bridge strips verbose fields (description,
+   title, examples, default) from tool inputSchema, reducing context usage
+   by ~67%. Disable with `MINIFY_SCHEMAS=false` if you need full schemas.
+
+10. **IDE as MCP server**: Starting with 2025.2, JetBrains IDEs expose their
+    own tools (file editing, refactoring, inspections, terminal) via MCP.
+    External clients can auto-configure via Settings > AI Assistant >
+    MCP Server > Enable MCP Server > Auto-Configure.
+
+
+## References
+
+- JetBrains MCP docs: https://www.jetbrains.com/help/ai-assistant/mcp.html
+- AI Assistant overview: https://www.jetbrains.com/help/ai-assistant/getting-started-with-ai-assistant.html
+- AI Assistant IDE compatibility: https://www.jetbrains.com/help/ai-assistant/about-ai-assistant.html#ide-compatibility
+- JetBrains MCP Server plugin: https://plugins.jetbrains.com/plugin/26071-mcp-server
+- Model Context Protocol: https://modelcontextprotocol.io/
+- PromptHub bridge source: ~/prompthub/mcps/prompthub-bridge.js

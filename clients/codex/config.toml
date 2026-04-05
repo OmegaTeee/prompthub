@@ -1,0 +1,17 @@
+personality = "pragmatic"
+
+[mcp_servers.prompthub-bridge]
+args = ["/Users/visualval/prompthub/mcps/prompthub-bridge.js"]
+command = "node"
+cwd = "~/prompthub"
+enabled = true
+
+[mcp_servers.prompthub-bridge.env]
+AUTHORIZATION = "Bearer sk-prompthub-codex-001"
+CLIENT_NAME = "codex"
+PROMPTHUB_URL = "http://127.0.0.1:9090"
+SERVERS = "memory,sequential-thinking,desktop-commander,perplexity-comet,context7"
+
+[[skills.config]]
+path = "/Users/visualval/.codex/skills/doc/SKILL.md"
+enabled = false

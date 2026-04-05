@@ -74,17 +74,17 @@ Each client maps to a task-specific model for prompt enhancement (see [ADR-008](
 
 ```json
 {
-  "default": { "model": "qwen/qwen3-4b-2507" },
+  "default": { "model": "qwen3-4b-instruct-2507" },
   "clients": {
-    "claude-desktop": { "model": "qwen/qwen3-4b-2507" },
-    "claude-code":    { "model": "qwen/qwen3-4b-2507" },
-    "vscode":         { "model": "qwen/qwen3-4b-2507" },
-    "raycast":        { "model": "qwen/qwen3-4b-2507" }
+    "claude-desktop": { "model": "qwen3-4b-instruct-2507" },
+    "claude-code":    { "model": "qwen3-4b-instruct-2507" },
+    "vscode":         { "model": "qwen3-4b-instruct-2507" },
+    "raycast":        { "model": "qwen3-4b-instruct-2507" }
   }
 }
 ```
 
-**Model swap note:** Enhancement and chat models are loaded sequentially. Lightweight models like `qwen/qwen3-4b-2507` load in <5s, minimizing swap overhead. For latency-sensitive clients, set `"enhance": false` in `api-keys.json` to skip enhancement entirely.
+**Model swap note:** Enhancement and chat models are loaded sequentially. Lightweight models like `qwen3-4b-instruct-2507` load in <5s, minimizing swap overhead. For latency-sensitive clients, set `"enhance": false` in `api-keys.json` to skip enhancement entirely.
 
 ### Client setup (VS Code example)
 
@@ -92,7 +92,7 @@ In VS Code `settings.json`:
 ```json
 {
   "chat.models": [{
-    "id": "qwen/qwen3-4b-2507",
+    "id": "qwen3-4b-instruct-2507",
     "provider": "openaiCompatible",
     "url": "http://localhost:9090/v1",
     "apiKey": "sk-prompthub-code-001"
@@ -113,7 +113,7 @@ curl -s http://localhost:9090/v1/models \
 curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-copilot-001" \
   -H "Content-Type: application/json" \
-  -d '{"model":"qwen/qwen3-4b-2507","messages":[{"role":"user","content":"Hello"}]}'
+  -d '{"model":"qwen3-4b-instruct-2507","messages":[{"role":"user","content":"Hello"}]}'
 ```
 
 ```bash
@@ -123,7 +123,7 @@ curl -s http://localhost:9090/v1/chat/completions \
 curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-code-001" \
   -H "Content-Type: application/json" \
-  -d '{"model":"qwen/qwen3-4b-2507","messages":[{"role":"user","content":"Explain JWT auth"}]}'
+  -d '{"model":"qwen3-4b-instruct-2507","messages":[{"role":"user","content":"Explain JWT auth"}]}'
 ```
 
 ```bash

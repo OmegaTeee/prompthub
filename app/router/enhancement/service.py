@@ -167,18 +167,27 @@ class EnhancementService:
         if not cache_db_path:
             cache_db_path = settings.cache_db_path
 
-        # Single LLM client — always OpenAI-compatible
+        # Single LLM client — always OpenAI-compatible.
+        # Reconstruct LLMConfig to apply defaults for optional fields that
+        # may be absent on older config objects (max_retries, retry_delay,
+        # extra_headers).  Preserving extra_headers is critical — it carries
+        # the Bearer token for authenticated LLM backends (e.g. LM Studio).
         if llm_config:
             config = LLMConfig(
                 base_url=llm_config.base_url,
                 timeout=llm_config.timeout,
                 max_retries=llm_config.max_retries if hasattr(llm_config, 'max_retries') else 2,
                 retry_delay=llm_config.retry_delay if hasattr(llm_config, 'retry_delay') else 1.0,
+                extra_headers=llm_config.extra_headers if hasattr(llm_config, 'extra_headers') else {},
             )
         else:
+            headers: dict[str, str] = {}
+            if settings.llm_api_key:
+                headers["Authorization"] = f"Bearer {settings.llm_api_key}"
             config = LLMConfig(
                 base_url=f"http://{settings.llm_host}:{settings.llm_port}/v1",
                 timeout=float(settings.llm_timeout),
+                extra_headers=headers,
             )
         self._llm = LLMClient(config)
         logger.info("LLM client initialized at %s", config.base_url)

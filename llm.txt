@@ -1,0 +1,55 @@
+# PromptHub llm.txt
+
+This file is for LLMs and agents assisting with the PromptHub Router project.
+
+## Project purpose
+
+- PromptHub is a local router that:
+  - Manages and proxies multiple MCP servers via stdio.
+  - Exposes them to clients (Claude Desktop, VS Code, Raycast, etc.) over HTTP.
+  - Routes LLM requests to local models (Ollama) and optional cloud providers via OpenAI‑compatible APIs.
+- Core tech stack: Python 3.11+, FastAPI, Pydantic, Uvicorn, httpx, SQLite, HTMX. [cite:4]
+
+## Where to look first
+
+- High‑level architecture: `docs/architecture/README.md` and ADRs in `docs/architecture/`. [cite:4]
+- Developer docs index: `docs/README.md` and linked feature/module docs. [cite:4]
+- Python conventions for this repo: `docs/python-prompthub-guide.txt` (see adjacent guide).
+
+## Golden paths
+
+When changing or adding features, prefer these flows:
+
+- HTTP/API surface:
+  - Add or update FastAPI routes under the router module, then call into a service layer function instead of doing work in the route handler.
+  - Keep request/response Pydantic models small and explicit.
+- MCP integration:
+  - Use existing FastMCPBridge and StdioTransport abstractions to talk to MCP servers.
+  - Respect naming and namespacing conventions for tools documented in the architecture docs. [cite:4]
+- LLM routing and enhancement:
+  - Use existing enhancement and routing services instead of adding ad‑hoc calls to Ollama or OpenRouter.
+  - Preserve OpenAI‑compatible request/response shapes for external clients. [cite:4]
+
+## Things to be careful with
+
+Agents should treat these areas as sensitive and avoid large refactors without explicit instruction:
+
+- Circuit breaker implementation and state transitions.
+- Audit logging, integrity checks, and any SHA256 or checksum logic.
+- Configuration formats such as `mcp-servers.json`, `enhancement-rules.json`, and other JSON configs.
+- Security‑related code: keyring integration, context propagation, request correlation IDs, and access to credentials.
+
+If a change touches any of the above, prefer:
+
+- Small, well‑scoped edits.
+- Extra tests for failure cases.
+- Comments explaining why the change is safe.
+
+## Agent behavior guidelines
+
+- Prefer incremental improvements over large rewrites.
+- Match the existing style and patterns used in the module you are editing.
+- Keep async code non‑blocking: avoid new synchronous I/O in request paths.
+- When unsure about a decision, add a short comment with a question or TODO rather than guessing.
+
+For detailed Python patterns specific to PromptHub (FastAPI, async, MCP bridge, OpenAI API, testing, observability), see `docs/python-prompthub-guide.txt`.

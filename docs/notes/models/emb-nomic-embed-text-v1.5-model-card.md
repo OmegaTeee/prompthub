@@ -2,13 +2,13 @@
 title: "Model Card: text-embedding-nomic-embed-text-v1.5 — Legacy Embedding Model"
 status: active
 created: 2026-03-28
-updated: 2026-03-28
+updated: 2026-04-05
 tags: [embedding, nomic, model-card, rag, lm-studio]
 ---
 
 # text-embedding-nomic-embed-text-v1.5
 
-Nomic Embed Text v1.5. Lightweight legacy embedding model for semantic similarity and retrieval. GGUF format, runs on llama.cpp engine.
+Nomic Embed Text v1.5. Lightweight embedding model for semantic similarity and retrieval. GGUF format, runs on llama.cpp engine.
 
 ## LM Studio Manifest
 
@@ -43,4 +43,4 @@ Not currently wired into PromptHub's pipeline. Available for:
 ## Recommendations
 
 - **Tiny footprint**: 84 MB on disk. Negligible resource impact.
-- **Being superseded** by `text-embedding-qwen3-embedding-0.6b` which has better multilingual coverage and larger parameter count.
+- **Now the sole embedding model** — `text-embedding-qwen3-embedding-0.6b` was removed from the inventory (2026-04-05).

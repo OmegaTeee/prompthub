@@ -123,7 +123,7 @@ If you later decide to use Qwen3‑4B‑Thinking‑2507 as a reasoning lane, add
 ```json
   "lanes": {
     "reasoning": {
-      "model": "qwen/qwen3-4b-thinking-2507",
+      "model": "qwen3-4b-thinking-2507",
       "temperature": 0.4,
       "max_tokens": 800,
       "privacy_level": "local_only"
@@ -145,7 +145,7 @@ and let your Python orchestrator opt into it explicitly based on trigger phrases
 
 [^4]: https://dev.to/lukehinds/qwen3-4b-thinking-2507-just-shipped-4e0n
 
-[^5]: https://lmstudio.ai/qwen/qwen3-4b-thinking-2507
+[^5]: https://lmstudio.ai/qwen3-4b-thinking-2507
 
 [^6]: https://huggingface.co/lmstudio-community/Qwen3-4B-Thinking-2507-MLX-4bit
 

@@ -1,8 +1,8 @@
 ---
 title: "Model Card: text-embedding-qwen3-embedding-0.6b — Primary Embedding Model"
-status: active
+status: archived
 created: 2026-03-28
-updated: 2026-03-28
+updated: 2026-04-05
 tags: [embedding, qwen3, model-card, rag, lm-studio]
 ---
 
@@ -40,6 +40,5 @@ Not currently wired into PromptHub's pipeline. Available for:
 
 ## Recommendations
 
-- **Currently loaded** in LM Studio. Ready for use via `/v1/embeddings`.
-- **Preferred over Nomic Embed** for new integrations — larger model, same Qwen3 family as the LLMs.
-- **639 MB** on disk — moderate footprint but much better embedding quality than the 84 MB Nomic model.
+- **Removed from LM Studio** (2026-04-05). Nomic Embed Text v1.5 is now the sole embedding model.
+- **639 MB** on disk — was a capable embedding model but not needed given current usage patterns.

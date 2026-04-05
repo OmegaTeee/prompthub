@@ -68,7 +68,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["router", "cli"]
+known-first-party = ["router"]
 
 [tool.mypy]
 python_version = "3.11"

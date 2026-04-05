@@ -108,10 +108,10 @@ Prompts pass through a local LM Studio model before reaching the AI service. Eac
 
 | Client | Model | Tuning |
 |--------|-------|--------|
-| Claude Desktop | qwen/qwen3-4b-2507 | Structured reasoning, Markdown |
-| VS Code / Claude Code | qwen/qwen3-4b-2507 | Code-first, file paths, minimal prose |
-| Raycast | qwen/qwen3-4b-2507 | Action-oriented, CLI commands, under 200 words |
-| Obsidian | qwen/qwen3-4b-2507 | Markdown with `[[wikilinks]]` and `#tags` |
+| Claude Desktop | qwen3-4b-instruct-2507 | Structured reasoning, Markdown |
+| VS Code / Claude Code | qwen3-4b-instruct-2507 | Code-first, file paths, minimal prose |
+| Raycast | qwen3-4b-instruct-2507 | Action-oriented, CLI commands, under 200 words |
+| Obsidian | qwen3-4b-instruct-2507 | Markdown with `[[wikilinks]]` and `#tags` |
 
 Enhancement is optional per-client and fails gracefully — if LM Studio is unreachable, the original prompt passes through unchanged. Configure models and system prompts in `app/configs/enhancement-rules.json`.
 
@@ -329,10 +329,10 @@ POST /llm/enhance
 }
 
 # Headers:
-X-Client-Name: claude-desktop  # Routes to qwen/qwen3-4b-2507
-X-Client-Name: vscode          # Routes to qwen/qwen3-4b-2507
-X-Client-Name: raycast         # Routes to qwen/qwen3-4b-2507
-X-Client-Name: obsidian        # Routes to qwen/qwen3-4b-2507 with markdown
+X-Client-Name: claude-desktop  # Routes to qwen3-4b-instruct-2507
+X-Client-Name: vscode          # Routes to qwen3-4b-instruct-2507
+X-Client-Name: raycast         # Routes to qwen3-4b-instruct-2507
+X-Client-Name: obsidian        # Routes to qwen3-4b-instruct-2507 with markdown
 ```
 
 **Example Response:**
@@ -341,7 +341,7 @@ X-Client-Name: obsidian        # Routes to qwen/qwen3-4b-2507 with markdown
 {
   "original": "Explain JWT authentication",
   "enhanced": "Provide a comprehensive explanation of JWT...",
-  "model": "qwen/qwen3-4b-2507",
+  "model": "qwen3-4b-instruct-2507",
   "cached": false,
   "was_enhanced": true,
   "error": null

@@ -1,12 +1,12 @@
 ---
-title: "Model Card: qwen/qwen3-4b-thinking-2507 — Orchestrator / Reasoning Model"
+title: "Model Card: qwen3-4b-thinking-2507 — Orchestrator / Reasoning Model"
 status: active
 created: 2026-03-28
 updated: 2026-03-28
 tags: [llm, qwen3, model-card, orchestrator, reasoning, lm-studio]
 ---
 
-# qwen/qwen3-4b-thinking-2507
+# qwen3-4b-thinking-2507
 
 Qwen3 4B Thinking (July 2025 release). Chain-of-thought reasoning variant of Qwen3 4B. Used as the orchestrator model for intent classification — classifies incoming prompts, suggests tools, and annotates for the enhancement layer.
 
@@ -39,7 +39,7 @@ Publisher:        qwen (official)
 
 | Parameter | Value | Notes |
 |---|---|---|
-| Variant | `qwen/qwen3-4b-thinking-2507@4bit` | 4-bit quantization via MLX |
+| Variant | `qwen3-4b-thinking-2507@4bit` | 4-bit quantization via MLX |
 | Keep loaded | Yes | Both 4B models stay resident (~5 GB total) |
 | Reasoning | LM Studio surfaces thinking in `message.reasoning` field (v0.3.23+) |
 
@@ -47,7 +47,7 @@ Publisher:        qwen (official)
 
 ### 1. Orchestrator Agent (intent classification)
 
-**File**: `app/router/orchestrator/agent.py` — `MODEL = "qwen/qwen3-4b-thinking-2507"`
+**File**: `app/router/orchestrator/agent.py` — `MODEL = "qwen3-4b-thinking-2507"`
 
 Sits upstream of EnhancementService. For each incoming prompt:
 
@@ -67,7 +67,7 @@ Configuration:
 ### 2. Fallback Chain (second position)
 
 ```
-qwen/qwen3-4b-2507 → qwen/qwen3-4b-thinking-2507 → null (pass-through)
+qwen3-4b-instruct-2507 → qwen3-4b-thinking-2507 → null (pass-through)
 ```
 
 If the default enhancement model fails, the thinking variant is tried before falling through to pass-through.

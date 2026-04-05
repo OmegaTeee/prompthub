@@ -12,9 +12,8 @@ This is a **multi-root workspace** with clear separation between the Python proj
 
 ```
 prompthub/                        # Workspace root
-├── app/                          # Python project (FastAPI router + CLI)
+├── app/                          # Python project (FastAPI router)
 │   ├── router/                   # FastAPI application
-│   ├── cli/                      # MCP Config Manager (Typer CLI)
 │   ├── tests/                    # Pytest suite
 │   ├── configs/                  # Runtime configs (mcp-servers.json, api-keys.json, etc.)
 │   ├── templates/                # Jinja2 + HTMX templates (dashboard, partials)
@@ -29,10 +28,15 @@ prompthub/                        # Workspace root
 │   ├── modules/                  # Module documentation
 │   ├── audit/                    # Audit system docs
 │   └── archive/                  # Historical docs
-├── clients/                      # Client application settings (editor prefs, agent configs, examples)
-├── mcps/                         # MCP servers (Node.js bridge) + MCP bridge configs
+├── clients/                      # Per-client directories (MCP configs, setup.sh, llm.txt knowledge files)
+│   ├── claude-desktop/           # mcp.json, setup.sh, README.md
+│   ├── cherry-studio/            # mcp-servers-example.json, setup.sh, cherry-studio-llm.txt
+│   ├── zed/                      # settings.json, setup.sh, zed-llm.txt
+│   ├── jetbrains/                # mcp.json, setup.sh, jetbrains-llm.txt
+│   └── ...                       # 16 client directories total
+├── mcps/                         # MCP servers (Node.js bridge)
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
-│   ├── configs/                  # MCP bridge configs (Claude, Raycast, OpenClaw, Inspector)
+│   ├── configs/                  # Bridge-specific configs (mcp-inspector only)
 │   └── package.json              # npm dependencies
 ├── logs/                         # LaunchAgent stdout/stderr logs
 └── .claude/ .github/ .vscode/    # Workspace-level configs
@@ -62,11 +66,13 @@ cd app && ruff format router/
 # Verify health
 curl http://localhost:9090/health
 
-# MCP Config Manager CLI (from app/ directory)
-cd app && python -m cli generate claude-desktop    # Print bridge config JSON
-cd app && python -m cli validate claude-desktop    # Check installed config
-cd app && python -m cli diagnose                   # Full stack health check
-cd app && python -m cli list                       # Show all clients + paths
+# Client config setup (per-client scripts)
+./clients/lm-studio/setup.sh          # Symlink MCP config
+./clients/claude-desktop/setup.sh     # Symlink MCP config
+./clients/zed/setup.sh                # Print paste instructions
+
+# Full stack diagnostics
+./scripts/diagnose.sh
 
 # LaunchAgent (production daemon)
 launchctl kickstart -k gui/$(id -u)/com.prompthub.router
@@ -79,7 +85,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 
 | Module               | Purpose                                                                                                           |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `routes/`            | Route handlers extracted from main.py (health, servers, mcp_proxy, enhancement, audit, pipelines, client_configs) |
+| `routes/`            | Route handlers extracted from main.py (health, servers, mcp_proxy, enhancement, audit, pipelines)                 |
 | `config/`            | Pydantic settings, JSON config loading                                                                            |
 | `servers/`           | MCP server lifecycle via FastMCP (spawn, monitor, restart stdio processes)                                        |
 | `resilience/`        | Circuit breaker (CLOSED → OPEN → HALF_OPEN states)                                                                |
@@ -91,8 +97,6 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 | `tool_registry/`     | MCP tool definition cache (SQLite-backed snapshots, automatic archival, cache-through proxy)                      |
 | `dashboard/`         | HTMX observability UI (servers, cache, circuit breakers, Local Models, memory, tool registry panels)              |
 | `pipelines/`         | Workflow orchestration (documentation generation)                                                                 |
-| `clients/`           | Config generators for desktop apps (delegates to `cli/` for bridge configs)                                       |
-| `cli/`               | MCP Config Manager CLI — generate, install, validate, diff, list, diagnose (Typer)                                |
 | `middleware/`        | Audit context, activity logging, request timeout, persistent storage                                              |
 | `audit.py`           | Structured audit logging with security alerts                                                                     |
 | `security_alerts.py` | Real-time anomaly detection and alerting                                                                          |
@@ -117,7 +121,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - **FastMCP bridges**: MCP servers communicate via FastMCP Client + StdioTransport
 - **Factory-with-getter-callables**: Route modules use `create_X_router(get_service=lambda: service)` to defer global resolution past lifespan init
 - **Tiered timeouts**: httpx client (120s) → middleware (60s default, 180s for slow paths) → LLM keep_alive (5min)
-- **Model roles**: All clients use the same enhancement model (`qwen/qwen3-4b-2507`) with a separate thinking variant (`qwen/qwen3-4b-thinking-2507`) for the orchestrator agent's intent classification (see ADR-008)
+- **Model roles**: All clients use the same enhancement model (`qwen3-4b-instruct-2507`) with a separate thinking variant (`qwen3-4b-thinking-2507`) for the orchestrator agent's intent classification (see ADR-008)
 - **Privacy boundary**: `PrivacyLevel` enum (`local_only`, `free_ok`, `any`) controls whether prompts leave localhost (see ADR-007)
 - **Cloud fallback**: When the LLM server fails, `free_ok`/`any` clients fall back to OpenRouter free-tier; `local_only` never leaves localhost
 - **Tool registry cache-through**: `tools/list` responses cached in SQLite (24h TTL), served from cache on subsequent requests; old snapshots archived automatically for long-term access
@@ -174,9 +178,6 @@ POST /tools/{server}/refresh    Force re-fetch tools from live server
 DEL  /tools/{server}            Clear cached tools for a server
 POST /tools/archive             Archive expired tool cache entries
 POST /tools/cleanup             Delete old archived snapshots (retention_days param)
-GET  /configs/claude-desktop    Generate Claude Desktop bridge config
-GET  /configs/vscode            Generate VS Code bridge config
-GET  /configs/raycast           Generate Raycast bridge config
 ```
 
 ## Code Style

@@ -1,12 +1,12 @@
 [
   {
     "type": "llm",
-    "modelKey": "qwen/qwen3-4b-2507",
+    "modelKey": "qwen3-4b-instruct-2507",
     "format": "safetensors",
     "engine": "mlx-llm v1.4.0",
     "displayName": "Qwen3 4B 2507",
     "publisher": "qwen",
-    "path": "qwen/qwen3-4b-2507",
+    "path": "qwen3-4b-instruct-2507",
     "sizeBytes": 2279153300,
     "paramsString": "4B",
     "architecture": "qwen3",
@@ -14,7 +14,7 @@
       "name": "4bit",
       "bits": 4
     },
-    "selectedVariant": "qwen/qwen3-4b-2507@4bit",
+    "selectedVariant": "qwen3-4b-instruct-2507@4bit",
     "vision": false,
     "trainedForToolUse": true,
     "maxContextLength": 262144,
@@ -23,12 +23,12 @@
   },
   {
     "type": "llm",
-    "modelKey": "qwen/qwen3-4b-thinking-2507",
+    "modelKey": "qwen3-4b-thinking-2507",
     "format": "safetensors",
     "engine": "mlx-llm v1.4.0",
     "displayName": "Qwen3 4B Thinking 2507",
     "publisher": "qwen",
-    "path": "qwen/qwen3-4b-thinking-2507",
+    "path": "qwen3-4b-thinking-2507",
     "sizeBytes": 2279153047,
     "paramsString": "4B",
     "architecture": "qwen3",
@@ -36,7 +36,7 @@
       "name": "4bit",
       "bits": 4
     },
-    "selectedVariant": "qwen/qwen3-4b-thinking-2507@4bit",
+    "selectedVariant": "qwen3-4b-thinking-2507@4bit",
     "vision": false,
     "trainedForToolUse": true,
     "maxContextLength": 262144,
@@ -60,18 +60,5 @@
     "maxContextLength": 2048,
     "role": "Legacy embedding model",
     "loaded": false
-  },
-  {
-    "type": "embedding",
-    "modelKey": "text-embedding-qwen3-embedding-0.6b",
-    "format": "gguf",
-    "engine": "llama.cpp v2.8.0",
-    "displayName": "Qwen3 Embedding 0.6B",
-    "publisher": "qwen",
-    "paramsString": "0.6B",
-    "architecture": "qwen3",
-    "sizeBytes": 639148032,
-    "role": "Primary embedding model (replaces bge-m3)",
-    "loaded": true
   }
 ]

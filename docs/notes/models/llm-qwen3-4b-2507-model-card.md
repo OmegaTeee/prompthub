@@ -1,12 +1,12 @@
 ---
-title: "Model Card: qwen/qwen3-4b-2507 — Default Enhancement Model"
+title: "Model Card: qwen3-4b-instruct-2507 — Default Enhancement Model"
 status: active
 created: 2026-03-28
 updated: 2026-03-28
 tags: [llm, qwen3, model-card, enhancement, lm-studio]
 ---
 
-# qwen/qwen3-4b-2507
+# qwen3-4b-instruct-2507
 
 Qwen3 4B Instruct (July 2025 release). Default enhancement model for all PromptHub clients. Fast instruction-following without thinking mode — designed for prompt rewrites, clarification, and formatting.
 
@@ -33,13 +33,13 @@ Publisher:        qwen (official)
 | Tool calling | Yes | Trained for tool use; not currently used by enhancement |
 | Thinking mode | No | Use `qwen3-4b-thinking-2507` for CoT reasoning |
 | Vision | No | |
-| Embeddings | No | Use `text-embedding-qwen3-embedding-0.6b` |
+| Embeddings | No | Use `text-embedding-nomic-embed-text-v1.5` |
 
 ## LM Studio Configuration
 
 | Parameter | Value | Notes |
 |---|---|---|
-| Variant | `qwen/qwen3-4b-2507@4bit` | 4-bit quantization via MLX |
+| Variant | `qwen3-4b-instruct-2507@4bit` | 4-bit quantization via MLX |
 | Keep loaded | Yes | Both 4B models stay resident (~5 GB total) |
 | JIT TTL | Default (60 min) | Not relevant — model is pre-loaded |
 
@@ -65,14 +65,14 @@ Rewrites user prompts to be clearer and more specific. Assigned to all 9 clients
 
 ### 2. Settings Default
 
-**File**: `app/router/config/settings.py` — `llm_model = "qwen/qwen3-4b-2507"`
+**File**: `app/router/config/settings.py` — `llm_model = "qwen3-4b-instruct-2507"`
 
 The `LLM_MODEL` env var defaults to this model.
 
 ### 3. Fallback Chain (first position)
 
 ```
-qwen/qwen3-4b-2507 → qwen/qwen3-4b-thinking-2507 → null (pass-through)
+qwen3-4b-instruct-2507 → qwen3-4b-thinking-2507 → null (pass-through)
 ```
 
 ### 4. Cloud Fallback Mapping

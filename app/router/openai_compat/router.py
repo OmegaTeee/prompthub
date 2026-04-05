@@ -197,7 +197,7 @@ def create_openai_compat_router(
         if not body.model or body.model in ("string", "model", "") or " " in body.model:
             raise HTTPException(
                 status_code=422,
-                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen/qwen3-4b-2507').",
+                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen3-4b-instruct-2507').",
             )
 
         # Circuit breaker check
@@ -360,7 +360,7 @@ def create_openai_compat_router(
         if not body.model or body.model in ("string", "model", "") or " " in body.model:
             raise HTTPException(
                 status_code=422,
-                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen/qwen3-4b-2507').",
+                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen3-4b-instruct-2507').",
             )
 
         # Circuit breaker check

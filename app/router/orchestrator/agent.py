@@ -35,7 +35,7 @@ from router.resilience import CircuitBreaker, CircuitBreakerConfig, CircuitBreak
 logger = logging.getLogger(__name__)
 
 # ── Model config ──────────────────────────────────────────────────────────────
-DEFAULT_MODEL = "qwen/qwen3-4b-thinking-2507"
+DEFAULT_MODEL = "qwen3-4b-thinking-2507"
 TIMEOUT_SECONDS = 2.5          # Hard ceiling — must not block enhancement
 MAX_TOKENS = 300               # Keep responses tight; we only need JSON
 TEMPERATURE = 0.1              # Low randomness for reliable structured output
