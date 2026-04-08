@@ -29,14 +29,21 @@ Examples:
     ./scripts/security/manage-keys.py migrate perplexity_api_key
 """
 
+import json
 import logging
 import sys
 import getpass
 import subprocess
 from pathlib import Path
 
+# Resolve project paths
+SCRIPT_DIR = Path(__file__).parent
+PROJECT_ROOT = SCRIPT_DIR.parent.parent
+APP_DIR = PROJECT_ROOT / "app"
+MCP_SERVERS_JSON = APP_DIR / "configs" / "mcp-servers.json"
+
 # Add app/ to path so `from router.keyring_manager` resolves
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "app"))
+sys.path.insert(0, str(APP_DIR))
 
 # Suppress audit log JSON output for CLI usage
 logging.getLogger("audit").setLevel(logging.CRITICAL)
@@ -46,12 +53,46 @@ from router.keyring_manager import get_keyring_manager
 
 SERVICE_NAME = "prompthub"
 
-# Known keys for PromptHub (must match mcp-servers.json keyring references)
-KNOWN_KEYS = [
-    "perplexity_api_key",
-    "github_api_key",
-    "brave_api_key",
-]
+# Keys resolved by Settings (not in mcp-servers.json, but stored in keyring)
+SETTINGS_KEYS: dict[str, str] = {
+    "openrouter_api_key": "Settings → cloud fallback",
+    "hf_api_key": "Settings → Hugging Face",
+}
+
+
+def discover_keys() -> dict[str, list[str]]:
+    """
+    Discover all keyring-managed keys from two sources:
+      1. mcp-servers.json  — {"source": "keyring"} env references
+      2. SETTINGS_KEYS     — keys resolved by Settings.model_post_init
+
+    Returns:
+        Dict mapping key_name -> list of consumers that use it.
+        Example: {"obsidian_api_key": ["obsidian-mcp-tools"],
+                  "openrouter_api_key": ["Settings → cloud fallback"]}
+    """
+    keys: dict[str, list[str]] = {}
+
+    # 1. Scan mcp-servers.json
+    if MCP_SERVERS_JSON.exists():
+        try:
+            config = json.loads(MCP_SERVERS_JSON.read_text())
+            servers = config.get("servers", config)
+            for server_name, server_config in servers.items():
+                env = server_config.get("env", {})
+                for env_var, env_value in env.items():
+                    if isinstance(env_value, dict) and env_value.get("source") == "keyring":
+                        key_name = env_value.get("key")
+                        if key_name:
+                            keys.setdefault(key_name, []).append(server_name)
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # 2. Add Settings-managed keys
+    for key_name, consumer in SETTINGS_KEYS.items():
+        keys.setdefault(key_name, []).append(consumer)
+
+    return keys
 
 
 def set_key(key_name: str, value: str = None):
@@ -88,18 +129,25 @@ def get_key(key_name: str):
 
 
 def list_keys():
-    """List all known keys and their status."""
+    """List all keys referenced in mcp-servers.json and their keyring status."""
     km = get_keyring_manager(SERVICE_NAME)
+    keys = discover_keys()
+
+    if not keys:
+        print("\nNo keyring references found in mcp-servers.json")
+        print(f"Config: {MCP_SERVERS_JSON}")
+        return 0
 
     print(f"\nPromptHub Keys (service: {SERVICE_NAME}):")
-    print("-" * 50)
+    print("-" * 60)
 
-    for key_name in KNOWN_KEYS:
+    for key_name, servers in sorted(keys.items()):
         value = km.get_credential(key_name)
         status = "✓ SET" if value else "✗ NOT SET"
-        print(f"{key_name:30s} {status}")
+        used_by = ", ".join(servers)
+        print(f"  {key_name:30s} {status:10s} → {used_by}")
 
-    print("-" * 50)
+    print("-" * 60)
     print(f"\nTo set a key: ./scripts/security/manage-keys.py set <key_name>")
     return 0
 
@@ -107,6 +155,13 @@ def list_keys():
 def delete_key(key_name: str):
     """Delete a credential from the keyring."""
     km = get_keyring_manager(SERVICE_NAME)
+
+    # Check if key exists first
+    exists = km.get_credential(key_name) is not None
+
+    if not exists:
+        print(f"✓ Already gone: {key_name} (not in keyring)")
+        return 0
 
     confirm = input(f"Delete {key_name}? (y/N): ")
     if confirm.lower() != 'y':

@@ -101,6 +101,9 @@ qdrant_data/
 # Open WebUI secret key (generated on first run)
 .webui_secret_key
 
+# OpenCode project config (contains LM Studio API key)
+opencode.json
+
 # Temporary files
 *.tmp
 *.temp

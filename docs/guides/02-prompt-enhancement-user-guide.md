@@ -108,8 +108,8 @@ Different apps can use different models. For example, you might want a lightweig
 ```json
 {
   "clients": {
-    "vscode": { "model": "qwen/qwen3-4b-2507" },
-    "claude-desktop": { "model": "qwen/qwen3-4b-2507" }
+    "vscode": { "model": "qwen3-4b-instruct-2507" },
+    "claude-desktop": { "model": "qwen3-4b-instruct-2507" }
   }
 }
 ```
@@ -117,7 +117,7 @@ Different apps can use different models. For example, you might want a lightweig
 **Key points:**
 
 - Enhancement models run locally via LM Studio.
-- All clients use the same enhancement model (`qwen/qwen3-4b-2507`) by default.
+- All clients use the same enhancement model (`qwen3-4b-instruct-2507`) by default.
 - You can override the model per client if needed.
 
 ## When to Use Enhancement
@@ -139,7 +139,7 @@ Different apps can use different models. For example, you might want a lightweig
 
 Enhancement adds a small delay because PromptHub rewrites your prompt before sending it to the main model.
 
-- **The enhancement model** (`qwen/qwen3-4b-2507`): 1-2 seconds.
+- **The enhancement model** (`qwen3-4b-instruct-2507`): 1-2 seconds.
 
 For most workflows, the improvement in response quality is worth the wait.
 
@@ -165,7 +165,7 @@ For most workflows, the improvement in response quality is worth the wait.
 - Make sure the enhancement model is downloaded:
 
   ```bash
-  lms get qwen/qwen3-4b-2507
+  lms get qwen3-4b-instruct-2507
   ```
 
 - Verify LM Studio is running:

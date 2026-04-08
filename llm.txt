@@ -1,0 +1,106 @@
+# PromptHub — Project Context for LLM Assistants
+
+> This file is for external LLM tools (Perplexity, etc.) that read project files
+> via Desktop Commander or similar MCP tools. It provides a self-contained snapshot
+> of the project so you can give informed recommendations without reading the full codebase.
+>
+> Last updated: 2026-04-05
+
+## What this project is
+
+PromptHub is a local MCP (Model Context Protocol) router for macOS. It runs on
+localhost:9090 and provides:
+
+- **MCP server multiplexing** — One endpoint proxies 9 MCP servers (context7,
+  desktop-commander, sequential-thinking, memory, duckduckgo, obsidian-mcp-tools,
+  chrome-devtools-mcp, perplexity-comet, browsermcp) to any client
+- **Prompt enhancement** — Local LLM rewrites prompts per-client before they reach
+  the AI (different system prompts for code editors vs research tools vs image gen)
+- **OpenAI-compatible proxy** — `/v1/chat/completions` with bearer auth, so any
+  OpenAI-compatible client can use local models through PromptHub
+- **Resilience** — Circuit breakers, L1/L2 cache, cloud fallback via OpenRouter
+
+## Tech stack
+
+- **Backend**: Python 3.14, FastAPI, Pydantic, uvicorn, httpx, aiosqlite
+- **MCP bridge**: Node.js stdio bridge (`mcps/prompthub-bridge.js`) aggregating
+  all servers behind a single process
+- **Local LLM**: LM Studio (port 1234), OpenAI-compatible API
+- **Dashboard**: HTMX + Jinja2 templates at `/dashboard`
+- **Persistent storage**: SQLite databases under `~/.prompthub/`
+
+## Current models (LM Studio)
+
+| Model ID | Params | Role |
+|---|---|---|
+| `qwen3-4b-instruct-2507` | 4B | Enhancement — prompt rewriting for all clients |
+| `qwen3-4b-thinking-2507` | 4B | Orchestrator — intent classification with CoT |
+| `deepseek/deepseek-r1-0528-qwen3-8b` | 8B | General use in Cherry Studio (not in PromptHub pipelines) |
+| `text-embedding-nomic-embed-text-v1.5` | 137M | Embedding (not currently wired into pipelines) |
+
+Both 4B models stay loaded (~5 GB total). DeepSeek loads on demand.
+
+## Directory structure
+
+```
+~/prompthub/                          # Project root (symlink to ~/.local/share/prompthub)
+├── app/                              # Python project (FastAPI router)
+│   ├── router/                       # Main package: routes/, config/, servers/, enhancement/,
+│   │                                 #   resilience/, cache/, orchestrator/, openai_compat/,
+│   │                                 #   memory/, tool_registry/, dashboard/, middleware/
+│   ├── tests/                        # pytest suite (314 tests passing)
+│   ├── configs/                      # Runtime JSON configs (mcp-servers, enhancement-rules,
+│   │                                 #   api-keys, cloud-models)
+│   └── templates/                    # Jinja2 + HTMX dashboard
+├── clients/                          # 13 per-client directories, each with:
+│   ├── <name>/mcp.json               #   MCP bridge config
+│   ├── <name>/setup.sh               #   Install script (symlink or manual instructions)
+│   ├── <name>/uninstall.sh           #   Reverse script (where applicable)
+│   └── <name>/README.md              #   Client-specific notes
+├── mcps/                             # Node.js MCP bridge + npm dependencies
+│   └── prompthub-bridge.js           # Stdio bridge aggregating all servers
+├── docs/                             # Developer docs, ADRs, user guides
+│   ├── architecture/                 # ADRs and design docs
+│   ├── guides/                       # User-facing setup and integration guides
+│   └── notes/                        # Working notes, model cards, plans
+├── scripts/                          # Shell scripts, LaunchAgent plists
+├── CLAUDE.md                         # Full dev guide for Claude Code / coding agents
+├── AGENTS.md                         # Multi-agent onboarding and conventions
+└── llm.txt                           # This file
+```
+
+## Supported clients
+
+**Active** (7): Claude (Code + Desktop), Codex, LM Studio,
+Perplexity Desktop, Raycast, VS Code (includes Copilot)
+
+**Placeholder** (4, `_` prefixed): Cherry Studio, JetBrains, Open WebUI,
+Zed — config directories exist but not fully wired
+
+## Key design decisions
+
+- **Privacy boundary**: `PrivacyLevel` enum (local_only, free_ok, any) controls
+  whether prompts leave localhost. Most clients default to local_only.
+- **Cloud fallback**: When LM Studio is down, free_ok/any clients fall back to
+  OpenRouter free tier. local_only clients never use cloud.
+- **Single enhancement model**: All clients use the same model (`qwen3-4b-instruct-2507`)
+  with per-client system prompts and temperature settings.
+- **Schema minification**: Bridge strips verbose fields from tool schemas before
+  sending to LLM clients, reducing context by ~67%.
+- **Token budget**: Enhancement input capped at 4,096 tokens to prevent wasting
+  context on prompt rewrites.
+
+## Active concerns and TODOs
+
+- MCPs README is stale (lists 7 of 9 servers)
+- Evaluating @perplexity-ai/mcp-server vs existing perplexity-comet-mcp
+- @brave/brave-search-mcp-server scheduled for removal (unused)
+- Enhancement service has near-identical exception handlers (deferred refactor)
+- Lifespan init function is ~97 lines (deferred refactor)
+
+## Where to find more detail
+
+- Full developer guide: `CLAUDE.md` (architecture, API endpoints, config files, code style)
+- Agent conventions: `AGENTS.md` (roles, operating rules, doc queue, escalation)
+- Architecture decisions: `docs/architecture/ADR-*.md`
+- User guides: `docs/guides/`

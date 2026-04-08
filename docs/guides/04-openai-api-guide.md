@@ -53,7 +53,7 @@ Every app that supports the OpenAI API needs three settings. Fill them in like t
 | ------- | ---------------------------------------- |
 | API URL | `http://localhost:9090/v1`               |
 | API Key | `sk-prompthub-xxxx-xxx` (from step 1)   |
-| Model   | Any model in LM Studio (e.g., `qwen/qwen3-4b-2507`) |
+| Model   | Any model in LM Studio (e.g., `qwen3-4b-instruct-2507`) |
 
 ### Step 3: Test the Connection
 
@@ -88,7 +88,7 @@ lms ls
 To download a new model:
 
 ```bash
-lms get qwen/qwen3-4b-2507
+lms get qwen3-4b-instruct-2507
 ```
 
 Once the download finishes, the model appears in PromptHub automatically. No restart needed.
@@ -106,7 +106,7 @@ curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-code-001" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen/qwen3-4b-2507",
+    "model": "qwen3-4b-instruct-2507",
     "messages": [
       {"role": "user", "content": "Hello, how are you?"}
     ]
@@ -124,7 +124,7 @@ curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-code-001" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen/qwen3-4b-2507",
+    "model": "qwen3-4b-instruct-2507",
     "messages": [
       {"role": "system", "content": "You are helpful"},
       {"role": "user", "content": "Write a Python function"}
@@ -148,7 +148,7 @@ curl -s http://localhost:9090/v1/chat/completions \
     ```json
     {
       "chat.models": [{
-        "id": "qwen/qwen3-4b-2507",
+        "id": "qwen3-4b-instruct-2507",
         "provider": "openaiCompatible",
         "url": "http://localhost:9090/v1",
         "apiKey": "sk-prompthub-code-001"
@@ -166,7 +166,7 @@ curl -s http://localhost:9090/v1/chat/completions \
 4. Fill in:
    - **URL:** `http://localhost:9090/v1`
    - **API Key:** `sk-prompthub-code-001`
-   - **Model:** `qwen/qwen3-4b-2507`
+   - **Model:** `qwen3-4b-instruct-2507`
 
 ### Custom Python Script
 
@@ -180,7 +180,7 @@ headers = {
     "Content-Type": "application/json"
 }
 data = {
-    "model": "qwen/qwen3-4b-2507",
+    "model": "qwen3-4b-instruct-2507",
     "messages": [
         {"role": "user", "content": "Hello!"}
     ]
@@ -247,14 +247,14 @@ Edit `~/prompthub/configs/enhancement-rules.json`:
 
 ```json
 {
-  "default": { "model": "qwen/qwen3-4b-2507" },
+  "default": { "model": "qwen3-4b-instruct-2507" },
   "clients": {
-    "my-app": { "model": "qwen/qwen3-4b-2507" }
+    "my-app": { "model": "qwen3-4b-instruct-2507" }
   }
 }
 ```
 
-All clients now use the same enhancement model (`qwen/qwen3-4b-2507`). You can still define per-client entries to customize the system prompt or timeout.
+All clients now use the same enhancement model (`qwen3-4b-instruct-2507`). You can still define per-client entries to customize the system prompt or timeout.
 
 ---
 
@@ -281,7 +281,7 @@ All clients now use the same enhancement model (`qwen/qwen3-4b-2507`). You can s
 
 ```bash
 # Download the model
-lms get qwen/qwen3-4b-2507
+lms get qwen3-4b-instruct-2507
 
 # Confirm it appears in PromptHub
 curl http://localhost:9090/v1/models \
@@ -321,7 +321,7 @@ lms server stop || true
 lms server start
 
 # Re-download the model if needed
-lms get qwen/qwen3-4b-2507
+lms get qwen3-4b-instruct-2507
 ```
 
 ---
@@ -348,7 +348,7 @@ A: Create a new one in `api-keys.json`. Lost keys cannot be recovered, so store 
 
 ## Performance Tips
 
-- **Use lightweight models** like `qwen/qwen3-4b-2507` for faster responses.
+- **Use lightweight models** like `qwen3-4b-instruct-2507` for faster responses.
 - **Enable caching** so repeated queries return instantly.
 - **Watch your RAM** -- PromptHub and LM Studio together can use a lot of memory.
 - **Unload unused models** to free resources:

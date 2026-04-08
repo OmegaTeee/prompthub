@@ -243,8 +243,8 @@ For vector search, RAG, and semantic similarity. Always use full precision or ne
 This is what PromptHub runs by default and why.
 
 ```
-LLM:        qwen/qwen3-4b-2507          (Fast Chat — enhancement for all clients)
-LLM:        qwen/qwen3-4b-thinking-2507 (Reasoning — orchestrator intent classification)
+LLM:        qwen3-4b-instruct-2507          (Fast Chat — enhancement for all clients)
+LLM:        qwen3-4b-thinking-2507 (Reasoning — orchestrator intent classification)
 Embedding:  text-embedding-nomic-embed-text-v1.5 (standby — future RAG pipeline)
 
 Total:      ~5.1 GB loaded, 5.72 GB on disk

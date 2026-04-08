@@ -79,8 +79,8 @@ def create_dashboard_router(
 
 | Role | Model | Purpose |
 |------|-------|---------|
-| Enhancement (all clients) | `qwen/qwen3-4b-2507` | Fast prompt rewriting |
-| Orchestrator | `qwen/qwen3-4b-thinking-2507` | Intent classification, tool suggestions |
+| Enhancement (all clients) | `qwen3-4b-instruct-2507` | Fast prompt rewriting |
+| Orchestrator | `qwen3-4b-thinking-2507` | Intent classification, tool suggestions |
 | Embedding (standby) | `text-embedding-nomic-embed-text-v1.5` | Future RAG pipeline |
 
 ### Circuit Breaker States

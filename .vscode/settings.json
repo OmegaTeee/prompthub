@@ -66,14 +66,14 @@
     }
   },
   "chat.mcp.serverSampling": {
-    "prompthub": {
+    "prompthub-bridge": {
       "allowedModels": [
         "*"
       ]
     }
   },
   "chat.tools.terminal.autoApprove": {
-    "/Users/visualval/.local/share/prompthub/app/.venv/bin/python": true
+    "${workspaceFolder}/app/.venv/bin/python": true
   },
   "explorer.excludeGitIgnore": false,
   "explorer.autoReveal": false

@@ -13,13 +13,14 @@
     "magicstack.magicpython",
     "charliermarsh.ruff",
     "github.copilot-chat",
-    "github.github-vscode-theme",
     "github.vscode-pull-request-github",
     "anthropic.claude-code",
     "openai.chatgpt",
     "tamasfe.even-better-toml",
-    "file-icons.file-icons",
-    "redhat.vscode-yaml"
+    "redhat.vscode-yaml",
+    "adamvoss.vscode-languagetool-en",
+    "adamvoss.vscode-languagetool",
+    "be5invis.vscode-icontheme-nomo-dark"
   ],
   "unwantedRecommendations": [
     "ms-pyright.pyright",

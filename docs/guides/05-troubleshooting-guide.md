@@ -179,9 +179,9 @@ Open http://localhost:9090 in your browser. Look at the **Status** section. Gree
 
 2. Download the model you need:
    ```bash
-   lms get qwen/qwen3-4b-2507
+   lms get qwen3-4b-instruct-2507
    ```
-   Replace `qwen/qwen3-4b-2507` with whatever model you want.
+   Replace `qwen3-4b-instruct-2507` with whatever model you want.
 
 3. Confirm it shows up through the API:
    ```bash

@@ -15,7 +15,7 @@ curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer sk-prompthub-default-001" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen/qwen3-4b-2507",
+    "model": "qwen3-4b-instruct-2507",
     "messages": [{"role": "user", "content": "Hello"}]
   }' | python3 -c "import sys, json; print(json.load(sys.stdin)['choices'][0]['message']['content'])"
 ```
@@ -25,7 +25,7 @@ curl -s http://localhost:9090/v1/chat/completions \
 ```bash
 #!/bin/bash
 PROMPT="$1"
-MODEL="${2:-qwen/qwen3-4b-2507}"
+MODEL="${2:-qwen3-4b-instruct-2507}"
 API_KEY="sk-prompthub-default-001"
 
 curl -s http://localhost:9090/v1/chat/completions \
@@ -55,7 +55,7 @@ chmod +x prompthub.sh
 ```python
 import requests
 
-def call_prompthub(prompt, model="qwen/qwen3-4b-2507"):
+def call_prompthub(prompt, model="qwen3-4b-instruct-2507"):
     response = requests.post(
         "http://localhost:9090/v1/chat/completions",
         headers={
@@ -83,7 +83,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="qwen/qwen3-4b-2507",
+    model="qwen3-4b-instruct-2507",
     messages=[{"role": "user", "content": "Hello"}],
 )
 print(response.choices[0].message.content)
@@ -104,7 +104,7 @@ async function callPromptHub(prompt) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'qwen/qwen3-4b-2507',
+      model: 'qwen3-4b-instruct-2507',
       messages: [{ role: 'user', content: prompt }],
     }),
   });
@@ -127,7 +127,7 @@ const client = new OpenAI({
 });
 
 const response = await client.chat.completions.create({
-  model: 'qwen/qwen3-4b-2507',
+  model: 'qwen3-4b-instruct-2507',
   messages: [{ role: 'user', content: 'Hello' }],
 });
 console.log(response.choices[0].message.content);
@@ -151,7 +151,7 @@ curl -s http://localhost:9090/v1/chat/completions \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d "{
-    \"model\": \"qwen/qwen3-4b-2507\",
+    \"model\": \"qwen3-4b-instruct-2507\",
     \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT\"}]
   }" | python3 -c "import sys, json; print(json.load(sys.stdin)['choices'][0]['message']['content'])"
 ```
@@ -173,7 +173,7 @@ Macro that pops up a prompt box, sends to PromptHub, and pastes the response:
      -H "Authorization: Bearer sk-prompthub-default-001" \
      -H "Content-Type: application/json" \
      -d "{
-       \"model\": \"qwen/qwen3-4b-2507\",
+       \"model\": \"qwen3-4b-instruct-2507\",
        \"messages\": [{\"role\": \"user\", \"content\": \"%Variable%Prompt%\"}]
      }" | python3 -c "import sys, json; print(json.load(sys.stdin)['choices'][0]['message']['content'])"
 4. Action: Paste result into front app
@@ -193,7 +193,7 @@ Macro that pops up a prompt box, sends to PromptHub, and pastes the response:
 4. **Body (JSON):**
    ```json
    {
-     "model": "qwen/qwen3-4b-2507",
+     "model": "qwen3-4b-instruct-2507",
      "messages": [
        {"role": "user", "content": "Your prompt here"}
      ]
@@ -226,7 +226,7 @@ curl -s http://localhost:9090/v1/responses \
   -H "Authorization: Bearer sk-prompthub-default-001" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen/qwen3-4b-2507",
+    "model": "qwen3-4b-instruct-2507",
     "input": "What is 2 + 2?"
   }'
 ```

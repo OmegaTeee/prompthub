@@ -1,0 +1,47 @@
+{
+  "mcpServers": {
+    "skills": {
+      "isActive": true,
+      "name": "skills-mcp",
+      "type": "stdio",
+      "baseUrl": "",
+      "command": "npx",
+      "args": [
+        "-y",
+        "skills-mcp",
+        "-s",
+        "/Users/visualval/.claude/skills"
+      ],
+      "installSource": "manual",
+      "isTrusted": true,
+      "trustedAt": 1774651034509,
+      "installedAt": 1774651034509
+    },
+    "prompthub-bridge": {
+      "isActive": true,
+      "name": "prompthub-bridge",
+      "type": "stdio",
+      "description": "local router",
+      "baseUrl": "",
+      "command": "node",
+      "args": [
+        "/Users/visualval/prompthub/mcps/prompthub-bridge.js"
+      ],
+      "env": {
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "AUTHORIZATION": "Bearer sk-prompthub-cherry-001",
+        "CLIENT_NAME": "cherry-studio",
+        "SERVERS": "memory,context7,sequential-thinking,desktop-commander,perplexity-comet"
+      },
+      "provider": "OmegaTeee",
+      "providerUrl": "http://127.0.0.1:9090",
+      "logoUrl": "",
+      "tags": [],
+      "longRunning": true,
+      "installSource": "manual",
+      "isTrusted": true,
+      "trustedAt": 1774650965086,
+      "installedAt": 1774650965086
+    }
+  }
+}

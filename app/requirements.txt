@@ -23,7 +23,6 @@ structlog>=25.0.0
 # Async SQLite for persistent activity log
 aiosqlite>=0.22.0
 
-
 # Markdown rendering for dashboard guides
 markdown2>=2.4.0
 
@@ -33,11 +32,9 @@ prometheus_client>=0.20.0
 # MCP protocol (FastMCP for stdio bridge and server composition)
 fastmcp>=2.0.0
 
-# CLI for MCP config management
-typer>=0.12.0
-
 # Optional: Vector cache (Phase 2.1)
 # qdrant-client>=1.7.0
 
 # MCP Servers (Python-based) - Examples only, uncomment to use
+
 # mcp-obsidian>=0.1.0  # Example: Obsidian via REST API (requires Local REST API plugin)

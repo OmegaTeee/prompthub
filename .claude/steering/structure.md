@@ -40,9 +40,16 @@ prompthub/
 │   ├── guides/                   # User-facing setup and integration guides
 │   ├── audit/                    # 3-phase audit implementation
 │   └── archive/                  # Historical docs
-├── mcps/                         # Node.js MCP servers + unified bridge + client configs
+├── clients/                      # Per-client directories (MCP configs, app settings, llm.txt knowledge files)
+│   ├── claude-desktop/           # mcp.json, README.md
+│   ├── cherry-studio/            # mcp-servers-example.json, cherry-studio-llm.txt, assets/
+│   ├── zed/                      # settings.json, zed-llm.txt
+│   ├── jetbrains/                # mcp.json, jetbrains-llm.txt
+│   ├── lm-studio/                # mcp.json, lm-studio-llm.txt
+│   └── ...                       # 15 client directories total
+├── mcps/                         # Node.js MCP servers + unified bridge
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
-│   ├── configs/                  # Desktop client configs (Claude, Raycast, Inspector)
+│   ├── configs/                  # Bridge-specific configs (mcp-inspector only)
 │   └── package.json              # npm dependencies (8 MCP packages)
 ├── .claude/                      # Claude Code configuration
 │   ├── steering/                 # AI agent steering docs (product, tech, structure)
@@ -91,3 +98,15 @@ prompthub/
 | `~/Vault/PromptHub/` | Personal notes, extended workflows | Users | — |
 | `CLAUDE.md` | AI agent instructions | Claude Code | Technical |
 | `.claude/steering/` | Product, tech, structure guidance | All AI agents | Technical |
+| `clients/<name>/README.md` | Per-client setup instructions | General users | Grade 9–10 |
+| `clients/<name>/<client>-llm.txt` | Upstream docs distilled for LLM context | AI agents | Technical |
+
+## Client Knowledge Files
+
+When working on a specific client's configuration, check `clients/<client-name>/` for:
+- `README.md` — setup instructions, config paths, CLI commands
+- `<client>-llm.txt` — upstream documentation distilled for LLM context (if present)
+
+Read the `llm.txt` before generating configs or troubleshooting client-specific issues. These files contain format details, gotchas, and config examples that are not in the codebase itself.
+
+Current `llm.txt` files: `cherry-studio`, `zed`, `jetbrains`, `lm-studio`.

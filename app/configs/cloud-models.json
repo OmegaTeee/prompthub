@@ -362,13 +362,13 @@
     "mistralai/mistral-small-3.1-24b-instruct:free"
   ],
   "local_models": {
-    "qwen/qwen3-4b-2507": {
+    "qwen3-4b-instruct-2507": {
       "category": "general",
       "cloud_upgrade": "meta-llama/llama-3.3-70b-instruct",
       "cloud_equivalent": "mistralai/mistral-small-3.1-24b-instruct",
       "note": "Default enhancement model — cloud upgrade is Llama 3.3 70B, equivalent is Mistral Small 24B (both free tier)"
     },
-    "qwen/qwen3-4b-thinking-2507": {
+    "qwen3-4b-thinking-2507": {
       "category": "reasoning",
       "cloud_upgrade": "deepseek/deepseek-r1-0528",
       "cloud_equivalent": "deepseek/deepseek-r1-distill-qwen-14b",

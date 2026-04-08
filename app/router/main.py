@@ -541,7 +541,6 @@ app.include_router(memory_router)
 
 # Extracted route modules
 from router.routes.audit import create_audit_router
-from router.routes.client_configs import create_client_configs_router
 from router.routes.enhancement import create_enhancement_router
 from router.routes.health import create_health_router
 from router.routes.mcp_proxy import create_mcp_proxy_router
@@ -581,8 +580,6 @@ app.include_router(create_audit_router(
 app.include_router(create_pipelines_router(
     get_documentation_pipeline=lambda: documentation_pipeline,
 ))
-
-app.include_router(create_client_configs_router())
 
 # Tool registry router (MCP tool definition cache)
 from router.tool_registry import create_tool_registry_router

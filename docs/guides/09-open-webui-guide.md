@@ -15,7 +15,7 @@ Open WebUI (localhost:3000)
 ### What You Get
 
 - A chat UI with conversation history, folders, and search.
-- A model selector for all your LM Studio models (e.g., `qwen/qwen3-4b-2507`, `qwen/qwen3-4b-thinking-2507`).
+- A model selector for all your LM Studio models (e.g., `qwen3-4b-instruct-2507`, `qwen3-4b-thinking-2507`).
 - RAG (Retrieval-Augmented Generation): upload documents or connect your Obsidian vault so the AI can reference them when answering. RAG is like giving the AI a reference bookshelf it can check before responding.
 - MCP tool access through PromptHub (web search, file operations, note search).
 - All requests logged in the PromptHub dashboard at `localhost:9090/dashboard`.
@@ -254,15 +254,15 @@ After logging in, your LM Studio models should appear in the model selector drop
 
 | Model | Best For | Speed |
 |-------|----------|-------|
-| `qwen/qwen3-4b-2507` | General use, chat, code | Fast |
-| `qwen/qwen3-4b-thinking-2507` | Reasoning, analysis | Medium |
+| `qwen3-4b-instruct-2507` | General use, chat, code | Fast |
+| `qwen3-4b-thinking-2507` | Reasoning, analysis | Medium |
 
-Pick a model from the dropdown at the top of the chat page. `qwen/qwen3-4b-2507` is the recommended default.
+Pick a model from the dropdown at the top of the chat page. `qwen3-4b-instruct-2507` is the recommended default.
 
 **Key points:**
 - The first user to register becomes the admin.
 - Check **Settings > Connections** if models do not appear.
-- Start with `qwen/qwen3-4b-2507` for fast, capable responses.
+- Start with `qwen3-4b-instruct-2507` for fast, capable responses.
 
 ---
 
@@ -393,7 +393,7 @@ Open WebUI has automatic prompt enhancement enabled by default. When you send a 
 
 | Setting         | Value                          |
 | --------------- | ------------------------------ |
-| Model           | `qwen/qwen3-4b-2507`          |
+| Model           | `qwen3-4b-instruct-2507`          |
 | Privacy level   | `local_only` (never leaves your Mac) |
 | API key         | `sk-prompthub-openwebui-001`   |
 | Enhancement     | Enabled (`"enhance": true`)    |

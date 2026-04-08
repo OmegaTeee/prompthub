@@ -36,8 +36,8 @@ logger = logging.getLogger(__name__)
 # Source: model metadata (context_length from model manifest)
 # ---------------------------------------------------------------------------
 MODEL_CONTEXT_TOKENS: dict[str, int] = {
-    "qwen/qwen3-4b-2507":          262_144,
-    "qwen/qwen3-4b-thinking-2507": 262_144,
+    "qwen3-4b-instruct-2507":      262_144,
+    "qwen3-4b-thinking-2507":      262_144,
     "_default":                      8_192,
 }
 
@@ -66,7 +66,7 @@ class TokenBudget:
     Example
     -------
         budget = TokenBudget(
-            model="qwen/qwen3-4b-2507",
+            model="qwen3-4b-instruct-2507",
             max_response_tokens=500,
             system_prompt="Rewrite the following prompt...",
         )

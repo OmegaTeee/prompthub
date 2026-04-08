@@ -1,0 +1,233 @@
+# Zed Editor -- llm.txt
+> Client knowledge file for LLMs configuring Zed with PromptHub.
+> Source: https://zed.dev/docs/ai/mcp
+> Fetched: 2026-04-02
+
+
+## Overview
+
+Zed uses the Model Context Protocol (MCP) to interact with external tools and
+data sources. Zed calls these "context servers." PromptHub connects to Zed as a
+single stdio-based context server that aggregates all configured MCP servers
+behind one bridge process.
+
+Zed currently supports MCP Tools and Prompts features. It also handles the
+`notifications/tools/list_changed` notification, so tool list changes are
+picked up automatically without restarting the server.
+
+
+## Settings File
+
+Zed settings live at: `~/.config/zed/settings.json`
+
+Key facts about Zed settings:
+- Format is JSONC (JSON with Comments) -- `//` line comments are allowed
+- Trailing commas are allowed inside objects and arrays
+- Edit via Command Palette > `zed: open settings` (or Cmd+,)
+- Changes take effect immediately; no restart needed for most settings
+- To view all defaults: Command Palette > `zed: open default settings`
+
+
+## MCP Configuration -- context_servers
+
+MCP servers are configured under the top-level `"context_servers"` key.
+Each entry is keyed by a server name (your choice) and supports two modes:
+
+### Stdio mode (local servers)
+
+```jsonc
+{
+  "context_servers": {
+    "server-name": {
+      "command": "node",           // executable to launch
+      "args": ["/path/to/script"], // arguments passed to the command
+      "env": {}                    // environment variables (optional)
+    }
+  }
+}
+```
+
+Required fields for stdio:
+- `command` (string) -- the executable to run
+- `args` (string[]) -- arguments passed to the command
+
+Optional fields:
+- `env` (object) -- environment variables passed to the subprocess
+- `enabled` (boolean) -- set `false` to disable without removing config
+- `remote` (boolean) -- set `false` for local stdio servers
+
+### Remote HTTP mode
+
+```jsonc
+{
+  "context_servers": {
+    "remote-server": {
+      "url": "https://mcp.example.com/mcp",
+      "headers": { "Authorization": "Bearer <token>" }
+    }
+  }
+}
+```
+
+When no `"Authorization"` header is configured, Zed prompts for OAuth
+authentication using the standard MCP OAuth flow.
+
+### Adding servers via UI
+
+You can also add custom servers through the Agent Panel's Settings view:
+Agent Panel > top-right menu > Settings > "Add Custom Server" button.
+
+
+## PromptHub Bridge Config for Zed
+
+Add this to `~/.config/zed/settings.json` under the `context_servers` key:
+
+```jsonc
+// In ~/.config/zed/settings.json
+{
+  "context_servers": {
+    "prompthub": {
+      "enabled": true,
+      "remote": false,
+      "command": "node",
+      "args": ["/Users/<you>/prompthub/mcps/prompthub-bridge.js"],
+      "env": {
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "AUTHORIZATION": "Bearer sk-prompthub-zed-001",
+        "CLIENT_NAME": "zed",
+        "SERVERS": "memory,context7,sequential-thinking,desktop-commander"
+      }
+    }
+  }
+}
+```
+
+### Environment variables explained
+
+| Variable        | Purpose                                                       |
+|-----------------|---------------------------------------------------------------|
+| PROMPTHUB_URL   | PromptHub router endpoint (default: http://127.0.0.1:9090)   |
+| AUTHORIZATION   | Bearer token matching an entry in api-keys.json               |
+| CLIENT_NAME     | Client identifier for enhancement rules and audit logging     |
+| SERVERS         | Comma-separated list of MCP servers to expose (empty = all)   |
+| EXCLUDE_TOOLS   | Optional: comma-separated prefixed tool names to hide         |
+| MINIFY_SCHEMAS  | Strip verbose schema fields to save context (default: true)   |
+| DESC_MAX_LENGTH | Max chars for tool descriptions, 0 = no limit (default: 200) |
+
+
+## Agent Panel Usage
+
+Once the context server is configured and running (green indicator dot in
+Agent Panel settings), MCP tools become available to the AI assistant.
+
+Tips for reliable tool usage:
+- Mention the MCP server by name in your prompt to help the model pick its tools
+- For guaranteed usage, create a custom agent profile that disables built-in
+  tools and enables only the MCP server's tools
+
+### Custom profiles for MCP tools
+
+```jsonc
+{
+  "agent": {
+    "profiles": {
+      "prompthub-only": {
+        "name": "PromptHub Tools",
+        "tools": {
+          "fetch": false,
+          "thinking": true,
+          "read_file": false,
+          "edit_file": false,
+          "terminal": false
+        },
+        "enable_all_context_servers": false,
+        "context_servers": {
+          "prompthub": {
+            "tools": {
+              // List specific tools you want enabled
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+
+## Tool Permissions
+
+Controlled by `agent.tool_permissions.default` (Zed v0.224.0+):
+
+| Value       | Behavior                                          |
+|-------------|---------------------------------------------------|
+| `"confirm"` | (default) Prompt before every tool call           |
+| `"allow"`   | Auto-approve all tool calls including MCP         |
+| `"deny"`    | Block all tool calls                              |
+
+Per-tool overrides use the key format `mcp:<server>:<tool_name>`:
+
+```jsonc
+{
+  "agent": {
+    "tool_permissions": {
+      "default": "confirm",
+      "tools": {
+        "mcp:prompthub:memory_create_entities": { "default": "allow" },
+        "mcp:prompthub:desktop-commander_execute_terminal_command": { "default": "confirm" }
+      }
+    }
+  }
+}
+```
+
+
+## Checking Server Status
+
+1. Open Agent Panel (Cmd+Shift+A or via Activity Bar)
+2. Click the gear icon (top-right) to open Settings
+3. Look for the indicator dot next to the server name:
+   - Green = "Server is active"
+   - Other colors = issue (hover for tooltip details)
+
+To reconnect a stalled server, toggle its enabled checkbox off and on, then
+click Apply.
+
+
+## Gotchas and Tips
+
+1. **JSONC format**: Zed settings support `//` comments and trailing commas.
+   Standard JSON tools may reject this file. Use Zed's built-in editor.
+
+2. **No `type` field**: Unlike Claude Desktop or JetBrains, Zed does not use a
+   `"type": "stdio"` field. The presence of `"command"` implies stdio mode;
+   the presence of `"url"` implies remote HTTP mode.
+
+3. **Node path**: Ensure `node` is in your PATH, or use the absolute path
+   (e.g., `/usr/local/bin/node`). Zed launches subprocesses with a minimal
+   environment that may not include shell profile PATH additions.
+
+4. **Symlink path**: Use `~/prompthub` (the symlink) in scripts and docs
+   rather than the full `~/.local/share/prompthub` path.
+
+5. **tools/list_changed**: Zed automatically picks up tool list changes at
+   runtime. If PromptHub starts/stops a backend MCP server, Zed refreshes
+   without needing a server restart.
+
+6. **External agents**: Claude Agent and Codex (connected via Agent Client
+   Protocol) can access Zed's MCP servers. Gemini CLI does not yet support this.
+
+7. **Schema minification**: The bridge strips verbose fields (description,
+   title, examples, default) from tool inputSchema before sending to Zed,
+   reducing context usage by ~67%. Disable with `MINIFY_SCHEMAS=false`.
+
+
+## References
+
+- Zed MCP docs: https://zed.dev/docs/ai/mcp
+- Zed configuration: https://zed.dev/docs/ai/configuration
+- Zed tool permissions: https://zed.dev/docs/ai/tool-permissions
+- Zed agent profiles: https://zed.dev/docs/ai/agent-panel#custom-profiles
+- Zed MCP extensions: https://zed.dev/extensions?filter=context-servers
+- Model Context Protocol: https://modelcontextprotocol.io/
+- PromptHub bridge source: ~/prompthub/mcps/prompthub-bridge.js

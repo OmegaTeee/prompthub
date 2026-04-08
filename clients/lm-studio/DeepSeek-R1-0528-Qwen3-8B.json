@@ -1,0 +1,27 @@
+{
+  "identifier": "@local:deepseek-r1-qwen3-8-b",
+  "name": "DeepSeek-R1-0528-Qwen3-8B",
+  "changed": false,
+  "operation": {
+    "fields": [
+      {
+        "key": "llm.prediction.temperature",
+        "value": 0.6
+      },
+      {
+        "key": "llm.prediction.topPSampling",
+        "value": {
+          "checked": true,
+          "value": 0.9
+        }
+      },
+      {
+        "key": "llm.prediction.topKSampling",
+        "value": 70
+      }
+    ]
+  },
+  "load": {
+    "fields": []
+  }
+}

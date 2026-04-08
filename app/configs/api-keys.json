@@ -60,6 +60,11 @@
       "description": "LM Studio",
       "enhance": false
     },
+    "sk-prompthub-opencode-001": {
+      "client_name": "opencode",
+      "description": "OpenCode",
+      "enhance": false
+    },
     "sk-prompthub-default-001": {
       "client_name": "default",
       "description": "Default key for testing and enhancement",

@@ -7,6 +7,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 ## [Unreleased]
 
 ### Added
+- **Per-client `setup.sh` scripts**: Each client directory now has a self-contained shell script that creates symlinks (for symlink-safe clients) or prints setup instructions (for GUI/shared-config clients). Scripts are idempotent and self-documenting — header comments declare source, target, and strategy.
+- **`scripts/diagnose.sh`**: Pure-shell replacement for `python -m cli diagnose`. Checks node, bridge file, router health, server status, and per-client config symlinks. Auto-discovers clients by scanning `clients/*/setup.sh`.
+
+### Removed
+- **Python CLI** (`app/cli/`): Removed all 9 modules (main, models, generator, installer, validator, profiles, diagnostics, __init__, __main__) and `tests/test_cli.py` (91 tests). Replaced by per-client `setup.sh` scripts and `scripts/diagnose.sh`.
+- **`/configs/*` API endpoints**: Removed `app/router/routes/client_configs.py` and its 5 HTTP endpoints (`/configs/claude-desktop`, `/configs/vscode`, `/configs/vscode-tasks`, `/configs/raycast`, `/configs/open-webui`). Client configs now live as static files in `clients/`.
+- **`typer` dependency**: Removed from `requirements.txt` (was only used by CLI).
+
+### Added (prior)
+- **OpenCode client support**: New `ClientType.opencode` with `~/.opencode.json` config path, `type: stdio` extra field, and merge install strategy. OpenCode uses `["KEY=VALUE"]` array format for env vars (unlike the dict format used by all other clients) — handled transparently via new `env_as_array` property on `ClientType` and conversion in `wrap_for_client()`.
+- **OpenCode enhancement profile**: Code-focused, Git-aware prompt rewriting (`enhancement-rules.json`). API key `sk-prompthub-opencode-001` with `enhance: true`.
+- **OpenCode MCP config**: `clients/opencode/mcp.json` (bridge config with array env) and `clients/opencode/opencode.json` (LM Studio provider template with keyring placeholder).
+
+### Fixed
+- **LLM auth dropped by enhancement service**: `EnhancementService.__init__()` reconstructed `LLMConfig` from individual fields but omitted `extra_headers`, silently dropping the `Authorization` header. This caused `LLM: down` health status whenever LM Studio required auth. The OpenAI-compatible proxy and orchestrator were unaffected because they build their own httpx clients directly. Fixed by copying `extra_headers` through the reconstruction.
+- **`LLM_HOST=localhost` → `127.0.0.1`**: Prevents IPv6 resolution issues when LM Studio listens on IPv4 only.
+
+### Changed
+- **5 new CLI clients**: `lm-studio`, `zed`, `jetbrains`, `codex`, `cherry-studio` added to `ClientType` enum. Each has `config_path()`, `config_key_path`, `install_strategy`, `extra_entry_fields`, and `is_bridge_client` properties. Cherry Studio is an HTTP client (like Open WebUI) connecting via `/v1/responses`. Codex uses TOML — `generate`/`install` raise `NotImplementedError` with a pointer to the manual config file.
+- **`repo_dir()` method on `ClientType`**: Returns `clients/<name>/` relative to workspace root, preparing for per-client folder restructuring.
+- **`build_cherry_studio_config()`**: Connection settings builder for Cherry Studio (mirrors `build_open_webui_config()`), targeting the `/v1/responses` endpoint.
+- **28 new CLI tests** (63 → 91): Properties for all new clients, `wrap_for_client` for Zed/JetBrains, Cherry Studio generation, Codex `NotImplementedError`, generic merge, symlink install, JSONC parsing.
+
+### Changed
+- **Data-driven `wrap_for_client`**: Replaced if/elif chain with generic nesting using `client_type.config_key_path` tuple. Handles all formats: `mcpServers` (Claude/Cursor/Raycast/LM Studio), `mcp.servers` (VS Code), `context_servers` (Zed), `servers` (JetBrains). Adding future clients requires zero function changes.
+- **Generic `ConfigInstaller._merge_generic()`**: Replaced `_merge_standard()` + `_merge_vscode()` with a single method navigating any key path depth. Supports all current and future config formats.
+- **Symlink install strategy**: `ConfigInstaller` auto-detects symlink-safe clients (LM Studio, Cursor, Raycast) via `install_strategy` property. Writes config to `repo_dir()` and creates a symlink at the app's config path, making the repo the source of truth.
+- **JSONC support**: `ConfigInstaller._load_jsonc()` and `ConfigValidator._strip_jsonc()` strip `//` comments and trailing commas, enabling merge/validation of Zed's `settings.json`.
+- **Multi-format `ConfigValidator`**: `validate_config()` searches all known key paths (`mcpServers`, `mcp.servers`, `context_servers`, `servers`) instead of hardcoding two. `validate_file()` falls back to JSONC stripping on parse failure.
+- **Multi-client `Diagnostician`**: `_check_installed_configs()` iterates all bridge clients with existing config files, replacing the single hardcoded Claude Desktop check.
+- **CLI `list` command**: Now shows install strategy (`bridge, merge` / `bridge, symlink` / `http, merge`) for each client.
+
+### Added (prior)
 - **Local LLM recommendations guide** (`docs/guides/10-local-llm-recommendations.md`): Role-based model selection guide covering 8 use-case roles (Fast Chat, Reasoning, Coding, Assistant, Agent, Inline, Research, Embedding), 7 model families (Qwen3, Llama 4, Gemma 3, Phi-4, Mistral/Devstral, DeepSeek, GPT-OSS), quantization trade-offs with RAM formula, hardware requirement tables for 8/16/32/64 GB tiers, and PromptHub's current setup rationale.
 - **New model cards**: `llm-qwen3-4b-2507`, `llm-qwen3-4b-thinking-2507`, `emb-nomic-embed-text-v1.5`, `emb-qwen3-embedding-0.6b` in `docs/notes/models/`. Removed 6 stale cards (gemma3-4b, gemma3-27b, qwen3-14b, qwen3-coder-30b, qwen35-2b, bge-m3).
 

@@ -1,0 +1,26 @@
+{
+  "github-copilot-global-sampling-config": {
+    "allowedModels": [
+      "auto",
+      "gpt-4o",
+      "gpt-5-mini",
+      "gpt-5.1",
+      "grok-code"
+    ]
+  },
+  "github-copilot": {
+    "alwaysAllow": true
+  },
+  "memory": {
+    "alwaysAllow": true
+  },
+  "sequentialthinking": {
+    "alwaysAllow": true
+  },
+  "context7": {
+    "alwaysAllow": true
+  },
+  "prompthub-bridge": {
+    "alwaysAllow": true
+  }
+}

@@ -11,8 +11,8 @@ Per-client model specialization has been removed. All clients now use a single e
 
 | Role | Model | Params | Context | Format | Notes |
 |------|-------|--------|---------|--------|-------|
-| Enhancement (all clients) | `qwen/qwen3-4b-2507` | 4B | 262K | MLX | Fast rewriting for every client |
-| Orchestrator (thinking model) | `qwen/qwen3-4b-thinking-2507` | 4B | 262K | MLX | Intent classification with reasoning |
+| Enhancement (all clients) | `qwen3-4b-instruct-2507` | 4B | 262K | MLX | Fast rewriting for every client |
+| Orchestrator (thinking model) | `qwen3-4b-thinking-2507` | 4B | 262K | MLX | Intent classification with reasoning |
 | Embedding (standby) | `text-embedding-nomic-embed-text-v1.5` | -- | -- | GGUF | 84 MB, loaded on demand |
 
 **Total memory footprint: ~5 GB** for both active LLMs (down from ~13 GB+ under the previous multi-model setup).
@@ -62,7 +62,7 @@ The original plan assigned different models per client workload:
 *This per-client matrix was replaced by a single enhancement model for all clients (see update above).*
 
 #### 2. Orchestrator agent (module retained, model changed)
-A pre-enhancement classification layer originally used `qwen3:14b`. Now uses the thinking model (`qwen/qwen3-4b-thinking-2507`):
+A pre-enhancement classification layer originally used `qwen3:14b`. Now uses the thinking model (`qwen3-4b-thinking-2507`):
 
 ```
 incoming prompt

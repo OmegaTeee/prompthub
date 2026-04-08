@@ -22,8 +22,8 @@ The `servers/` module manages the full lifecycle of MCP (Model Context Protocol)
    └───┬────┘
        │
   ┌────▼──────────┐
-  │FastMCPBridge   │  Typed dispatch via FastMCP Client
-  └───────┬────────┘
+  │FastMCPBridge  │  Typed dispatch via FastMCP Client
+  └───────┬───────┘
           │
   ┌───────▼────────┐
   │StdioTransport  │  Subprocess lifecycle (FastMCP)

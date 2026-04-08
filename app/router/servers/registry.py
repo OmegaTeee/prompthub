@@ -298,3 +298,9 @@ class ServerRegistry:
             for config in self._servers.values()
             if config.transport == ServerTransport.STDIO
         ]
+
+# Claude review notes (2026-04-03)
+# - Runtime startup in app/router/main.py uses await registry.load_async(); no direct runtime caller of deprecated sync load()/save() was found in app/router/main.py.
+# - Search results show deprecated sync persistence remains inside app/router/servers/registry.py itself, especially in add_server/remove_server and the sync compatibility methods.
+# - Likely cleanup path: convert internal persistence in add/remove flows to save_async() with async method variants, then remove deprecated sync load()/save() once call sites are migrated.
+# - Before patching, inspect any routes/supervisor code that mutates the registry to confirm whether they are already async and can await async persistence safely.

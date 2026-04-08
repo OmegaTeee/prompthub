@@ -2,13 +2,22 @@
 Application settings using Pydantic Settings.
 
 Settings are loaded from environment variables and .env file.
+Secrets that should not live on disk can be stored in macOS Keychain
+via the ``keyring`` library (service="prompthub"). Settings resolved
+from keyring: openrouter_api_key.
 """
 
+import logging
 from functools import lru_cache
 from pathlib import Path
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
+
+logger = logging.getLogger(__name__)
+
+# Keyring service name — must match manage-keys.py and keyring_manager.py
+_KEYRING_SERVICE = "prompthub"
 
 
 class Settings(BaseSettings):
@@ -35,7 +44,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("LLM_PORT", "OLLAMA_PORT"),
     )
     llm_model: str = Field(
-        default="qwen/qwen3-4b-2507",
+        default="qwen3-4b-instruct-2507",
         validation_alias=AliasChoices("LLM_MODEL", "OLLAMA_MODEL"),
     )
     llm_timeout: int = Field(
@@ -43,7 +52,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("LLM_TIMEOUT", "OLLAMA_TIMEOUT"),
     )
     llm_orchestrator_model: str = Field(
-        default="qwen/qwen3-4b-thinking-2507",
+        default="qwen3-4b-thinking-2507",
         validation_alias=AliasChoices("LLM_ORCHESTRATOR_MODEL"),
     )
     llm_api_key: str | None = Field(
@@ -124,6 +133,10 @@ class Settings(BaseSettings):
         if not self.audit_checksum_path:
             self.audit_checksum_path = str(data / "audit_checksums.json")
 
+        # Resolve secrets from keyring when not set via env / .env
+        if not self.openrouter_api_key:
+            self.openrouter_api_key = _get_from_keyring("openrouter_api_key")
+
         # Normalize llm_host: strip scheme and port if present
         # (handles LLM_HOST=http://localhost:1234 from system env)
         host = self.llm_host
@@ -132,6 +145,20 @@ class Settings(BaseSettings):
         if ":" in host:
             host = host.split(":", 1)[0]
         self.llm_host = host
+
+
+def _get_from_keyring(key: str) -> str:
+    """Try to retrieve a secret from macOS Keychain. Returns '' on failure."""
+    try:
+        import keyring as kr
+
+        value = kr.get_password(_KEYRING_SERVICE, key)
+        if value:
+            logger.debug("Resolved %s from keyring", key)
+            return value
+    except Exception:
+        pass
+    return ""
 
 
 @lru_cache
