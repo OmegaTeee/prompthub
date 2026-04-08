@@ -148,6 +148,15 @@ class KeyringManager:
                 status="success"
             )
             return True
+        except keyring.errors.PasswordDeleteError:
+            logger.warning(f"Credential not found, nothing to delete: {key}")
+            audit_credential_access(
+                action="delete",
+                credential_key=key,
+                status="not_found",
+                error="credential not found in keyring"
+            )
+            return True
         except Exception as e:
             logger.error(f"Error deleting credential {key}: {e}")
             audit_credential_access(

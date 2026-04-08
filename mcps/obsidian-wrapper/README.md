@@ -27,10 +27,7 @@ Wrapper for Obsidian MCP server with API key from Keychain.
 **Setup:**
 ```bash
 # 1. Add API key to Keychain
-security add-generic-password \
-  -a $USER \
-  -s "obsidian_api_key" \
-  -w "YOUR_OBSIDIAN_API_KEY"
+python scripts/security/manage-keys.py set obsidian_api_key
 
 # 2. Make script executable
 chmod +x scripts/mcps/obsidian-mcp-tools.sh
