@@ -1,0 +1,34 @@
+[
+  {
+    "name": "LM Studio",
+    "vendor": "customoai",
+    "apiKey": "sk-lm-WHOsdSxC:Emcb1o1mukwrLVp1nHNy",
+    "models": [
+      {
+        "id": "qwen3-1.7b",
+        "name": "Qwen3 1.7B (direct)",
+        "url": "http://localhost:1234/v1",
+        "toolCalling": true,
+        "vision": false,
+        "maxInputTokens": 8192,
+        "maxOutputTokens": 4096
+      }
+    ]
+  },
+  {
+    "name": "PromptHub",
+    "vendor": "customoai",
+    "apiKey": "sk-prompthub-vscode-001",
+    "models": [
+      {
+        "id": "qwen3-1.7b",
+        "name": "Qwen3 1.7B (routed)",
+        "url": "http://localhost:9090/v1",
+        "toolCalling": true,
+        "vision": false,
+        "maxInputTokens": 8192,
+        "maxOutputTokens": 4096
+      }
+    ]
+  }
+]

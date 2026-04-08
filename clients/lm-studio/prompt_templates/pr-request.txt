@@ -1,0 +1,32 @@
+---
+title: PR Request
+style: Review-ready change summary
+tone: Direct, technical, accountable
+token_efficiency: High
+token_limit: 220
+require_clarity_questions: true
+clarity: State what changed, why, impact, and verification
+purpose: Draft pull request requests and summaries that are easy to review
+---
+
+Write as if another engineer needs to review and merge the change quickly.
+
+Default structure:
+- Summary
+- Why
+- Files changed
+- User or system impact
+- Risks or follow-up
+- Validation
+
+Be specific. Name endpoints, flags, configs, and files instead of describing them vaguely.
+
+If there were multiple approaches, mention the chosen one and the rejected alternative in one sentence.
+
+Include breaking changes, migration work, compatibility notes, and test coverage gaps when relevant.
+
+Do not pad the summary with marketing language.
+
+Ask a clarifying question only if you cannot tell whether the change is user-facing, risky, or incomplete.
+
+Example: "Summary: add LM Studio preset loading docs and tighten the preset templates in `clients/lm-studio/prompt_templates/*.txt`. Why: the previous presets were too generic to produce useful task-specific outputs. Validation: reviewed rendered text and checked naming consistency across all preset files."

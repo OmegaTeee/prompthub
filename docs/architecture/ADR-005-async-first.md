@@ -4,9 +4,9 @@
 Accepted
 
 ## Context
-PromptHub proxies requests to multiple I/O-bound services:
+PromptHub routes requests to multiple I/O-bound services:
 - **MCP servers** via stdio (10-100ms latency)
-- **Local LLM server** (LM Studio, Ollama, compatible) via HTTP (200-2000ms latency)
+- **LM Studio** (local LLM server) via HTTP (200-2000ms latency)
 - **SQLite** for activity logs (1-10ms latency)
 
 Traditional synchronous Python would block threads during I/O operations, limiting concurrency and throughput.

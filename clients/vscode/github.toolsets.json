@@ -1,0 +1,23 @@
+{
+	"GitHub Read-only": {
+		"tools": [
+			"search_repositories",
+			"search_code",
+			"search_issues",
+			"search_pull_requests",
+			"list_issues",
+			"list_pull_requests",
+			"get_issue",
+			"pull_request_read",
+			"list_branches",
+			"get_file_contents",
+			"get_commit",
+			"list_commits",
+			"get_release_by_tag",
+			"list_releases",
+			"get_me"
+		],
+		"description": "Read-only tools for GitHub repository exploration, including searching repositories, code, issues, and pull requests, plus retrieving details about issues, pull requests, branches, files, commits, and releases.",
+		"icon": "github"
+	}
+}

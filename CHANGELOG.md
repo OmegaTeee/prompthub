@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 
 ## [Unreleased]
 
+### Security
+- **Keyring migration for external API keys** (PR #5): Moved `OPENROUTER_API_KEY`, `OBSIDIAN_API_KEY`, `HF_API_KEY` from plaintext `.env` to macOS Keychain via Python `keyring` (service=`prompthub`). `Settings.model_post_init` now resolves `openrouter_api_key` from keyring when not set in env. Removed `CHERRYIN_API_KEY` (unused).
+- **Auto-discovery in `manage-keys.py`**: Replaced hardcoded `KNOWN_KEYS` list with `discover_keys()` that scans `mcp-servers.json` for `{"source": "keyring"}` references plus a `SETTINGS_KEYS` dict for router-level keys. `list` command now shows which server or service consumes each key.
+
+### Fixed
+- **Obsidian MCP wrapper Keychain mismatch**: Wrapper scripts in `mcps/obsidian-wrapper/` used `security -a $USER -s "key_name"` but Python `keyring` stores as `security -s "prompthub" -a "key_name"`. These are different Keychain entries — wrappers could never find keys stored via `manage-keys.py`. Fixed all three wrapper scripts to use matching parameters.
+- **`KeyringManager.delete_credential` crash on missing keys**: `keyring.delete_password()` throws `PasswordDeleteError` when the key doesn't exist. Now caught separately and returns `True` with `not_found` audit status instead of failing.
+- **`localhost` vs `127.0.0.1` bind address**: Changed default `HOST` from `127.0.0.1` to `0.0.0.0` (accepts both IPv4 and IPv6). Added startup warning in `main.py` when `HOST=127.0.0.1` — macOS resolves `localhost` to `::1` (IPv6) which fails against IPv4-only bind.
+- **Broken `test_process_env_config` assertions**: Test asserted keys that weren't in the test config. Fixed to match actual test data.
+
 ### Added
 - **Per-client `setup.sh` scripts**: Each client directory now has a self-contained shell script that creates symlinks (for symlink-safe clients) or prints setup instructions (for GUI/shared-config clients). Scripts are idempotent and self-documenting — header comments declare source, target, and strategy.
 - **`scripts/diagnose.sh`**: Pure-shell replacement for `python -m cli diagnose`. Checks node, bridge file, router health, server status, and per-client config symlinks. Auto-discovers clients by scanning `clients/*/setup.sh`.
@@ -25,6 +35,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - **`LLM_HOST=localhost` → `127.0.0.1`**: Prevents IPv6 resolution issues when LM Studio listens on IPv4 only.
 
 ### Changed
+- **LM Studio planner template**: Rewrote `clients/lm-studio/prompt_templates/planner.txt` to match the lightweight task-template format used by the other LM Studio presets and documented it in the template README.
+- **LM Studio chat presets**: Rewrote the task presets in `clients/lm-studio/prompt_templates/` with consistent metadata, higher token budgets, clearer workflow-specific instructions, and an updated README for the on-disk template set.
 - **5 new CLI clients**: `lm-studio`, `zed`, `jetbrains`, `codex`, `cherry-studio` added to `ClientType` enum. Each has `config_path()`, `config_key_path`, `install_strategy`, `extra_entry_fields`, and `is_bridge_client` properties. Cherry Studio is an HTTP client (like Open WebUI) connecting via `/v1/responses`. Codex uses TOML — `generate`/`install` raise `NotImplementedError` with a pointer to the manual config file.
 - **`repo_dir()` method on `ClientType`**: Returns `clients/<name>/` relative to workspace root, preparing for per-client folder restructuring.
 - **`build_cherry_studio_config()`**: Connection settings builder for Cherry Studio (mirrors `build_open_webui_config()`), targeting the `/v1/responses` endpoint.

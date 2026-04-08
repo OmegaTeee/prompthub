@@ -1,0 +1,99 @@
+{
+  "config": {
+    "default": true,
+    // ── Disabled rules (intentional style choices) ────────────────────────
+    // MD001: heading-increment — we skip levels (### under # in tables-of-contents)
+    "MD001": false,
+    // MD003: heading-style — ATX preferred but not enforced in archived docs
+    "MD003": false,
+    // MD007: ul-indent — nested list indent varies across docs
+    "MD007": false,
+    // MD012: no-multiple-blanks — extra spacing around sections is fine
+    "MD012": false,
+    // MD013: line-length — we have long URLs and tables; this is mostly noise
+    "MD013": false,
+    // MD014: commands-show-output — some examples use $ prefix, some don't
+    "MD014": false,
+    // MD022: blanks-around-headings — compact style is fine
+    "MD022": false,
+    // MD025: single-title — some docs have multiple H1s (e.g. changelog)
+    "MD024": {
+      "siblings_only": true
+    },
+    "MD025": false,
+    // MD026: no-trailing-punctuation — punctuation in headings is fine
+    "MD026": false,
+    // MD031: blanks-around-fences — compact code blocks are fine
+    "MD031": false,
+    // MD032: blanks-around-lists — compact lists after paragraphs are fine
+    "MD032": false,
+    // MD033: no-inline-html — HTML is used in some docs
+    "MD033": false,
+    // MD034: no-bare-urls — bare URLs are acceptable in docs
+    "MD034": false,
+    // MD036: no-emphasis-as-heading — **bold** as section markers is fine
+    "MD036": false,
+    // MD037: no-space-in-emphasis — false positives on filenames like `* text *`
+    "MD037": false,
+    // MD038: no-space-in-code — false positives on inline code with pipes
+    "MD038": false,
+    // MD039: no-space-in-links — not a concern
+    "MD039": false,
+    // MD040: fenced-code-language — not all code blocks need a language tag
+    "MD040": false,
+    // MD041: first-line-heading — files can start with frontmatter or text
+    "MD041": false,
+    // MD045: no-alt-text — images in docs don't always need alt text
+    "MD045": false,
+    // MD049: emphasis-style — asterisks and underscores both fine
+    "MD049": false,
+    // MD051: link-fragments — false positives on dynamic anchor links
+    "MD051": false,
+    // MD052: reference-links-images — not enforced
+    "MD052": false,
+    // MD053: heading-link — not enforced
+    // "MD053": false,
+    // MD060: table-column-style — our tables use mixed spacing; this is pure noise
+    "MD060": false,
+    // ── Configured rules ─────────────────────────────────────────────────
+    // MD004: ul-style — use dashes consistently
+    "MD004": {
+      "style": "dash"
+    },
+    // MD010: no-hard-tabs — no tabs except in code blocks
+    "MD010": {
+      "code_blocks": false,
+      "spaces_per_tab": 4
+    },
+    // MD013: line-length — generous limit for tables and URLs
+    // "MD013": { "line_length": 500, "code_blocks": false, "tables": false, "headings": false },
+    // MD024: no-duplicate-heading — only flag duplicates among siblings
+    "no-duplicate-heading": {
+      "siblings_only": true
+    },
+    // MD029: ol-prefix — ordered or sequential numbering both fine
+    "MD029": {
+      "style": "one_or_ordered"
+    },
+    // MD030: list-marker-space — single space after markers
+    "MD030": {
+      "ol_multi": 1,
+      "ul_multi": 1
+    },
+    // MD053: link-image-reference-definition — unused references
+    "MD053": {
+      "ignored_definitions": [
+        "^\\^\\d+(?:_\\d+)?$"
+      ]
+    }
+  },
+  "globs": [
+    "**/*.md"
+  ],
+  "ignores": [
+    "node_modules",
+    "dist",
+    ".git",
+    "app/docs/archive/**"
+  ]
+}

@@ -1,0 +1,43 @@
+// Place your key bindings in this file to override the defaults
+[
+    {
+        "key": "ctrl+shift+up",
+        "command": "editor.action.blockComment",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+alt+a",
+        "command": "-editor.action.blockComment",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+cmd+pageup",
+        "command": "editor.action.sortLinesAscending"
+    },
+    {
+        "key": "shift+cmd+pagedown",
+        "command": "editor.action.sortLinesDescending"
+    },
+    {
+        "key": "ctrl+shift+delete",
+        "command": "markdown.preview.refresh"
+    },
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "\u001b\r"
+        },
+        "when": "terminalFocus"
+    },
+    {
+        "key": "ctrl+alt+i",
+        "command": "extension.colorHelper.pick",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "alt+c p",
+        "command": "-extension.colorHelper.pick",
+        "when": "editorTextFocus"
+    }
+]

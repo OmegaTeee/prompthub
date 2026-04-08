@@ -88,3 +88,6 @@ qwen3-4b-instruct-2507 → qwen3-4b-thinking-2507 → null (pass-through)
 - **Keep pre-loaded**: At 2.5 GB, this model and its thinking sibling fit comfortably in memory together. No JIT needed.
 - **Enhancement is disabled by default** on API keys (`"enhance": false`). Toggle individual keys in `api-keys.json` to activate.
 - **Tool calling is available** but not used by the enhancement pipeline. Could be useful for future agentic workflows.
+
+### References
+https://huggingface.co/lmstudio-community/Qwen3-4B-Instruct-2507-GGUF

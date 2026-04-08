@@ -1,0 +1,73 @@
+{
+  "identifier": "@local:text-rewriter-2",
+  "name": "Text-Rewriter",
+  "changed": true,
+  "importedTimeStamp": 1775566032844,
+  "operation": {
+    "fields": [
+      {
+        "key": "llm.prediction.systemPrompt",
+        "value": "proof-read.txt\n---\n\nYou are a helpful, concise assistant. Always respond in Markdown. "
+      },
+      {
+        "key": "llm.prediction.temperature",
+        "value": 0.2
+      },
+      {
+        "key": "llm.prediction.topPSampling",
+        "value": {
+          "checked": true,
+          "value": 0.9
+        }
+      },
+      {
+        "key": "llm.prediction.topKSampling",
+        "value": 40
+      },
+      {
+        "key": "llm.prediction.repeatPenalty",
+        "value": {
+          "checked": true,
+          "value": 1.05
+        }
+      },
+      {
+        "key": "llm.prediction.contextOverflowPolicy",
+        "value": "rollingWindow"
+      },
+      {
+        "key": "llm.prediction.minPSampling",
+        "value": {
+          "checked": true,
+          "value": 0.05
+        }
+      },
+      {
+        "key": "llm.prediction.llama.presencePenalty",
+        "value": {
+          "checked": false,
+          "value": 0
+        }
+      },
+      {
+        "key": "llm.prediction.llama.cpuThreads",
+        "value": 10
+      },
+      {
+        "key": "llm.prediction.maxPredictedTokens",
+        "value": {
+          "checked": false,
+          "value": 1000
+        }
+      }
+    ]
+  },
+  "load": {
+    "fields": [
+      {
+        "key": "llm.load.contextLength",
+        "value": 4096
+      }
+    ]
+  }
+}

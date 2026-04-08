@@ -94,3 +94,7 @@ PromptHub's orchestrator extracts only the final JSON answer from `message.conte
 - **Keep pre-loaded**: Same 2.5 GB footprint as the standard variant. Both fit in memory simultaneously.
 - **Don't use for enhancement**: The thinking overhead adds latency. Use `qwen3-4b-2507` for fast prompt rewrites.
 - **Future reasoning lane**: The enhancement sketch (`lm-studio-enhancement-sketch.md`) proposes using this model for prompts that request "step by step" reasoning, opt-in via trigger phrases.
+
+### References
+https://huggingface.co/lmstudio-community/Qwen3-4B-Thinking-2507-GGUF
+https://lmstudio.ai/models/qwen/qwen3-4b-thinking-2507

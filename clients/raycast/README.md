@@ -2,10 +2,16 @@
 
 Bridge client using `mcpServers` format. **Symlink install** (MCP-only config file).
 
-## Config path
+## MCP configuration
 
-```
+```txt
 ~/.config/raycast/mcp.json  ->  ~/prompthub/clients/raycast/mcp.json
+```
+
+## Provider configuration
+
+```txt
+~/.config/raycast/ai/providers.yaml  ->  ~/prompthub/clients/raycast/providers.yaml
 ```
 
 ## Quick setup
@@ -28,4 +34,10 @@ Raycast is configured with `privacy_level: free_ok` — prompts may be enhanced 
 
 ## External references
 
-- [Raycast MCP docs](https://developers.raycast.com/model-context-protocol)
+- [Raycast Manual - MCP Guide](https://manual.raycast.com/model-context-protocol)
+
+- [Raycast Manual - AI Chat Custom Providers](https://manual.raycast.com/ai/ai-chat#custom-providers)
+
+- [Raycast API Docs - OAuth Authorization](https://developers.raycast.com/api-reference/oauth#authorizing)
+
+- [Raycast API Docs - OAuth Utils](https://developers.raycast.com/utilities/oauth)

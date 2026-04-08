@@ -8,6 +8,10 @@ source .venv/bin/activate
 uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
 ```
 
+## [Glossary](glossary.md)
+
+Canonical definitions for project terms (router, bridge, proxy, enhancement, privacy level, circuit breaker, etc.). Check here first when naming things in configs, docs, or code.
+
 ## Folders
 
 | Folder                             | Contents                                                                     |

@@ -1,6 +1,6 @@
 # Client Configurations
 
-Per-client directories containing MCP bridge configs, setup scripts, and knowledge files.
+Per-client directories containing MCP bridge configs, provider configs, setup scripts, and knowledge files. See [docs/glossary.md](../docs/glossary.md) for definitions of bridge, proxy, client, and llm.txt.
 
 Active clients are unprefixed. Placeholder/draft clients use a `_` prefix — run `/client-setup` to wire them up.
 

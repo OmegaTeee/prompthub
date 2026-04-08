@@ -1,6 +1,6 @@
 # PromptHub
 
-Lightweight local-first service orchestration layer for macOS — central router, prompt enhancement, and desktop integrations.
+Lightweight local-first service orchestration layer for macOS — central router, prompt enhancement, and desktop integrations. See [docs/glossary.md](docs/glossary.md) for terminology.
 
 ## Overview
 

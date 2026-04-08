@@ -18,23 +18,25 @@ The orchestrator sits upstream of enhancement and must operate under strict cons
 
 ## Decision
 
-### 1. Dedicated reasoning model (qwen3:14b)
+### 1. Dedicated reasoning model
 
-Use a separate, mid-size model for intent classification rather than reusing an enhancement model:
+> **Current model:** `qwen3-4b-thinking-2507` (updated from qwen3:14b — see [ADR-008](ADR-008-task-specific-models.md))
+
+Use a separate thinking-variant model for intent classification rather than reusing the enhancement model:
 
 ```
 incoming prompt
-    → OrchestratorAgent.process()   (qwen3:14b, 2.5s hard ceiling)
+    → OrchestratorAgent.process()   (qwen3-4b-thinking-2507, 2.5s hard ceiling)
     → OrchestratorResult            (intent, tools, annotated prompt)
-    → EnhancementService.enhance()  (gemma3:4b / gemma3:27b / qwen3-coder:30b)
+    → EnhancementService.enhance()  (qwen3-4b-instruct-2507)
     → downstream client
 ```
 
-qwen3:14b was chosen because:
+The thinking model was chosen because:
 - Strong structured output (JSON) with low temperature (0.1)
 - Native `<think>` block support (stripped before parsing) for chain-of-thought reasoning
-- 14B parameters provides sufficient classification accuracy without excessive VRAM
-- Different size class from enhancement models (4b–30b), so Ollama can often keep both warm
+- Same parameter class as the enhancement model, so LM Studio keeps both loaded (~5 GB total)
+- Thinking variant provides better classification accuracy than the instruct variant
 
 ### 2. Strict 2.5-second timeout with fail-safe pass-through
 
@@ -42,7 +44,7 @@ Every failure mode returns the original prompt unchanged via `OrchestratorResult
 
 | Failure | Behavior |
 |---------|----------|
-| Ollama unavailable | Pass-through (health probe with 10s cooldown) |
+| LLM server unavailable | Pass-through (health probe with 10s cooldown) |
 | Model not loaded | Pass-through (logged at startup) |
 | Timeout (>2.5s) | Pass-through via `asyncio.wait_for` |
 | Circuit breaker open | Pass-through (3 failures → 30s recovery) |
@@ -72,7 +74,7 @@ CircuitBreakerConfig(
 )
 ```
 
-This prevents a down Ollama instance from adding 2.5s of timeout latency to every request — after 3 failures, the circuit opens and requests pass through instantly.
+This prevents a down LLM server from adding 2.5s of timeout latency to every request — after 3 failures, the circuit opens and requests pass through instantly.
 
 ### 5. Token budget for session context injection
 
@@ -115,13 +117,13 @@ The model's `suggested_tools` are merged with the intent map (deduped, model sug
 
 ### 7. Health probe cooldown
 
-When Ollama is unavailable, the agent re-probes at most once every 10 seconds (`HEALTH_PROBE_COOLDOWN`). This prevents flooding Ollama's `/api/tags` endpoint under high throughput while still recovering promptly when Ollama comes back.
+When the LLM server is unavailable, the agent re-probes at most once every 10 seconds (`HEALTH_PROBE_COOLDOWN`). This prevents flooding the health endpoint under high throughput while still recovering promptly when the server comes back.
 
 ## Rationale
 
 ### Why not classify within the enhancement prompt?
 - Adds latency to every enhancement request (even trivial ones)
-- Classification and rewriting are different tasks — a reasoning model (14b) classifies better than a rewriting model (4b)
+- Classification and rewriting are different tasks — a thinking model classifies better than an instruct model
 - Orchestrator results cache independently, so repeated similar prompts skip classification entirely
 
 ### Why in-process cache instead of SQLite?
@@ -131,13 +133,13 @@ When Ollama is unavailable, the agent re-probes at most once every 10 seconds (`
 - No persistence needed — cold restarts just rebuild the cache organically
 
 ### Why 2.5 seconds and not shorter?
-- qwen3:14b typically responds in 0.8–1.5s when warm
+- `qwen3-4b-thinking-2507` typically responds in 0.8–1.5s when warm
 - Cold model load can take 5–10s, but the circuit breaker handles repeated cold-start failures
 - 2.5s is short enough to be imperceptible in the overall enhancement pipeline (which has 120s httpx + 180s middleware timeouts)
 - Shorter timeouts (e.g., 1s) would cause frequent pass-throughs even on warm models under load
 
 ### Why a module-level singleton?
-- The orchestrator holds an `OllamaClient` (httpx connection pool) and circuit breaker state — these should be shared across requests
+- The orchestrator holds an `LLMClient` (httpx connection pool) and circuit breaker state — these should be shared across requests
 - `get_orchestrator_agent()` provides lazy initialization with optional config override
 - Lifespan manages `initialize()` and `close()` for proper startup/shutdown
 
@@ -148,13 +150,13 @@ When Ollama is unavailable, the agent re-probes at most once every 10 seconds (`
 - MCP server suggestions are automatic (no per-client configuration needed)
 - Session context flows into classification decisions
 - All failures are invisible to users — the system degrades gracefully to unmodified prompts
-- Independent circuit breaker prevents cascading failures from Ollama outages
+- Independent circuit breaker prevents cascading failures from LLM server outages
 
 ### Negative
-- Additional model to pull and maintain (`qwen3:14b`)
+- Additional model to keep loaded (`qwen3-4b-thinking-2507`)
 - In-process cache is lost on restart (acceptable — rebuilds quickly)
 - LLM output is inherently non-deterministic — JSON parsing must handle malformed responses defensively
-- Health probe cooldown means recovery from Ollama restarts takes up to 10s
+- Health probe cooldown means recovery from LLM server restarts takes up to 10s
 
 ## Implementation
 
@@ -168,7 +170,7 @@ When Ollama is unavailable, the agent re-probes at most once every 10 seconds (`
 ### Configuration Constants (agent.py)
 | Constant | Value | Purpose |
 |----------|-------|---------|
-| `MODEL` | `qwen3:14b` | Classification model |
+| `MODEL` | `qwen3-4b-thinking-2507` | Classification model (updated from qwen3:14b) |
 | `TIMEOUT_SECONDS` | `2.5` | Hard ceiling for `asyncio.wait_for` |
 | `MAX_TOKENS` | `300` | Keep JSON responses tight |
 | `TEMPERATURE` | `0.1` | Low randomness for reliable structured output |
@@ -178,7 +180,7 @@ When Ollama is unavailable, the agent re-probes at most once every 10 seconds (`
 
 ### Endpoint
 ```
-POST /ollama/orchestrate    Classify intent and annotate prompt
+POST /llm/orchestrate       Classify intent and annotate prompt
      Headers: X-Client-Name
      Response: OrchestrateResponse (intent, suggested_tools, context_hints,
                annotated_prompt, reasoning, confidence, skipped, error)

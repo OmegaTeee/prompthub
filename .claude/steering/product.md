@@ -2,7 +2,7 @@
 
 ## Purpose
 
-PromptHub is a **local-first AI gateway for macOS** — a single router (`localhost:9090`) that unifies prompt routing, MCP servers, and desktop client integrations behind one endpoint.
+PromptHub is a **local-first AI router for macOS** — a single endpoint (`localhost:9090`) that unifies prompt enhancement, MCP server management, and desktop client integrations. See [docs/glossary.md](../../docs/glossary.md) for canonical term definitions.
 
 ## Value Proposition
 
@@ -19,8 +19,8 @@ macOS power users who work across multiple AI-powered editors and tools and want
 
 | Feature | Description |
 |---------|-------------|
-| MCP server management | Spawn, monitor, auto-restart stdio MCP servers from a central registry |
-| Per-client enhancement | LLM model routing: Claude Desktop → deepseek-r1, VS Code → qwen2.5-coder, etc. |
+| MCP server management | Spawn, monitor, auto-restart stdio MCP servers from a central registry (9 servers) |
+| Per-client enhancement | All clients use `qwen3-4b-instruct-2507` with per-client system prompts, temperature, and token limits |
 | OpenAI-compatible proxy | `/v1/chat/completions` endpoint for desktop apps (Cursor, Raycast, Obsidian) |
 | Circuit breakers | 3 failures → OPEN → 30s → HALF_OPEN → recovery; per-server isolation |
 | Response caching | SHA256-keyed L1 in-memory LRU cache for enhanced prompts |
@@ -66,7 +66,7 @@ User-facing documentation (guides, quickstarts, troubleshooting) is written at a
 5. Stream SSE or return JSON → back to desktop app
 
 ### Direct Enhancement (`POST /llm/enhance`)
-1. X-Client-Name header determines LLM model
+1. X-Client-Name header selects per-client enhancement rules
 2. Cache check (SHA256 of prompt)
-3. LLM server request with per-client system prompt
+3. LM Studio request with per-client system prompt (`qwen3-4b-instruct-2507`)
 4. Cache result and return

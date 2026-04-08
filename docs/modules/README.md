@@ -8,7 +8,7 @@ Detailed documentation for PromptHub's core modules.
 
 ### Core Modules
 - [servers/](servers.md) - MCP server lifecycle management
-- [enhancement/](enhancement.md) - Prompt enhancement via Ollama (+ OpenRouter cloud fallback)
+- [enhancement/](enhancement.md) - Prompt enhancement via LM Studio (+ OpenRouter cloud fallback)
 - [resilience/](resilience.md) - Circuit breaker pattern
 - [routes/](#routes-package) - Route handlers extracted from main.py
 
@@ -36,7 +36,7 @@ main.py (~505 lines: globals, lifespan, middleware, dashboard helpers, router wi
   │   ├── health.py               # /health, /circuit-breakers
   │   ├── servers.py              # /servers/* CRUD + start/stop/restart
   │   ├── mcp_proxy.py            # /mcp/{server}/{path} + normalize helpers
-  │   ├── enhancement.py          # /ollama/enhance, /ollama/stats, /ollama/reset
+  │   ├── enhancement.py          # /llm/enhance, /llm/stats, /llm/reset
   │   ├── audit.py                # /audit/activity*, /audit/integrity*, /security/alerts*
   │   ├── pipelines.py            # /pipelines/documentation
   │   └── client_configs.py       # /configs/claude-desktop, /vscode, /raycast
@@ -48,9 +48,9 @@ main.py (~505 lines: globals, lifespan, middleware, dashboard helpers, router wi
   │   └── mcp_gateway.py          # build_mcp_gateway (Streamable HTTP)
   │
   ├── enhancement/
-  │   ├── service.py              # EnhancementService (Ollama + cloud fallback)
-  │   ├── ollama.py               # OllamaClient (native API)
-  │   └── ollama_openai.py        # OllamaOpenAIClient (OpenAI-compat, reused for OpenRouter)
+  │   ├── service.py              # EnhancementService (LM Studio + cloud fallback)
+  │   ├── llm_client.py           # LLMClient (OpenAI-compat HTTP client)
+  │   └── context_window.py       # TokenBudget (truncation at word boundaries)
   │
   ├── resilience/
   │   └── circuit_breaker.py      # CircuitBreaker, CircuitBreakerRegistry
@@ -398,7 +398,8 @@ audit_admin_action(
 
 ## Related Documentation
 
+- [Glossary](../glossary.md) — Canonical definitions for project terminology
 - [Architecture Overview](../architecture/README.md)
 - [ADR Index](../architecture/README.md#architecture-decision-records-adrs)
 - [API Documentation](../api/README.md)
-- User Guides: Obsidian vault at `~/Vault/PromptHub/`
+- User Guides: `docs/guides/`

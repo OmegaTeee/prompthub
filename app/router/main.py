@@ -132,6 +132,14 @@ async def lifespan(app: FastAPI):
     # Startup
     settings = get_settings()
 
+    # Warn if bound to 127.0.0.1 — clients using "localhost" may fail on IPv6-first systems
+    if settings.host == "127.0.0.1":
+        logger.warning(
+            "Bound to 127.0.0.1 (IPv4 only). Clients connecting via 'localhost' "
+            "may fail on macOS if DNS resolves to ::1 (IPv6). "
+            "Set HOST=0.0.0.0 in .env to accept both."
+        )
+
     # Setup audit logging — use persistent data dir (survives reboots)
     from pathlib import Path
     log_dir = Path(settings.data_dir)

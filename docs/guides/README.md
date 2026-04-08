@@ -2,6 +2,27 @@
 
 Welcome! This folder contains everything you need to get the most out of PromptHub.
 
+## What is PromptHub?
+
+PromptHub is a local-first AI routing and enhancement system. It acts as a smart hub between your apps and your local language models (like those in LM Studio).
+
+🚥 **_When no active rules are defined_:** PromptHub operates as a **simple bridge** — it passes prompts to your local LM Studio model with minimal transformation. It translates "OpenAI" → "LM Studio" but does *no* enhancement or routing.
+
+🗺️ **_When active orchestration rules are applied_:**
+PromptHub becomes an **orchestrated service mesh** — it enhances, modifies, and routes prompts based on defined rules (e.g., model selection, prompt templating, context filtering). It may:
+- Choose different models based on input type
+- Inject system prompts or formatting
+- Apply safety checks or workflow steps
+- Route to multiple local models dynamically
+
+👉 **Key difference:**
+- *_Bridge mode_* = passive translation, no intelligence- *_Orchestration mode_* = active, intelligent routing and enhancement — PromptHub *decides* how and what to run
+
+🔹 **Critical configuration note:**
+PromptHub uses **local API secrets and model paths** (e.g., LM Studio model locations) even in bridge mode. These are stored securely and used to connect directly to your local models — meaning it’s not just a proxy, but a *configured local AI runtime* ready to run models without relying on external services.
+
+✅ The name "Hub" reflects this evolution: from a simple bridge to an intelligent, rule-driven, locally configured AI workflow center.
+
 ## 📚 Start Here
 
 ### New Users

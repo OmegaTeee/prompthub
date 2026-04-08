@@ -13,7 +13,7 @@ Flow:
         → downstream client
 
 Fail-safe: any error or timeout returns the original prompt unchanged.
-Supports any OpenAI-compatible LLM server (LM Studio, Ollama, etc.).
+Supports any OpenAI-compatible LLM server (currently LM Studio).
 """
 
 import asyncio

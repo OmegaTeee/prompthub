@@ -56,7 +56,7 @@ curl http://localhost:9090/health | jq '.servers.memory'
 ### 2. Enhance a Prompt
 
 ```bash
-curl -X POST http://localhost:9090/ollama/enhance \
+curl -X POST http://localhost:9090/llm/enhance \
   -H "Content-Type: application/json" \
   -H "X-Client-Name: claude-desktop" \
   -d '{
@@ -70,7 +70,7 @@ Response:
 {
   "original": "Write a Python function to merge two sorted arrays",
   "enhanced": "Create a Python function that efficiently merges two pre-sorted arrays into a single sorted array. The function should:\n- Accept two sorted lists as parameters\n- Return a new sorted list containing all elements\n- Maintain O(n+m) time complexity\n- Include type hints and docstring",
-  "model": "gemma3:27b",
+  "model": "qwen3-4b-instruct-2507",
   "cached": false,
   "was_enhanced": true,
   "error": null
@@ -162,7 +162,7 @@ curl http://localhost:9090/servers/context7 | jq .config.auto_start
 curl -X POST http://localhost:9090/servers/context7/start
 ```
 
-### Ollama Not Available
+### LLM Server Not Available
 ```json
 {
   "original": "your prompt",
@@ -170,17 +170,16 @@ curl -X POST http://localhost:9090/servers/context7/start
   "model": null,
   "cached": false,
   "was_enhanced": false,
-  "error": "Connection refused: Ollama not available"
+  "error": "Connection refused: LLM server not available"
 }
 ```
 
 **Solution:**
 ```bash
-# Check Ollama status
-curl http://localhost:11434/api/tags
+# Check LM Studio status
+curl http://localhost:1234/v1/models
 
-# Start Ollama
-ollama serve
+# Start LM Studio and load the enhancement model (qwen3-4b-instruct-2507)
 ```
 
 ## Versioning
@@ -205,7 +204,7 @@ class PromptHubClient:
         bypass_cache: bool = False
     ):
         response = await self.client.post(
-            f"{self.base_url}/ollama/enhance",
+            f"{self.base_url}/llm/enhance",
             json={"prompt": prompt, "bypass_cache": bypass_cache},
             headers={"X-Client-Name": client_name}
         )
@@ -226,7 +225,7 @@ class PromptHubClient {
     clientName: string = "vscode",
     bypassCache: boolean = false
   ) {
-    const response = await fetch(`${this.baseUrl}/ollama/enhance`, {
+    const response = await fetch(`${this.baseUrl}/llm/enhance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -256,6 +255,7 @@ cd app && pytest tests/unit/ -v
 
 ## Further Reading
 
+- [Glossary](../glossary.md) — Canonical definitions for project terminology (router, bridge, proxy, enhancement, etc.)
 - [MCP Protocol Spec](https://modelcontextprotocol.io/docs/specification)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [Circuit Breaker Pattern](https://martinfowler.com/bliki/CircuitBreaker.html)

@@ -27,6 +27,15 @@
 - [ ] **Phase 2: per-client profiles via router** — Add `tool_profile` field to `enhancement-rules.json`. New endpoint `GET /clients/{name}/tool-profile`. Bridge fetches profile at startup. Dashboard shows disclosure mode per client.
 - [ ] **Phase 3 (optional): data-driven tier-1** — Use tool registry `serve_count` to auto-promote frequently used servers to tier 1. Nightly job or dashboard button.
 
+## Glossary Alignment — Heavy-Lift Docs Review
+
+> **Glossary:** [`docs/glossary.md`](docs/glossary.md)
+> **Context:** Quick fixes applied to ADRs, modules, API, steering, and root docs on 2026-04-05. Two documents need full rewrites (not quick find-replace) because the stale content is deeply embedded in diagrams, flow charts, and benchmarks.
+
+- [ ] **Rewrite `docs/architecture/README.md`** — Contains ~15 Ollama references across ASCII diagrams (lines 38, 48, 63), flow charts (lines 140-153), benchmarks (lines 225-231), and deployment examples (lines 244-273). Diagrams show `Ollama :11434` instead of `LM Studio :1234`. Model names reference gemma3/qwen3-coder/llama3.2 — all superseded by `qwen3-4b-instruct-2507`. Benchmark numbers may also be stale. **This is the single largest source of outdated terminology in the project.**
+- [ ] **Review `docs/notes/dashboard/` idea docs** — Two files (`idea-dashboard-refactor-review.md`, `idea-dashboard-refactor-tech-overview.md`) reference Ollama, DeepSeek-R1/Qwen3-Coder model names, and "7 MCP servers" (now 9). These are planning docs — decide whether to update or archive.
+- [ ] **Post-rewrite verification pass** — After the heavy-lift rewrites above, grep the full `docs/` tree for remaining `Ollama`, `gemma3`, `llama3.2`, `qwen2.5-coder`, `qwen3:14b`, and `ollama` (case-insensitive) to confirm no stale terms remain. Verify all glossary terms (`router`, `bridge`, `proxy`, `enhancement`, `privacy level`, `circuit breaker`) are used consistently.
+
 ## Deferred Refactors
 
 - [ ] **Enhancement service exception handlers** — `service.py` `enhance()` has near-identical handlers at lines ~552-559 with different log levels (`warning`/`error`/`exception`). Consider consolidating if log-level distinction proves unnecessary. Unskip integration tests first (`test_enhancement_and_caching.py`).

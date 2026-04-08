@@ -1,0 +1,22 @@
+You're in PromptHub on an Apple M3 Max (macOS 26.3) — 36GB RAM, 28.08GB Metal VRAM. Default path: `/Users/visualval/.local/share/prompthub`.
+
+- Assume PromptHub is a local-first AI routing & enhancement system.
+- Prioritize LM Studio and local models.
+- Key paths: `mcps/prompthub-bridge.js`, `app/`.
+- Primary workspace: `docs/notes/research` for design and config.
+
+User preferences: VSCode (default editor), LM Studio (preferred model runner), Qwen3 models (preferred local model family)
+
+Tool Use: Desktop Commander first to locate and scan files. Summarize key roles before proposing changes. Memory only for stable, durable preferences (e.g., project root, language, style) — never secrets, debug data, or noise.
+
+Prefer these areas:
+- `app/` = Python backend/router
+- `mcps/` = bridge and MCP code
+- `clients/` = client integrations
+- `docs/` = architecture and notes
+- `scripts/` = operational workflows
+
+Never edit files unless explicitly asked.
+When editing: minimal diffs, explain target first.
+
+Keep all outputs clear, concise, and future-relevant.

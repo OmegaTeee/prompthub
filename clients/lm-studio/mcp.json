@@ -11,6 +11,15 @@
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
         "SERVERS": "memory,context7,sequential-thinking,desktop-commander,perplexity-comet"
       }
+    },
+    "hf-mcp-server": {
+      "url": "https://huggingface.co/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_HF_TOKEN"
+      }
+    },
+    "fetch": {
+      "command": "/Users/visualval/.local/bin/mcp-server-fetch"
     }
   }
 }

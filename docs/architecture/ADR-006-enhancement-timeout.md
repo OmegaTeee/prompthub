@@ -1,7 +1,7 @@
 # ADR-006: Enhancement Timeout & Unified Model
 
 ## Status
-Superseded (timeout tuning retained; unified model replaced by task-specific model strategy)
+Superseded (timeout tuning retained; unified model replaced by [ADR-008](ADR-008-task-specific-models.md) task-specific model strategy — all clients now use `qwen3-4b-instruct-2507` on LM Studio. Ollama references below reflect the state at time of writing.)
 
 ## Context
 The prompt enhancement service was failing intermittently — working when the LLM server had the model "hot" in VRAM but silently timing out on cold starts. The root cause was a compound failure across three independent timeout layers.
@@ -133,7 +133,8 @@ enhancement_service = EnhancementService(
 ## Related
 - [ADR-003: Per-Client Enhancement](ADR-003-per-client-enhancement.md) — Amended (model selection unified, system prompts remain per-client)
 - [ADR-005: Async-First](ADR-005-async-first.md) — httpx async client is the timeout boundary
-- `docs/features/OLLAMA-OPENAI-API.md` — User-facing timeout troubleshooting
+- `docs/features/OPENAI-API.md` — User-facing timeout troubleshooting
+- See [Glossary](../glossary.md) for current terminology
 
 ## Revision History
 - 2026-02-24: Initial decision after diagnosing intermittent enhancement failures

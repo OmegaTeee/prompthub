@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-PromptHub's prompt enhancement relies on a local LLM server (LM Studio, Ollama, or compatible). When the LLM server is unavailable (cold start, circuit breaker open, timeout, crash), enhancement silently degrades — the original prompt passes through unchanged. For clients that don't require strict data locality, a cloud fallback can restore enhancement availability.
+PromptHub's prompt enhancement relies on LM Studio (or any OpenAI-compatible local LLM server). When the LLM server is unavailable (cold start, circuit breaker open, timeout, crash), enhancement silently degrades — the original prompt passes through unchanged. For clients that don't require strict data locality, a cloud fallback can restore enhancement availability.
 
 ### Requirements
 1. **Privacy-first**: Some clients must never send prompts to the cloud (`local_only`)
@@ -52,7 +52,7 @@ A separate `CircuitBreaker` instance for OpenRouter:
 ```
 enhance() called
   ↓
-Ollama attempt → success? → return (provider="ollama")
+LM Studio attempt → success? → return (provider="lm-studio")
   ↓ (failure)
 _try_cloud_fallback()
   ├── Gate 1: privacy_level == "local_only"? → return original
@@ -100,15 +100,17 @@ OPENROUTER_DEFAULT_MODEL=deepseek/deepseek-r1-0528:free
 ## Consequences
 
 ### Positive
-- Enhancement works even when Ollama is down (for eligible clients)
+- Enhancement works even when LM Studio is down (for eligible clients)
 - Zero cost with free-tier models
-- `OllamaOpenAIClient` is now reusable for any OpenAI-compatible provider
+- `LLMClient` (OpenAI-compatible) is reusable for any provider
 - `provider` field in response enables observability (which backend served the request)
 
 ### Negative
 - Free-tier rate limits (20 req/min on OpenRouter) may throttle high-volume clients
-- Cloud models may produce different quality output than local LLM server models
+- Cloud models may produce different quality output than local models
 - Requires API key creation (free but manual step)
+
+> **Note:** Model mapping in `cloud-models.json` updated for LM Studio models. See [ADR-008](ADR-008-task-specific-models.md) for current model strategy and [Glossary](../glossary.md) for terminology.
 
 ### Neutral
 - `local_only` clients (the default) are completely unaffected

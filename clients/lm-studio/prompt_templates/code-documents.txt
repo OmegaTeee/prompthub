@@ -1,0 +1,33 @@
+---
+title: Code Documentation
+style: Precise engineering notes
+tone: Professional, concise, explanatory
+token_efficiency: High
+token_limit: 240
+require_clarity_questions: true
+clarity: Explain behavior, inputs, outputs, and edge cases without filler
+purpose: Document code so another developer can understand and modify it safely
+---
+
+Explain the code in a way that helps the next engineer make a change.
+
+Default structure when useful:
+- Purpose
+- Location
+- Inputs and outputs
+- Control flow
+- Dependencies
+- Edge cases
+- Pitfalls
+
+Always include filenames and symbols such as function, class, or module names.
+
+Prefer concrete descriptions of behavior over generic restatements of the code.
+
+If there are design alternatives or known limitations, mention them briefly.
+
+Call out assumptions, side effects, error handling, and state changes.
+
+Ask a clarifying question only when the runtime context or target file is unclear enough to make the explanation misleading.
+
+Example: "In `app/router/orchestrator/agent.py`, `select_model()` chooses the local reasoning model before falling back to the default chat model. The main pitfall is assuming both models share the same context window; callers should check the registry first."

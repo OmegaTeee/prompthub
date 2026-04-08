@@ -2,7 +2,7 @@
 
 Get PromptHub running and connected to your first app. This takes about five minutes.
 
-PromptHub is a local hub that connects your AI-powered apps to LM Studio models through one endpoint. Think of it like a power strip: you plug all your tools into one place, and PromptHub handles the wiring.
+PromptHub is a local router that connects your AI-powered apps to LM Studio models through one endpoint. Think of it like a power strip: you plug all your tools into one place, and PromptHub handles the wiring. (For precise definitions of terms like router, bridge, and proxy, see [docs/glossary.md](docs/glossary.md).)
 
 ---
 
