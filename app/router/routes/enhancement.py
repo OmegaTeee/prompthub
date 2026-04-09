@@ -106,7 +106,7 @@ def create_enhancement_router(
         x_client_name: str | None = Header(None, alias="X-Client-Name"),
     ):
         """
-        Classify intent and annotate a prompt via the orchestrator agent (qwen3:14b).
+        Classify intent and annotate a prompt via the orchestrator agent.
 
         Returns the OrchestratorResult without running enhancement.
         Useful for debugging routing decisions or building custom pipelines.

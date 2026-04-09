@@ -24,7 +24,7 @@ Think of it like a translator: your app speaks "OpenAI," and PromptHub translate
 
 ### Step 1: Find Your API Key
 
-Your API keys live in `~/prompthub/configs/api-keys.json`. Open that file and you will see something like this:
+Your API keys live in `~/prompthub/app/configs/api-keys.json`. Open that file and you will see something like this:
 
 ```json
 {
@@ -196,7 +196,7 @@ print(response.json())
 
 ### Add a New Key
 
-Open `~/prompthub/configs/api-keys.json` and add an entry:
+Open `~/prompthub/app/configs/api-keys.json` and add an entry:
 
 ```json
 {
@@ -243,7 +243,7 @@ curl -X POST http://localhost:9090/v1/api-keys/reload
 
 When enhancement is turned on for an API key, PromptHub uses the `client_name` to decide which model does the rewriting. You can customize this.
 
-Edit `~/prompthub/configs/enhancement-rules.json`:
+Edit `~/prompthub/app/configs/enhancement-rules.json`:
 
 ```json
 {

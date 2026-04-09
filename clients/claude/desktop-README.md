@@ -11,11 +11,11 @@ Bridge client using `mcpServers` format. Merge install (config includes `globalS
 ## Quick setup
 
 ```bash
-cd app && python -m cli generate claude-desktop
-cd app && python -m cli install claude-desktop
+./clients/claude/desktop-setup.sh
 ```
 
-The `install` command merges the `prompthub` entry into your existing `mcpServers` — other servers and preferences are preserved.
+The setup script links PromptHub's tracked config into Claude Desktop while
+keeping the repo as the source of truth.
 
 ## Files in this directory
 

@@ -114,7 +114,7 @@ Client configs live in `clients/` — each client has its own directory with an 
 ```bash
 # Set up a client (creates symlink or prints instructions)
 ./clients/lm-studio/setup.sh
-./clients/claude-desktop/setup.sh
+./clients/claude/setup.sh
 
 # Check all clients and system health
 ./scripts/diagnose.sh

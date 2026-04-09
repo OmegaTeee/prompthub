@@ -5,8 +5,6 @@ Merged directory for both Claude clients. Symlinks at `clients/claude-code` and
 
 ## Files
 
-# 📁 ⚙️  📔 📓 📒 📝 📄 📃
-
 | File | Client | Purpose |
 |---|---|---|
 | `code-mcp.json` | Claude Code | MCP bridge config (includes skills-mcp, fetch) |

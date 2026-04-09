@@ -7,25 +7,24 @@ prompthub/
 ├── app/                          # Python project (FastAPI router)
 │   ├── router/                   # FastAPI application package
 │   │   ├── main.py               # App factory (~505 lines: globals, lifespan, middleware, dashboard helpers, router wiring)
-│   │   ├── routes/               # Route handlers extracted from main.py (7 modules, factory pattern)
+│   │   ├── routes/               # Route handlers extracted from main.py (health, servers, MCP, enhancement, audit, pipelines)
 │   │   ├── audit.py              # Structured JSON audit logging
 │   │   ├── audit_integrity.py    # SHA256 tamper detection
 │   │   ├── security_alerts.py    # Real-time anomaly detection
 │   │   ├── keyring_manager.py    # macOS Keychain integration
 │   │   ├── cache/                # L1 in-memory LRU + L2 SQLite persistent cache
-│   │   ├── clients/              # Config generators (Claude, VS Code, Raycast)
+│   │   ├── clients/              # Client-related helpers and config support code
 │   │   ├── config/               # Pydantic Settings, JSON config loading
 │   │   ├── dashboard/            # HTMX monitoring UI (factory router)
 │   │   ├── enhancement/          # LLM HTTP client (OpenAI-compat), per-client rules, cloud fallback (OpenRouter)
-│   │   ├── orchestrator/         # Pre-enhancement intent classifier (qwen3:14b)
+│   │   ├── orchestrator/         # Pre-enhancement intent classifier (qwen3-4b-thinking-2507)
 │   │   ├── middleware/            # Audit context, activity logging
 │   │   ├── memory/               # Session memory (SQLite-backed facts, blocks, MCP sync)
 │   │   ├── openai_compat/        # OpenAI proxy /v1/* (factory router)
 │   │   ├── pipelines/            # Documentation generation workflow
 │   │   ├── resilience/           # Circuit breaker (CLOSED→OPEN→HALF_OPEN)
 │   │   └── servers/              # MCP server lifecycle (bridge, process, registry, supervisor)
-│   ├── cli/                      # MCP Config Manager (Typer CLI: generate, install, validate, diff, list, diagnose)
-│   ├── tests/                    # Pytest suite (20 test files, 272 passing)
+│   ├── tests/                    # Pytest suite
 │   ├── configs/                  # Runtime configs (mcp-servers.json, enhancement-rules.json, api-keys.json)
 │   ├── templates/                # Jinja2 templates (dashboard HTML)
 │   ├── scripts/                  # Shell scripts (dev, manual tests)
@@ -80,13 +79,13 @@ prompthub/
 | `servers/` | MCP server lifecycle (spawn, bridge, registry, supervisor) | config/ |
 | `resilience/` | Circuit breaker state machine | — |
 | `cache/` | LRU cache with hit/miss tracking | — |
-| `enhancement/` | LLM client, per-client model routing | cache/, resilience/ |
+| `enhancement/` | LLM client, per-client enhancement rules, cloud fallback | cache/, resilience/ |
 | `orchestrator/` | Intent classification, prompt annotation, tool suggestion | enhancement/ (LLMClient), resilience/ |
 | `openai_compat/` | Bearer auth, SSE streaming, /v1 endpoints | enhancement/, resilience/ |
 | `dashboard/` | HTMX templates, real-time partials | servers/, cache/, enhancement/ |
 | `middleware/` | Audit context propagation, activity logging | — |
 | `pipelines/` | Multi-step documentation workflow | enhancement/, servers/ |
-| `clients/` | Config generators for desktop apps (delegates to `cli/`) | cli/ |
+| `clients/` | Repo-managed client configs, setup scripts, and examples | — |
 | `cli/` | MCP Config Manager — path-safe config generation, validation, diagnostics | config/ |
 
 ## Documentation Split
@@ -109,4 +108,6 @@ When working on a specific client's configuration, check `clients/<client-name>/
 
 Read the `llm.txt` before generating configs or troubleshooting client-specific issues. These files contain format details, gotchas, and config examples that are not in the codebase itself.
 
-Current `llm.txt` files: `cherry-studio`, `zed`, `jetbrains`, `lm-studio`.
+Current `llm.txt` files include `cherry-studio`, `zed`, `jetbrains`, and
+`lm-studio`. Check the client directory for the current set before depending on
+an exact count.

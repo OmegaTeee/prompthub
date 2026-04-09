@@ -1,5 +1,9 @@
 # I want to feed Claude history into PromptHub
 
+> Research snapshot: this note captures an exploratory integration idea, not an
+> approved feature plan. Model examples and suggested tooling below should be
+> treated as provisional.
+
 Here's a solid integration plan for feeding Claude Code history into PromptHub, based on how the data is structured.
 
 ## Claude Code History Format
@@ -79,4 +83,3 @@ The `history_to_prompt` tool is probably the highest-leverage piece for PromptHu
 [^14]: https://x.com/minchoi/status/2036279719386100126
 
 [^15]: https://simonw.substack.com/p/building-a-tool-to-copy-paste-share
-

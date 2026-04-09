@@ -1,5 +1,9 @@
 # LM Studio sketch for PromptHub enhancement orchestration
 
+> **Research artifact:** This sketch captures an intermediate design exploration.
+> Some lane names and config examples differ from the current implementation.
+> Use it for background context, not as the current source of truth.
+
 Here’s a concrete, LM‑Studio‑only sketch you can adapt. It assumes:
 
 - Small model: Qwen3‑4B‑Instruct‑2507 (fast, no thinking).[^1]
@@ -160,4 +164,3 @@ and let your Python orchestrator opt into it explicitly based on trigger phrases
 [^11]: llm-qwen3-coder-30b-model-card.md
 
 [^12]: llm-qwen35-2b-model-card.md
-

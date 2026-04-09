@@ -4,6 +4,10 @@
 **Branch**: `feature/lm-studio-backend`
 **Status**: Approved
 
+> Historical migration spec: this document describes the repo during the LM
+> Studio migration. Many Ollama references below are intentionally preserved as
+> before/after context and should not be read as current architecture guidance.
+
 ## Summary
 
 Replace Ollama as PromptHub's local LLM server with LM Studio. Rename all internal "Ollama" references to backend-agnostic "LLM" naming. Delete the native Ollama API code path and the thinking-token shim, leaving one clean OpenAI-compatible client that works with any backend.

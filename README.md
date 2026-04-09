@@ -6,7 +6,7 @@ Lightweight local-first service orchestration layer for macOS — central router
 
 Service provides a single local router (`localhost:9090`) that:
 - Manages MCP servers centrally (configure once, use everywhere)
- - Enhances prompts via LM Studio before forwarding to AI services
+- Enhances prompts via LM Studio before forwarding to AI services
 - Provides circuit breakers for graceful degradation
 - Caches responses for performance
 
@@ -18,7 +18,7 @@ Service provides a single local router (`localhost:9090`) that:
 |-------|--------|-------------|
 | Phase 2 | **Complete** | Core router, caching, circuit breakers, LM Studio enhancement |
 | Phase 2.5 | **Complete** | MCP server management, stdio bridges |
-| Phase 3 | **Complete** | Desktop integration, config generators, documentation pipeline |
+| Phase 3 | **Complete** | Desktop integration, repo-managed client configs, documentation pipeline |
 | Phase 4 | **Complete** | HTMX dashboard with real-time monitoring |
 | Phase 5 | **Complete** | OpenAI-compatible API proxy for desktop apps |
 
@@ -83,18 +83,19 @@ prompthub/
 ## Documentation
 
 ### User Guides
-User-facing guides (setup, integrations, workflows) live in the **Obsidian vault** at `~/Vault/PromptHub/`:
-- Getting Started - Quick start and verification
-- Keychain Setup - Secure credential storage
-- LaunchAgent Setup - Background service setup
-- Integrations - Claude Desktop, VS Code, Cursor, Raycast, Obsidian
-- Workflows - Design-to-code, content creation, code development
+User-facing guides live in [`docs/guides/`](docs/guides/):
+- [Quick Start](docs/guides/01-quick-start-guide.md)
+- [Prompt Enhancement](docs/guides/02-prompt-enhancement-user-guide.md)
+- [Session Memory](docs/guides/03-session-memory-guide.md)
+- [OpenAI-Compatible API](docs/guides/04-openai-api-guide.md)
+- [Client Configuration](docs/guides/06-client-configuration-guide.md)
 
 ### Client Setup
-See **[mcps/configs/](mcps/configs/)** for desktop client configurations:
-- [Claude Desktop](mcps/configs/claude_desktop_config.json) - Config (symlink to active config)
-- [Raycast](mcps/configs/raycast.json) - MCP server config
-- [MCP Inspector](mcps/configs/mcp-inspector.json) - Inspector testing config
+Client setup now lives under [`clients/`](clients/):
+- [Claude](clients/claude/) - Claude app configs and setup helpers
+- [Raycast](clients/raycast/) - MCP and provider configuration
+- [VS Code](clients/vscode/) - MCP and editor integration files
+- [LM Studio](clients/lm-studio/) - local model presets and setup notes
 
 ### Developer Documentation
 See **[docs/](docs/)** for technical documentation:
@@ -104,10 +105,10 @@ See **[docs/](docs/)** for technical documentation:
 
 ### Prompt Enhancement
 
-Prompts pass through a local LM Studio model before reaching the AI service. Each client gets a tailored system prompt and model:
+Prompts pass through a local LM Studio model before reaching the AI service. Each client gets a tailored system prompt, privacy policy, and enhancement settings:
 
-| Client | Model | Tuning |
-|--------|-------|--------|
+| Client | Default model | Tuning |
+|--------|---------------|--------|
 | Claude Desktop | qwen3-4b-instruct-2507 | Structured reasoning, Markdown |
 | VS Code / Claude Code | qwen3-4b-instruct-2507 | Code-first, file paths, minimal prose |
 | Raycast | qwen3-4b-instruct-2507 | Action-oriented, CLI commands, under 200 words |
@@ -148,7 +149,9 @@ PromptHub manages 6 MCP servers:
 | memory | @modelcontextprotocol/server-memory | No | Cross-session persistence |
 | fetch | mcp-fetch | No | HTTP fetch, GraphQL |
 
-> See [app/configs/mcp-servers.json.examples](./app/configs/mcp-servers.json.examples) for additional server examples including Python-based MCPs.
+> See [`app/configs/mcp-servers.json`](./app/configs/mcp-servers.json) for the
+> active registry and [`mcps/README.md`](./mcps/README.md) for server-specific
+> notes.
 
 ### Adding/Updating MCPs
 
@@ -374,17 +377,13 @@ GET /security/alerts?severity=critical
 GET /audit/integrity/verify
 ```
 
-#### Client Configurations
+#### Client Configuration Sources
 
 ```bash
-# Generate config for Claude Desktop
-GET /configs/claude-desktop
-
-# Generate config for VS Code
-GET /configs/vscode
-
-# Generate Raycast script
-GET /configs/raycast
+# Client configs are stored as files in the repo, not generated over HTTP
+clients/claude/
+clients/vscode/
+clients/raycast/
 ```
 
 ### Error Handling

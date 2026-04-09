@@ -30,7 +30,7 @@ Detailed documentation for PromptHub's core modules.
 ## Module Dependency Graph
 
 ```
-main.py (~505 lines: globals, lifespan, middleware, dashboard helpers, router wiring)
+main.py (globals, lifespan, middleware, dashboard helpers, router wiring)
   │
   ├── routes/                     # Route handlers (factory pattern)
   │   ├── health.py               # /health, /circuit-breakers
@@ -38,8 +38,7 @@ main.py (~505 lines: globals, lifespan, middleware, dashboard helpers, router wi
   │   ├── mcp_proxy.py            # /mcp/{server}/{path} + normalize helpers
   │   ├── enhancement.py          # /llm/enhance, /llm/stats, /llm/reset
   │   ├── audit.py                # /audit/activity*, /audit/integrity*, /security/alerts*
-  │   ├── pipelines.py            # /pipelines/documentation
-  │   └── client_configs.py       # /configs/claude-desktop, /vscode, /raycast
+  │   └── pipelines.py            # /pipelines/documentation
   │
   ├── servers/
   │   ├── registry.py             # ServerRegistry
@@ -105,9 +104,9 @@ Each module exports a minimal public API:
 ```python
 # router/enhancement/__init__.py
 from router.enhancement.service import EnhancementService
-from router.enhancement.ollama import OllamaClient
+from router.enhancement.llm_client import LLMClient
 
-__all__ = ["EnhancementService", "OllamaClient"]
+__all__ = ["EnhancementService", "LLMClient"]
 ```
 
 ### Dependency Direction
@@ -137,13 +136,8 @@ Test modules in isolation with mocks:
 ```python
 # tests/test_enhancement.py
 def test_enhancement_service():
-    mock_ollama = Mock()
-    mock_cache = Mock()
-
-    service = EnhancementService(
-        ollama=mock_ollama,
-        cache=mock_cache,
-    )
+    mock_llm = Mock()
+    service = EnhancementService(...)
 
     # Test service logic without dependencies
 ```
@@ -209,7 +203,7 @@ class EnhancementService:
         if cached:
             return cached
 
-        result = await self.ollama.generate(prompt)
+        result = await self.llm_client.chat_completion(...)
         await self.cache.set(prompt, result)
         return result
 ```

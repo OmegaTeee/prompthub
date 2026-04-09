@@ -17,16 +17,16 @@ Bridge client using `mcpServers` format. **Symlink install** (MCP-only config fi
 ## Quick setup
 
 ```bash
-cd app && python -m cli generate raycast
-cd app && python -m cli install raycast
+./clients/raycast/setup.sh
 ```
 
-The `install` command writes to `clients/raycast/mcp.json` and creates a symlink at the app path.
+The setup script creates the `mcp.json` symlink. Provider settings are managed
+from the tracked files in this directory.
 
 ## Files in this directory
 
 - `mcp.json` — Bridge config (source of truth, symlinked to app path)
-- `provider.yaml` — Raycast AI Chat custom provider config (points to PromptHub `/v1/` proxy)
+- `providers.yaml` — Raycast AI Chat custom provider config (points to PromptHub `/v1/` proxy)
 
 ## Privacy level
 

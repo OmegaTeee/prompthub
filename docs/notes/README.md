@@ -6,7 +6,7 @@ Working notes, research, model evaluations, and improvement plans that aren't ye
 
 ```
 docs/notes/
-├── models/       LLM model cards (one per Ollama model)
+├── models/       LLM model cards and local model inventories
 ├── servers/      MCP server cards (one per registered server)
 ├── research/     Comparisons, evaluations, stack inventories
 ├── plans/        Roadmaps and phased improvement proposals
@@ -62,12 +62,11 @@ tags: [relevant, topic, tags]
 
 | File | Status | Model | PromptHub Role |
 |---|---|---|---|
-| `llm-qwen3-14b-model-card.md` | final | qwen3:14b (14.8B) | Orchestrator + OpenClaw primary |
-| `llm-qwen35-2b-model-card.md` | final | qwen3.5:2b (2.3B) | Default enhancement (6 clients) + Raycast Chat |
-| `llm-gemma3-4b-model-card.md` | final | gemma3:4b (4.3B) | Former default enhancement (fallback) |
-| `llm-gemma3-27b-model-card.md` | final | gemma3:27b (27.4B) | Claude Desktop enhancement |
-| `llm-qwen3-coder-30b-model-card.md` | final | qwen3-coder:30b (30.5B MoE) | Claude Code enhancement |
-| `llm-bge-m3-model-card.md` | final | bge-m3 (567M) | Embeddings (future RAG) |
+| `qwen3-4b-instruct-2507.md` | final | qwen3-4b-instruct-2507 | Enhancement model |
+| `qwen3-4b-thinking-2507.md` | final | qwen3-4b-thinking-2507 | Orchestrator model |
+| `text-embedding-nomic-embed-text-v1.5.md` | final | text-embedding-nomic-embed-text-v1.5 | Embeddings (standby / future RAG) |
+| `deepseek-r1-0528-qwen3-8b.md` | final | deepseek-r1-0528-qwen3-8b | Research / optional reasoning model |
+| `lm-studio-models.json` | final | LM Studio inventory | Local model catalog snapshot |
 
 ### servers/ — MCP Server Cards
 
@@ -87,13 +86,15 @@ tags: [relevant, topic, tags]
 | File | Status | Description |
 |---|---|---|
 | `llm-stack.md` | review | Full stack inventory, per-client assignments, experimentation log |
-| `llm-mcp-guide.md` | review | 4-model comparison (qwen3/gemma3) for MCP and desktop clients |
+| `llm-mcp-guide.md` | review | Historical model comparison for MCP and desktop client workflows |
 
 ### plans/ — Roadmaps
 
 | File | Status | Description |
 |---|---|---|
 | `plan-rag-improvement.md` | draft | 4-phase RAG improvement roadmap (session context, PGVector, RAG enhancement, n8n) |
+| `idea-dashboard-refactor-review.md` | draft | Scoping review for dashboard redesign |
+| `idea-dashboard-refactor-tech-overview.md` | draft | Tech stack evaluation — Grafana, Prometheus, OpenTelemetry |
 
 ### dashboard/ — Dashboard & Observability Ideas
 
@@ -102,7 +103,5 @@ tags: [relevant, topic, tags]
 | `idea-dashboard-update.md` | draft | Server control buttons, auto-start changes |
 | `idea-dashboard-improvements.md` | draft | UX improvements — loading indicators, toast notifications |
 | `idea-dashboard-refactor-recommendations.md` | draft | Refactor suggestions from enhancement middleware work |
-| `idea-dashboard-refactor-review.md` | draft | Scoping review for dashboard redesign |
-| `idea-dashboard-refactor-tech-overview.md` | draft | Tech stack evaluation — Grafana, Prometheus, OpenTelemetry |
 | `idea-grafana-readme.md` | draft | Grafana dashboard import/setup instructions |
 | `idea-grafana-dashboard.json` | — | Grafana dashboard JSON definition (import-ready) |

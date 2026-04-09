@@ -7,7 +7,9 @@ PromptHub is a **local-first AI router for macOS** — a single endpoint (`local
 ## Value Proposition
 
 - **Configure once, use everywhere** — MCP servers are managed centrally; clients (Claude Desktop, VS Code, Cursor, Raycast, Obsidian) all connect to one router
-- **Invisible enhancement** — Prompts are automatically improved via a local LLM server using per-client models before reaching the AI service
+- **Invisible enhancement** — Prompts are automatically improved via a local
+  LLM server using shared models plus per-client rules before reaching the AI
+  service
 - **Resilience built-in** — Circuit breakers, auto-restart, caching prevent cascading failures
 - **Observable** — Dashboard, audit logging, security alerts give full visibility into what's happening
 
@@ -46,7 +48,7 @@ User-facing documentation (guides, quickstarts, troubleshooting) is written at a
 |-------|--------|-------------|
 | Phase 2 | Complete | Core router, caching, circuit breakers, LLM enhancement |
 | Phase 2.5 | Complete | MCP server management, stdio bridges |
-| Phase 3 | Complete | Desktop integration, config generators, documentation pipeline |
+| Phase 3 | Complete | Desktop integration, repo-managed client configs, documentation pipeline |
 | Phase 4 | Complete | HTMX dashboard with real-time monitoring |
 | Phase 5 | Complete | OpenAI-compatible API proxy for desktop apps |
 

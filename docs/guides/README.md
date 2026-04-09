@@ -16,7 +16,8 @@ PromptHub becomes an **orchestrated service mesh** — it enhances, modifies, an
 - Route to multiple local models dynamically
 
 👉 **Key difference:**
-- *_Bridge mode_* = passive translation, no intelligence- *_Orchestration mode_* = active, intelligent routing and enhancement — PromptHub *decides* how and what to run
+- **_Bridge mode_** = passive translation, no intelligence
+- **_Orchestration mode_** = active, intelligent routing and enhancement — PromptHub *decides* how and what to run
 
 🔹 **Critical configuration note:**
 PromptHub uses **local API secrets and model paths** (e.g., LM Studio model locations) even in bridge mode. These are stored securely and used to connect directly to your local models — meaning it’s not just a proxy, but a *configured local AI runtime* ready to run models without relying on external services.
@@ -218,7 +219,7 @@ These guides focus on end-user experience. For technical/developer documentation
 ## 📞 Support
 
 1. **Check the logs:** `tail ~/prompthub/logs/router-stderr.log`
-2. **Run diagnostics:** `python -m cli diagnose`
+2. **Run diagnostics:** `./scripts/diagnose.sh`
 3. **Search this documentation** using Command+F
 4. **Read the Troubleshooting Guide** — covers 95% of common issues
 5. **Check the Advanced Manual** — for configuration help

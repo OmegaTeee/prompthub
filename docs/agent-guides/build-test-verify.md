@@ -9,7 +9,8 @@ Prefer repo wrapper commands in `~/prompthub/scripts` when they exist and accura
 - Start with the narrowest check that matches the files changed.
 - Prefer documented repo wrapper commands over ad hoc direct commands when both are available.
 - Do not claim success unless the relevant command completed or the generated output was inspected.
-- If config generation changes, validate the generated artifact for the affected client.
+- If repo-managed client config files or setup scripts change, inspect the
+  affected client file and verify the expected install target or workflow.
 - If routing or transport behavior changes, validate both the happy path and at least one failure or fallback path.
 - If documentation changes alter conventions, update both user-facing and agent-facing docs in the same change.
 
@@ -27,13 +28,14 @@ Recommended flow:
 
 ### Config change
 
-Use when modifying client configuration generation, templates, naming, or output shape.
+Use when modifying client configuration files, setup scripts, naming, or output
+shape.
 
 Recommended flow:
 
-1. Identify the source file or generator.
-2. Regenerate or rebuild the affected config output if the workflow supports generation.
-3. Inspect the generated result for the affected client.
+1. Identify the source file in `clients/` or `app/configs/`.
+2. Run the relevant setup script or inspect the repo-managed client file if the workflow uses one.
+3. Inspect the resulting config or documented install target for the affected client.
 4. Check that shared naming and env var conventions still align across clients.
 5. Update docs if user-facing behavior changed.
 
@@ -203,7 +205,7 @@ pip install -r requirements.txt
 | --- | --- |
 | Docs only | Read affected docs for consistency and accuracy. |
 | Small Python code change | Run the narrowest relevant lint, typecheck, or targeted test command. |
-| Config generation or config-shape change | Inspect the affected config output and verify alignment with supported clients. |
+| Client config or config-shape change | Inspect the affected client file or setup workflow and verify alignment with supported clients. |
 | Routing or transport change | Run targeted validation plus at least one fallback or failure-path check. |
 | MCP server package or config change | Validate package/config changes and run MCP server validation if relevant. |
 | Broad refactor | Run targeted checks first, then broader lint/test/typecheck coverage. |

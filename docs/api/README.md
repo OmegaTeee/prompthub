@@ -34,7 +34,7 @@ http://localhost:9090
 
 ### Authentication
 - **MCP proxy, health, servers**: No authentication required (local-only)
-- **OpenAI-compatible `/v1/` endpoints**: Bearer token required (configured in `configs/api-keys.json`)
+- **OpenAI-compatible `/v1/` endpoints**: Bearer token required (configured in `app/configs/api-keys.json`)
 
 ```bash
 # /v1/ endpoints require a bearer token
@@ -113,19 +113,21 @@ curl "http://localhost:9090/audit/activity?limit=10" | jq
 open http://localhost:9090/dashboard
 ```
 
-### 5. Generate Client Configurations
+### 5. Configure a Client
 
 ```bash
-# Claude Desktop
-curl http://localhost:9090/configs/claude-desktop > ~/Library/Application\\ Support/Claude/claude_desktop_config.json
+# Inspect repo-managed client files
+ls clients/claude
+ls clients/raycast
+ls clients/vscode
 
-# VS Code
-curl http://localhost:9090/configs/vscode > .vscode/mcp.json
-
-# Raycast
-curl http://localhost:9090/configs/raycast > ~/raycast-mcp.sh
-chmod +x ~/raycast-mcp.sh
+# Run the client's setup helper when available
+./clients/raycast/setup.sh
+./clients/claude/desktop-setup.sh
 ```
+
+PromptHub no longer serves generated client configs from `/configs/*`. Use the
+tracked files in `clients/` instead.
 
 ## Error Handling
 

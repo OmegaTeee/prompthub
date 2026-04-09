@@ -4,14 +4,17 @@ This guide helps coding agents understand the structure of the PromptHub reposit
 
 ## Repository purpose
 
-PromptHub is the local MCP router project for sharing MCP servers and centralizing client configurations across multiple AI clients.
-The repo should preserve a single source of truth for routing behavior, client configuration generation, and shared enhancement logic.
+PromptHub is the local MCP router project for sharing MCP servers and
+centralizing client configurations across multiple AI clients. The repo should
+preserve a single source of truth for routing behavior, repo-managed client
+configuration files, and shared enhancement logic.
 
 ## High-level structure
 
 - `app/` — main application code and internal implementation details.
-- `app/configs/` — managed client-facing configuration assets and related config logic.
+- `app/configs/` — shared router configuration and rule files.
 - `app/configs/enhancement-rules.json` — important shared enhancement/config rules file.
+- `clients/` — repo-managed client config files, setup scripts, and per-client notes.
 - `docs/` — human and agent-facing documentation.
 - `docs/api/` — API reference and integration details.
 - `docs/architecture/` — ADRs and architecture notes; read before major refactors.
@@ -34,7 +37,7 @@ The repo should preserve a single source of truth for routing behavior, client c
 
 ## Working assumptions
 
-- Prefer editing source files or generators instead of patching generated outputs directly.
+- Prefer editing source files and repo-managed client assets instead of patching installed app configs directly.
 - Treat PromptHub as the source of truth for MCP server sharing and centralized client configuration.
 - Preserve supported client compatibility unless the task explicitly allows a breaking change.
 - Keep Claude-primary and OpenCode/LM Studio-backup workflows aligned wherever practical.
@@ -48,12 +51,17 @@ Read these first when relevant:
 - `docs/architecture/ADR-004-modular-monolith.md`
 - `docs/architecture/ADR-009-orchestrator-agent.md`
 - `docs/guides/06-client-configuration-guide.md`
+- `clients/README.md`
 - `docs/modules/servers.md`
 - `scripts/README.md`
 
 ## Change strategy
 
-- For config-related work, inspect `app/configs/` and the docs that describe affected clients.
+- For config-related work, inspect both `app/configs/` and the relevant
+  `clients/<name>/` directory before editing.
+- For client onboarding or placeholder activation, check `clients/README.md`
+  first. If you are using Claude, also check
+  `.claude/skills/client-setup/SKILL.md`.
 - For router or transport changes, inspect architecture ADRs before modifying behavior.
 - For documentation changes, update both user-facing docs and agent-facing docs when conventions change.
 - For workflow or operational command changes, update both the script docs and the related agent guides.

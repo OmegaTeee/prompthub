@@ -1,6 +1,7 @@
 # Codex
 
-OpenAI Codex CLI. Uses **TOML** config — `generate`/`install` are not supported (raises `NotImplementedError`).
+OpenAI Codex CLI. Uses **TOML** config and is maintained from the tracked
+example in this directory rather than a generated installer.
 
 ## Config path
 
@@ -26,14 +27,10 @@ PROMPTHUB_URL = "http://127.0.0.1:9090"
 SERVERS = "memory,sequential-thinking,desktop-commander,perplexity-comet,context7"
 ```
 
-## CLI behavior
+## Setup workflow
 
-```bash
-cd app && python -m cli generate codex
-# Error: Codex uses TOML config. Edit clients/codex/config.toml manually.
-
-cd app && python -m cli list   # Shows codex with config path
-```
+Copy or merge `config.toml` into `~/.codex/config.toml`, then adjust local
+paths and tokens as needed.
 
 ## Files in this directory
 

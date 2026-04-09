@@ -3,6 +3,12 @@
 ## Status
 Accepted
 
+> **Historical note:** This ADR still reflects the original free-tier fallback
+> design and some older model examples. Use it for decision history. For the
+> current terminology and active model layout, prefer
+> [`docs/glossary.md`](../glossary.md) and
+> [`docs/architecture/README.md`](README.md).
+
 ## Context
 PromptHub's prompt enhancement relies on LM Studio (or any OpenAI-compatible local LLM server). When the LLM server is unavailable (cold start, circuit breaker open, timeout, crash), enhancement silently degrades — the original prompt passes through unchanged. For clients that don't require strict data locality, a cloud fallback can restore enhancement availability.
 

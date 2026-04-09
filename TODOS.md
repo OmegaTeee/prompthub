@@ -32,8 +32,8 @@
 > **Glossary:** [`docs/glossary.md`](docs/glossary.md)
 > **Context:** Quick fixes applied to ADRs, modules, API, steering, and root docs on 2026-04-05. Two documents need full rewrites (not quick find-replace) because the stale content is deeply embedded in diagrams, flow charts, and benchmarks.
 
-- [ ] **Rewrite `docs/architecture/README.md`** — Contains ~15 Ollama references across ASCII diagrams (lines 38, 48, 63), flow charts (lines 140-153), benchmarks (lines 225-231), and deployment examples (lines 244-273). Diagrams show `Ollama :11434` instead of `LM Studio :1234`. Model names reference gemma3/qwen3-coder/llama3.2 — all superseded by `qwen3-4b-instruct-2507`. Benchmark numbers may also be stale. **This is the single largest source of outdated terminology in the project.**
-- [ ] **Review `docs/notes/dashboard/` idea docs** — Two files (`idea-dashboard-refactor-review.md`, `idea-dashboard-refactor-tech-overview.md`) reference Ollama, DeepSeek-R1/Qwen3-Coder model names, and "7 MCP servers" (now 9). These are planning docs — decide whether to update or archive.
+- [x] ~~**Rewrite `docs/architecture/README.md`**~~ — Replaced the stale Ollama-era architecture overview with a glossary-aligned reference centered on the current router/bridge/proxy split, LM Studio runtime, current model roles, and current API surfaces.
+- [x] ~~**Review dashboard plan docs in `docs/notes/plans/`**~~ — Moved the two dashboard idea docs from `docs/notes/dashboard/` into `docs/notes/plans/` and updated them to current LM Studio terminology, model names, and MCP server counts.
 - [ ] **Post-rewrite verification pass** — After the heavy-lift rewrites above, grep the full `docs/` tree for remaining `Ollama`, `gemma3`, `llama3.2`, `qwen2.5-coder`, `qwen3:14b`, and `ollama` (case-insensitive) to confirm no stale terms remain. Verify all glossary terms (`router`, `bridge`, `proxy`, `enhancement`, `privacy level`, `circuit breaker`) are used consistently.
 
 ## Deferred Refactors

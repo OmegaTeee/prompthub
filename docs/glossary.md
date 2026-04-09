@@ -47,7 +47,10 @@ The process of rewriting a user's prompt through a local LLM before forwarding i
 
 ### Enhancement rules
 
-Per-client configuration in `app/configs/enhancement-rules.json` defining: model, system prompt, temperature, max_tokens, and privacy_level. Each client gets a tailored rewriting strategy.
+Per-client configuration in `app/configs/enhancement-rules.json` defining:
+model, system prompt, temperature, max_tokens, and privacy_level. Clients
+share the same default enhancement model today, but can still have different
+rewriting policies and safety/privacy settings.
 
 ### Privacy level
 

@@ -1,5 +1,9 @@
 # DeepSeek Best Practices for Your LM Studio Stack
 
+> **Research artifact:** This note documents an earlier model-evaluation path.
+> It may reference optional or superseded local-model choices and should not be
+> read as the current PromptHub default.
+
 DeepSeek fits best as an **optional third model** for deliberate deep reasoning, not as a replacement for either your enhancement model or your orchestrator model.
 
 > Perplexity Comet link to full Q&A thread: https://www.perplexity.ai/search/should-i-use-deepseek-resoner-pL86rg5zSfixEZJakRK6Jg#9. You can continue the discussion   or start a new search thread about implementation details via perplexity-comet-mcp.

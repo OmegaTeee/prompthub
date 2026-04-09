@@ -293,7 +293,7 @@ Each `FastMCPBridge.close()` kills its subprocess.
 
 - `fastmcp` — MCP client, StdioTransport, StreamableHTTPSessionManager, FastMCPProxy
 - `fastapi` — HTTP framework
-- `httpx` — Async HTTP client (for Ollama, OpenRouter)
+- `httpx` — Async HTTP client (for LM Studio, OpenRouter, and other HTTP backends)
 - `aiosqlite` — Async SQLite (tool registry, activity log, memory)
 
 ## Related Documents

@@ -1,6 +1,7 @@
 # JetBrains
 
-Bridge client using `servers` format with `"type": "stdio"`. Merge install.
+Bridge client using `servers` format with `"type": "stdio"`. Placeholder/manual
+setup.
 
 ## Config path
 
@@ -8,18 +9,8 @@ Bridge client using `servers` format with `"type": "stdio"`. Merge install.
 ~/.config/JetBrains/mcp.json
 ```
 
-This is the **global** MCP config for JetBrains IDEs (2024.3+). IDE-specific paths can be targeted with `--config`:
-
-```bash
-cd app && python -m cli install jetbrains --config ~/.config/JetBrains/IntelliJIdea2025.1/mcp.json
-```
-
-## Quick setup
-
-```bash
-cd app && python -m cli generate jetbrains
-cd app && python -m cli install jetbrains
-```
+This is the **global** MCP config for JetBrains IDEs (2024.3+). If you want an
+IDE-specific file, adapt the same JSON shape to that IDE's MCP config path.
 
 ## Config format
 

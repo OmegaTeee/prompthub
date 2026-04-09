@@ -8,18 +8,15 @@ Bridge client using `context_servers` format (unique to Zed). Merge install — 
 ~/.config/zed/settings.json
 ```
 
-## Quick setup
+## Status
 
-```bash
-cd app && python -m cli generate zed
-cd app && python -m cli install zed
-```
-
-The `install` command merges the `prompthub` entry into the existing `context_servers` section. Other Zed settings (fonts, themes, language models, etc.) are preserved.
+Placeholder/manual client. Paste the PromptHub entry into Zed's
+`context_servers` section manually.
 
 ## JSONC format
 
-Zed's `settings.json` uses **JSONC** (JSON with Comments) — `//` line comments and trailing commas are valid. The CLI's installer handles this automatically by stripping comments before parsing.
+Zed's `settings.json` uses **JSONC** (JSON with Comments) — `//` line comments
+and trailing commas are valid.
 
 ## Config format
 

@@ -8,6 +8,10 @@ tags: [plan, rag, pgvector, langchain, n8n, roadmap]
 
 # PromptHub RAG & Workflow Improvement Plan
 
+> Research snapshot: this note captures a March 2026 design sketch. It includes
+> pre-cleanup route names and older implementation assumptions. Use current
+> router docs before treating any endpoint or file reference here as active.
+
 **Created:** 2026-03-21
 **Branch:** `feature/prompthub-rag-improvements`
 **Source:** Gap analysis comparing Work Buddy's LangChain RAG pipeline with PromptHub's current capabilities

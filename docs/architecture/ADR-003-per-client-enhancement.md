@@ -3,6 +3,11 @@
 ## Status
 Accepted (model selection superseded: ADR-006 unified to llama3.2, then [ADR-008](ADR-008-task-specific-models.md) replaced with `qwen3-4b-instruct-2507` on LM Studio. Per-client system prompts remain active. Ollama references below reflect the state at time of writing; current backend is LM Studio.)
 
+> Historical note: this ADR preserves the original per-client model-routing
+> decision and its Ollama-era examples. For the current model strategy and
+> runtime terminology, use [ADR-008](ADR-008-task-specific-models.md), the
+> [architecture README](README.md), and the [glossary](../glossary.md).
+
 ## Context
 PromptHub routes prompts to Ollama for enhancement before sending to LLMs. Different clients (Claude Desktop, VS Code, Raycast, Obsidian) have different use cases and require different enhancement strategies.
 

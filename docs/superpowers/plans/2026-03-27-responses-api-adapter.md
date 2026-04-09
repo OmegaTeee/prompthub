@@ -1,6 +1,9 @@
 # Responses API Adapter Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Historical implementation plan:** this file is kept as execution history for
+> the Responses API work. Use current code and `docs/api/openapi.yaml` for the
+> live endpoint behavior.
 
 **Goal:** Add `POST /v1/responses` endpoint that translates OpenAI Responses API format to Chat Completions, enabling Cherry Studio and similar clients to connect to local models through the router.
 

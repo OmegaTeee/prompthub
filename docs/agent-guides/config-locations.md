@@ -8,13 +8,17 @@ This guide helps coding agents distinguish between source files, generated artif
 - Docs root: `~/prompthub/docs`
 - Agent docs: `~/prompthub/docs/agent-guides`
 - Shared enhancement rules: `~/prompthub/app/configs/enhancement-rules.json`
+- Repo-managed client configs: `~/prompthub/clients/`
 - Local runtime  `~/.local/share/prompthub/`
 - Repo knowledge files: `~/prompthub/.firecrawl/`
 
 ## How to think about locations
 
 - `app/` contains implementation and likely source-of-truth logic.
-- `app/configs/` should be treated as managed configuration space; inspect whether a file is source, template, or generated output before editing it.
+- `app/configs/` is shared router configuration space; these files are usually
+  edited directly when the router's runtime behavior changes.
+- `clients/` contains repo-managed client config files and setup scripts;
+  prefer updating those files rather than editing app-installed copies.
 - `docs/` contains durable documentation; prefer updating active docs instead of archived notes when conventions change.
 - `~/.local/share/prompthub/` is outside the repo and should be modified carefully, only when the task clearly requires local runtime changes.
 
@@ -41,7 +45,8 @@ If uncertain, search nearby docs and code paths before editing.
 
 ## Editing rules
 
-- Prefer editing the generator or source template over patching generated output files.
+- Prefer editing the source file in `clients/` or `app/configs/` over patching
+  installed app configs or machine-local copies.
 - Do not move or rename important config paths unless the task explicitly includes migration work.
 - When a config path changes, update docs and any examples that reference it.
 - Keep path references consistent between AGENTS.md and docs/agent-guides.

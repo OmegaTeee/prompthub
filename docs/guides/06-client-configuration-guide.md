@@ -12,80 +12,61 @@ For scripting and developer integration (Python, curl, Node.js, Automator), see 
 
 ---
 
-## CLI Config Manager
+## Repo-Managed Client Setup
 
-PromptHub includes a CLI that generates, installs, and validates MCP configs. Use it instead of editing JSON by hand.
+PromptHub no longer uses the old Python config-generator CLI. Client
+configuration now lives in repo-managed files under `clients/`, with `setup.sh`
+ scripts handling symlinks, copies, or manual instructions.
+
+Typical workflow:
 
 ```bash
-cd ~/prompthub/app
+cd ~/prompthub
 
-python -m cli list                         # Show all 11 clients with install strategy
-python -m cli generate claude-desktop      # Print config JSON (preview)
-python -m cli install claude-desktop       # Write config to the app's config file
-python -m cli validate claude-desktop      # Check for issues
-python -m cli diff claude-desktop          # Compare installed vs. generated
-python -m cli diagnose                     # Full stack health check
+./clients/claude/desktop-setup.sh   # Claude Desktop
+./clients/claude/code-setup.sh      # Claude Code
+./clients/vscode/setup.sh           # VS Code + Copilot
+./clients/raycast/setup.sh          # Raycast
+./clients/lm-studio/setup.sh        # LM Studio
+./clients/codex/setup.sh            # Codex instructions / symlink setup
+
+./scripts/diagnose.sh               # Health and config checks
 ```
 
-| Command | What It Does |
-|---------|-------------|
-| `generate <client>` | Print MCP config JSON. Merges API key and enhancement rules automatically. |
-| `install <client>` | Write config into the app's file. `--dry-run` to preview, `--force` to replace. |
-| `validate <client>` | Check path safety, env vars, bridge existence, API key validity. |
-| `diff <client>` | Unified diff between installed and generated. Useful after manual edits. |
-| `list` | All clients, config paths, API keys, install strategy, and privacy levels. |
-| `diagnose` | Router, bridge, Node.js, LM Studio -- full stack check. |
+The source of truth is always the file in `clients/`. If a client uses a
+symlink strategy, the app reads the repo-managed file directly. If a client
+uses a copy or merge strategy, the setup script handles the app-specific step.
 
 ### Supported Clients
 
-| Client | Config Path | Install Strategy |
+| Client directory | Target | Setup strategy |
 |--------|-------------|------------------|
-| `claude-desktop` | `~/Library/Application Support/Claude/claude_desktop_config.json` | merge |
-| `claude-code` | `~/.claude.json` | merge |
-| `cursor` | `~/Library/Application Support/Cursor/User/globalStorage/cursor.mcp/mcp.json` | symlink |
-| `vscode` | VS Code MCP settings | merge |
-| `raycast` | `~/.config/raycast/mcp.json` | symlink |
-| `lm-studio` | `~/.lmstudio/mcp.json` | symlink |
-| `zed` | `~/.config/zed/settings.json` | merge |
-| `jetbrains` | `~/.config/JetBrains/mcp.json` | merge |
-| `codex` | `~/.codex/config.toml` | manual only |
-| `cherry-studio` | `~/.prompthub/cherry-studio.json` | merge |
-| `open-webui` | `~/.prompthub/open-webui.json` | merge |
-| `opencode` | `~/.opencode.json` | merge |
-
-### Generate with Options
-
-```bash
-# Limit which MCP servers are exposed
-python -m cli generate claude-desktop --servers "context7,desktop-commander"
-
-# Exclude heavy tools for smaller models
-python -m cli generate raycast --exclude-tools "duckduckgo,perplexity-comet"
-
-# Override the API key
-python -m cli generate vscode --api-key "sk-prompthub-vscode-001"
-```
-
-### Recommended Workflow
-
-```bash
-python -m cli install claude-desktop --dry-run   # 1. Preview
-python -m cli install claude-desktop              # 2. Install
-python -m cli validate claude-desktop             # 3. Verify
-python -m cli diff claude-desktop                 # 4. Check drift later
-```
+| `clients/claude/` | Claude Desktop + Claude Code | desktop symlink + code copy |
+| `clients/vscode/` | VS Code + Copilot settings | merge / guided file update |
+| `clients/raycast/` | `~/.config/raycast/mcp.json` and provider config | symlink |
+| `clients/lm-studio/` | `~/.lmstudio/mcp.json` | symlink |
+| `clients/codex/` | `~/.codex/config.toml` | manual / TOML |
+| `clients/perplexity-desktop/` | Perplexity Desktop config | manual / client-specific |
+| `clients/_open-webui/` | Open WebUI example config | placeholder |
+| `clients/_zed/` | Zed shared settings | placeholder |
+| `clients/_jetbrains/` | JetBrains MCP config | placeholder |
+| `clients/_cherry-studio/` | Cherry Studio examples | placeholder |
 
 ---
 
 ## Install Strategies
 
-When you run `python -m cli install <client>`, the CLI uses one of two strategies depending on the client. Think of it like the difference between copying a recipe into a cookbook (merge) versus taping a note on the fridge that says "recipe is on the counter" (symlink).
+PromptHub uses a few different install strategies depending on the client.
+Think of it like the difference between copying a recipe into a cookbook
+(merge), taping a note to the fridge that points to the recipe (symlink), or
+following handwritten instructions for a proprietary app (manual).
 
 ### Symlink Install
 
-**Used by:** LM Studio, Cursor, Raycast
+**Used by:** LM Studio, Raycast, Claude Desktop (for some assets)
 
-The CLI writes the generated config to a file inside the repo (`clients/<client-name>/`). Then it creates a symlink from the app's expected config path to that repo file.
+The setup script keeps the real config in `clients/<client-name>/` and creates
+ a symlink from the app's expected config path to that repo file.
 
 ```
 ~/.lmstudio/mcp.json  -->  ~/prompthub/clients/lm-studio/mcp.json
@@ -99,15 +80,17 @@ The CLI writes the generated config to a file inside the repo (`clients/<client-
 
 **What happens during install:**
 
-1. The CLI backs up any existing config file (creates a `.bak` copy).
-2. It writes the generated config to `clients/<client-name>/`.
-3. It replaces the app's config path with a symlink to the repo file.
+1. The setup script backs up any existing config when needed.
+2. It points the app's config path at the tracked file in `clients/`.
+3. Future edits happen in the repo, not in the app-specific copy.
 
 ### Merge Install
 
-**Used by:** Claude Desktop, Claude Code, VS Code, Zed, JetBrains
+**Used by:** VS Code and other clients that keep many unrelated settings in one
+file
 
-The CLI reads the app's existing config file and merges the PromptHub bridge entry into it. All other settings in the file are preserved.
+The setup script or manual process updates only the PromptHub-related section
+of the app's existing config file. All other settings are preserved.
 
 **Why this is useful:**
 
@@ -117,26 +100,43 @@ The CLI reads the app's existing config file and merges the PromptHub bridge ent
 
 **What happens during install:**
 
-1. The CLI backs up the existing config file (creates a `.bak` copy).
-2. It reads the file and parses the JSON (or JSONC for Zed).
-3. It adds or updates the PromptHub bridge entry inside the correct key path.
-4. It writes the merged result back.
+1. The setup process backs up the existing file when appropriate.
+2. It updates the MCP or provider section that PromptHub owns.
+3. The rest of the app config stays intact.
+
+### Copy Install
+
+**Used by:** Claude Code
+
+Claude Code reads a project-local `mcp.json`, so the setup script copies the
+repo-managed config into the working location that Claude expects.
+
+### Manual Install
+
+**Used by:** Codex, Perplexity Desktop, placeholder clients
+
+Some clients either use TOML, have fast-moving app-specific formats, or are not
+fully standardized in this repo yet. For those, PromptHub stores a reference
+file in `clients/` and the README explains the manual steps.
 
 ### Key points
 
-- Use `--dry-run` with any install command to preview changes without writing files.
-- Use `--force` to replace the entire servers section instead of merging.
-- Codex does not support either strategy. Edit its TOML config by hand.
+- Run the client's `setup.sh` from the repo root whenever possible.
+- Treat the file in `clients/` as the source of truth.
+- Use `./scripts/diagnose.sh` after setup to confirm the router and bridge are healthy.
 
 ---
 
 ## MCP Config Structure
 
-Every MCP bridge client config follows a similar shape. The exact key names vary by client, but the bridge entry is the same. The CLI generates this for you, but understanding it helps when troubleshooting.
+Every MCP bridge client config follows a similar shape. The exact key names
+vary by client, but the bridge entry is the same. Understanding it helps when
+you need to inspect or troubleshoot the repo-managed client files.
 
 ### Standard format (mcpServers)
 
-Used by Claude Desktop, Claude Code, Cursor, LM Studio, and Raycast:
+Used by Claude Desktop, Claude Code, LM Studio, Raycast, and similar bridge
+clients:
 
 ```json
 {
@@ -219,15 +219,17 @@ Used by Claude Desktop, Claude Code, Cursor, LM Studio, and Raycast:
 
 ### Claude Desktop
 
-**Type:** Bridge client, merge install
+**Type:** Bridge client
 
 Uses MCP for direct tool integration.
 
 ```bash
-python -m cli install claude-desktop
+./clients/claude/desktop-setup.sh
 ```
 
-Or manually edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Or inspect/edit the tracked file in `clients/claude/desktop-mcp.json` before
+running setup. Claude Desktop still reads the installed file at
+`~/Library/Application Support/Claude/claude_desktop_config.json`.
 
 ```json
 {
@@ -251,22 +253,24 @@ Restart Claude after editing. Verify by asking: "What tools do you have availabl
 
 ### Claude Code
 
-**Type:** Bridge client, merge install
+**Type:** Bridge client
 
 ```bash
-python -m cli install claude-code
+./clients/claude/code-setup.sh
 ```
 
-Config lives at `~/.claude.json`. Uses the `mcpServers` key, same format as Claude Desktop.
+Claude Code uses the same `mcpServers` format, but the setup script copies the
+repo-managed config into the project-local `mcp.json` that Claude Code reads.
+The API key and enhancement rule names still use `claude-code`.
 
 ### VS Code
 
-**Type:** Bridge client, merge install
+**Type:** Bridge client + provider config
 
-**MCP tools** -- edit `.vscode/mcp.json` or use the CLI:
+**MCP tools** -- use the repo-managed files and setup script:
 
 ```bash
-python -m cli install vscode
+./clients/vscode/setup.sh
 ```
 
 **Chat via OpenAI API** -- add to `settings.json`:
@@ -278,16 +282,6 @@ python -m cli install vscode
   "chat.openaiCompatibleModel": "qwen3-4b-instruct-2507"
 }
 ```
-
-### Cursor
-
-**Type:** Bridge client, symlink install
-
-```bash
-python -m cli install cursor
-```
-
-The CLI writes config to `~/prompthub/clients/cursor/` and symlinks the app's config path to it. Cursor reads MCP settings from `~/Library/Application Support/Cursor/User/globalStorage/cursor.mcp/mcp.json`.
 
 ### Raycast
 
@@ -303,7 +297,7 @@ Uses the OpenAI-compatible API for AI Chat:
 For MCP tools, install the bridge config:
 
 ```bash
-python -m cli install raycast
+./clients/raycast/setup.sh
 ```
 
 Test: `Cmd+Space` > "Ask AI" > send a question.
@@ -315,10 +309,11 @@ Test: `Cmd+Space` > "Ask AI" > send a question.
 Uses MCP for tool access within LM Studio's chat. Config lives at `~/.lmstudio/mcp.json`.
 
 ```bash
-python -m cli install lm-studio
+./clients/lm-studio/setup.sh
 ```
 
-The CLI writes the config to `~/prompthub/clients/lm-studio/mcp.json` and creates a symlink:
+The setup script keeps the config in `~/prompthub/clients/lm-studio/mcp.json`
+and creates a symlink:
 
 ```
 ~/.lmstudio/mcp.json  -->  ~/prompthub/clients/lm-studio/mcp.json
@@ -330,33 +325,15 @@ You can also verify the symlink manually:
 ls -la ~/.lmstudio/mcp.json
 ```
 
-To preview what the CLI will generate:
-
-```bash
-python -m cli generate lm-studio
-```
-
-This outputs the `mcpServers` JSON with the bridge entry.
-
 After editing or installing, restart MCP servers in LM Studio's Developer tab.
 
 ### Zed
 
-**Type:** Bridge client, merge install
+**Type:** Placeholder client
 
-Zed stores all settings -- including MCP servers -- in a single file at `~/.config/zed/settings.json`. This file uses JSONC format, which means it allows `//` comments and trailing commas. Standard JSON parsers cannot read it, but the CLI handles JSONC automatically.
-
-```bash
-python -m cli install zed
-```
-
-To preview the generated config:
-
-```bash
-python -m cli generate zed
-```
-
-This outputs the `context_servers` JSON. Zed uses a unique key name compared to other clients:
+Zed is currently tracked as a placeholder under `clients/_zed/`. The examples
+still matter because Zed uses the `context_servers` key in a shared JSONC
+settings file:
 
 ```json
 {
@@ -377,27 +354,15 @@ This outputs the `context_servers` JSON. Zed uses a unique key name compared to 
 }
 ```
 
-**Important: JSONC handling.** Zed's `settings.json` contains `//` comments and trailing commas. The CLI strips these before parsing and preserves all your other Zed settings (themes, fonts, keybindings, etc.) during the merge. However, after the CLI writes the merged file, the comments and trailing commas are removed. If you want to keep your comments, make a backup first or use `--dry-run` to preview.
-
-After installing, restart Zed or reload the window (`Cmd+Shift+P` > "Reload") to pick up the new MCP config.
+Use `clients/_zed/README.md` for the current manual steps.
 
 ### JetBrains IDEs
 
-**Type:** Bridge client, merge install
+**Type:** Placeholder client
 
-Works with all JetBrains IDEs: IntelliJ IDEA, PyCharm, WebStorm, GoLand, and others. The default config path is `~/.config/JetBrains/mcp.json`.
-
-```bash
-python -m cli install jetbrains
-```
-
-To preview the generated config:
-
-```bash
-python -m cli generate jetbrains
-```
-
-This outputs the `servers` JSON with a `"type": "stdio"` field:
+JetBrains support is tracked under `clients/_jetbrains/`. The config shape is
+still useful because JetBrains expects a `servers` object with
+`"type": "stdio"`:
 
 ```json
 {
@@ -417,28 +382,16 @@ This outputs the `servers` JSON with a `"type": "stdio"` field:
 }
 ```
 
-**IDE-specific config paths.** Some JetBrains IDEs store their config in a product-specific folder (for example, `~/Library/Application Support/JetBrains/IntelliJIdea2025.1/`). If your IDE does not read from the default path, use the `--config` flag to point to the right file:
-
-```bash
-python -m cli install jetbrains --config ~/Library/Application\ Support/JetBrains/IntelliJIdea2025.1/mcp.json
-```
-
-After installing, restart your IDE to load the new MCP tools.
+Use `clients/_jetbrains/README.md` for the current manual steps and product-
+specific paths.
 
 ### Codex
 
 **Type:** Manual config only (TOML format)
 
-Codex uses a TOML config file at `~/.codex/config.toml`. The CLI cannot generate or install this config automatically because it is not JSON. You must edit the file by hand.
-
-Running `generate` or `install` will show an error:
-
-```bash
-python -m cli generate codex
-# Error: Codex uses TOML config. Edit clients/codex/config.toml manually.
-```
-
-A reference config file is included in the repo at `~/prompthub/clients/codex-config.toml`. Copy the relevant sections into your own config:
+Codex uses a TOML config file at `~/.codex/config.toml`. Edit it by hand using
+the repo-managed reference in `clients/codex/config.toml` or
+`clients/codex/codex-config.toml`.
 
 ```toml
 [mcp_servers.prompthub]
@@ -458,37 +411,14 @@ Replace `/Users/you/prompthub/` with your actual path. Save the file and restart
 
 ### Cherry Studio
 
-**Type:** HTTP client, merge install
+**Type:** Placeholder client
 
-Cherry Studio connects to PromptHub over HTTP, similar to Open WebUI. It does not use the stdio bridge. Instead, it connects through the OpenAI-compatible API and the Responses API endpoint (`/v1/responses`).
-
-```bash
-python -m cli install cherry-studio
-```
-
-To preview the generated config:
-
-```bash
-python -m cli generate cherry-studio
-```
-
-This outputs HTTP connection settings (not bridge config):
-
-```json
-{
-  "cherry_studio": {
-    "api_base_url": "http://127.0.0.1:9090/v1",
-    "responses_endpoint": "http://127.0.0.1:9090/v1/responses",
-    "api_key": "sk-prompthub-cherry-001"
-  }
-}
-```
-
-Config is stored at `~/.prompthub/cherry-studio.json`. After installing, configure Cherry Studio to point at the `api_base_url` and use the API key shown above.
+Cherry Studio examples live under `clients/_cherry-studio/`. Use that folder if
+you want to adapt the current bridge or HTTP examples manually.
 
 ### Open WebUI
 
-**Type:** HTTP client, merge install
+**Type:** Placeholder / manual HTTP client
 
 Needs two connections -- chat and tools:
 
@@ -508,15 +438,13 @@ GATEWAY_SERVERS="context7,desktop-commander,sequential-thinking"
 
 ### OpenCode
 
-**Type:** Bridge client, merge install
+**Type:** Historical example
 
 [OpenCode](https://github.com/opencode-ai/opencode) is a terminal-based AI coding agent with strong Git integration. It supports MCP stdio servers natively.
 
-```bash
-python -m cli install opencode
-```
-
-Or manually edit `~/.opencode.json`:
+OpenCode is not currently an active client directory in this repo, but the
+config shape remains useful if you maintain it separately. Manually edit
+`~/.opencode.json` if you still use it:
 
 ```json
 {
@@ -537,9 +465,11 @@ Or manually edit `~/.opencode.json`:
 }
 ```
 
-> **Note:** OpenCode uses `["KEY=VALUE"]` array format for env vars, not the `{"KEY": "VALUE"}` dict used by other clients. The CLI generates the correct format automatically.
+> **Note:** OpenCode uses `["KEY=VALUE"]` array format for env vars, not the
+> `{"KEY": "VALUE"}` dict used by most other clients.
 
-OpenCode also supports an LM Studio provider in the same config file. See `clients/opencode/opencode.json` for a template. Store your LM Studio API key in keyring rather than the config file.
+OpenCode can also be paired with an LM Studio provider in the same config file.
+Store any API key in keyring rather than hardcoding it in the config file.
 
 ### Obsidian
 
@@ -644,7 +574,7 @@ The `X-Privacy-Level` header can downgrade privacy (more restrictive) but never 
 ```bash
 lsof -i :9090                              # Check if router is running
 curl http://localhost:9090/health           # Verify health
-python -m cli diagnose                      # Full stack check
+./scripts/diagnose.sh                      # Full stack check
 ```
 
 ### "Invalid API key"
@@ -671,23 +601,18 @@ lms get qwen3-4b-instruct-2507                 # Download missing model
 
 ### Zed config has parse errors after install
 
-Zed uses JSONC (JSON with comments). After the CLI merges your config, comments and trailing commas are stripped. This does not affect functionality, but it changes the file format. To avoid surprises, preview with `--dry-run` first:
-
-```bash
-python -m cli install zed --dry-run
-```
+Zed uses JSONC (JSON with comments). Check `clients/_zed/README.md` for the
+current manual process and back up your settings before editing.
 
 ### JetBrains IDE does not detect MCP config
 
-JetBrains products sometimes use product-specific config paths. Try pointing to the IDE's own folder:
+JetBrains products often use product-specific config paths. Check
+`clients/_jetbrains/README.md` for the current manual instructions.
 
-```bash
-python -m cli install jetbrains --config ~/Library/Application\ Support/JetBrains/PyCharm2025.1/mcp.json
-```
+### Codex config still does not load
 
-### Codex CLI says "NotImplementedError"
-
-This is expected. Codex uses TOML, not JSON. Edit `~/.codex/config.toml` by hand. See the [Codex section](#codex) above for the reference config.
+Codex uses TOML, not JSON. Edit `~/.codex/config.toml` by hand and compare it
+to the reference in the [Codex section](#codex) above.
 
 ---
 
@@ -695,18 +620,18 @@ This is expected. Codex uses TOML, not JSON. Edit `~/.codex/config.toml` by hand
 
 | App | Connection | MCP Tools | AI Provider | Install Strategy |
 |-----|-----------|-----------|-------------|------------------|
-| Claude Desktop | MCP bridge | Yes | No (uses own models) | merge |
-| Claude Code | MCP bridge | Yes | No | merge |
-| VS Code | MCP bridge + OpenAI API | Yes | Yes | merge |
-| Cursor | MCP bridge | Yes | Yes | symlink |
-| Raycast | MCP bridge + OpenAI API | Yes | Yes | symlink |
-| LM Studio | MCP bridge | Yes | No (is the model server) | symlink |
-| Zed | MCP bridge (context_servers) | Yes | No | merge |
-| JetBrains | MCP bridge (servers) | Yes | No | merge |
+| Claude Desktop | MCP bridge | Yes | No (uses own models) | desktop setup script |
+| Claude Code | MCP bridge | Yes | No | code setup script |
+| VS Code | MCP bridge + OpenAI API | Yes | Yes | setup script |
+| Raycast | MCP bridge + OpenAI API | Yes | Yes | symlink setup script |
+| LM Studio | MCP bridge | Yes | No (is the model server) | symlink setup script |
 | Codex | MCP bridge (TOML) | Yes | No | manual |
-| Cherry Studio | HTTP (Responses API) | No | Yes | merge |
-| Open WebUI | OpenAI API + Streamable HTTP | Yes | Yes | merge |
-| Obsidian | OpenAI API | No | Yes | -- |
+| Perplexity Desktop | MCP bridge | Yes | No | manual / client-specific |
+| Zed | MCP bridge (context_servers) | Yes | No | placeholder |
+| JetBrains | MCP bridge (servers) | Yes | No | placeholder |
+| Cherry Studio | bridge + HTTP examples | Partial | Partial | placeholder |
+| Open WebUI | OpenAI API + Streamable HTTP | Yes | Yes | placeholder / manual |
+| Obsidian | OpenAI API | No | Yes | plugin setup |
 
 ---
 

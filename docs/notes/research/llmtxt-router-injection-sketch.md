@@ -3,6 +3,9 @@
 > **Status**: Evaluated, not implementing (2026-04-05)
 > **Source**: Perplexity research via Desktop Commander context gathering
 > **Moved from**: `docs/notes/plans/` (not an active plan)
+> **Historical note**: this sketch preserves older implementation terminology in
+> a few examples. It is research context only, not a current implementation
+> guide.
 
 ## Goal
 

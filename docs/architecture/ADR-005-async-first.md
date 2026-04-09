@@ -3,6 +3,10 @@
 ## Status
 Accepted
 
+> Historical note: the async-first decision remains current, but some examples
+> below still use older Ollama-era client names and code snippets. Treat those
+> examples as historical illustrations, not the current implementation surface.
+
 ## Context
 PromptHub routes requests to multiple I/O-bound services:
 - **MCP servers** via stdio (10-100ms latency)

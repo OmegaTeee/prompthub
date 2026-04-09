@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - **`LLM_HOST=localhost` → `127.0.0.1`**: Prevents IPv6 resolution issues when LM Studio listens on IPv4 only.
 
 ### Changed
+- **Architecture and module docs refreshed for LM Studio terminology**: Rewrote `docs/architecture/README.md` around the current router/bridge/proxy split, moved dashboard refactor notes under `docs/notes/plans/`, and fixed stale module and steering references to removed Ollama-era model/runtime details.
 - **LM Studio planner template**: Rewrote `clients/lm-studio/prompt_templates/planner.txt` to match the lightweight task-template format used by the other LM Studio presets and documented it in the template README.
 - **LM Studio chat presets**: Rewrote the task presets in `clients/lm-studio/prompt_templates/` with consistent metadata, higher token budgets, clearer workflow-specific instructions, and an updated README for the on-disk template set.
 - **5 new CLI clients**: `lm-studio`, `zed`, `jetbrains`, `codex`, `cherry-studio` added to `ClientType` enum. Each has `config_path()`, `config_key_path`, `install_strategy`, `extra_entry_fields`, and `is_bridge_client` properties. Cherry Studio is an HTTP client (like Open WebUI) connecting via `/v1/responses`. Codex uses TOML — `generate`/`install` raise `NotImplementedError` with a pointer to the manual config file.

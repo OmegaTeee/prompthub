@@ -37,7 +37,7 @@ You have three options. Pick the one that fits your workflow.
 
 This approach lets you turn enhancement on for one app without affecting the others. It is like setting a thermostat room by room instead of for the whole house.
 
-1. Open `~/prompthub/configs/api-keys.json`.
+1. Open `~/prompthub/app/configs/api-keys.json`.
 2. Find the entry for your app (for example, `sk-prompthub-code-001`).
 3. Change `"enhance": false` to `"enhance": true`.
 4. Save the file.
@@ -99,17 +99,18 @@ Enhancement models:
 
 ### Changing the Enhancement Model
 
-Different apps can use different models. For example, you might want a lightweight model for VS Code and a more capable one for Claude Desktop.
+Different apps can use different enhancement settings. For example, you might
+want a different system prompt or token budget for VS Code than for Claude.
 
-1. Open `~/prompthub/configs/enhancement-rules.json`.
-2. Find your app under `"clients"`.
-3. Change the `"model"` value to any model available in LM Studio.
+1. Open `~/prompthub/app/configs/enhancement-rules.json`.
+2. Find your app entry.
+3. Adjust the settings you need.
 
 ```json
 {
   "clients": {
-    "vscode": { "model": "qwen3-4b-instruct-2507" },
-    "claude-desktop": { "model": "qwen3-4b-instruct-2507" }
+    "vscode": { "model": "qwen3-4b-instruct-2507", "temperature": 0.2 },
+    "claude": { "model": "qwen3-4b-instruct-2507", "max_tokens": 700 }
   }
 }
 ```
@@ -118,7 +119,7 @@ Different apps can use different models. For example, you might want a lightweig
 
 - Enhancement models run locally via LM Studio.
 - All clients use the same enhancement model (`qwen3-4b-instruct-2507`) by default.
-- You can override the model per client if needed.
+- Per-client tuning is usually done through prompts, limits, and privacy settings.
 
 ## When to Use Enhancement
 
@@ -178,7 +179,7 @@ For most workflows, the improvement in response quality is worth the wait.
 
 ## Advanced: Custom Enhancement Rules
 
-You can tailor enhancement behavior for each app by editing `~/prompthub/configs/enhancement-rules.json`. Options include:
+You can tailor enhancement behavior for each app by editing `~/prompthub/app/configs/enhancement-rules.json`. Options include:
 
 - Assigning different models to different apps.
 - Writing custom system prompts that guide how enhancement rewrites your input.
@@ -190,7 +191,7 @@ See the **Advanced Power User Manual** for full details.
 
 ### Disable for one app
 
-1. Open `~/prompthub/configs/api-keys.json`.
+1. Open `~/prompthub/app/configs/api-keys.json`.
 2. Set `"enhance": false` for that app's entry.
 3. Save the file. The change takes effect immediately.
 

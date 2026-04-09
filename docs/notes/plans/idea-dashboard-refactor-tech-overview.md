@@ -48,7 +48,7 @@ Here's the verification for each technology:
 
 ## Key Advantages for Your Setup
 
-Given your preference for local-first development (Ollama, Colima, MCP servers), this observability stack aligns perfectly with your infrastructure philosophy:
+Given your preference for local-first development (LM Studio, Colima, MCP servers), this observability stack aligns perfectly with your infrastructure philosophy:
 
 - **No telemetry by default** - These tools don't phone home
 - **Complete control** - All data stays on your infrastructure
@@ -130,8 +130,8 @@ Your document's implementation plan is completely achievable using only locally-
 What is PromptHub?
 PromptHub is a centralized MCP (Model Context Protocol) router for macOS that provides:
 
-- Unified Access - Connect multiple apps (Perplexity, Claude Desktop, VS Code, Raycast) to 7+ MCP servers
-- Prompt Enhancement - Automatically improve prompts with Ollama (DeepSeek-R1, Qwen3-Coder)
+- Unified Access - Connect multiple apps (Perplexity, Claude Desktop, VS Code, Raycast) to 9 MCP servers
+- Prompt Enhancement - Automatically improve prompts with LM Studio (`qwen3-4b-instruct-2507`, with `qwen3-4b-thinking-2507` for orchestration)
 - Auto-Restart - MCP servers automatically restart on failure
 - Intelligent Caching - Faster responses through in-memory cache
 - Audit Logging - Production-grade request tracking
@@ -150,7 +150,7 @@ Your recommendations strike the right balance between immediate operational valu
 
 - **Templating/Variables** - Critical for your multi-client setup (Perplexity, Claude Desktop, VS Code, Raycast). Being able to filter by `client` will immediately show which apps benefit most from enhancement.
 - **Alerts** - Smart focus on failure rates and latency. Since you're routing to paid services, knowing when enhancement is degrading (not improving) requests is crucial for ROI.
-- **Annotations** - Brilliant for tracking `auto_enhance_mcp` toggle changes. You'll correlate "I turned off auto-enhance and quality dropped" vs "I upgraded Ollama and latency improved."
+- **Annotations** - Brilliant for tracking `auto_enhance_mcp` toggle changes. You'll correlate "I turned off auto-enhance and quality dropped" vs "I changed LM Studio models and latency improved."
 
 **2. Design Philosophy Aligns With Local-First**
 The emphasis on **runbook links** and **quick mitigation steps** (clear cache, disable auto-enhancement, restart router) shows you're thinking about self-service operations. No waiting for cloud support—you control the whole stack.
@@ -163,7 +163,7 @@ Your suggestion to move from in-memory to Redis-backed rate limiting is good for
 
 **Do you need it yet?**
 
-- Single macOS machine with 7 MCP servers → in-memory is sufficient
+- Single macOS machine with 9 MCP servers → in-memory is sufficient
 - Redis adds operational overhead (another service to monitor)
 - **Consider deferring** until you're running PromptHub on multiple machines or seeing rate-limit state inconsistencies
 
@@ -182,8 +182,8 @@ Your suggestion to move from in-memory to Redis-backed rate limiting is good for
 **When to add tracing:**
 
 - Enhancement latency is inconsistent and metrics don't pinpoint bottlenecks
-- You're chaining multiple Ollama calls or complex MCP server interactions
-- You need to see exact request flow: Client → PromptHub → Ollama → MCP Server
+- You're chaining multiple LM Studio calls or complex MCP server interactions
+- You need to see exact request flow: Client → PromptHub → LM Studio → MCP Server
 
 ### **Dashboard Specific Feedback**
 
@@ -191,7 +191,7 @@ Your suggestion to move from in-memory to Redis-backed rate limiting is good for
 
 - **Cache Hit Rate** - Shows if your intelligent caching is working
 - **Enhancement Success Rate by Client** - Which apps benefit most? (Raycast prompts might need less enhancement than VS Code)
-- **Ollama Model Breakdown** - DeepSeek-R1 vs Qwen3-Coder performance comparison
+- **Model Breakdown** - Enhancement model vs orchestrator model latency comparison
 
 **Drilldown by Tool** - This is gold for your use case. Examples:
 
@@ -200,7 +200,7 @@ Your suggestion to move from in-memory to Redis-backed rate limiting is good for
 
 **Missing Panel Suggestion:**
 
-- **Enhancement ROI Metric** - Compare `original_prompt_tokens` vs `enhanced_prompt_tokens` vs `response_quality_proxy` (e.g., fewer user retries, longer sessions). This justifies the Ollama processing cost.
+- **Enhancement ROI Metric** - Compare `original_prompt_tokens` vs `enhanced_prompt_tokens` vs `response_quality_proxy` (e.g., fewer user retries, longer sessions). This justifies the LM Studio processing cost.
 
 ### **CI/CD \& Provisioning**
 
@@ -237,8 +237,8 @@ Your caution about **high-cardinality labels** is critical. For PromptHub:
 **Safe labels** (low cardinality):
 
 - `client` (Perplexity, Claude Desktop, VS Code, Raycast) - 4 values
-- `mcp_server` (Desktop Commander, Context7, etc.) - ~7 values
-- `model` (DeepSeek-R1, Qwen3-Coder) - ~2-3 values
+- `mcp_server` (Desktop Commander, Context7, etc.) - ~9 values
+- `model` (`qwen3-4b-instruct-2507`, `qwen3-4b-thinking-2507`) - ~2 values
 - `status` (success, failure, rate_limited) - 3 values
 
 **Dangerous labels** (NEVER):
@@ -256,7 +256,7 @@ Your caution about **high-cardinality labels** is critical. For PromptHub:
 **Suggested SLOs for PromptHub:**
 
 - **Availability:** 99.5% uptime (43 minutes downtime/month acceptable for local dev tool)
-- **Latency:** p95 enhancement < 500ms (Ollama on M3/M4 should be fast)
+- **Latency:** p95 enhancement should reflect warm LM Studio performance on local hardware
 - **Error Rate:** < 1% enhancement failures (auto-restart should prevent most MCP server failures)
 
 **Error Budget Dashboard:**
@@ -301,7 +301,7 @@ If I were prioritizing your refactor, I'd do this order:
 
 - **Token Efficiency** - Ratio of enhanced tokens to response quality
 - **Client Satisfaction Proxy** - Session duration after enhancement, retry rates
-- **Model Comparison** - DeepSeek-R1 vs Qwen3-Coder enhancement outcomes side-by-side
+- **Model Comparison** - Enhancement vs orchestrator outcomes side-by-side where that distinction matters
 - **MCP Server Success After Enhancement** - Does enhancement improve Context7 query results? Desktop Commander command accuracy?
 
 **A/B Testing Panel:**
