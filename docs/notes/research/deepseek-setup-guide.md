@@ -1,3 +1,11 @@
+---
+title: "DeepSeek Best Practices for Your LM Studio Stack"
+status: review
+created: 2026-04-05
+updated: 2026-04-09
+tags: [research, models, deepseek, lm-studio]
+---
+
 # DeepSeek Best Practices for Your LM Studio Stack
 
 > **Research artifact:** This note documents an earlier model-evaluation path.

@@ -1,3 +1,11 @@
+---
+title: "llm.txt Router Injection Feasibility Sketch"
+status: review
+created: 2026-04-05
+updated: 2026-04-09
+tags: [research, llm-txt, router, enhancement]
+---
+
 # Research: llm.txt Router Injection — Feasibility Sketch
 
 > **Status**: Evaluated, not implementing (2026-04-05)

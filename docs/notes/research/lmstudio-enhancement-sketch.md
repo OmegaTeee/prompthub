@@ -1,3 +1,11 @@
+---
+title: "LM Studio Enhancement Orchestration Sketch"
+status: review
+created: 2026-03-23
+updated: 2026-04-09
+tags: [research, lm-studio, enhancement, orchestration]
+---
+
 # LM Studio sketch for PromptHub enhancement orchestration
 
 > **Research artifact:** This sketch captures an intermediate design exploration.

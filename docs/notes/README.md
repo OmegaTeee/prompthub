@@ -85,6 +85,7 @@ tags: [relevant, topic, tags]
 
 | File | Status | Description |
 |---|---|---|
+| `eval-docs-alignment-audit-2026-04-09.md` | final | Summary of the April 2026 docs alignment and historical-labeling pass |
 | `llm-stack.md` | review | Full stack inventory, per-client assignments, experimentation log |
 | `llm-mcp-guide.md` | review | Historical model comparison for MCP and desktop client workflows |
 
