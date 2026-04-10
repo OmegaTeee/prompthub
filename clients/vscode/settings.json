@@ -153,12 +153,12 @@
 	"chat.tools.terminal.autoReplyToPrompts": true,
 	"chat.tools.urls.autoApprove": {
 		"http://127.0.0.1:*": true,
+		"https://127.0.0.1:*": true,
 		"http://localhost:*": true,
-		"https://127.0.0.1:*": true
+		"https://localhost:*": true
 	},
 	"chat.useAgentSkills": true,
 	"chat.viewProgressBadge.enabled": true,
-	"chat.viewSessions.orientation": "stacked",
 	"chatgpt.followUpQueueMode": "queue",
 	"claudeCode.preferredLocation": "sidebar",
 	"claudeCode.selectedModel": "opus",
@@ -176,7 +176,7 @@
 	"containers.containerClient": "com.microsoft.visualstudio.containers.docker",
 	"containers.orchestratorClient": "com.microsoft.visualstudio.orchestrators.dockercompose",
 	"cSpell.ignoreWords": [
-		"${userHome:visualval}/.vscode/cspell.json"
+		"${userHome}/.vscode/cspell.json"
 	],
 	// "css.hover.documentation": false,
 	// "css.hover.references": false,
@@ -192,6 +192,7 @@
 	"editor.fontFamily": "'Lilex Nerd Font Mono', 'Lilex Nerd Font Propo', 'Lilex', 'Google Sans Code', 'GoogleSansCode-Regular', 'Liga DM Mono', 'LigaDMMono-Regular', monospace",
 	"editor.fontLigatures": "'ss01' 0, 'ss02' 1, 'ss04' 1, 'cv03' 1, 'cv05' 1,  'cv06' 1,  'cv10' 1, 'calt' 1, 'case' 1, 'opsz' 14, 'zero' 1",
 	"editor.fontVariations": true,
+	"editor.fontWeight": "500",
 	"editor.formatOnSaveMode": "modifications",
 	"editor.glyphMargin": true,
 	"editor.inlayHints.enabled": "on",
@@ -290,7 +291,8 @@
 		"*.instructions.md": "instructions",
 		"*.plist": "plistEditor.bplistedit",
 		"*.prompt.md": "prompt",
-		"*.vue": "vue"
+		"*.vue": "vue",
+		"*.json": "json"
 	},
 	"files.autoSaveWhenNoErrors": true,
 	"files.exclude": {
@@ -327,15 +329,15 @@
 		"**/dist/**": true,
 		"**/node_modules/**": true
 	},
-	//"git.autofetch": true,
+	"git.autofetch": false,
 	"git.enableSmartCommit": true,
 	"git.openRepositoryInParentFolders": "never",
 	"github.copilot.chat.additionalReadAccessPaths": [
-		"/Users/visualval/raycast",
-		"/Users/visualval/vault",
-		"/Users/visualval/fontforge",
-		"/Users/visualval/prompthub",
-		"/Users/visualval/claraverse"
+		"${userHome}/raycast",
+		"${userHome}/vault",
+		"${userHome}/fontforge",
+		"${userHome}/prompthub",
+		"${userHome}/claraverse"
 	],
 	"github.copilot.chat.agent.autoFix": true,
 	"github.copilot.chat.alternateGeminiModelFPrompt.enabled": true,
@@ -367,7 +369,7 @@
 	"github.copilot.chat.otel.captureContent": true,
 	"github.copilot.chat.otel.enabled": true,
 	"github.copilot.chat.otel.exporterType": "console",
-	"github.copilot.chat.otel.outfile": "~/.copilot/otel",
+	"github.copilot.chat.otel.outfile": "${userHome}/.copilot/otel",
 	"github.copilot.chat.reviewAgent.enabled": true,
 	"github.copilot.chat.scopeSelection": true,
 	"github.copilot.chat.searchSubagent.useAgenticProxy": true,
@@ -408,22 +410,22 @@
 	"markdown.occurrencesHighlight.enabled": false,
 	"markdown.preview.breaks": true,
 	"markdown.preview.doubleClickToSwitchToEditor": false,
-	"markdown.preview.fontFamily": "'Google Sans 17pt', 'GoogleSans17pt-Regular', 'Google Sans', 'GoogleSans-Regular', 'DM Sans', 'Instrument Sans', ui-sans-serif, -apple-system, sans-serif",
-	"markdown.preview.fontSize": 16,
-	"markdown.preview.lineHeight": 1.3,
+	// "markdown.preview.fontFamily": "'Google Sans 17pt', 'GoogleSans17pt-Regular', 'Google Sans', 'GoogleSans-Regular', 'DM Sans', 'Instrument Sans', ui-sans-serif, -apple-system, sans-serif",
+	// "markdown.preview.fontSize": 16,
+	// "markdown.preview.lineHeight": 1.3,
 	"markdown.preview.markEditorSelection": false,
 	"markdown.preview.scrollEditorWithPreview": true,
 	"markdown.preview.scrollPreviewWithEditor": true,
 	"markdown.preview.securityLevel": "allowScriptsAndAllContent",
-	"markdown.preview.typographer": true,
+	// "markdown.preview.typographer": true,
 	"markdown.styles": [
 		".vscode/markdown.css"
 	],
-	"markdown.suggest.paths.includeWorkspaceHeaderCompletions": "onSingleOrDoubleHash",
+	// "markdown.suggest.paths.includeWorkspaceHeaderCompletions": "onSingleOrDoubleHash",
 	"markdown.trace.server": "verbose",
-	"markdown.updateLinksOnFileMove.enabled": "prompt",
+	"markdown.updateLinksOnFileMove.enabled": true,
 	"markdownExtended.disabledPlugins": "abbr, container, emoji, kbd, table-of-contents, toc",
-	"markdownlint.configFile": "/Users/visualval/Library/AppSupport/Code/User/.markdownlint-cli2.jsonc",
+	"markdownlint.configFile": "/Users/visualval/.vscode/.markdownlint-cli2.jsonc",
 	// "markdowntable.alignColumnHeader": false,
 	// "markdowntable.alignData": false,
 	// "markdowntable.formatOnSave": false,
@@ -445,7 +447,7 @@
 	"python.analysis.inlayHints.variableTypes": true,
 	"python.analysis.typeCheckingMode": "standard",
 	// "python.createEnvironment.contentButton": "show",
-	"python.pythonPath": "/opt/homebrew/bin/python3",
+	"python.pythonPath": "${command:python.interpreterPath}",
 	"python.terminal.focusAfterLaunch": true,
 	"pythonTestExplorer.outputs.showOutputsOnRun": true,
 	"search.collapseResults": "alwaysCollapse",
@@ -455,7 +457,8 @@
 	"security.workspace.trust.enabled": false,
 	"security.workspace.trust.untrustedFiles": "open",
 	"svg.preview.mode": "svg",
-	"terminal.external.osxExec": "iterm2",
+	"terminal.external.osxExec": "zsh",
+	"terminal.integrated.stickyScroll.enabled": false,
 	"terminal.integrated.accessibleViewFocusOnCommandExecution": true,
 	"terminal.integrated.accessibleViewPreserveCursorPosition": true,
 	"terminal.integrated.allowInUntrustedWorkspace": true,
@@ -556,5 +559,18 @@
 	"yaml.schemas": {
 		"./.schemas/collection.schema.json": "*.collection.yml",
 		"./.schemas/tools.schema.json": "website/data/tools.yml"
+	},
+	"chat.mcp.serverSampling": {
+		"Global in Code: fetch": {
+			"allowedModels": [
+				"copilotcli/claude-sonnet-4.6",
+				"copilotcli/gpt-4.1",
+				"copilot/gpt-4.1",
+				"copilot/gpt-4o",
+				"copilotcli/gpt-5-mini",
+				"copilot/grok-code-fast-1",
+				"copilot/oswe-vscode-prime"
+			]
+		}
 	}
 }

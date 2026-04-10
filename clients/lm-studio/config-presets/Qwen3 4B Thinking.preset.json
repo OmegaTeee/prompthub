@@ -27,7 +27,7 @@
       },
       {
         "key": "llm.prediction.speculativeDecoding.draftModel",
-        "value": "lmstudio-community/Qwen3-0.6B-GGUF/Qwen3-1.7B-Q6_0.gguf"
+        "value": "lmstudio-community/Qwen3-0.6B-GGUF/Qwen3-0.6B-Q6_0.gguf"
       }
     ]
   },

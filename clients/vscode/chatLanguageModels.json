@@ -2,7 +2,7 @@
   {
     "name": "LM Studio",
     "vendor": "customoai",
-    "apiKey": "sk-lm-WHOsdSxC:Emcb1o1mukwrLVp1nHNy",
+    "apiKey": "lmstudio_api_key",
     "models": [
       {
         "id": "qwen3-1.7b",

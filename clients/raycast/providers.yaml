@@ -3,7 +3,7 @@ providers:
     name: LM Studio
     base_url: http://127.0.0.1:1234/v1
     api_keys:
-      PROMPTHUB_KEY: sk-lm-ZZYhwXz4:NXuUJerMlNLfgVLb3e3Y
+      PROMPTHUB_KEY: lmstudio_api_key
     models:
       - id: qwen3-4b-thinking-2507
         name: Qwen3 4B Thinking

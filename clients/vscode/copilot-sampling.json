@@ -1,26 +1,20 @@
 {
   "github-copilot-global-sampling-config": {
+    "alwaysAllow": true,
     "allowedModels": [
-      "auto",
-      "gpt-4o",
-      "gpt-5-mini",
-      "gpt-5.1",
-      "grok-code"
+      "auto"
     ]
+  },
+  "fetch": {
+    "alwaysAllow": true
   },
   "github-copilot": {
     "alwaysAllow": true
   },
-  "memory": {
-    "alwaysAllow": true
-  },
-  "sequentialthinking": {
-    "alwaysAllow": true
-  },
-  "context7": {
-    "alwaysAllow": true
-  },
   "prompthub-bridge": {
+    "alwaysAllow": true
+  },
+  "skills-mcp": {
     "alwaysAllow": true
   }
 }

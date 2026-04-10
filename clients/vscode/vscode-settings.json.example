@@ -8,6 +8,7 @@
       "transport": "http",
       "headers": {
         "X-Client-Name": "vscode"
+        "Authorization": "Bearer <token>"
       }
     }
   }
