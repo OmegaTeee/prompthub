@@ -9,7 +9,6 @@ mcps/
 ├── prompthub-bridge.js           Bridge aggregator (stdio → router → servers)
 ├── package.json                  npm dependencies for Node.js MCP servers
 ├── node_modules/                 Installed packages
-├── obsidian-wrapper/             Keychain wrapper scripts for Obsidian MCP
 └── README.md                     This file
 ```
 
@@ -81,17 +80,6 @@ Enabled by default. Reduces tool context from ~75 KB to ~25 KB (~14K tokens save
 
 Disable with `MINIFY_SCHEMAS=false` for debugging.
 
-## Obsidian wrapper scripts
-
-Wrapper scripts in [`obsidian-wrapper/`](obsidian-wrapper/) load Obsidian API credentials from macOS Keychain before launching the MCP server. See [`obsidian-wrapper/README.md`](obsidian-wrapper/README.md) for setup.
-
-Credentials are stored via `manage-keys.py`:
-
-```bash
-python scripts/security/manage-keys.py set obsidian_api_key
-python scripts/security/manage-keys.py set obsidian_authentication
-```
-
 ## Adding a new MCP server
 
 ### npm package
@@ -138,7 +126,7 @@ Then store the key: `python scripts/security/manage-keys.py set my_api_key`
 
 ### Standalone binary
 
-Add directly to `mcp-servers.json` with the binary path as `command`. If it needs credentials, create a wrapper script in `obsidian-wrapper/` following the existing pattern.
+Add directly to `mcp-servers.json` with the binary path as `command`. If it needs credentials, use the keyring env block pattern (see Obsidian entries in `mcp-servers.json` for example).
 
 ## Upgrading servers
 
