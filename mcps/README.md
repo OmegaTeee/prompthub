@@ -1,122 +1,168 @@
-# MCP Servers Directory
+# MCP Servers
 
-This directory contains all local MCP (Model Context Protocol) servers.
+MCP servers managed by PromptHub. The router spawns, monitors, and auto-restarts these via [`app/configs/mcp-servers.json`](../app/configs/mcp-servers.json). Clients connect through the `prompthub-bridge.js` aggregator, which prefixes tool names by server and optionally minifies schemas.
 
 ## Structure
 
-```
+```text
 mcps/
-├── package.json              # npm dependencies for Node.js MCP servers
-├── node_modules/             # Installed npm packages (6 servers)
-└── README.md                 # This file
+├── prompthub-bridge.js           Bridge aggregator (stdio → router → servers)
+├── package.json                  npm dependencies for Node.js MCP servers
+├── node_modules/                 Installed packages
+├── obsidian-wrapper/             Keychain wrapper scripts for Obsidian MCP
+└── README.md                     This file
 ```
 
-## Active MCP Servers (7 total)
+## Server Roster (9 servers)
 
-### Node.js Packages (6 servers)
-Installed via `npm install` in this directory:
+### Auto-start (7 servers)
 
-1. **context7** - `@upstash/context7-mcp`
-   - Documentation fetching from libraries
-   - Auto-start: Yes
+Started automatically when the router boots. Restarted on failure up to 3 times.
 
-2. **desktop-commander** - `@wonderwhy-er/desktop-commander`
-   - File operations and terminal commands
-   - Auto-start: Yes
+| Server | Package | Transport | Description |
+| --- | --- | --- | --- |
+| context7 | `@upstash/context7-mcp` | stdio | Documentation fetching from libraries |
+| desktop-commander | `@wonderwhy-er/desktop-commander` | stdio | File operations and terminal commands |
+| sequential-thinking | `@modelcontextprotocol/server-sequential-thinking` | stdio | Step-by-step reasoning and planning |
+| memory | `@modelcontextprotocol/server-memory` | stdio | Cross-session context persistence |
+| duckduckgo | `ddg-mcp-search` | stdio | DuckDuckGo web search with SafeSearch and region support |
+| obsidian-mcp-tools | standalone binary | stdio | Obsidian vault operations via MCP Tools plugin |
+| perplexity-comet | `perplexity-comet-mcp` | stdio | Perplexity research via Comet browser CDP bridge |
 
-3. **sequential-thinking** - `@modelcontextprotocol/server-sequential-thinking`
-   - Step-by-step reasoning and planning
-   - Auto-start: Yes
+### On-demand (2 servers)
 
-4. **memory** - `@modelcontextprotocol/server-memory`
-   - Cross-session context persistence
-   - Auto-start: No
+Started manually via `POST /servers/{name}/start` or dashboard. Set `auto_start: false`.
 
-5. **fetch** - `mcp-fetch`
-   - HTTP fetch, GraphQL, WebSocket, browser automation
-   - Auto-start: No
+| Server | Package | Transport | Description |
+| --- | --- | --- | --- |
+| chrome-devtools-mcp | `chrome-devtools-mcp` | stdio | Chrome DevTools Protocol debugging and browser automation |
+| browsermcp | `@browsermcp/mcp` | stdio | Browser automation via Chrome extension WebSocket bridge |
 
-### Standalone Binary (1 server)
+### Standalone binaries (not npm-managed)
 
-1. **obsidian** - `obsidian-mcp-tools`
-   - Semantic search, templates, file management for Obsidian vault
-   - Location: `~/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server`
-   - Auto-start: Yes
-   - Requires: API key in macOS Keychain
+| Binary | Location | Installed via |
+| --- | --- | --- |
+| `mcp-server-fetch` | `~/.local/bin/mcp-server-fetch` | pipx (`mcp-server-fetch`) |
+| `obsidian-mcp-tools` | `~/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server` | Obsidian MCP Tools plugin |
 
-## Configuration
+`mcp-server-fetch` is referenced directly in client bridge configs (`.mcp.json`, `clients/*/mcp.json`) but is not in the router's `mcp-servers.json` — it runs independently alongside the bridge.
 
-All servers are configured in [`../app/configs/mcp-servers.json`](../app/configs/mcp-servers.json).
+### Installed but not in router config
 
-Servers requiring API keys use wrapper scripts in [`../scripts/`](../scripts/) that load credentials from macOS Keychain.
+| Package | Status | Notes |
+| --- | --- | --- |
+| `@perplexity-ai/mcp-server` | Under evaluation | Direct Perplexity API (vs. `perplexity-comet` CDP bridge). See `TODOS.md` for evaluation status. |
 
-## Adding New MCP Servers
+## Bridge (`prompthub-bridge.js`)
 
-### For npm Packages
+The bridge is a stdio MCP server that aggregates tools from all router-managed servers into a single tool list for clients. Clients like Claude Code, LM Studio, and Raycast connect to the bridge, not to individual servers.
+
+### How it works
+
+1. Client starts `node prompthub-bridge.js` with env vars (`SERVERS`, `CLIENT_NAME`, etc.)
+2. Bridge calls `GET /servers` on the router to discover available servers
+3. For each server, bridge calls `POST /mcp/{server}/tools/list` to get tools
+4. Tools are prefixed with server name: `memory_create_entities`, `context7_query-docs`
+5. Schema minification strips verbose fields (~67% size reduction)
+6. Client receives the aggregated, minified tool list via stdio
+
+### Environment variables
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `PROMPTHUB_URL` | `http://127.0.0.1:9090` | Router endpoint |
+| `AUTHORIZATION` | — | Bearer token from `api-keys.json` |
+| `CLIENT_NAME` | — | Client identifier for audit logging |
+| `SERVERS` | (all) | Comma-separated server filter (e.g., `memory,context7,sequential-thinking`) |
+| `MINIFY_SCHEMAS` | `true` | Strip `description`, `title`, `examples`, `default` from tool schemas |
+| `DESC_MAX_LENGTH` | `200` | Truncate remaining descriptions to this length |
+
+### Schema minification
+
+Enabled by default. Reduces tool context from ~75 KB to ~25 KB (~14K tokens saved).
+
+**Stripped**: `description`, `title`, `examples`, `default`, `$comment`, `$defs`
+**Kept**: `type`, `properties`, `required`, `enum`, `items`, `oneOf/anyOf/allOf`, `format`, `pattern`, `min/max` constraints
+
+Disable with `MINIFY_SCHEMAS=false` for debugging.
+
+## Obsidian wrapper scripts
+
+Wrapper scripts in [`obsidian-wrapper/`](obsidian-wrapper/) load Obsidian API credentials from macOS Keychain before launching the MCP server. See [`obsidian-wrapper/README.md`](obsidian-wrapper/README.md) for setup.
+
+Credentials are stored via `manage-keys.py`:
+
+```bash
+python scripts/security/manage-keys.py set obsidian_api_key
+python scripts/security/manage-keys.py set obsidian_authentication
+```
+
+## Adding a new MCP server
+
+### npm package
 
 ```bash
 cd mcps
 npm install <package-name>
 ```
 
-Then add to `configs/mcp-servers.json`:
+Add to [`app/configs/mcp-servers.json`](../app/configs/mcp-servers.json):
 
 ```json
 {
-  "<server-name>": {
-    "package": "<package-name>",
-    "transport": "stdio",
-    "command": "node",
-    "args": ["./mcps/node_modules/<package-name>/dist/index.js"],
-    "auto_start": false
+  "servers": {
+    "<server-name>": {
+      "package": "<package-name>",
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcps/node_modules/<package-name>/dist/index.js"],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "What this server does"
+    }
   }
 }
 ```
 
-### For Standalone Binaries
+If the server needs API keys, use the keyring pattern:
 
-```bash
-mkdir -p mcps/<mcp-name>/bin
-cp /path/to/binary mcps/<mcp-name>/bin/
-chmod +x mcps/<mcp-name>/bin/<binary>
+```json
+"env": {
+  "API_KEY": {
+    "source": "keyring",
+    "service": "prompthub",
+    "key": "my_api_key"
+  }
+}
 ```
 
-Create wrapper script in `scripts/` if API keys needed. See [`scripts/obsidian-mcp-tools.sh`](../scripts/obsidian-mcp-tools.sh) for pattern.
+Then store the key: `python scripts/security/manage-keys.py set my_api_key`
 
-### For Python Packages
+### Standalone binary
 
-See [`obsidian-mcp-tools/PYTHON-MCP-EXAMPLE.md`](obsidian-mcp-tools/PYTHON-MCP-EXAMPLE.md) for complete guide.
+Add directly to `mcp-servers.json` with the binary path as `command`. If it needs credentials, create a wrapper script in `obsidian-wrapper/` following the existing pattern.
 
-Example configurations available in [`../configs/mcp-servers.json.examples`](../configs/mcp-servers.json.examples).
-
-## Validation
-
-Run the validation script to verify all servers are installed:
-
-```bash
-../scripts/router/validate-mcp-servers.sh
-```
-
-This checks:
-- ✅ Node.js and npx availability
-- ✅ All npm package files exist
-- ✅ JavaScript syntax validation
-- ✅ Standalone binaries
-- ✅ Python packages (if any)
-
-## Upgrading Servers
-
-### npm Packages
+## Upgrading servers
 
 ```bash
 cd mcps
-npm update <package-name>
-# or
-npm update  # update all
+npm update              # update all
+npm update <package>    # update one
+```
+
+## Diagnostics
+
+```bash
+./scripts/diagnose.sh          # full stack check
+curl localhost:9090/servers     # list servers and status
+curl localhost:9090/tools/stats # tool registry cache stats
 ```
 
 ## References
 
-- [Model Context Protocol](https://modelcontextprotocol.io) - Official MCP specification
-- [MCP Servers Registry](https://github.com/modelcontextprotocol/servers) - Official MCP servers
-- [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers) - Community list
+- [Model Context Protocol](https://modelcontextprotocol.io) — official spec
+- [MCP Servers Registry](https://github.com/modelcontextprotocol/servers) — official servers
+- [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers) — community list
