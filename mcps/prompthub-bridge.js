@@ -34,6 +34,25 @@ const EXCLUDE_TOOLS = new Set(
     : []
 );
 
+// Tool prefix aliases: rename server prefixes in tool names to avoid redundancy
+// Built-in defaults fix known double-prefix issues (e.g., perplexity-comet_comet_ask → perplexity_ask)
+// Override or extend via env var TOOL_PREFIX_ALIASES="server:displayPrefix:stripFromTool,..."
+const TOOL_PREFIX_ALIASES = new Map([
+  ['perplexity-comet', { displayPrefix: 'perplexity', stripPrefix: 'comet_' }],
+]);
+const TOOL_REVERSE_MAP = new Map([
+  ['perplexity', { serverName: 'perplexity-comet', stripPrefix: 'comet_' }],
+]);
+if (process.env.TOOL_PREFIX_ALIASES) {
+  for (const entry of process.env.TOOL_PREFIX_ALIASES.split(',').map(s => s.trim()).filter(Boolean)) {
+    const [serverName, displayPrefix, stripPrefix = ''] = entry.split(':');
+    if (serverName && displayPrefix) {
+      TOOL_PREFIX_ALIASES.set(serverName, { displayPrefix, stripPrefix });
+      TOOL_REVERSE_MAP.set(displayPrefix, { serverName, stripPrefix });
+    }
+  }
+}
+
 // Schema minification: strip verbose fields from tool inputSchemas to reduce context usage
 // Set MINIFY_SCHEMAS=false to disable (enabled by default)
 const MINIFY_SCHEMAS = process.env.MINIFY_SCHEMAS !== 'false';
@@ -182,14 +201,22 @@ async function getAllTools() {
       if (response.result && response.result.tools) {
         const rawTools = response.result.tools;
 
-        // Prefix tool names with server name to avoid conflicts
+        // Prefix tool names with server name (or alias) to avoid conflicts
         // Use underscore separator (MCP names can only contain: a-zA-Z0-9_-)
+        const alias = TOOL_PREFIX_ALIASES.get(serverName);
+        const displayPrefix = alias ? alias.displayPrefix : serverName;
+        const stripPrefix = alias ? alias.stripPrefix : '';
+
         const prefixedTools = rawTools
           .map(tool => {
+            // Strip redundant prefix from tool name if alias says so
+            const toolName = stripPrefix && tool.name.startsWith(stripPrefix)
+              ? tool.name.substring(stripPrefix.length)
+              : tool.name;
             const mapped = {
               ...tool,
-              name: `${serverName}_${tool.name}`,
-              description: truncateDescription(`[${serverName}] ${tool.description}`),
+              name: `${displayPrefix}_${toolName}`,
+              description: truncateDescription(`[${displayPrefix}] ${tool.description}`),
             };
             if (MINIFY_SCHEMAS && mapped.inputSchema) {
               mapped.inputSchema = minifySchema(mapped.inputSchema);
@@ -222,15 +249,23 @@ async function getAllTools() {
  * Call a tool on the appropriate server
  */
 async function callTool(toolName, args) {
-  // Tool name format: "server-name_tool-name"
+  // Tool name format: "prefix_tool-name"
   // Split on first underscore only — tool names may contain underscores
   // (e.g., "desktop-commander_create_directory")
   const idx = toolName.indexOf('_');
   if (idx === -1) {
-    throw new Error(`Invalid tool name format: ${toolName} (expected "server_tool")`);
+    throw new Error(`Invalid tool name format: ${toolName} (expected "prefix_tool")`);
   }
-  const serverName = toolName.substring(0, idx);
-  const actualToolName = toolName.substring(idx + 1);
+  const prefix = toolName.substring(0, idx);
+  let actualToolName = toolName.substring(idx + 1);
+
+  // Reverse alias lookup: if the prefix is an alias, resolve to real server name
+  // and restore the stripped tool-name prefix
+  const reverseAlias = TOOL_REVERSE_MAP.get(prefix);
+  const serverName = reverseAlias ? reverseAlias.serverName : prefix;
+  if (reverseAlias && reverseAlias.stripPrefix) {
+    actualToolName = `${reverseAlias.stripPrefix}${actualToolName}`;
+  }
 
   if (cachedServers.length > 0 && !cachedServers.includes(serverName)) {
     throw new Error(`Unknown or stopped server: ${serverName}`);
@@ -319,6 +354,13 @@ async function main() {
   console.error(`Connected to: ${PROMPTHUB_URL}`);
   console.error(`Client name: ${CLIENT_NAME}`);
   console.error(`Schema minification: ${MINIFY_SCHEMAS ? 'ON' : 'OFF'} (desc limit: ${DESC_MAX_LENGTH || 'none'})`);
+  if (TOOL_PREFIX_ALIASES.size > 0) {
+    const aliasDesc = [...TOOL_PREFIX_ALIASES.entries()]
+      .map(([srv, { displayPrefix, stripPrefix }]) =>
+        `${srv} → ${displayPrefix}${stripPrefix ? ` (strip: ${stripPrefix})` : ''}`)
+      .join(', ');
+    console.error(`Tool aliases: ${aliasDesc}`);
+  }
   console.error(`Running servers: ${servers.join(', ') || '(none — router may not be running)'}`);
 }
 
