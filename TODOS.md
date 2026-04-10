@@ -4,15 +4,25 @@
 - [ ] **Find getting-started guides for active clients** — Each client directory should have a `<name>-llm.txt` knowledge file covering config format, MCP transport, and quirks. Three placeholders already have them (cherry-studio, zed, jetbrains). Active clients still need them: Claude, Codex, LM Studio, Perplexity Desktop, VS Code. Source official docs or getting-started guides for each.
 
 ## Review MCPs folder and README
-- [ ] **Rewrite `mcps/README.md`** — Stale: lists 7 of 9 servers, missing duckduckgo, chrome-devtools-mcp, perplexity-comet, browsermcp. Incorrectly lists fetch as npm `mcp-fetch` (it's a binary at `~/.local/bin/mcp-server-fetch`). Memory listed as `auto_start: No` but config says `true`.
-- [ ] **Tool name prefix** — Bridge exposes `perplexity-comet_comet_connect` (double `comet`). Can we rename to `perplexity_connect`, `perplexity_ask`, etc.? Requires changes in `prompthub-bridge.js`.
-- [ ] **Evaluate @perplexity-ai/mcp-server** — Installed alongside perplexity-comet-mcp. Direct API vs CDP browser bridge — is there added value? If redundant, `npm uninstall`.
-- [ ] **Remove @brave/brave-search-mcp-server** — Not used. Run `cd mcps && npm uninstall @brave/brave-search-mcp-server`.
+- [x] ~~**Rewrite `mcps/README.md`**~~ — Rewritten with accurate 10-server roster, bridge documentation, and keyring patterns. PR #9.
+- [x] ~~**Tool name prefix**~~ — Added TOOL_PREFIX_ALIASES to bridge with built-in `perplexity-comet → perplexity` alias. PR #10.
+- [x] ~~**Evaluate @perplexity-ai/mcp-server**~~ — Parked: uninstalled, evaluation note at `docs/notes/research/eval-perplexity-ai-mcp.md`. PR #9.
+- [x] ~~**Remove @brave/brave-search-mcp-server**~~ — Uninstalled. PR #9.
+- [x] ~~**Remove obsidian-wrapper scripts**~~ — Deleted, superseded by keyring env blocks in `mcp-servers.json`. PR #9.
+- [x] ~~**Add mcp-obsidian as on-demand server**~~ — Registered with `auto_start: false`, direct binary + keyring env. PR #9.
+
+## Agent-Initiated Server Start (priority: high)
+
+> **Context:** On-demand servers (`obsidian`, `chrome-devtools-mcp`, `browsermcp`) don't expose tools until started. Agents currently can't see or start them. This is a prerequisite for effective use of on-demand servers and directly supports Progressive Tool Disclosure Phase 1.
+
+- [ ] **Add `start_server` meta-tool to the bridge** — A bridge-level tool that calls `POST /servers/{name}/start` on the router, waits for the server to register, then refreshes the bridge's tool list. Agents can then call on-demand server tools in the same session. No `list_changed` notification needed — the bridge controls its own tool list.
+- [ ] **Add `list_available_servers` meta-tool** — Returns all servers from `mcp-servers.json` (running + stopped + failed) so agents can see what's available to start. Lightweight: just calls `GET /servers` and formats the response.
 
 ## Progressive Tool Disclosure
 
 > **Plan:** [`docs/notes/plans/progressive-tool-disclosure.md`](docs/notes/plans/progressive-tool-disclosure.md)
 > **Context:** Compared with [MCPGateway](https://github.com/abdullah1854/MCpGateway) — PromptHub is a router + enhancement middleware (not a gateway), but MCPGateway's lazy-loading idea directly reduces tool context waste.
+> **Depends on:** Agent-Initiated Server Start (above) — the `start_server` and `list_available_servers` meta-tools are the foundation for `discover_tools` and `load_server_tools`.
 
 ### Insights driving this work
 
@@ -23,7 +33,7 @@
 ### Tasks
 
 - [ ] **Prerequisite: test `list_changed` notification** — Verify Claude Desktop, Cherry Studio, and VS Code re-fetch `tools/list` when the bridge sends `notifications/tools/list_changed`. Clients that don't → stay on `disclosure: full`. This is a 5-minute manual test before writing any code.
-- [ ] **Phase 1: meta-tools in the bridge** — Add `discover_tools` and `load_server_tools` to `mcps/prompthub-bridge.js`. Add `TOOL_DISCLOSURE` env var (`full` | `progressive`) and `TIER1_SERVERS` env var. No router changes needed.
+- [ ] **Phase 1: meta-tools in the bridge** — Add `discover_tools` and `load_server_tools` to `mcps/prompthub-bridge.js`. Build on `start_server` and `list_available_servers` from the section above. Add `TOOL_DISCLOSURE` env var (`full` | `progressive`) and `TIER1_SERVERS` env var. No router changes needed.
 - [ ] **Phase 2: per-client profiles via router** — Add `tool_profile` field to `enhancement-rules.json`. New endpoint `GET /clients/{name}/tool-profile`. Bridge fetches profile at startup. Dashboard shows disclosure mode per client.
 - [ ] **Phase 3 (optional): data-driven tier-1** — Use tool registry `serve_count` to auto-promote frequently used servers to tier 1. Nightly job or dashboard button.
 
