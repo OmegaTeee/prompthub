@@ -27,6 +27,15 @@
 - [ ] **Phase 2: per-client profiles via router** — Add `tool_profile` field to `enhancement-rules.json`. New endpoint `GET /clients/{name}/tool-profile`. Bridge fetches profile at startup. Dashboard shows disclosure mode per client.
 - [ ] **Phase 3 (optional): data-driven tier-1** — Use tool registry `serve_count` to auto-promote frequently used servers to tier 1. Nightly job or dashboard button.
 
+## Glossary Alignment — Heavy-Lift Docs Review
+
+> **Glossary:** [`docs/glossary.md`](docs/glossary.md)
+> **Context:** Quick fixes applied to ADRs, modules, API, steering, and root docs on 2026-04-05. Two documents need full rewrites (not quick find-replace) because the stale content is deeply embedded in diagrams, flow charts, and benchmarks.
+
+- [x] ~~**Rewrite `docs/architecture/README.md`**~~ — Replaced the stale Ollama-era architecture overview with a glossary-aligned reference centered on the current router/bridge/proxy split, LM Studio runtime, current model roles, and current API surfaces.
+- [x] ~~**Review dashboard plan docs in `docs/notes/plans/`**~~ — Moved the two dashboard idea docs from `docs/notes/dashboard/` into `docs/notes/plans/` and updated them to current LM Studio terminology, model names, and MCP server counts.
+- [ ] **Post-rewrite verification pass** — After the heavy-lift rewrites above, grep the full `docs/` tree for remaining `Ollama`, `gemma3`, `llama3.2`, `qwen2.5-coder`, `qwen3:14b`, and `ollama` (case-insensitive) to confirm no stale terms remain. Verify all glossary terms (`router`, `bridge`, `proxy`, `enhancement`, `privacy level`, `circuit breaker`) are used consistently.
+
 ## Deferred Refactors
 
 - [ ] **Enhancement service exception handlers** — `service.py` `enhance()` has near-identical handlers at lines ~552-559 with different log levels (`warning`/`error`/`exception`). Consider consolidating if log-level distinction proves unnecessary. Unskip integration tests first (`test_enhancement_and_caching.py`).

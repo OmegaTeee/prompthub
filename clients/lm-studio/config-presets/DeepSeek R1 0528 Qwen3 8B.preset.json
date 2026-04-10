@@ -1,7 +1,7 @@
 {
-  "identifier": "@local:deepseek-r1-qwen3-8-b",
+  "identifier": "@local:deep-seek-r1-0528-qwen3-8-b",
+  "importedTimeStamp": 1775566157717,
   "name": "DeepSeek-R1-0528-Qwen3-8B",
-  "changed": false,
   "operation": {
     "fields": [
       {

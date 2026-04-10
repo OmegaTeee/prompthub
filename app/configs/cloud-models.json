@@ -1,5 +1,5 @@
 {
-  "_description": "Curated cloud model catalog for potential multi-provider routing via OpenRouter. Each model maps to a local Ollama equivalent where available.",
+  "_description": "Curated cloud model catalog for potential multi-provider routing via OpenRouter. Each model maps to a comparable local model where available.",
   "_source": "OpenRouter API (openrouter.ai) — extracted Feb 2026",
   "_categories": ["coding", "reasoning", "general", "vision", "premium"],
   "models": {

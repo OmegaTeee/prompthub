@@ -2,8 +2,7 @@
   // ── Python environment ──────────────────────────────────
   // The project lives in app/ with its own venv
   "python.defaultInterpreterPath": "/Users/visualval/prompthub/app/.venv/bin/python",
-  "python.envFile": "${workspaceFolder}/app/.env",
-  "python.terminal.useEnvFile": true,
+  "python.envFile": "/Users/visualval/prompthub/app/.env",
   "python-envs.pythonProjects": [
     {
       "path": "${workspaceFolder}/app/",
@@ -16,7 +15,10 @@
     //   "packageManager": "ms-python.python:pip"
     // }
   ],
+  "python.terminal.useEnvFile": true,
+  "python.terminal.activateEnvInCurrentTerminal": true,
   "python.terminal.activateEnvironment": true,
+  "python-envs.terminal.autoActivationType": "all",
   // ── Static analysis (Pylance) ───────────────────────────
   "python.analysis.typeCheckingMode": "standard",
   "python.analysis.autoSearchPaths": true,
@@ -44,18 +46,14 @@
   "ruff.configuration": "${workspaceFolder}/app/pyproject.toml",
   "ruff.cwd": "${workspaceFolder}/app",
   // ── Editor preferences ──────────────────────────────────
-  "files.exclude": {
-    "**/__pycache__": true,
-    "**/.pytest_cache": true,
-    "**/.mypy_cache": true
-  },
-  "terminal.integrated.defaultProfile.osx": "PromptHub",
-  "terminal.integrated.cwd": "app",
-  // "terminal.integrated.enablePersistentSessions": false,
+  "terminal.integrated.cwd": "${workspaceFolder}/app",
+  "terminal.integrated.inheritEnv": true,
+  "terminal.integrated.enablePersistentSessions": true,
   "terminal.integrated.env.osx": {
     "PATH": "${workspaceFolder}/app/.venv/bin:${env:PATH}",
     "USERHOME": "/Users/visualval"
   },
+  "terminal.integrated.defaultProfile.osx": "PromptHub",
   "terminal.integrated.profiles.osx": {
     "PromptHub": {
       "path": "/bin/zsh",
@@ -64,6 +62,11 @@
       ],
       "cwd": "${workspaceFolder}"
     }
+  },
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true
   },
   "chat.mcp.serverSampling": {
     "prompthub-bridge": {
@@ -76,5 +79,5 @@
     "${workspaceFolder}/app/.venv/bin/python": true
   },
   "explorer.excludeGitIgnore": false,
-  "explorer.autoReveal": false
+  "explorer.autoReveal": true
 }

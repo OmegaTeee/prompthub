@@ -11,11 +11,10 @@ Bridge client using `mcpServers` format. **Symlink install** (MCP-only config fi
 ## Quick setup
 
 ```bash
-cd app && python -m cli generate lm-studio
-cd app && python -m cli install lm-studio
+./clients/lm-studio/setup.sh
 ```
 
-The `install` command writes to `clients/lm-studio/mcp.json` and creates a symlink at `~/.lmstudio/mcp.json`.
+The setup script creates the symlink at `~/.lmstudio/mcp.json`.
 
 ## Notes
 

@@ -1,8 +1,12 @@
 # Client Configurations
 
-Per-client directories containing MCP bridge configs, setup scripts, and knowledge files.
+Per-client directories containing MCP bridge configs, provider configs, setup scripts, and knowledge files. See [docs/glossary.md](../docs/glossary.md) for definitions of bridge, proxy, client, and llm.txt.
 
-Active clients are unprefixed. Placeholder/draft clients use a `_` prefix — run `/client-setup` to wire them up.
+Active clients are unprefixed. Placeholder/draft clients use a `_` prefix.
+This folder is still evolving. For Claude agents, use
+`.claude/skills/client-setup/SKILL.md` as the setup/update workflow when
+activating or repairing a client. Other agents should follow the same pattern
+manually from this README plus `clients/default/`.
 
 ## Structure
 
@@ -54,7 +58,8 @@ Backward-compat symlinks: `claude-code` → `claude/`, `claude-desktop` → `cla
 
 ## Adding a New Client
 
-Use the `/client-setup` skill, or copy from `clients/default/`:
+If you are using Claude, start with `.claude/skills/client-setup/SKILL.md`.
+Otherwise, copy from `clients/default/` and follow the same workflow manually:
 
 ```bash
 cp -r clients/default clients/<name>

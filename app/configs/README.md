@@ -1,6 +1,6 @@
 # PromptHub Configuration Files
 
-This folder contains all configuration files for PromptHub and client integrations.
+This folder contains the shared runtime configuration files for PromptHub.
 
 ## Directory Structure
 
@@ -13,13 +13,14 @@ configs/
 └── logrotate-macos.conf                   # System: Log rotation (macOS)
 ```
 
-> **Note:** Desktop client configurations (Claude Desktop, Raycast, MCP Inspector) live in [`mcps/configs/`](../../mcps/configs/README.md), co-located with the MCP bridge.
+> **Note:** Client setup files now live under [`clients/`](../../clients/README.md).
+> `app/configs/` is for shared router behavior, not per-client install output.
 
 ## Configuration Types
 
 ### ⚙️ PromptHub Configurations
 Core PromptHub router settings:
-- **`enhancement-rules.json`** - Per-client Ollama models and system prompts
+- **`enhancement-rules.json`** - Per-client enhancement settings, system prompts, and privacy levels
 - **`mcp-servers.json`** - MCP server lifecycle (command, args, auto_start)
 **When to modify:** Adding MCP servers or changing enhancement behavior.
 
@@ -50,16 +51,16 @@ vim configs/mcp-servers.json
 }
 ```
 
-**Change enhancement model:**
+**Change enhancement behavior:**
 
 ```bash
 # Edit enhancement rules
 vim configs/enhancement-rules.json
 
-# Modify client-specific model:
+# Modify client-specific rules:
 {
   "vscode": {
-    "model": "qwen2.5-coder:latest",  # Change to your preferred model
+    "model": "qwen3-4b-instruct-2507",
     "system_prompt": "..."
   }
 }
@@ -91,14 +92,14 @@ python3 -c "import keyring; keyring.set_password('prompthub', 'my_api_key', 'YOU
 
 This organization separates:
 
-1. **Client concerns** (how apps connect) → `mcps/configs/`
+1. **Client concerns** (how apps connect) → `clients/`
 2. **Router concerns** (how PromptHub behaves) → `app/configs/`
 3. **System concerns** (logging, OS integration) → `app/configs/`
 
 This makes it easy to:
 - ✅ Add new clients without touching PromptHub config
 - ✅ Modify PromptHub behavior without breaking clients
-- ✅ Share client configs with team members
+- ✅ Keep client setup and router behavior separate
 - ✅ Version control client and router configs separately
 
 ## Environment Variables
@@ -142,4 +143,3 @@ tar -czf prompthub-configs-$(date +%Y%m%d).tar.gz configs/
 # Restore
 tar -xzf prompthub-configs-20260130.tar.gz
 ```
-

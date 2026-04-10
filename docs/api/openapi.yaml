@@ -370,11 +370,10 @@ paths:
     post:
       summary: Enhance prompt
       description: |
-        Enhance a prompt using the local LLM server. Model selection is based on the X-Client-Name header:
-        - `claude-desktop`: deepseek-r1 for structured reasoning
-        - `vscode`: qwen2.5-coder for code-focused responses
-        - `raycast`: deepseek-r1 for action-oriented responses
-        - `obsidian`: deepseek-r1 with markdown formatting
+        Enhance a prompt using the local LLM server. PromptHub uses one
+        enhancement model for all clients (`qwen3-4b-instruct-2507`) and
+        changes behavior through per-client system prompts, token limits, and
+        privacy rules selected by the `X-Client-Name` header.
       operationId: enhancePrompt
       tags:
         - Enhancement
@@ -382,10 +381,10 @@ paths:
         - name: X-Client-Name
           in: header
           required: false
-          description: Client identifier for model routing
+          description: Client identifier for enhancement-rule selection
           schema:
             type: string
-            enum: [claude-desktop, vscode, raycast, obsidian]
+            example: claude-desktop
           example: claude-desktop
       requestBody:
         required: true
@@ -477,43 +476,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /configs/claude-desktop:
-    get:
-      summary: Generate Claude Desktop config
-      description: Generate configuration for Claude Desktop integration
-      operationId: getClaudeDesktopConfig
-      tags:
-        - Configs
-      responses:
-        '200':
-          description: Claude Desktop configuration JSON
-
-  /configs/vscode:
-    get:
-      summary: Generate VS Code config
-      description: Generate MCP configuration for VS Code
-      operationId: getVscodeConfig
-      tags:
-        - Configs
-      responses:
-        '200':
-          description: VS Code configuration JSON
-
-  /configs/raycast:
-    get:
-      summary: Generate Raycast script
-      description: Generate shell script for Raycast integration
-      operationId: getRaycastScript
-      tags:
-        - Configs
-      responses:
-        '200':
-          description: Raycast shell script
-          content:
-            text/plain:
-              schema:
-                type: string
-
   /v1/chat/completions:
     post:
       summary: Chat completion (OpenAI-compatible)
@@ -540,7 +502,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ChatCompletionRequest'
             example:
-              model: "llama3.2:latest"
+              model: "qwen3-4b-instruct-2507"
               messages:
                 - role: system
                   content: "You are a helpful assistant."
@@ -613,7 +575,7 @@ paths:
                       properties:
                         id:
                           type: string
-                          example: "llama3.2:latest"
+                          example: "qwen3-4b-instruct-2507"
                         object:
                           type: string
                           example: "model"
@@ -643,6 +605,65 @@ paths:
                   count:
                     type: integer
                     example: 5
+
+  /v1/responses:
+    post:
+      summary: Responses API (OpenAI-compatible)
+      description: |
+        OpenAI Responses API endpoint. PromptHub translates Responses-format
+        input into Chat Completions messages, optionally enhances the final
+        user message, forwards the request to the local LLM server, and wraps
+        the result back into Responses API format.
+
+        Streaming is not supported on this endpoint.
+      operationId: responses
+      tags:
+        - OpenAI Proxy
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResponsesRequest'
+            example:
+              model: "qwen3-4b-instruct-2507"
+              instructions: "Answer concisely."
+              input: "Summarize the purpose of circuit breakers."
+              max_output_tokens: 300
+              stream: false
+      responses:
+        '200':
+          description: Responses API response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponsesResponse'
+        '400':
+          description: Invalid request shape or unsupported streaming mode
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIError'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIError'
+        '502':
+          description: LLM server unreachable or returned an error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIError'
+        '503':
+          description: Circuit breaker open (LLM server temporarily unavailable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIError'
 
   /llm/reset:
     post:
@@ -858,17 +879,6 @@ paths:
                     type: object
                     additionalProperties:
                       type: integer
-
-  /configs/vscode-tasks:
-    get:
-      summary: Generate VS Code tasks
-      description: Generate VS Code tasks.json for PromptHub operations
-      operationId: getVscodeTasksConfig
-      tags:
-        - Configs
-      responses:
-        '200':
-          description: VS Code tasks configuration JSON
 
   /pipelines/documentation:
     post:
@@ -1215,7 +1225,7 @@ components:
         model:
           type: string
           description: LLM model name
-          example: "llama3.2:latest"
+          example: "qwen3-4b-instruct-2507"
         messages:
           type: array
           items:
@@ -1243,6 +1253,89 @@ components:
           nullable: true
         frequency_penalty:
           type: number
+
+    ResponsesRequest:
+      type: object
+      required:
+        - model
+        - input
+      properties:
+        model:
+          type: string
+          description: LLM model name
+          example: "qwen3-4b-instruct-2507"
+        input:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: object
+          description: Responses API input as a string or message-like array
+        instructions:
+          type: string
+          nullable: true
+        temperature:
+          type: number
+          nullable: true
+          default: 0.7
+        max_output_tokens:
+          type: integer
+          nullable: true
+        top_p:
+          type: number
+          nullable: true
+        stream:
+          type: boolean
+          default: false
+
+    ResponsesContentBlock:
+      type: object
+      properties:
+        type:
+          type: string
+        text:
+          type: string
+          nullable: true
+        thinking:
+          type: string
+          nullable: true
+
+    ResponsesOutputMessage:
+      type: object
+      properties:
+        type:
+          type: string
+          example: message
+        role:
+          type: string
+          example: assistant
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponsesContentBlock'
+
+    ResponsesResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          example: response
+        created_at:
+          type: integer
+        model:
+          type: string
+          example: "qwen3-4b-instruct-2507"
+        output:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponsesOutputMessage'
+        output_text:
+          type: string
+        usage:
+          type: object
+          nullable: true
           nullable: true
         presence_penalty:
           type: number

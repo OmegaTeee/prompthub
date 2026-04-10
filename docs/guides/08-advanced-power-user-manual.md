@@ -10,7 +10,7 @@ PromptHub uses lightweight models to rewrite your prompts before they reach the 
 
 ### How to Configure
 
-Edit `~/prompthub/configs/enhancement-rules.json`:
+Edit `~/prompthub/app/configs/enhancement-rules.json`:
 
 ```json
 {
@@ -217,7 +217,7 @@ AUTO_ENHANCE_MCP=true
 ENHANCEMENT_TIMEOUT=180
 
 # API Keys
-API_KEYS_CONFIG=configs/api-keys.json
+API_KEYS_CONFIG=app/configs/api-keys.json
 ENHANCEMENT_RULES_CONFIG=configs/enhancement-rules.json
 
 # Memory

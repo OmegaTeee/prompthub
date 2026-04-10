@@ -11,12 +11,7 @@ Cherry Studio stores its MCP config in Electron's LevelDB (`Local Storage`), not
 
 ### Quick setup
 
-1. Generate the bridge config:
-
-   ```bash
-   cd app && python -m cli generate cherry-studio
-   ```
-
+1. Open `mcp-servers-example.json` in this directory.
 2. In Cherry Studio, go to **Settings > MCP Servers > Edit JSON**
 3. Paste the generated JSON into the editor, then click **OK**
 

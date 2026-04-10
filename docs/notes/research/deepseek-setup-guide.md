@@ -1,4 +1,16 @@
+---
+title: "DeepSeek Best Practices for Your LM Studio Stack"
+status: review
+created: 2026-04-05
+updated: 2026-04-09
+tags: [research, models, deepseek, lm-studio]
+---
+
 # DeepSeek Best Practices for Your LM Studio Stack
+
+> **Research artifact:** This note documents an earlier model-evaluation path.
+> It may reference optional or superseded local-model choices and should not be
+> read as the current PromptHub default.
 
 DeepSeek fits best as an **optional third model** for deliberate deep reasoning, not as a replacement for either your enhancement model or your orchestrator model.
 

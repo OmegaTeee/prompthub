@@ -1,0 +1,329 @@
+{
+  "$schema": "https://prompthub.dev/schemas/provider-config-sketch-v1.json",
+  "version": "0.1",
+  "kind": "prompthub-provider-config-sketch",
+  "notes": [
+    "Drafted from lmstudio-enhancement-rules-sketch.jsonc and prompthub-qwen3-stack.html in docs/notes/research.",
+    "Optimized for LM Studio as the provider for PromptHub, VS Code, Cherry Studio, and ComfyUI.",
+    "Uses a 4B-first local stack: Qwen3-4B-Instruct, Qwen3-4B-Thinking, and Qwen3.5-4B for vision/long-context.",
+    "Model IDs here are PromptHub aliases; map them to exact LM Studio loaded model IDs in your runtime layer.",
+    "Keep PromptHub routing deterministic by default; only raise temperature for ideation and image-prompt expansion tasks."
+  ],
+  "provider": {
+    "name": "lmstudio",
+    "mode": "openai_compatible_local",
+    "base_url": "http://127.0.0.1:1234/v1",
+    "chat_completions_path": "/chat/completions",
+    "models_path": "/models",
+    "api_key_env": "LM_STUDIO_API_KEY",
+    "api_key_optional": true,
+    "privacy": {
+      "default_level": "local_only",
+      "network_required": false,
+      "rationale": "LM Studio runs locally and should be treated as the default private provider for prompt enhancement."
+    },
+    "transport": {
+      "protocol": "http",
+      "stream": true,
+      "timeout_ms": 120000,
+      "connect_timeout_ms": 5000,
+      "max_retries": 1
+    }
+  },
+  "lmstudio": {
+    "runtime_guidance": {
+      "load_only_needed_models": true,
+      "prefer_single_active_4b_worker": false,
+      "unload_optional_large_models_when_idle": true,
+      "keep_vision_loaded_when_multimodal_workflow_active": true,
+      "notes": [
+        "Keep Qwen3-4B-Instruct loaded as the default enhancement worker.",
+        "Load Qwen3-4B-Thinking for orchestration and harder planning tasks.",
+        "Load Qwen3.5-4B when image understanding, OCR, or long-context multimodal tasks are active.",
+        "Keep DeepSeek-R1-Qwen3-8B optional because it is more resource-intensive and should not be the default local path."
+      ]
+    },
+    "server_settings": {
+      "apply_auto_eviction": true,
+      "idle_ttl_seconds": 900,
+      "parallel_requests": 2,
+      "request_queue": 8,
+      "prefer_gpu_offload": true,
+      "speculative_decoding": {
+        "enabled": true,
+        "draft_model": "qwen3-0.6b",
+        "target_models": [
+          "qwen3-4b-instruct-2507",
+          "qwen3-4b-thinking-2507"
+        ],
+        "notes": [
+          "Use speculative decoding only if LM Studio and the loaded GGUFs behave stably on your machine.",
+          "Disable speculative decoding first when debugging odd output quality or latency spikes."
+        ]
+      }
+    },
+    "sampling_defaults": {
+      "temperature": 0.3,
+      "top_p": 0.9,
+      "top_k": 40,
+      "min_p": 0.0,
+      "repeat_penalty": 1.05,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "seed": null,
+      "max_tokens": 600,
+      "context_window": 32768,
+      "notes": [
+        "Use low temperature for rewrite/enhancement tasks.",
+        "Raise temperature only for brainstorming, style exploration, or image-prompt expansion.",
+        "Keep penalties near neutral unless you observe loops or repetitive outputs."
+      ]
+    }
+  },
+  "models": {
+    "qwen3-4b-instruct-2507": {
+      "role": "default_worker",
+      "family": "qwen3",
+      "size_class": "4b",
+      "capabilities": ["chat", "rewrite", "instruction_following", "code_prompting"],
+      "lmstudio": {
+        "temperature": 0.2,
+        "top_p": 0.9,
+        "top_k": 40,
+        "repeat_penalty": 1.05,
+        "max_tokens": 600,
+        "context_window": 32768,
+        "stream": true
+      },
+      "recommended_for": [
+        "default prompt enhancement",
+        "VS Code prompt rewrites",
+        "Cherry Studio chat prompt cleanup",
+        "general PromptHub client transforms"
+      ],
+      "avoid_for": [
+        "deep planning chains when the Thinking variant is available",
+        "vision understanding"
+      ]
+    },
+    "qwen3-4b-thinking-2507": {
+      "role": "planner",
+      "family": "qwen3",
+      "size_class": "4b",
+      "capabilities": ["reasoning", "planning", "task_decomposition", "router_support"],
+      "lmstudio": {
+        "temperature": 0.1,
+        "top_p": 0.85,
+        "top_k": 32,
+        "repeat_penalty": 1.03,
+        "max_tokens": 800,
+        "context_window": 32768,
+        "stream": true
+      },
+      "recommended_for": [
+        "PromptHub orchestrator",
+        "fallback-chain selection",
+        "multi-step enhancement policy",
+        "complex coding prompt reframing"
+      ],
+      "avoid_for": [
+        "simple rewrites where latency matters more than deliberation"
+      ]
+    },
+    "qwen3.5-4b": {
+      "role": "vision_worker",
+      "family": "qwen3.5",
+      "size_class": "4b",
+      "capabilities": ["vision", "ocr", "multimodal", "long_context", "chat"],
+      "lmstudio": {
+        "temperature": 0.2,
+        "top_p": 0.9,
+        "top_k": 40,
+        "repeat_penalty": 1.03,
+        "max_tokens": 900,
+        "context_window": 65536,
+        "stream": true
+      },
+      "recommended_for": [
+        "ComfyUI prompt extraction from images",
+        "OCR or screenshot understanding",
+        "multimodal prompt planning",
+        "long-context research note analysis"
+      ],
+      "avoid_for": [
+        "plain text rewrites when qwen3-4b-instruct is already loaded and sufficient"
+      ]
+    },
+    "qwen3-1.7b": {
+      "role": "editor_helper",
+      "family": "qwen3",
+      "size_class": "1.7b",
+      "capabilities": ["fast_cleanup", "light_rewrite", "tagging"],
+      "lmstudio": {
+        "temperature": 0.2,
+        "top_p": 0.9,
+        "top_k": 32,
+        "repeat_penalty": 1.05,
+        "max_tokens": 300,
+        "context_window": 16384,
+        "stream": true
+      },
+      "recommended_for": [
+        "fast text cleanup",
+        "tag generation",
+        "cheap second-pass normalization"
+      ]
+    },
+    "qwen3-0.6b": {
+      "role": "draft_helper",
+      "family": "qwen3",
+      "size_class": "0.6b",
+      "capabilities": ["drafting", "speculative_decode_helper"],
+      "lmstudio": {
+        "temperature": 0.1,
+        "top_p": 0.8,
+        "top_k": 20,
+        "repeat_penalty": 1.0,
+        "max_tokens": 128,
+        "context_window": 8192,
+        "stream": true
+      },
+      "recommended_for": [
+        "speculative decoding helper",
+        "ultra-fast stub rewrites"
+      ]
+    },
+    "deepseek-r1-qwen3-8b": {
+      "role": "optional_heavy_reasoner",
+      "enabled": false,
+      "family": "deepseek-r1-qwen3",
+      "size_class": "8b",
+      "capabilities": ["reasoning", "complex_planning"],
+      "lmstudio": {
+        "temperature": 0.1,
+        "top_p": 0.85,
+        "top_k": 32,
+        "repeat_penalty": 1.03,
+        "max_tokens": 1200,
+        "context_window": 32768,
+        "stream": true
+      },
+      "recommended_for": [
+        "optional difficult reasoning passes",
+        "non-default expert escalation"
+      ],
+      "notes": [
+        "Keep disabled by default.",
+        "Use only when the 4B planner is insufficient and local resources allow it."
+      ]
+    }
+  },
+  "routing": {
+    "default_model": "qwen3-4b-instruct-2507",
+    "planner_model": "qwen3-4b-thinking-2507",
+    "vision_model": "qwen3.5-4b",
+    "editor_model": "qwen3-1.7b",
+    "draft_model": "qwen3-0.6b",
+    "fallback_chain": [
+      "qwen3-4b-instruct-2507",
+      "qwen3-4b-thinking-2507",
+      "qwen3.5-4b",
+      null
+    ],
+    "task_routes": {
+      "default_rewrite": "qwen3-4b-instruct-2507",
+      "coding_rewrite": "qwen3-4b-instruct-2507",
+      "research_rewrite": "qwen3-4b-thinking-2507",
+      "vision_input": "qwen3.5-4b",
+      "image_prompt_expansion": "qwen3.5-4b",
+      "quick_cleanup": "qwen3-1.7b",
+      "spec_decode": "qwen3-0.6b"
+    },
+    "chains": {
+      "research_chain": ["qwen3-4b-thinking-2507", "qwen3-4b-instruct-2507"],
+      "vision_to_rewrite_chain": ["qwen3.5-4b", "qwen3-4b-instruct-2507"],
+      "cheap_cleanup_chain": ["qwen3-1.7b", "qwen3-4b-instruct-2507"]
+    }
+  },
+  "clients": {
+    "prompthub": {
+      "provider": "lmstudio",
+      "default_model": "qwen3-4b-instruct-2507",
+      "planner_model": "qwen3-4b-thinking-2507",
+      "vision_model": "qwen3.5-4b",
+      "headers": {
+        "X-PromptHub-Client": "prompthub"
+      },
+      "enhancement": {
+        "enabled": true,
+        "mode": "rewrite_only",
+        "return_only_enhanced_prompt": true
+      }
+    },
+    "vscode": {
+      "provider": "lmstudio",
+      "default_model": "qwen3-4b-instruct-2507",
+      "headers": {
+        "X-PromptHub-Client": "vscode"
+      },
+      "system_prompt": "You are a prompt engineer for coding tasks. Rewrite the user's prompt to be more precise and actionable for a code-generation AI. Be concise. Return only the rewritten prompt — no explanation, no preamble.",
+      "lmstudio_overrides": {
+        "temperature": 0.2,
+        "max_tokens": 500
+      }
+    },
+    "cherry-studio": {
+      "provider": "lmstudio",
+      "default_model": "qwen3-4b-instruct-2507",
+      "headers": {
+        "X-PromptHub-Client": "cherry-studio"
+      },
+      "system_prompt": "You are a prompt engineer for conversational and productivity tasks. Rewrite the user's prompt to be clearer, more specific, and ready for a local reasoning or chat model. Return only the rewritten prompt.",
+      "lmstudio_overrides": {
+        "temperature": 0.3,
+        "max_tokens": 500
+      }
+    },
+    "comfyui": {
+      "provider": "lmstudio",
+      "default_model": "qwen3.5-4b",
+      "headers": {
+        "X-PromptHub-Client": "comfyui"
+      },
+      "system_prompt": "You are a prompt engineer for AI image generation. Expand the user's prompt into a rich, detailed image generation prompt. Include subject, composition, style, lighting, palette, mood, camera or lens cues when useful, and quality tags only when they help. Return only the enhanced prompt.",
+      "lmstudio_overrides": {
+        "temperature": 0.5,
+        "max_tokens": 400
+      },
+      "workflow_notes": [
+        "Use qwen3.5-4b when the workflow includes image reference understanding.",
+        "Fallback to qwen3-4b-instruct-2507 for pure text-to-image prompt enhancement."
+      ]
+    }
+  },
+  "system_prompts": {
+    "default": "You are a prompt engineer. Rewrite the user's prompt to be clearer, more specific, and more actionable. Keep the same intent and tone. Return only the rewritten prompt — no explanation, no preamble, no quotes.",
+    "research": "You are a prompt engineer for research tasks. Rewrite the user's prompt as a focused research question. Format output in Markdown. Use [[wikilinks]] and #tags where relevant. Return only the rewritten prompt — no explanation.",
+    "coding": "You are a prompt engineer for coding tasks. Rewrite the user's prompt to be more precise and actionable for a code-generation AI. Include language, framework, runtime, operating system, package manager, and file path context when implied. Return only the rewritten prompt — no explanation.",
+    "vision": "You are a multimodal prompt engineer. Extract relevant visual context from images or screenshots, then produce a clean, specific prompt for the downstream model. Return only the final prompt.",
+    "image_generation": "You are a prompt engineer for AI image generation. Expand the user's prompt into a structured, vivid, high-signal image prompt with subject, composition, medium, style, lighting, mood, color, and helpful technical cues. Return only the enhanced prompt."
+  },
+  "implementation_notes": {
+    "python_fastapi": [
+      "Map PromptHub alias names to live LM Studio model IDs in one resolver module.",
+      "Inject per-client system prompts and LM Studio overrides after reading X-PromptHub-Client.",
+      "Keep provider logic OpenAI-compatible so LM Studio can be swapped with another local provider later.",
+      "Treat model availability as dynamic; return a clean fallback when a preferred model is not loaded."
+    ],
+    "node_bridge": [
+      "Expose the same client identity to PromptHub through a stable header or request field.",
+      "Do not hardcode GGUF filenames into client configs; resolve aliases centrally.",
+      "Log model selection and fallback decisions for debugging local routing behavior."
+    ],
+    "macos": [
+      "Assume LM Studio runs locally on macOS with an OpenAI-compatible server endpoint.",
+      "Prefer zsh-compatible examples and local loopback URLs.",
+      "Keep all prompt enhancement local-first unless a client explicitly opts into remote usage."
+    ]
+  }
+}

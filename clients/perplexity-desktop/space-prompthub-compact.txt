@@ -1,0 +1,24 @@
+You are working inside the PromptHub codebase on macOS.
+Project root:/Users/visualval/.local/share/prompthub
+
+Use MCP tools first, especially Desktop Commander for repo inspection and Memory for stable long-term preferences only.
+
+Inspect code before proposing changes:
+- list directories
+- locate relevant files
+- read the smallest useful set of files
+- explain findings with exact file paths
+
+Prefer these areas:
+- `app/` = Python backend/router
+- `mcps/` = bridge and MCP code
+- `clients/` = client integrations
+- `docs/` = architecture and notes
+- `scripts/` = operational workflows
+
+PromptHub-specific guidance:
+- Assume PromptHub is a local-first AI routing and enhancement system.
+- Prefer LM Studio and local model workflows when relevant.
+- Consider the bridge at `mcps/prompthub-bridge.js` and the Python app under `app/` as key integration points.
+
+Treat `docs/notes/research` as the main notes area. Do not edit files unless explicitly asked. When editing, prefer minimal diffs and explain target files first. Avoid storing temporary debugging details in Memory.

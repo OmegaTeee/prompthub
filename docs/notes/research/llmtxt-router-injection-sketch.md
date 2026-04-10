@@ -1,8 +1,19 @@
+---
+title: "llm.txt Router Injection Feasibility Sketch"
+status: review
+created: 2026-04-05
+updated: 2026-04-09
+tags: [research, llm-txt, router, enhancement]
+---
+
 # Research: llm.txt Router Injection — Feasibility Sketch
 
 > **Status**: Evaluated, not implementing (2026-04-05)
 > **Source**: Perplexity research via Desktop Commander context gathering
 > **Moved from**: `docs/notes/plans/` (not an active plan)
+> **Historical note**: this sketch preserves older implementation terminology in
+> a few examples. It is research context only, not a current implementation
+> guide.
 
 ## Goal
 

@@ -1,0 +1,43 @@
+# Local Qwen3 LLM GGUF List
+
+Details of the local Qwen LLM GGUF files that are available for use in LM Studio. Each entry includes links to the specifications and the Hugging Face repository where the GGUF files can be found.
+
+---
+
+## Qwen3 Model Family (4B, 1.7B, 0.6B)
+- _Qwen3.5 4B_ is my main model for all my daily tasks
+- _Qwen3 Thinking_ is my orchstrator agent
+- _Qwen3 Instruct_ is my task assistant
+- _Qwen3 1.7B_ is my quick response text rewrites
+- _Qwen3 0.6B_ is my speculative decoding model for quick checks and token-saving
+
+I'm using the Qwen3 models for every day tasks such as code explanation, project planning, and PR summaries. The 4B models are my go-to all my daily tasks. Im using 0.6B for sepculive decoding in LM Studio in support of the 4B models. The 1.7B for simple prompt editor and quick text rewrites before I ask the 4B for a more detailed response. The 0.6B is also useful for quick checks and when I want to save tokens on a simple question.
+
+### Qwen3.5 4B
+lmstudio-community/Qwen3.5-4B-GGUF:
+- https://www.perplexity.ai/search/qwen3-5-4b-specifications-and-LlEpqFjIT5efKUwNdWMWsQ
+- https://huggingface.co/lmstudio-community/Qwen3.5-4B-GGUF
+
+### Qwen3 4B Thinking-2507
+lmstudio-community/Qwen3-4B-Thinking-2507-GGUF:
+- https://www.perplexity.ai/search/qwen3-4b-thinking-2507-specifi-pYiBdtV3SNygAMu9Z7wc_w
+- https://huggingface.co/lmstudio-community/Qwen3-4B-Thinking-2507-GGUF
+
+### Qwen3 4B Instruct-2507
+lmstudio-community/Qwen3-4B-Instruct-2507-GGUF:
+- https://www.perplexity.ai/search/qwen3-4b-instruct-2507-specifi-8zk_J2NGTXCgMd0wRkAakw
+- https://huggingface.co/lmstudio-community/Qwen3-4B-Instruct-2507-GGUF
+
+### Qwen3 1.7B
+lmstudio-community/Qwen3-1.7B-GGUF:
+- https://www.perplexity.ai/search/qwen3-1-7b-specifications-and-zOiIm95NTCqpdC9Gm246bA
+- https://huggingface.co/lmstudio-community/Qwen3-1.7B-GGUF
+
+### Qwen3 0.6B
+lmstudio-community/Qwen3-0.6B-GGUF:
+- https://www.perplexity.ai/search/qwen3-0-6b-specifications-and-yreSI_htTJSSm3kq8d2LBQ
+- https://huggingface.co/lmstudio-community/Qwen3-0.6B-GGUF
+
+Important Note: The above links provide access to the specifications about the GGUF files for the respective Qwen models. R efer to these resources for detailed information about the models and how to utilize them effectively in LM Studio.
+
+

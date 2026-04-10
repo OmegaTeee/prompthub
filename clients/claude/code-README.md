@@ -11,8 +11,7 @@ Bridge client using `mcpServers` format. Merge install (config file shared with 
 ## Quick setup
 
 ```bash
-cd app && python -m cli generate claude-code
-cd app && python -m cli install claude-code
+./clients/claude/code-setup.sh
 ```
 
 ## Files in this directory

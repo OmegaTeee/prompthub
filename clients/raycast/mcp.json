@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "prompthub": {
+    "prompthub-bridge": {
       "command": "node",
       "args": [
         "/Users/visualval/prompthub/mcps/prompthub-bridge.js"

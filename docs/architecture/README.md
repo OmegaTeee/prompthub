@@ -1,317 +1,420 @@
 # Architecture Documentation
 
-Technical architecture and design decisions for PromptHub.
+Technical architecture and decision history for PromptHub.
+
+Use this document as the entry point for the current system shape.
+For canonical terminology, see [the glossary](../glossary.md).
 
 ## Architecture Decision Records (ADRs)
 
-ADRs document significant architectural decisions, the context behind them, and their consequences.
+ADRs document significant architectural decisions, the context behind them,
+and their consequences.
 
 ### Active ADRs
 
 - [ADR-001: Stdio Transport for MCP Servers](ADR-001-stdio-transport.md)
 - [ADR-002: Circuit Breaker Pattern](ADR-002-circuit-breaker.md)
-- [ADR-003: Per-Client Prompt Enhancement](ADR-003-per-client-enhancement.md) (model selection amended by ADR-006, privacy levels added by ADR-007)
+- [ADR-003: Per-Client Prompt Enhancement](ADR-003-per-client-enhancement.md)
 - [ADR-004: Modular Monolith Architecture](ADR-004-modular-monolith.md)
 - [ADR-005: Async-First Architecture](ADR-005-async-first.md)
-- [ADR-006: Enhancement Timeout & Unified Model](ADR-006-enhancement-timeout.md) (unified model superseded by ADR-008; timeout tuning retained)
+- [ADR-006: Enhancement Timeout & Unified Model](ADR-006-enhancement-timeout.md)
 - [ADR-007: Cloud Fallback via OpenRouter](ADR-007-cloud-fallback.md)
 - [ADR-008: Task-Specific Models & Orchestrator Agent](ADR-008-task-specific-models.md)
 - [ADR-009: Orchestrator Agent](ADR-009-orchestrator-agent.md)
 
-## Deep Dives
+### Deep Dives
 
-- [MCP Transport Adapters](mcp-transport-adapters.md) — Three transport paths (stdio bridge, Streamable HTTP gateway, internal FastMCPBridge), tool prefixing, schema minification, client config generation
+- [MCP Transport Adapters](mcp-transport-adapters.md) — stdio bridge,
+  Streamable HTTP gateway, internal FastMCP bridge
 
-## System Architecture
+## System Overview
 
-### High-Level Overview
+PromptHub is a local MCP router with two client-facing surfaces:
 
+- **Bridge path**: AI clients connect to `prompthub-bridge` over stdio and see
+  MCP tools aggregated from managed servers.
+- **Proxy path**: OpenAI-compatible clients connect to `/v1/*` and receive
+  prompt enhancement before the request is forwarded to LM Studio (or another
+  OpenAI-compatible local LLM server).
+
+At runtime, the system looks like this:
+
+```text
+┌───────────────┐      stdio       ┌────────────────────┐
+│ MCP clients   │ ───────────────▶ │ prompthub-bridge   │
+│ Claude,       │                  │ mcps/*.js          │
+│ VS Code,      │                  └─────────┬──────────┘
+│ Raycast       │                            │ HTTP
+└───────────────┘                            ▼
+                                     ┌────────────────────┐
+┌───────────────┐      HTTP          │ PromptHub Router   │
+│ Proxy clients │ ─────────────────▶ │ FastAPI :9090      │
+│ LM Studio     │                    │ routes + services  │
+│ Cherry Studio │                    └──────┬─────┬───────┘
+│ custom apps   │                           │     │
+└───────────────┘                           │     ├──────────────▶ MCP servers
+                                            │     │                (stdio child
+                                            │     │                processes)
+                                            ▼
+                                     LM Studio :1234
+                                     OpenAI-compatible
+                                     local model server
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Clients   │────▶│  PromptHub    │────▶│ MCP Servers │
-│ (Claude,    │     │   Router     │     │ (stdio)     │
-│  VS Code,   │     │  :9090       │     │             │
-│  Raycast)   │     └──────┬───────┘     └─────────────┘
-└─────────────┘            │
-                           ▼
-                    ┌──────────────┐
-                    │   Ollama     │
-                    │   :11434     │
-                    └──────────────┘
+
+## Core Components
+
+### Router
+
+The FastAPI application in `app/router/` is the core of PromptHub. It owns:
+
+- MCP server lifecycle management
+- request routing and normalization
+- prompt enhancement and cloud fallback
+- circuit breaker enforcement
+- session memory and tool registry endpoints
+- dashboard and audit surfaces
+
+The router is the central application component. It is not the same thing as
+the stdio bridge, and it is not a gateway in the MCPGateway sense.
+
+### Bridge (`prompthub-bridge`)
+
+The Node.js bridge in `mcps/prompthub-bridge.js` exposes all configured MCP
+servers as one stdio endpoint for desktop clients. It:
+
+- translates stdio JSON-RPC into HTTP calls against the router
+- aggregates tools from multiple servers
+- prefixes tool names as `{server}_{tool}`
+- minifies tool schemas before returning them to clients
+
+### Proxy (`/v1/*`)
+
+The OpenAI-compatible proxy in `router/openai_compat/router.py` exposes:
+
+- `POST /v1/chat/completions`
+- `POST /v1/responses`
+- `GET /v1/models`
+
+It authenticates clients, optionally enhances the last user message, and then
+forwards the request to LM Studio using the same OpenAI-compatible wire format.
+
+### Supervisor + Registry
+
+The server-management layer in `router/servers/` owns:
+
+- configured MCP server definitions
+- child-process startup and shutdown
+- auto-start for configured servers
+- restarts and health-aware lifecycle transitions
+
+### Enhancement Service
+
+The enhancement layer in `router/enhancement/` owns:
+
+- per-client enhancement rules from `enhancement-rules.json`
+- LM Studio calls through a backend-agnostic OpenAI-compatible client
+- privacy-level enforcement
+- OpenRouter fallback when privacy policy allows it
+- cache-backed prompt rewriting
+
+### Orchestrator
+
+The orchestrator in `router/orchestrator/` runs before enhancement and handles:
+
+- intent classification
+- prompt annotation
+- suggested MCP server/tool hints
+- session-context-aware pre-processing
+
+The current model split is:
+
+| Role | Model | Purpose |
+|---|---|---|
+| Enhancement | `qwen3-4b-instruct-2507` | Fast prompt rewriting |
+| Orchestrator | `qwen3-4b-thinking-2507` | Intent classification and tool hints |
+
+See [ADR-008](ADR-008-task-specific-models.md) and
+[ADR-009](ADR-009-orchestrator-agent.md) for the full rationale.
+
+### Tool Registry
+
+The tool registry in `router/tool_registry/` caches raw MCP tool definitions in
+SQLite before the bridge minifies them. This reduces repeated live `tools/list`
+fan-out and supports archival of prior snapshots.
+
+### Memory System
+
+The memory system in `router/memory/` provides session-scoped facts, memory
+blocks, and full session context assembly through `/sessions/*`.
+
+## API Surfaces
+
+PromptHub exposes several distinct surfaces:
+
+| Surface | Primary endpoints | Purpose |
+|---|---|---|
+| Health and control | `/health`, `/servers/*`, `/circuit-breakers*` | Operational state and server lifecycle |
+| MCP proxy | `/mcp/{server}/{path}` | Router-managed proxy to one MCP server |
+| MCP HTTP gateway | `/mcp-direct/mcp` | Streamable HTTP MCP transport |
+| Enhancement API | `/llm/enhance`, `/llm/orchestrate`, `/llm/stats` | Debugging and direct enhancement calls |
+| OpenAI-compatible proxy | `/v1/chat/completions`, `/v1/responses`, `/v1/models` | LLM-compatible client integration |
+| Memory API | `/sessions/*` | Session memory CRUD and context assembly |
+| Tool registry API | `/tools/*` | Cached tool snapshots and maintenance |
+| Dashboard | `/dashboard*` | HTMX operational UI |
+| Audit and security | `/audit/*`, `/security/alerts*` | Audit inspection and anomaly views |
+| Pipelines | `/pipelines/documentation` | Documentation workflow entry point |
+
+## Request Flows
+
+### 1. Stdio Bridge Tool Flow
+
+Desktop MCP clients use the Node bridge, which calls back into the router:
+
+```text
+Client
+  → prompthub-bridge (stdio)
+  → GET /servers
+  → POST /mcp/{server}/{path}
+  → Supervisor / FastMCPBridge
+  → stdio child process
+  → tool result
 ```
 
-### Component Layers
+Important properties:
 
+- tools remain transparent, not consolidated into super-tools
+- tool names are prefixed per server
+- schema minification happens in the Node bridge, not in the Python router
+- server start/stop/restart remains owned by the router
+
+### 2. OpenAI-Compatible Proxy Flow
+
+```text
+Client
+  → POST /v1/chat/completions or /v1/responses
+  → Bearer-token auth
+  → optional prompt enhancement
+  → circuit breaker check
+  → LM Studio /v1/*
+  → proxied response
 ```
-┌───────────────────────────────────────────────┐
-│              FastAPI Routes                          │
-│  /health /servers /mcp /v1 /ollama /sessions /dashboard │
-└───────────────┬───────────────────────────────┘
-                │
-┌───────────────▼───────────────────────────────┐
-│             Middleware Stack                  │
-│  Timeout → AuditContext → ActivityLogging     │
-└───────────────┬───────────────────────────────┘
-                │
-┌───────────────▼───────────────────────────────┐
-│           Service Layer                                  │
-│  Supervisor │ Enhancement │ CircuitBreakers │ SessionStorage │
-└──────┬──────┴─────┬───────┴───────┬───────────┘
-       │            │               │
-       ▼            ▼               ▼
-┌───────────────┐  ┌─────────┐  ┌───────────┐
-│ FastMCPBridge │  │ Ollama  │  │ Resilience│
-│  (per-server) │  │ Client  │  │  Patterns │
-└───────┬───────┘  └─────────┘  └───────────┘
-        │
-        ▼
-┌───────────────┐
-│ FastMCP Client│
-│ StdioTransport│
-└───────────────┘
+
+Key behavior:
+
+- enhancement is non-fatal; failures degrade to the original prompt
+- the proxy accepts the upstream model name from the client request
+- the proxy and enhancement service share the same local LLM backend
+
+### 3. Enhancement Flow
+
+```text
+Client
+  → /llm/enhance or internal proxy helper
+  → OrchestratorAgent.process()
+  → EnhancementService.enhance()
+  → cache lookup
+  → LM Studio chat completion
+  → optional OpenRouter fallback
+  → enhanced prompt
 ```
+
+Current enhancement behavior:
+
+- orchestrator timeout target: 2.5s hard ceiling
+- privacy gating:
+  - `local_only` never leaves localhost
+  - `free_ok` and `any` may use cloud fallback
+- cloud fallback is controlled by [ADR-007](ADR-007-cloud-fallback.md)
+
+### 4. MCP HTTP Gateway Flow
+
+```text
+Client
+  → POST /mcp-direct/mcp
+  → FastMCP Streamable HTTP session manager
+  → dynamic client factory
+  → Supervisor / FastMCPBridge
+  → stdio child process
+  → MCP response
+```
+
+This path exists for clients that speak MCP over HTTP instead of stdio.
+
+## State and Resilience
+
+### Server Lifecycle
+
+PromptHub tracks MCP servers through explicit lifecycle states:
+
+```text
+STOPPED → STARTING → RUNNING
+   ↑                     ↓
+   └────── STOPPING ─────┘
+             ↓
+           FAILED
+```
+
+### Circuit Breakers
+
+PromptHub uses circuit breakers for downstream protection:
+
+```text
+CLOSED → OPEN → HALF_OPEN → CLOSED
+```
+
+Typical behavior:
+
+- failures trip the breaker after the configured threshold
+- open breakers fail fast instead of waiting on dead downstreams
+- half-open allows a probe request before normal traffic resumes
+
+Circuit breakers protect:
+
+- MCP server paths
+- enhancement traffic
+- orchestrator traffic
+- OpenAI-compatible proxy forwarding
+- OpenRouter fallback
+
+### Caching Layers
+
+PromptHub uses multiple caches for different concerns:
+
+| Cache | Scope | Backing store |
+|---|---|---|
+| Enhancement cache L1 | prompt rewrites | in-memory LRU |
+| Enhancement cache L2 | prompt rewrites | SQLite |
+| Orchestrator cache | intent classification | in-process LRU |
+| Tool registry cache | MCP tool snapshots | SQLite |
+
+### Privacy and Fallback Rules
+
+Enhancement rules are per client. Each rule controls:
+
+- system prompt
+- temperature
+- max token budget
+- privacy level
+
+If LM Studio is unavailable:
+
+- `local_only` clients skip enhancement and keep the original prompt
+- `free_ok` and `any` may fall back to OpenRouter if enabled
 
 ## Design Principles
 
-### 1. Fail Fast, Fail Safe
-- Circuit breakers prevent cascading failures
-- Graceful degradation when dependencies unavailable
-- Clear error messages with retry guidance
+### Transparent Routing
 
-### 2. Async Everything
-- Python asyncio for concurrent I/O
-- No blocking calls in request path
-- Background tasks for monitoring
+PromptHub routes and enhances requests without inventing a new tool contract.
+Clients still see MCP tools individually.
 
-### 3. Observability First
-- Structured logging (JSON format)
-- Audit trails for security-relevant operations
-- Real-time dashboard with HTMX
-- Request correlation via X-Request-ID
+### Fail Safe by Default
 
-### 4. Configuration as Code
-- JSON config files (mcp-servers.json, enhancement-rules.json)
-- Environment variables for deployment-specific settings
-- No hardcoded values
+If enhancement, orchestration, or a downstream service fails, the system
+prefers graceful degradation over blocking the user.
 
-### 5. Security by Default
-- Credentials via macOS Keychain
-- Audit logging with tamper detection
-- Real-time security alerts
-- Context propagation via contextvars
+### Async-First Boundaries
 
-## Data Flow
+The router is built around async I/O:
 
-### 1. MCP Proxy Request Flow (`/mcp/{server}/{path}`)
+- HTTP via `httpx`
+- MCP subprocess traffic via FastMCP transports
+- SQLite through `aiosqlite`
 
-```
-Client → FastAPI → CircuitBreaker.check()
-   ↓
-Server running? → Auto-start if configured
-   ↓
-FastMCPBridge._dispatch() → FastMCP Client methods
-   ↓
-FastMCP Client → StdioTransport → subprocess stdin/stdout
-   ↓
-CircuitBreaker.record_success() → Response
-```
+### Centralized Configuration
 
-### 1b. MCP Gateway Request Flow (`/mcp-direct/mcp`)
+Behavior lives in shared config files such as:
 
-```
-Client → HTTP POST /mcp-direct/mcp → FastMCP Gateway
-   ↓
-FastMCPProxy → client_factory() → resolve bridge
-   ↓
-FastMCP Client → StdioTransport → subprocess stdin/stdout
-   ↓
-Response (tools namespaced: "server_tool")
-```
+- `app/configs/mcp-servers.json`
+- `app/configs/enhancement-rules.json`
+- `app/configs/api-keys.json`
 
-### 2. Prompt Enhancement Flow
-
-```
-Client → FastAPI → OrchestratorAgent (qwen3:14b, 2.5s timeout)
-   ↓
-Intent classification → OrchestratorResult (intent, tools, annotated prompt)
-   ↓ (pass-through on any failure)
-EnhancementService → Cache hit? → Return cached
-   ↓
-CircuitBreaker.check() → Ollama available?
-   ↓
-Select model by client (gemma3:4b / gemma3:27b / qwen3-coder:30b)
-   ↓
-Ollama OpenAI API (/v1/chat/completions) → Enhanced prompt → Cache → Response
-   ↓ (on failure, if privacy allows)
-Cloud fallback → OpenRouter free tier → Enhanced prompt (provider="openrouter")
-```
-
-See [ADR-008](ADR-008-task-specific-models.md) (task-specific models) and [ADR-009](ADR-009-orchestrator-agent.md) (orchestrator architecture).
-
-**Privacy gating**: `local_only` clients never hit cloud. `free_ok`/`any` clients fall back to OpenRouter when Ollama fails. See [ADR-007](ADR-007-cloud-fallback.md).
-
-**Timeout chain**: httpx client (120s from .env) → middleware (180s for /ollama/enhance) → Ollama keep_alive (5min before model unload)
-
-### 3. Health Check Flow
-
-```
-Timer (10s) → Supervisor.check_all_servers()
-   ↓
-For each running server:
-   ↓
-Process alive? → No → Should restart?
-   ↓
-Yes → Supervisor.restart_server() → Increment restart_count
-   ↓
-restart_count > max_restarts? → Mark as FAILED
-```
-
-## State Management
-
-### Server Lifecycle States
-
-```
-STOPPED → STARTING → RUNNING
-   ↑                     ↓
-   └─────── STOPPING ────┘
-            ↓
-          FAILED
-```
-
-### Circuit Breaker States
-
-```
-CLOSED (normal) → OPEN (failing)
-   ↑                     ↓
-   └─── HALF_OPEN ───────┘
-       (testing)
-```
+The preference is to fix generators and shared config logic rather than patch
+derived client output.
 
 ## Technology Stack
 
 ### Core
-- **Python 3.11+** - Modern async features, type hints
-- **FastAPI** - High-performance web framework
-- **Pydantic** - Data validation and settings
-- **Uvicorn** - ASGI server
 
-### MCP Integration
-- **FastMCP Client** - MCP server lifecycle and communication
-- **StdioTransport** - Subprocess management via stdio
-- **FastMCPProxy** - Dynamic client factories for gateway
-- **JSON-RPC 2.0** - MCP protocol
+- Python 3.11+
+- FastAPI
+- Pydantic / pydantic-settings
+- httpx
+- Uvicorn
 
-### Resilience
-- **Circuit breakers** - Custom implementation
-- **LRU cache** - Custom OrderedDict with TTL and async locks (cache/memory.py)
-- **Retry logic** - httpx built-in
+### MCP and Routing
 
-### Observability
-- **Logging** - Python stdlib logging
-- **SQLite** - Activity log persistence
-- **HTMX** - Real-time dashboard updates
-- **SHA256** - Audit log integrity
+- FastMCP Client
+- Streamable HTTP MCP gateway
+- Node.js stdio bridge (`prompthub-bridge`)
+- JSON-RPC 2.0 / MCP
 
-### Security
-- **Keyring** - macOS Keychain integration
-- **contextvars** - Audit context propagation
-- **UUID4** - Request correlation IDs
+### Persistence and Observability
 
-## Performance Characteristics
+- SQLite / aiosqlite
+- structlog-backed audit logging
+- HTMX dashboard
+- Prometheus instrumentation
 
-### Latency
-- **Cache hit**: <1ms (in-memory lookup)
-- **MCP request**: 10-100ms (stdio overhead + server processing)
-- **Ollama enhancement (warm)**: 5-50s (model loaded in VRAM, depends on prompt + max_tokens)
-- **Ollama enhancement (cold)**: 30-60s (model must be loaded into VRAM first)
-- **Circuit breaker check**: <0.1ms (state check only)
+### Local LLM Backend
 
-### Throughput
-- **MCP proxy**: ~1000 req/s (limited by MCP server, not router)
-- **Enhancement**: ~10 req/s (limited by Ollama throughput)
-- **Dashboard**: ~100 concurrent users (HTMX polling)
+- LM Studio on `localhost:1234`
+- OpenAI-compatible API surface
+- Apple Silicon-friendly local inference workflow
 
-### Memory
-- **Base**: ~50MB (Python + FastAPI)
-- **Per MCP server**: ~10-50MB (Node.js process)
-- **Cache**: Configurable (default: 500 entries × ~1KB = 500KB)
-
-## Deployment Patterns
+## Deployment and Operations
 
 ### Development
 
+Typical local workflow:
+
 ```bash
-# Local Python + separate Ollama
+cd ~/prompthub/app
+source .venv/bin/activate
 uvicorn router.main:app --reload --port 9090
-ollama serve
 ```
 
-### Docker Compose
+Run LM Studio separately and ensure the required local models are loaded.
 
-```bash
-# All-in-one container
-docker compose up -d
-```
+### Background Service
 
-### Production (macOS)
+On macOS, PromptHub can run as a LaunchAgent using
+`com.prompthub.router.plist`.
 
-```bash
-# LaunchAgent for auto-start on login
-cp com.prompthub.router.plist ~/Library/LaunchAgents/
-launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
-```
+### Operational Assumptions
+
+- single-user local machine
+- localhost-only routing model by default
+- MCP servers run as stdio child processes
+- LM Studio is the default local inference backend
 
 ## Scaling Considerations
 
-### Current Limitations
-- **Single process** - No horizontal scaling
-- **In-memory cache** - Not shared across instances
-- **Local Ollama** - Single-threaded LLM inference
+PromptHub is optimized for a single-machine workflow, not horizontal scale.
+The current design assumes:
 
-### Future Scalability
-1. **Multiple routers** + Redis cache = Horizontal scaling
-2. **Ollama cluster** + load balancer = Parallel enhancement
-3. **WebSocket transport** = Reduce stdio overhead
-4. **PostgreSQL** = Persistent activity log with partitioning
+- one FastAPI router process
+- local child processes for MCP servers
+- local SQLite-backed persistence
+- local LLM inference
 
-## Security Model
+If scaling becomes necessary, the likely pressure points are:
 
-### Threat Model
-- **In-scope**: Local privilege escalation, credential theft, audit tampering
-- **Out-of-scope**: Network attacks (localhost-only), DDoS (single-user)
+1. shared cache coordination across router instances
+2. LLM throughput and model concurrency
+3. centralizing audit and tool-registry storage
+4. replacing local-only assumptions in dashboard and operations flows
 
-### Security Controls
-1. **Keyring integration** - Credentials never in config files
-2. **Audit logging** - Tamper-evident with checksums
-3. **Circuit breakers** - Prevent resource exhaustion
-4. **Context propagation** - Request correlation for investigations
+## What This Document Does Not Do
 
-### Compliance
-- **SOC 2**: 90% (audit trails, access controls)
-- **GDPR**: 85% (data minimization, audit logs)
-- **HIPAA**: 80% (encryption in transit, audit trails)
+This README intentionally avoids historical benchmark numbers and stale model
+comparison tables. Those values drift quickly and belong in targeted ADRs,
+tests, or operational notes tied to a specific date and environment.
 
-See [docs/audit/](../audit/) for detailed audit documentation.
+For current naming and conceptual boundaries, prefer:
 
-## Testing Strategy
-
-### Unit Tests
-- **Services**: Enhancement, CircuitBreaker, Cache
-- **Managers**: Supervisor, Registry, FastMCPBridge
-- **Utilities**: Audit, Security alerts, Integrity
-
-### Integration Tests
-- **End-to-end flows**: MCP proxy, enhancement, server lifecycle
-- **Error scenarios**: Circuit breaker open, server crash, Ollama down
-- **Audit**: Context propagation, security alerts
-
-### Load Tests
-- **Locust**: Simulate 100 concurrent users
-- **Metrics**: Latency p50/p95/p99, throughput, error rate
-
-## References
-
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [MCP Specification](https://modelcontextprotocol.io/docs/specification)
-- [Circuit Breaker Pattern](https://martinfowler.com/bliki/CircuitBreaker.html)
-- [JSON-RPC 2.0 Spec](https://www.jsonrpc.org/specification)
+- [Glossary](../glossary.md)
+- [ADR-007](ADR-007-cloud-fallback.md)
+- [ADR-008](ADR-008-task-specific-models.md)
+- [ADR-009](ADR-009-orchestrator-agent.md)
+- [MCP Transport Adapters](mcp-transport-adapters.md)

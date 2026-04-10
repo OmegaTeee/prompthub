@@ -4,6 +4,10 @@
 **Status**: Approved
 **Scope**: Add `POST /v1/responses` endpoint to PromptHub router
 
+> Historical implementation spec: this document is preserved as design history
+> for the Responses API adapter. Use current code and API docs for the live
+> contract.
+
 ## Problem
 
 Cherry Studio (and potentially other clients) use OpenAI's Responses API format (`/v1/responses`) instead of Chat Completions (`/v1/chat/completions`). The router currently only speaks Chat Completions, blocking these clients from connecting.

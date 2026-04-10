@@ -13,7 +13,7 @@ Think of this like a pre-flight checklist. Run these three checks before digging
 Open Terminal and run:
 
 ```bash
-python -m cli diagnose
+./scripts/diagnose.sh
 ```
 
 You should see output like this:
@@ -47,7 +47,7 @@ tail -n 100 ~/prompthub/logs/router-stderr.log | grep ERROR
 Open http://localhost:9090 in your browser. Look at the **Status** section. Green means healthy. Red means something needs attention.
 
 **Key takeaways:**
-- Run `python -m cli diagnose` first -- it checks everything at once.
+- Run `./scripts/diagnose.sh` first -- it checks everything at once.
 - Logs tell you exactly what went wrong and when.
 - The dashboard gives you a visual health overview.
 
@@ -146,7 +146,7 @@ Open http://localhost:9090 in your browser. Look at the **Status** section. Gree
 
 2. Confirm the key exists in the config file:
    ```bash
-   cat ~/prompthub/configs/api-keys.json | grep sk-
+   cat ~/prompthub/app/configs/api-keys.json | grep sk-
    ```
 
 3. If you recently edited the file, reload the keys:
@@ -400,7 +400,7 @@ tail -f ~/prompthub/logs/router-stderr.log
 ### Run Diagnostics
 
 ```bash
-python -m cli diagnose
+./scripts/diagnose.sh
 ```
 
 This checks all major systems and reports what is healthy and what is not.
@@ -438,7 +438,7 @@ uvicorn router.main:app --host 127.0.0.1 --port 9090 --reload
 
 **Key takeaways:**
 - Logs are your best friend -- read them first.
-- `python -m cli diagnose` gives a one-command health report.
+- `./scripts/diagnose.sh` gives a one-command health report.
 - A full restart fixes most mysterious issues.
 
 ---
@@ -463,7 +463,7 @@ If none of the above works, gather information for further debugging:
 
 1. Collect diagnostics into a file:
    ```bash
-   python -m cli diagnose > diagnostics.txt
+   ./scripts/diagnose.sh > diagnostics.txt
    tail -n 100 ~/prompthub/logs/router-stderr.log >> diagnostics.txt
    ```
 

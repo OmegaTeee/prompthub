@@ -8,7 +8,7 @@ Detailed documentation for PromptHub's core modules.
 
 ### Core Modules
 - [servers/](servers.md) - MCP server lifecycle management
-- [enhancement/](enhancement.md) - Prompt enhancement via Ollama (+ OpenRouter cloud fallback)
+- [enhancement/](enhancement.md) - Prompt enhancement via LM Studio (+ OpenRouter cloud fallback)
 - [resilience/](resilience.md) - Circuit breaker pattern
 - [routes/](#routes-package) - Route handlers extracted from main.py
 
@@ -30,16 +30,15 @@ Detailed documentation for PromptHub's core modules.
 ## Module Dependency Graph
 
 ```
-main.py (~505 lines: globals, lifespan, middleware, dashboard helpers, router wiring)
+main.py (globals, lifespan, middleware, dashboard helpers, router wiring)
   │
   ├── routes/                     # Route handlers (factory pattern)
   │   ├── health.py               # /health, /circuit-breakers
   │   ├── servers.py              # /servers/* CRUD + start/stop/restart
   │   ├── mcp_proxy.py            # /mcp/{server}/{path} + normalize helpers
-  │   ├── enhancement.py          # /ollama/enhance, /ollama/stats, /ollama/reset
+  │   ├── enhancement.py          # /llm/enhance, /llm/stats, /llm/reset
   │   ├── audit.py                # /audit/activity*, /audit/integrity*, /security/alerts*
-  │   ├── pipelines.py            # /pipelines/documentation
-  │   └── client_configs.py       # /configs/claude-desktop, /vscode, /raycast
+  │   └── pipelines.py            # /pipelines/documentation
   │
   ├── servers/
   │   ├── registry.py             # ServerRegistry
@@ -48,9 +47,9 @@ main.py (~505 lines: globals, lifespan, middleware, dashboard helpers, router wi
   │   └── mcp_gateway.py          # build_mcp_gateway (Streamable HTTP)
   │
   ├── enhancement/
-  │   ├── service.py              # EnhancementService (Ollama + cloud fallback)
-  │   ├── ollama.py               # OllamaClient (native API)
-  │   └── ollama_openai.py        # OllamaOpenAIClient (OpenAI-compat, reused for OpenRouter)
+  │   ├── service.py              # EnhancementService (LM Studio + cloud fallback)
+  │   ├── llm_client.py           # LLMClient (OpenAI-compat HTTP client)
+  │   └── context_window.py       # TokenBudget (truncation at word boundaries)
   │
   ├── resilience/
   │   └── circuit_breaker.py      # CircuitBreaker, CircuitBreakerRegistry
@@ -105,9 +104,9 @@ Each module exports a minimal public API:
 ```python
 # router/enhancement/__init__.py
 from router.enhancement.service import EnhancementService
-from router.enhancement.ollama import OllamaClient
+from router.enhancement.llm_client import LLMClient
 
-__all__ = ["EnhancementService", "OllamaClient"]
+__all__ = ["EnhancementService", "LLMClient"]
 ```
 
 ### Dependency Direction
@@ -137,13 +136,8 @@ Test modules in isolation with mocks:
 ```python
 # tests/test_enhancement.py
 def test_enhancement_service():
-    mock_ollama = Mock()
-    mock_cache = Mock()
-
-    service = EnhancementService(
-        ollama=mock_ollama,
-        cache=mock_cache,
-    )
+    mock_llm = Mock()
+    service = EnhancementService(...)
 
     # Test service logic without dependencies
 ```
@@ -209,7 +203,7 @@ class EnhancementService:
         if cached:
             return cached
 
-        result = await self.ollama.generate(prompt)
+        result = await self.llm_client.chat_completion(...)
         await self.cache.set(prompt, result)
         return result
 ```
@@ -398,7 +392,8 @@ audit_admin_action(
 
 ## Related Documentation
 
+- [Glossary](../glossary.md) — Canonical definitions for project terminology
 - [Architecture Overview](../architecture/README.md)
 - [ADR Index](../architecture/README.md#architecture-decision-records-adrs)
 - [API Documentation](../api/README.md)
-- User Guides: Obsidian vault at `~/Vault/PromptHub/`
+- User Guides: `docs/guides/`

@@ -3,6 +3,12 @@
 ## Status
 Accepted
 
+> Historical note: the architectural decision remains active, but some module
+> names and examples below reflect an older snapshot of the codebase
+> (pre-LM-Studio rename and pre-client-layout cleanup). Use the current
+> [architecture README](README.md) and [project map](../agent-guides/project-map.md)
+> for the live file layout.
+
 ## Context
 PromptHub needs an architecture that balances:
 - **Simplicity**: Easy to understand, deploy, and debug

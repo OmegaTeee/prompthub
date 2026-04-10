@@ -26,7 +26,9 @@
     "chatFullWidth": false,
     "neverAskForToolConfirmation": false,
     "skipToolConfirmationPatterns": [
-      "mcp/prompthub-bridge:*"
+      "mcp/prompthub-bridge:*",
+      "mcp/hf-mcp-server:*",
+      "mcp/fetch:*"
     ],
     "showChatUtilityMenuLabels": true,
     "pinnedPlugins": [],
@@ -89,7 +91,7 @@
   "appFirstLoad": false,
   "autoLoadBundledLLM": true,
   "modelLoadingGuardrails": {
-    "mode": "high",
+    "mode": "medium",
     "customThresholdBytes": 4294967296,
     "alwaysAllowLoadAnyway": false
   },

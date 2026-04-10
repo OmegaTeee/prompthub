@@ -1,7 +1,12 @@
 # ADR-003: Per-Client Prompt Enhancement Rules
 
 ## Status
-Accepted (model selection amended by [ADR-006](ADR-006-enhancement-timeout.md) — all clients now use llama3.2:latest)
+Accepted (model selection superseded: ADR-006 unified to llama3.2, then [ADR-008](ADR-008-task-specific-models.md) replaced with `qwen3-4b-instruct-2507` on LM Studio. Per-client system prompts remain active. Ollama references below reflect the state at time of writing; current backend is LM Studio.)
+
+> Historical note: this ADR preserves the original per-client model-routing
+> decision and its Ollama-era examples. For the current model strategy and
+> runtime terminology, use [ADR-008](ADR-008-task-specific-models.md), the
+> [architecture README](README.md), and the [glossary](../glossary.md).
 
 ## Context
 PromptHub routes prompts to Ollama for enhancement before sending to LLMs. Different clients (Claude Desktop, VS Code, Raycast, Obsidian) have different use cases and require different enhancement strategies.
@@ -310,9 +315,10 @@ def test_client_routing():
 - Client configuration examples: `app/configs/enhancement-rules.json`
 
 ## References
-- [Ollama API Documentation](https://ollama.ai/docs/api)
-- [DeepSeek R1 Model Card](https://huggingface.co/deepseek-ai/deepseek-r1)
-- [Qwen2.5-Coder](https://huggingface.co/Qwen/Qwen2.5-Coder-7B)
+- [LM Studio Documentation](https://lmstudio.ai/docs)
+- [DeepSeek R1 Model Card](https://huggingface.co/deepseek-ai/deepseek-r1) (historical — superseded by ADR-008)
+- [Qwen2.5-Coder](https://huggingface.co/Qwen/Qwen2.5-Coder-7B) (historical — superseded by ADR-008)
+- See [Glossary](../glossary.md) for current terminology
 
 ## Revision History
 - 2025-01-25: Initial implementation

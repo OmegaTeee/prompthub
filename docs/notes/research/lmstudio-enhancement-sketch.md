@@ -1,4 +1,16 @@
+---
+title: "LM Studio Enhancement Orchestration Sketch"
+status: review
+created: 2026-03-23
+updated: 2026-04-09
+tags: [research, lm-studio, enhancement, orchestration]
+---
+
 # LM Studio sketch for PromptHub enhancement orchestration
+
+> **Research artifact:** This sketch captures an intermediate design exploration.
+> Some lane names and config examples differ from the current implementation.
+> Use it for background context, not as the current source of truth.
 
 Here’s a concrete, LM‑Studio‑only sketch you can adapt. It assumes:
 
@@ -160,4 +172,3 @@ and let your Python orchestrator opt into it explicitly based on trigger phrases
 [^11]: llm-qwen3-coder-30b-model-card.md
 
 [^12]: llm-qwen35-2b-model-card.md
-

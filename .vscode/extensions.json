@@ -20,7 +20,8 @@
     "redhat.vscode-yaml",
     "adamvoss.vscode-languagetool-en",
     "adamvoss.vscode-languagetool",
-    "be5invis.vscode-icontheme-nomo-dark"
+    "be5invis.vscode-icontheme-nomo-dark",
+    "leosj29.bash-sh-runner"
   ],
   "unwantedRecommendations": [
     "ms-pyright.pyright",
