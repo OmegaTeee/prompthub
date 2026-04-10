@@ -80,3 +80,9 @@ Source in the project, symlink at the client location. Run `setup.sh` to create 
 ```bash
 ./scripts/diagnose.sh
 ```
+
+## Workflow
+
+Client configs are iterated on a long-running `wip/client-config-iteration` branch and promoted to `main` via short-lived `feature/<client>-config` PRs. The preferred promotion strategy is **path-scoped checkout** — `git checkout wip/client-config-iteration -- clients/<name>/` copies the current state of a client folder into a fresh feature branch as one atomic commit, then opens a PR.
+
+See [WORKFLOW.md](WORKFLOW.md) for the full guide, commands reference, and troubleshooting.
