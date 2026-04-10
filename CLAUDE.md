@@ -238,6 +238,17 @@ Query API: `GET /audit/activity?client_id=admin&limit=50`
 
 For detailed audit system documentation, see `docs/audit/`
 
+## MCP Tool Usage Hints
+
+Operational patterns for MCP tools that agents should follow. These supplement the tool descriptions exposed by the bridge.
+
+| Hint | Details |
+| --- | --- |
+| **Obsidian tools require Obsidian running** | Before calling any `obsidian_*` or `obsidian-mcp-tools_*` tool, verify Obsidian is open. If not, launch it via `desktop-commander_start_process` with command `open -a Obsidian` and wait ~3 seconds for the REST API to initialize on port 27124. |
+| **On-demand servers need manual start** | Servers with `auto_start: false` (`obsidian`, `chrome-devtools-mcp`, `browsermcp`) are not running by default. Start them via `curl -X POST http://localhost:9090/servers/{name}/start` using desktop-commander, then wait for the bridge to refresh its tool list. |
+| **Desktop Commander is always available** | Use `desktop-commander_start_process` for launching apps, running shell commands, and starting services. It's the agent's primary way to interact with the system outside of file editing. |
+| **Perplexity requires Comet browser** | `perplexity_*` tools (aliased from `perplexity-comet`) need the Comet browser running. The bridge auto-starts Comet via `perplexity_connect`, but initial connection may take 5-10 seconds. |
+
 ## Steering Documents
 
 Steering documents guide AI agents with project-specific conventions and patterns. These documents are located in `.claude/steering/`:
