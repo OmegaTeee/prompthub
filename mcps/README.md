@@ -13,7 +13,7 @@ mcps/
 └── README.md                     This file
 ```
 
-## Server Roster (9 servers)
+## Server Roster (10 servers)
 
 ### Auto-start (7 servers)
 
@@ -29,12 +29,13 @@ Started automatically when the router boots. Restarted on failure up to 3 times.
 | obsidian-mcp-tools | standalone binary | stdio | Obsidian vault operations via MCP Tools plugin |
 | perplexity-comet | `perplexity-comet-mcp` | stdio | Perplexity research via Comet browser CDP bridge |
 
-### On-demand (2 servers)
+### On-demand (3 servers)
 
 Started manually via `POST /servers/{name}/start` or dashboard. Set `auto_start: false`.
 
 | Server | Package | Transport | Description |
 | --- | --- | --- | --- |
+| obsidian | `mcp-obsidian` (pipx) | stdio | Obsidian vault file ops, batch reads, periodic notes, recent changes |
 | chrome-devtools-mcp | `chrome-devtools-mcp` | stdio | Chrome DevTools Protocol debugging and browser automation |
 | browsermcp | `@browsermcp/mcp` | stdio | Browser automation via Chrome extension WebSocket bridge |
 

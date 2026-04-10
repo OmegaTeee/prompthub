@@ -97,6 +97,31 @@
       "health_check_interval": 30,
       "description": "Obsidian vault operations via MCP Tools plugin"
     },
+    "obsidian": {
+      "package": "mcp-obsidian",
+      "transport": "stdio",
+      "command": "/Users/visualval/.local/bin/mcp-obsidian",
+      "args": [],
+      "env": {
+        "OBSIDIAN_API_KEY": {
+          "source": "keyring",
+          "service": "prompthub",
+          "key": "obsidian_api_key"
+        },
+        "OBSIDIAN_AUTHENTICATION": {
+          "source": "keyring",
+          "service": "prompthub",
+          "key": "obsidian_authentication"
+        },
+        "OBSIDIAN_HOST": "https://127.0.0.1",
+        "OBSIDIAN_PORT": "27124"
+      },
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Obsidian vault file ops, batch reads, periodic notes, and recent changes (Python, pipx)"
+    },
     "chrome-devtools-mcp": {
       "package": "chrome-devtools-mcp",
       "transport": "stdio",
