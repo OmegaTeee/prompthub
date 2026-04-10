@@ -11,12 +11,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - **Auto-discovery in `manage-keys.py`**: Replaced hardcoded `KNOWN_KEYS` list with `discover_keys()` that scans `mcp-servers.json` for `{"source": "keyring"}` references plus a `SETTINGS_KEYS` dict for router-level keys. `list` command now shows which server or service consumes each key.
 
 ### Fixed
-- **Obsidian MCP wrapper Keychain mismatch**: Wrapper scripts in `mcps/obsidian-wrapper/` used `security -a $USER -s "key_name"` but Python `keyring` stores as `security -s "prompthub" -a "key_name"`. These are different Keychain entries — wrappers could never find keys stored via `manage-keys.py`. Fixed all three wrapper scripts to use matching parameters.
-- **`KeyringManager.delete_credential` crash on missing keys**: `keyring.delete_password()` throws `PasswordDeleteError` when the key doesn't exist. Now caught separately and returns `True` with `not_found` audit status instead of failing.
-- **`localhost` vs `127.0.0.1` bind address**: Changed default `HOST` from `127.0.0.1` to `0.0.0.0` (accepts both IPv4 and IPv6). Added startup warning in `main.py` when `HOST=127.0.0.1` — macOS resolves `localhost` to `::1` (IPv6) which fails against IPv4-only bind.
-- **Broken `test_process_env_config` assertions**: Test asserted keys that weren't in the test config. Fixed to match actual test data.
+- **Obsidian MCP wrapper Keychain mismatch** (PR #5): Wrapper scripts used `security -a $USER -s "key_name"` but Python `keyring` stores as `security -s "prompthub" -a "key_name"`. Fixed all three wrapper scripts.
+- **`KeyringManager.delete_credential` crash on missing keys** (PR #5): Now catches `PasswordDeleteError` separately and returns `True` with `not_found` audit status.
+- **`localhost` vs `127.0.0.1` bind address** (PR #6): Changed default `HOST` to `0.0.0.0`. Added startup warning when `HOST=127.0.0.1`.
+- **Broken `test_process_env_config` assertions** (PR #5): Test asserted keys not in test config. Fixed to match actual data.
+- **Perplexity tool name double-prefix** (PR #10): Bridge exposed `perplexity-comet_comet_connect` (double "comet"). Added `TOOL_PREFIX_ALIASES` system with built-in default mapping `perplexity-comet → perplexity` and stripping `comet_` from tool names. Result: `perplexity_connect`, `perplexity_ask`, etc. Bidirectional: forward in `getAllTools()`, reverse in `callTool()`. Extensible via env var for future servers.
 
 ### Added
+- **`mcp-obsidian` on-demand server** (PR #9): Registered Python-based Obsidian MCP server (`~/.local/bin/mcp-obsidian`, pipx) with `auto_start: false`. Adds batch file reads, periodic notes, recent changes, and complex search — capabilities the plugin binary doesn't have. Uses same keyring credentials as `obsidian-mcp-tools`. Server count: 9 → 10 (7 auto-start, 3 on-demand).
+- **`clients/WORKFLOW.md`** (PR #8): Guide for the `wip/client-config-iteration` long-running branch pattern. Documents path-scoped checkout (recommended) and cherry-pick (fallback) strategies for promoting stable config slices to PRs. Includes troubleshooting, rebase safety, and common commands reference.
+- **MCP tool usage hints in CLAUDE.md** (PR #9): Operational patterns for agents — launch Obsidian before vault tools, on-demand servers need manual start, desktop-commander always available, perplexity needs Comet browser.
+- **Project-root `.mcp.json`** (PR #7): Relative symlink to `clients/claude/code-mcp.json` so Claude Code auto-discovers prompthub-bridge, skills-mcp, and fetch MCP servers.
+
+### Removed
+- **`mcps/obsidian-wrapper/`** (PR #9): Deleted shell wrapper scripts, README, and bin/ directory. Superseded by keyring env blocks in `mcp-servers.json` — the router's `process_env_config()` handles credential injection directly.
+- **`@brave/brave-search-mcp-server`** (PR #9): Unused npm package. Keyring entry (`brave_api_key`) already cleaned in PR #5.
+- **`@perplexity-ai/mcp-server`** (PR #9): Parked in favor of `perplexity-comet` (CDP browser bridge). Evaluation note at `docs/notes/research/eval-perplexity-ai-mcp.md`.
+- **`webmcp-react` + `zod`** (PR #9): Leftovers from deleted `mcps/web/` clone. Evaluation note at `docs/notes/research/eval-webmcp-react.md`.
+- **Legacy symlinks** (PR #7): `clients/claude-code`, `clients/claude-desktop` (superseded by `clients/claude/` folder), `mcp.json` at root (superseded by `.mcp.json`).
+
+### Changed
+- **`mcps/README.md` rewritten** (PR #9): Server count 7 → 10. Fixed every stale fact (memory auto_start, fetch binary path). Added bridge documentation (env vars, schema minification, tool prefixing), keyring pattern for new servers, and current diagnostics commands.
+
+### Added (prior)
 - **Per-client `setup.sh` scripts**: Each client directory now has a self-contained shell script that creates symlinks (for symlink-safe clients) or prints setup instructions (for GUI/shared-config clients). Scripts are idempotent and self-documenting — header comments declare source, target, and strategy.
 - **`scripts/diagnose.sh`**: Pure-shell replacement for `python -m cli diagnose`. Checks node, bridge file, router health, server status, and per-client config symlinks. Auto-discovers clients by scanning `clients/*/setup.sh`.
 
