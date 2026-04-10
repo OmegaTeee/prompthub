@@ -8,6 +8,11 @@ Superseded (timeout tuning retained; unified model replaced by [ADR-008](ADR-008
 > not the current system design. Use [ADR-008](ADR-008-task-specific-models.md)
 > for the active enhancement model strategy.
 
+> Historical note: this ADR is kept for timeout rationale and migration history.
+> The unified `llama3.2` model strategy and Ollama-specific examples below are
+> not the current system design. Use [ADR-008](ADR-008-task-specific-models.md)
+> for the active enhancement model strategy.
+
 ## Context
 The prompt enhancement service was failing intermittently — working when the LLM server had the model "hot" in VRAM but silently timing out on cold starts. The root cause was a compound failure across three independent timeout layers.
 

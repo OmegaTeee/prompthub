@@ -1,19 +1,14 @@
 {
   // ── Python environment ──────────────────────────────────
   // The project lives in app/ with its own venv
-  "python.defaultInterpreterPath": "/Users/visualval/prompthub/app/.venv/bin/python",
-  "python.envFile": "/Users/visualval/prompthub/app/.env",
+  "python.defaultInterpreterPath": "${workspaceFolder}/app/.venv/bin/python",
+  "python.envFile": "${workspaceFolder}/app/.env",
   "python-envs.pythonProjects": [
     {
       "path": "${workspaceFolder}/app/",
       "envManager": "ms-python.python:venv",
       "packageManager": "ms-python.python:pip"
-    },
-    // {
-    //   "path": "",
-    //   "envManager": "ms-python.python:pipenv",
-    //   "packageManager": "ms-python.python:pip"
-    // }
+    }
   ],
   "python.terminal.useEnvFile": true,
   "python.terminal.activateEnvInCurrentTerminal": true,
@@ -79,5 +74,5 @@
     "${workspaceFolder}/app/.venv/bin/python": true
   },
   "explorer.excludeGitIgnore": false,
-  "explorer.autoReveal": true
+  "explorer.autoReveal": false
 }

@@ -15,3 +15,9 @@ SERVERS = "memory,sequential-thinking,desktop-commander,perplexity-comet,context
 [[skills.config]]
 path = "/Users/visualval/.codex/skills/doc/SKILL.md"
 enabled = false
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[projects."/Users/visualval/.local/share/prompthub"]
+trust_level = "trusted"

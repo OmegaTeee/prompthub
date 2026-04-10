@@ -26,14 +26,6 @@
     "fetch": {
       "type": "stdio",
       "command": "/Users/visualval/.local/bin/mcp-server-fetch"
-    },
-    "webmcp-server": {
-      "type": "stdio",
-      "command": "node",
-      "args": [
-        "/Users/visualval/prompthub/mcps/web/extension/dist/mcp-server.js"
-      ],
-      "env": {}
     }
   }
 }

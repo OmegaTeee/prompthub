@@ -54,6 +54,7 @@ env/
 
 # Node (for MCP servers)
 node_modules/
+mcps/web/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

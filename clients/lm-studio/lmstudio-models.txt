@@ -6,12 +6,12 @@ Details of the local Qwen LLM GGUF files that are available for use in LM Studio
 
 ## Qwen3 Model Family (4B, 1.7B, 0.6B)
 - _Qwen3.5 4B_ is my main model for all my daily tasks
-- _Qwen3 Thinking_ is my orchstrator agent
+- _Qwen3 Thinking_ is my orchestrator agent
 - _Qwen3 Instruct_ is my task assistant
 - _Qwen3 1.7B_ is my quick response text rewrites
 - _Qwen3 0.6B_ is my speculative decoding model for quick checks and token-saving
 
-I'm using the Qwen3 models for every day tasks such as code explanation, project planning, and PR summaries. The 4B models are my go-to all my daily tasks. Im using 0.6B for sepculive decoding in LM Studio in support of the 4B models. The 1.7B for simple prompt editor and quick text rewrites before I ask the 4B for a more detailed response. The 0.6B is also useful for quick checks and when I want to save tokens on a simple question.
+I use the Qwen3 models for everyday tasks such as code explanation, project planning, and PR summaries. The 4B models are my go-to choice for daily work. I use 0.6B for speculative decoding in LM Studio to support the 4B models. I use 1.7B for simple prompt edits and quick text rewrites before asking a 4B model for a more detailed response. The 0.6B model is also useful for quick checks and for saving tokens on simple questions.
 
 ### Qwen3.5 4B
 lmstudio-community/Qwen3.5-4B-GGUF:
@@ -38,6 +38,6 @@ lmstudio-community/Qwen3-0.6B-GGUF:
 - https://www.perplexity.ai/search/qwen3-0-6b-specifications-and-yreSI_htTJSSm3kq8d2LBQ
 - https://huggingface.co/lmstudio-community/Qwen3-0.6B-GGUF
 
-Important Note: The above links provide access to the specifications about the GGUF files for the respective Qwen models. R efer to these resources for detailed information about the models and how to utilize them effectively in LM Studio.
+Important Note: The links above provide access to GGUF file specifications for each Qwen model. Refer to these resources for detailed model information and guidance on effective use in LM Studio.
 
 
