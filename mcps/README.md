@@ -47,12 +47,6 @@ Started manually via `POST /servers/{name}/start` or dashboard. Set `auto_start:
 
 `mcp-server-fetch` is referenced directly in client bridge configs (`.mcp.json`, `clients/*/mcp.json`) but is not in the router's `mcp-servers.json` — it runs independently alongside the bridge.
 
-### Installed but not in router config
-
-| Package | Status | Notes |
-| --- | --- | --- |
-| `@perplexity-ai/mcp-server` | Under evaluation | Direct Perplexity API (vs. `perplexity-comet` CDP bridge). See `TODOS.md` for evaluation status. |
-
 ## Bridge (`prompthub-bridge.js`)
 
 The bridge is a stdio MCP server that aggregates tools from all router-managed servers into a single tool list for clients. Clients like Claude Code, LM Studio, and Raycast connect to the bridge, not to individual servers.
