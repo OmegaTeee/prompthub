@@ -20,6 +20,7 @@ scripts/
 │   ├── start.sh
 │   └── stop.sh
 ├── router/                          # Router and MCP server management
+│   ├── reload.sh                    # Hot-reload configs (api-keys, etc.) without restart
 │   ├── restart_mcp_servers.py       # Restart and verify servers (dynamic)
 │   ├── validate-mcp-servers.sh      # Check server binaries exist on disk
 │   └── README.md
@@ -45,6 +46,9 @@ scripts/
 
 # Validate all MCP server binaries exist
 ./scripts/router/validate-mcp-servers.sh
+
+# Hot-reload API keys (after editing api-keys.json)
+./scripts/router/reload.sh api-keys
 
 # Restart all auto_start servers and verify
 python3 scripts/router/restart_mcp_servers.py
