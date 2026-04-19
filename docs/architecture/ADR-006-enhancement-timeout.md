@@ -1,15 +1,26 @@
 # ADR-006: Enhancement Timeout & Unified Model
 
 ## Status
-Superseded (timeout tuning retained; unified model replaced by [ADR-008](ADR-008-task-specific-models.md) task-specific model strategy — all clients now use `qwen3-4b-instruct-2507` on LM Studio. Ollama references below reflect the state at time of writing.)
+Superseded (timeout tuning retained; unified model replaced by [ADR-008](ADR-008-task-specific-models.md) task-specific model strategy — all clients now use `qwen3-4b-instruct-2507` on LM Studio. LLM references below reflect the state at time of writing.)
 
 > Historical note: this ADR is kept for timeout rationale and migration history.
-> The unified `llama3.2` model strategy and Ollama-specific examples below are
+> The unified `llama3.2` model strategy and LLM-specific examples below are
 > not the current system design. Use [ADR-008](ADR-008-task-specific-models.md)
 > for the active enhancement model strategy.
 
+> FLAGGED: This document was detected by the rewrite verification scan to
+> contain historical model tokens (e.g., `llama3.2`). These are preserved for
+> history — review `docs/architecture/ADR-008-task-specific-models.md` before
+> applying automated replacements.
+
+Current mapping (for editors): enhancement → `qwen3-4b-instruct-2507`; orchestrator
+→ `qwen3-4b-thinking-2507` (canonicalized in
+`docs/architecture/ADR-008-task-specific-models.md`). To preserve auditability
+prefer adding mapping parentheticals rather than overwriting historical model
+names directly.
+
 > Historical note: this ADR is kept for timeout rationale and migration history.
-> The unified `llama3.2` model strategy and Ollama-specific examples below are
+> The unified `llama3.2` model strategy and LLM-specific examples below are
 > not the current system design. Use [ADR-008](ADR-008-task-specific-models.md)
 > for the active enhancement model strategy.
 
@@ -32,18 +43,18 @@ Ollama keep_alive (5min)    ←  unloads model from VRAM after inactivity
 ```
 
 **Timeline of a cold-start failure:**
-1. Ollama unloads llama3.2 from VRAM after 5min of inactivity
-2. Enhancement request arrives, httpx sends POST to Ollama
-3. Ollama starts loading model into VRAM (4.7GB, takes 30-45s)
+1. LLM unloads llama3.2 (now qwen3-4b-instruct-2507) from VRAM after 5min of inactivity
+2. Enhancement request arrives, httpx sends POST to LLM
+3. LLM starts loading model into VRAM (4.7GB, takes 30-45s)
 4. httpx timeout fires at 30s → "attempt 1 timed out"
-5. Retry 1 starts (Ollama still loading) → times out at 30s
+5. Retry 1 starts (LLM still loading) → times out at 30s
 6. Middleware kills the entire request at 60s
 7. Enhancement returns original prompt (graceful degradation)
 8. User sees no error — enhancement silently did nothing
 
 **Compounding factor: model swap thrashing**
 
-ADR-003 specified different models per client (claude-desktop → deepseek-r1, vscode → qwen2.5-coder). On a single-GPU setup, each enhancement request required Ollama to:
+ADR-003 specified different models per client (claude-desktop → deepseek-r1, vscode → qwen2.5-coder (now qwen3-4b-instruct-2507)). On a single-GPU setup, each enhancement request required LLM to:
 1. Unload the current model
 2. Load the enhancement model
 3. Generate the enhanced prompt
@@ -77,7 +88,7 @@ All clients use `llama3.2:latest` for enhancement. Per-client differentiation is
 ## Rationale
 
 ### Why 120s for httpx?
-Ollama cold-loads measured at 30-45s for llama3.2 (3.2B Q4_K_M, 4.7GB). With generation time on top, worst case is ~60s. 120s provides 2x headroom for larger models or slower hardware.
+LLM cold-loads measured at 30-45s for llama3.2 (now qwen3-4b-instruct-2507) (3.2B Q4_K_M, 4.7GB). With generation time on top, worst case is ~60s. 120s provides 2x headroom for larger models or slower hardware.
 
 ### Why unified model?
 - Eliminates model swap overhead entirely (LLM server keeps one model warm)
@@ -101,7 +112,7 @@ Ollama cold-loads measured at 30-45s for llama3.2 (3.2B Q4_K_M, 4.7GB). With gen
 ### Negative
 - Per-client model selection is no longer possible without code change (was config-driven)
 - 120s timeout means slow failures take longer to surface
-- All clients get the same model quality (llama3.2 is smaller than qwen2.5-coder:32b)
+- All clients get the same model quality (llama3.2 (now qwen3-4b-instruct-2507) is smaller than qwen2.5-coder (now qwen3-4b-instruct-2507):32b)
 
 ### Neutral
 - Amends ADR-003 (per-client routing still works for system prompts, just not models)

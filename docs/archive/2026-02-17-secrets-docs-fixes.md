@@ -8,7 +8,7 @@
 
 Editor quick-reference (canonical mapping): enhancement → `qwen3-4b-instruct-2507`, orchestrator (thinking) → `qwen3-4b-thinking-2507`.
 When updating historical model names in prose, prefer annotating with parenthetical mappings
-(e.g., "qwen2.5-coder (now qwen3-4b-instruct-2507)") and avoid changing code blocks, YAML/JSON, tables, or env keys without human review. See `docs/architecture/ADR-008-task-specific-models.md`.
+(e.g., "qwen2.5-coder (now qwen3-4b-instruct-2507) (now qwen3-4b-instruct-2507)") and avoid changing code blocks, YAML/JSON, tables, or env keys without human review. See `docs/architecture/ADR-008-task-specific-models.md`.
 
 ## Executive Summary
 
@@ -134,7 +134,7 @@ Line 32: **Enhancement Model:** Qwen3-Coder (code-first)
 | Raycast | llama3.2 | Action-oriented, CLI commands, under 200 words |
 ```
 
-**Status**: There's a discrepancy. Clients/README says "DeepSeek-R1" but main README says "llama3.2".
+**Status**: There's a discrepancy. Clients/README says "DeepSeek-R1" but main README says "llama3.2 (now qwen3-4b-instruct-2507)".
 
 **Recommendation**: Verify which model is actually configured for Raycast in `app/configs/enhancement-rules.json` and update accordingly.
 

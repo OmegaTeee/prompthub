@@ -1,20 +1,31 @@
 # ADR-003: Per-Client Prompt Enhancement Rules
 
 ## Status
-Accepted (model selection superseded: ADR-006 unified to llama3.2, then [ADR-008](ADR-008-task-specific-models.md) replaced with `qwen3-4b-instruct-2507` on LM Studio. Per-client system prompts remain active. Ollama references below reflect the state at time of writing; current backend is LM Studio.)
+Accepted (model selection superseded: ADR-006 unified to llama3.2 (now qwen3-4b-instruct-2507), then [ADR-008](ADR-008-task-specific-models.md) replaced with `qwen3-4b-instruct-2507` on LM Studio. Per-client system prompts remain active. LLM references below reflect the state at time of writing; current backend is LM Studio.)
 
 > Historical note: this ADR preserves the original per-client model-routing
-> decision and its Ollama-era examples. For the current model strategy and
+> decision and its LLM-era examples. For the current model strategy and
 > runtime terminology, use [ADR-008](ADR-008-task-specific-models.md), the
 > [architecture README](README.md), and the [glossary](../glossary.md).
 
+> FLAGGED: This document contains historical model names (e.g., `Qwen2.5-Coder`,
+> `llama3.2`). These occur in examples and tables and are intentionally
+> preserved for audit history. Review ADR-008 for the current model mappings
+> before applying automated edits.
+
+Editor note (current models): enhancement = `qwen3-4b-instruct-2507`,
+orchestrator (thinking) = `qwen3-4b-thinking-2507`. When updating examples or
+tables that mention historical model names, prefer adding a parenthetical
+mapping (e.g., "llama3.2 (now qwen3-4b-instruct-2507) (now qwen3-4b-instruct-2507)") to preserve audit
+history while making downstream documentation clearer.
+
 > Historical note: this ADR preserves the original per-client model-routing
-> decision and its Ollama-era examples. For the current model strategy and
+> decision and its LLM-era examples. For the current model strategy and
 > runtime terminology, use [ADR-008](ADR-008-task-specific-models.md), the
 > [architecture README](README.md), and the [glossary](../glossary.md).
 
 ## Context
-PromptHub routes prompts to Ollama for enhancement before sending to LLMs. Different clients (Claude Desktop, VS Code, Raycast, Obsidian) have different use cases and require different enhancement strategies.
+PromptHub routes prompts to LLM for enhancement before sending to LLMs. Different clients (Claude Desktop, VS Code, Raycast, Obsidian) have different use cases and require different enhancement strategies.
 
 ### Problem Statement
 A one-size-fits-all approach doesn't work:
@@ -24,7 +35,7 @@ A one-size-fits-all approach doesn't work:
 - **Obsidian** users want markdown-formatted, knowledge-base content
 
 ### Requirements
-- Support different Ollama models per client
+- Support different LLM models per client
 - Customize system prompts for each use case
 - Configure temperature and token limits
 - Ability to disable enhancement per client
@@ -187,7 +198,7 @@ async def enhance_prompt(
 - **Size**: 1.3B parameters (fast inference)
 - **Speed**: ~500ms for typical prompt
 
-### VS Code: qwen2.5-coder
+### VS Code: qwen2.5-coder (now qwen3-4b-instruct-2507)
 - **Why**: Code-specialized model with strong instruction following
 - **Size**: 7B parameters (good quality/speed balance)
 - **Speed**: ~800ms for code generation
@@ -202,7 +213,7 @@ async def enhance_prompt(
 - **Size**: Medium model for quality
 - **Speed**: ~600ms typical
 
-### Default: llama3.2
+### Default: llama3.2 (now qwen3-4b-instruct-2507)
 - **Why**: General-purpose, widely available
 - **Size**: 3B parameters (good fallback)
 - **Speed**: ~400ms typical
@@ -328,4 +339,4 @@ def test_client_routing():
 ## Revision History
 - 2025-01-25: Initial implementation
 - 2025-02-02: Documented as ADR
-- 2026-02-24: Model selection unified to llama3.2:latest (see ADR-006). Per-client system prompts remain active.
+- 2026-02-24: Model selection unified to llama3.2 (now qwen3-4b-instruct-2507):latest (see ADR-006). Per-client system prompts remain active.

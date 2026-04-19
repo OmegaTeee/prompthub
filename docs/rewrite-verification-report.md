@@ -1,10 +1,10 @@
-# Rewrite verification report — Glossary alignment
+ # Rewrite verification report — Glossary alignment
 
 Generated: 2026-04-14
 
 Editor quick-reference (canonical mapping): enhancement → `qwen3-4b-instruct-2507`, orchestrator (thinking) → `qwen3-4b-thinking-2507`.
 When updating historical model names in prose, prefer adding parenthetical mappings
-(e.g., "llama3.2 (now qwen3-4b-instruct-2507)") instead of editing code blocks or
+(e.g., "llama3.2 (now qwen3-4b-instruct-2507) (now qwen3-4b-instruct-2507)") instead of editing code blocks or
 env keys. See `docs/architecture/ADR-008-task-specific-models.md` for the source of truth.
 
 Summary

@@ -12,6 +12,16 @@ tags: [research, lm-studio, enhancement, orchestration]
 > Some lane names and config examples differ from the current implementation.
 > Use it for background context, not as the current source of truth.
 
+> FLAGGED: This research sketch contains historical model tokens (e.g.,
+> `gemma3`, `qwen3:14b`). These are preserved for context. Consult
+> `docs/architecture/ADR-008-task-specific-models.md` for current model
+> assignments before applying automated replacements.
+
+Editor quick-reference: enhancement → `qwen3-4b-instruct-2507`; orchestrator
+→ `qwen3-4b-thinking-2507`. Prefer annotating historical model mentions with
+the modern mapping (e.g., `qwen3:14b (now qwen3-4b-thinking-2507)`) to keep
+historical accuracy while making user-facing docs clearer.
+
 Here’s a concrete, LM‑Studio‑only sketch you can adapt. It assumes:
 
 - Small model: Qwen3‑4B‑Instruct‑2507 (fast, no thinking).[^1]
@@ -163,9 +173,9 @@ and let your Python orchestrator opt into it explicitly based on trigger phrases
 
 [^7]: llm-bge-m3-model-card.md
 
-[^8]: llm-gemma3-4b-model-card.md
+[^8]: llm-gemma3 (now qwen3-4b-instruct-2507)-4b-model-card.md
 
-[^9]: llm-gemma3-27b-model-card.md
+[^9]: llm-gemma3 (now qwen3-4b-instruct-2507)-27b-model-card.md
 
 [^10]: llm-qwen3-14b-model-card.md
 
