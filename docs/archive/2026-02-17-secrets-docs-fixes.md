@@ -6,6 +6,10 @@
 
 ---
 
+Editor quick-reference (canonical mapping): enhancement → `qwen3-4b-instruct-2507`, orchestrator (thinking) → `qwen3-4b-thinking-2507`.
+When updating historical model names in prose, prefer annotating with parenthetical mappings
+(e.g., "qwen2.5-coder (now qwen3-4b-instruct-2507) (now qwen3-4b-instruct-2507)") and avoid changing code blocks, YAML/JSON, tables, or env keys without human review. See `docs/architecture/ADR-008-task-specific-models.md`.
+
 ## Executive Summary
 
 The PromptHub project in its new location is **well-maintained and largely current**. Most documentation and scripts are accurate and reflect the project's v0.1.4 state (2026-02-14).
@@ -17,6 +21,17 @@ The PromptHub project in its new location is **well-maintained and largely curre
 ---
 
 ## 📋 DETAILED FINDINGS
+
+> NOTE: This document contains historical model tokens (e.g., `gemma3`,
+> `llama3.2`, `qwen2.5-coder`, `qwen3:14b`). These are flagged for manual
+> review; see ADR-008 (`docs/architecture/ADR-008-task-specific-models.md`) for
+> the current model strategy before making automated replacements.
+
+Current model mapping (informational): enhancement = `qwen3-4b-instruct-2507`,
+orchestrator (thinking) = `qwen3-4b-thinking-2507` (see
+`docs/architecture/ADR-008-task-specific-models.md`). When updating historical
+model names in prose, prefer adding parenthetical mapping notes or preserving
+the historical name for audit purposes.
 
 ### ✅ **SHELL SCRIPTS — All Current & Secure**
 
@@ -119,7 +134,7 @@ Line 32: **Enhancement Model:** Qwen3-Coder (code-first)
 | Raycast | llama3.2 | Action-oriented, CLI commands, under 200 words |
 ```
 
-**Status**: There's a discrepancy. Clients/README says "DeepSeek-R1" but main README says "llama3.2".
+**Status**: There's a discrepancy. Clients/README says "DeepSeek-R1" but main README says "llama3.2 (now qwen3-4b-instruct-2507)".
 
 **Recommendation**: Verify which model is actually configured for Raycast in `app/configs/enhancement-rules.json` and update accordingly.
 

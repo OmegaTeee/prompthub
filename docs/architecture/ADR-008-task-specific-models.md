@@ -3,9 +3,22 @@
 ## Status
 Accepted (updated 2026-03-28)
 
+> NOTE: ADR-008 is the canonical source for current model assignments. The
+> rewrite verification pass flagged model tokens across the docs — ADR-008
+> should be consulted when resolving or updating historical model names to
+> avoid accidental drift.
+
+Canonical mapping (editor quick-reference):
+- Enhancement (all clients) → `qwen3-4b-instruct-2507`
+- Orchestrator (thinking) → `qwen3-4b-thinking-2507`
+
+When editing other documents, prefer adding parenthetical mappings such as
+`llama3.2 (now qwen3-4b-instruct-2507)` instead of wholesale replacement to
+preserve historical context.
+
 ## Update 2026-03-28 -- Simplified to Two-Model Architecture
 
-Per-client model specialization has been removed. All clients now use a single enhancement model, and the orchestrator uses the thinking variant of the same architecture. LM Studio replaced Ollama as the inference backend.
+Per-client model specialization has been removed. All clients now use a single enhancement model, and the orchestrator uses the thinking variant of the same architecture. LM Studio replaced LLM as the inference backend.
 
 ### Current Assignment
 
@@ -23,13 +36,13 @@ Per-client model specialization has been removed. All clients now use a single e
 2. **Lower memory** -- Two 4B models vs. a mix of 4B/14B/27B/30B models. Frees headroom for other workloads on the Mac.
 3. **Simpler to maintain** -- One enhancement model to tune, one thinking model for orchestration. No per-client model matrix to track.
 4. **262K context on both models** -- The previous orchestrator (14B, 40K ctx) had a much smaller context window. The thinking variant provides reasoning capability within the same resource envelope.
-5. **LM Studio backend** -- Replaced Ollama. LM Studio provides native MLX acceleration on Apple Silicon, a built-in model catalog, and a stable OpenAI-compatible API.
+5. **LM Studio backend** -- Replaced LLM. LM Studio provides native MLX acceleration on Apple Silicon, a built-in model catalog, and a stable OpenAI-compatible API.
 
 ### What was removed
 
-- Per-client model assignments (gemma3:4b, gemma3:27b, qwen3-coder:30b) -- all clients use the same enhancement model
+- Per-client model assignments (gemma3 (now qwen3-4b-instruct-2507):4b, gemma3 (now qwen3-4b-instruct-2507):27b, qwen3-coder:30b) -- all clients use the same enhancement model
 - Multi-model fallback chain -- single model, simpler failure mode
-- Ollama-specific references -- LM Studio is the inference backend
+- LLM-specific references -- LM Studio is the inference backend
 
 ---
 
@@ -45,7 +58,7 @@ ADR-006 mandated a single unified model (`llama3.2:latest`) for all enhancement 
 - No intent classification -- every prompt went through the same enhancement path
 - Image generation clients (comfyui) need prompt expansion, not prompt rewriting
 
-The introduction of newer, efficient models (gemma3, qwen3) and improved model caching on local LLM servers made the single-model constraint unnecessarily restrictive.
+The introduction of newer, efficient models (gemma3 (now qwen3-4b-instruct-2507), qwen3) and improved model caching on local LLM servers made the single-model constraint unnecessarily restrictive.
 
 ### Decision
 
@@ -80,7 +93,7 @@ The original multi-model fallback chain has been removed. With a single small mo
 ### Rationale
 
 #### Why abandon the unified model? (original reasoning)
-- **gemma3:4b** (3B params) loads in <5s vs llama3.2's 30-45s cold start -- swap penalty is now minimal
+- **gemma3 (now qwen3-4b-instruct-2507):4b** (3B params) loads in <5s vs llama3.2 (now qwen3-4b-instruct-2507)'s 30-45s cold start -- swap penalty is now minimal
 - Local LLM servers have improved model caching; frequently-used models stay warm longer
 - Code-specialized models (qwen3-coder) produce measurably better enhancement for code prompts
 - The timeout tuning from ADR-006 (httpx 120s, middleware 180s) provides sufficient headroom for the larger models
@@ -146,4 +159,4 @@ POST /llm/orchestrate    Classify intent and annotate prompt (thinking model)
 
 ## Revision History
 - 2026-02-28: Initial decision -- task-specific models and orchestrator agent
-- 2026-03-28: Simplified to two-model architecture (Qwen3 4B + Qwen3 4B Thinking), removed per-client specialization, replaced Ollama with LM Studio
+- 2026-03-28: Simplified to two-model architecture (Qwen3 4B + Qwen3 4B Thinking), removed per-client specialization, replaced LLM with LM Studio

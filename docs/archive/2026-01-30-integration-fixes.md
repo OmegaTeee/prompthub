@@ -7,6 +7,16 @@
 
 ## Critical Issue Found
 
+> NOTE: This file contains historical model tokens (e.g., `qwen2.5-coder`).
+> These tokens were detected by the rewrite verification pass and are flagged
+> for manual review. See ADR-008 for current model naming and migration
+> guidance before applying automated replacements
+
+For clarity: the current enhancement/orchestrator assignments are:
+enhancement = `qwen3-4b-instruct-2507`, orchestrator =
+`qwen3-4b-thinking-2507` (see `docs/architecture/ADR-008-task-specific-models.md`).
+Prefer adding explanatory parentheticals when replacing historical tokens.
+
 During testing of the Phase 3 integration guides, a **critical error** was discovered:
 
 ### Problem
@@ -131,7 +141,9 @@ curl http://localhost:9090/health
 ```
 **Result:** Healthy, 7/7 servers running
 
-✅ **Test 2: Ollama Models**
+✅ **Test 2: LLM Models**
+> **NOTE:** Historical model token `qwen2.5-coder` appears in the following code block; prefer mapping: qwen2.5-coder (now qwen3-4b-instruct-2507). Do not change the code block without a manual review.
+
 ```bash
 ollama list | grep -E "(deepseek-r1|qwen2.5-coder)"
 ```
@@ -371,9 +383,9 @@ pytest tests/integration/ -v
 - Problem: Router auto-increments JSON-RPC IDs
 - Fix: Updated assertions to verify ID exists, not exact value
 
-**Issue 3: Ollama timeout**
+**Issue 3: LLM timeout**
 - Problem: Enhancement tests timed out (default 5s)
-- Fix: Increased timeout to 30s for Ollama-dependent tests
+- Fix: Increased timeout to 30s for LLM-dependent tests
 
 **Issue 4: Fetch server stopped**
 - Problem: Test failed when fetch server was stopped
@@ -433,7 +445,7 @@ Tests are production-ready and can be integrated into GitHub Actions:
 - [ ] Add E2E tests (full user workflows)
 - [ ] Add load tests (100+ concurrent requests)
 - [ ] Add security tests (auth, injection prevention)
-- [ ] Mock Ollama for faster CI/CD
+- [ ] Mock LLM for faster CI/CD
 
 ---
 

@@ -6,6 +6,16 @@ Accepted
 ## Context
 ADR-008 introduced a pre-enhancement classification layer to route prompts through task-specific models. This ADR documents the architectural decisions within that layer — the orchestrator agent itself.
 
+> NOTE: This ADR references historical model tokens in other ADRs (e.g.,
+> `qwen3:14b`, `gemma3`, `llama3.2`). These are intentionally preserved here
+> for audit/history; review `docs/architecture/ADR-008-task-specific-models.md`
+> for the active model mappings before making substitutions.
+
+Quick reference (current): enhancement model = `qwen3-4b-instruct-2507`; the
+orchestrator (thinking) model = `qwen3-4b-thinking-2507`. When editing this ADR
+for clarity, prefer leaving historical tokens intact and adding a short
+parenthetical mapping to the current models above.
+
 ### Problem Statement
 The enhancement pipeline treated every prompt identically: same model, same system prompt (per client), no awareness of intent. This meant:
 
@@ -20,7 +30,7 @@ The orchestrator sits upstream of enhancement and must operate under strict cons
 
 ### 1. Dedicated reasoning model
 
-> **Current model:** `qwen3-4b-thinking-2507` (updated from qwen3:14b — see [ADR-008](ADR-008-task-specific-models.md))
+> **Current model:** `qwen3-4b-thinking-2507` (updated from qwen3:14b (now qwen3-4b-thinking-2507) — see [ADR-008](ADR-008-task-specific-models.md))
 
 Use a separate thinking-variant model for intent classification rather than reusing the enhancement model:
 
@@ -170,7 +180,7 @@ When the LLM server is unavailable, the agent re-probes at most once every 10 se
 ### Configuration Constants (agent.py)
 | Constant | Value | Purpose |
 |----------|-------|---------|
-| `MODEL` | `qwen3-4b-thinking-2507` | Classification model (updated from qwen3:14b) |
+| `MODEL` | `qwen3-4b-thinking-2507` | Classification model (updated from qwen3:14b (now qwen3-4b-thinking-2507)) |
 | `TIMEOUT_SECONDS` | `2.5` | Hard ceiling for `asyncio.wait_for` |
 | `MAX_TOKENS` | `300` | Keep JSON responses tight |
 | `TEMPERATURE` | `0.1` | Low randomness for reliable structured output |
