@@ -9,6 +9,15 @@ Accepted
 > [`docs/glossary.md`](../glossary.md) and
 > [`docs/architecture/README.md`](README.md).
 
+> FLAGGED: The rewrite verification pass flagged model tokens in this ADR
+> (e.g., `llama3.2`). These are preserved for history; consult ADR-008 for
+> current model names before making automated replacements.
+
+Editor guidance (canonical mapping): enhancement → `qwen3-4b-instruct-2507`,
+orchestrator → `qwen3-4b-thinking-2507`. If you replace historical model
+mentions in this ADR, annotate them with the modern mapping in parentheses so
+readers understand the migration context.
+
 ## Context
 PromptHub's prompt enhancement relies on LM Studio (or any OpenAI-compatible local LLM server). When the LLM server is unavailable (cold start, circuit breaker open, timeout, crash), enhancement silently degrades — the original prompt passes through unchanged. For clients that don't require strict data locality, a cloud fallback can restore enhancement availability.
 
@@ -81,6 +90,8 @@ OPENROUTER_DEFAULT_MODEL=deepseek/deepseek-r1-0528:free
 
 ### Model Mapping
 `configs/cloud-models.json` contains a `local_models` section mapping local model names to cloud equivalents:
+> **NOTE:** Historical model token `llama3.2` appears in the following code block; prefer mapping: llama3.2 (now qwen3-4b-instruct-2507). Do not change the code block without a manual review.
+
 ```json
 {
   "local_models": [
