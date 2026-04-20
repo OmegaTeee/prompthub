@@ -70,7 +70,7 @@ If any phase destabilizes the system, set the flag to False to disable without c
 **Files to modify:**
 - `router/middleware/enhancement.py` — fetch session facts before calling enhance(). **Note:** currently only processes `/mcp/` paths; decide whether to also apply to `/v1/chat/completions`
 - `router/enhancement/service.py` — **add `session_context` parameter** to `enhance()` method (currently not in signature). Update system prompt construction to include context. **Update cache key** to incorporate session context hash (otherwise identical prompts with different session facts return stale cached results)
-- `router/orchestrator/agent.py` — already accepts and uses `session_context` in `_build_user_message()` and the `/ollama/orchestrate` endpoint. The gap is that the **enhancement middleware path** never populates it.
+- `router/orchestrator/agent.py` — already accepts and uses `session_context` in `_build_user_message()` and the `/llm/orchestrate` endpoint. The gap is that the **enhancement middleware path** never populates it.
 
 **Session ID resolution:** The memory router uses explicit `session_id` path params. Enhancement middleware must resolve session ID from the request — options:
 - Derive from `client_name` (one session per client)
@@ -82,7 +82,7 @@ If any phase destabilizes the system, set the flag to False to disable without c
 2. If session_context is provided, append to system prompt before LLM call
 3. Update cache key to include `hash(session_context)` to prevent stale results
 4. In enhancement middleware, resolve session ID → fetch recent facts → pass as session_context
-5. Update all callers of `enhance()` (middleware line 49, `/ollama/enhance` endpoint line 77)
+5. Update all callers of `enhance()` (middleware line 49, `/llm/enhance` endpoint line 77)
 6. Gate behind `ENABLE_SESSION_CONTEXT_ENHANCEMENT` feature flag
 7. Add tests for: with context, without context, cache invalidation on context change
 
@@ -187,7 +187,7 @@ POST /enhancements/{id}/rate    — Submit quality feedback (1-5 score)
 2. Check L1/L2 cache (existing)
 3. NEW: Retrieve 3 most similar past enhancements from prompt_variations
 4. Format as few-shot examples in system prompt
-5. Call Ollama with augmented system prompt
+5. Call LLM with augmented system prompt
 6. Store (original, enhanced, client) as new embedding
 7. Return enhanced prompt
 ```
@@ -198,7 +198,7 @@ POST /enhancements/{id}/rate    — Submit quality feedback (1-5 score)
 - Vector store as learning memory (not just document search)
 
 **Cost considerations:**
-- Each enhancement now triggers an additional embedding call (nomic-embed-text) to store the result. This doubles the Ollama calls per enhancement request.
+- Each enhancement now triggers an additional embedding call (nomic-embed-text) to store the result. This doubles the LLM calls per enhancement request.
 - Few-shot examples injected into the system prompt must respect the existing `TokenBudget` system (`router/enhancement/context_window.py`). Cap retrieved examples to fit within budget.
 
 **Acceptance criteria:**
@@ -318,7 +318,7 @@ cat docs/notes/prompthub-rag-improvement-plan.md
                     │    └──────────┘    └──────────────┘     │
                     │         │                                │
                     │    ┌────▼─────┐                          │
-                    │    │  Ollama  │                          │
+                    │    │  LLM     │                          │
                     │    └──────────┘                          │
                     └─────────────────────────────────────────┘
 ```

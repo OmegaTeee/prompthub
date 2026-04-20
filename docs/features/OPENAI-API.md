@@ -30,15 +30,10 @@ External apps connect to PromptHub as if it were an OpenAI API server. This is a
 ```json
 {
   "keys": {
-    "sk-prompthub-code-001": {
+    "sk-prompthub-vscode-001": {
       "client_name": "vscode",
       "enhance": false,
-      "description": "VS Code chat (pass-through)"
-    },
-    "sk-prompthub-copilot-001": {
-      "client_name": "vscode",
-      "enhance": false,
-      "description": "OAI Copilot extension (pass-through)"
+      "description": "VSCode IDE"
     }
   }
 }
@@ -95,7 +90,7 @@ In VS Code `settings.json`:
     "id": "qwen3-4b-instruct-2507",
     "provider": "openaiCompatible",
     "url": "http://localhost:9090/v1",
-    "apiKey": "sk-prompthub-code-001"
+    "apiKey": "sk-prompthub-vscode-001"
   }]
 }
 ```
@@ -105,13 +100,13 @@ In VS Code `settings.json`:
 ```bash
 # 1. List available models
 curl -s http://localhost:9090/v1/models \
-  -H "Authorization: Bearer sk-prompthub-copilot-001" | python3 -m json.tool
+  -H "Authorization: Bearer sk-prompthub-vscode-001" | python3 -m json.tool
 ```
 
 ```bash
 # 2. Chat completion WITHOUT enhancement (pass-through token)
 curl -s http://localhost:9090/v1/chat/completions \
-  -H "Authorization: Bearer sk-prompthub-copilot-001" \
+  -H "Authorization: Bearer sk-prompthub-vscode-001" \
   -H "Content-Type: application/json" \
   -d '{"model":"qwen3-4b-instruct-2507","messages":[{"role":"user","content":"Hello"}]}'
 ```
@@ -121,7 +116,7 @@ curl -s http://localhost:9090/v1/chat/completions \
 #    The last user message is rewritten by the enhancement service
 #    before being forwarded to LM Studio.
 curl -s http://localhost:9090/v1/chat/completions \
-  -H "Authorization: Bearer sk-prompthub-code-001" \
+  -H "Authorization: Bearer sk-prompthub-vscode-001" \
   -H "Content-Type: application/json" \
   -d '{"model":"qwen3-4b-instruct-2507","messages":[{"role":"user","content":"Explain JWT auth"}]}'
 ```

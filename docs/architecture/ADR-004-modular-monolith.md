@@ -34,7 +34,7 @@ router/
 ├── routing/         # Request routing (deprecated)
 ├── resilience/      # Circuit breakers
 ├── cache/           # Response caching
-├── enhancement/     # Ollama prompt enhancement
+├── enhancement/     # LLM prompt enhancement
 ├── pipelines/       # Workflow orchestration
 ├── clients/         # Config generators (Python)
 ├── dashboard/       # HTMX monitoring UI
@@ -163,10 +163,10 @@ class Settings(BaseSettings):
 - Automatic restart on failure
 
 #### `enhancement/`
-- Ollama client for prompt enhancement
+- LLM client for prompt enhancement
 - Per-client rule selection
 - Response caching
-- Circuit breaker for Ollama
+- Circuit breaker for LLM
 
 #### `resilience/`
 - Circuit breaker pattern implementation
@@ -287,7 +287,7 @@ router/ (monolith)
 enhancement-service/ (separate)
 ```
 Benefits:
-- Independent scaling (Ollama is CPU-bound)
+- Independent scaling (LLM is CPU-bound)
 - Different deployment cadence
 
 ### Phase 2: Extract MCP Gateway

@@ -50,7 +50,7 @@ uses a copy or merge strategy, the setup script handles the app-specific step.
 | `clients/_open-webui/` | Open WebUI example config | placeholder |
 | `clients/_zed/` | Zed shared settings | placeholder |
 | `clients/_jetbrains/` | JetBrains MCP config | placeholder |
-| `clients/_cherry-studio/` | Cherry Studio examples | placeholder |
+| `clients/_cherry-studio/` | `cherry-studio` examples | placeholder |
 
 ---
 
@@ -409,12 +409,13 @@ SERVERS = "memory,sequential-thinking,desktop-commander,perplexity-comet,context
 
 Replace `/Users/you/prompthub/` with your actual path. Save the file and restart Codex.
 
-### Cherry Studio
+### `cherry-studio`
 
 **Type:** Placeholder client
 
-Cherry Studio examples live under `clients/_cherry-studio/`. Use that folder if
-you want to adapt the current bridge or HTTP examples manually.
+The documented repo/client identifier is `cherry-studio`. The current examples
+live under `clients/_cherry-studio/`. Use that folder if you want to adapt the
+current bridge or HTTP examples manually.
 
 ### Open WebUI
 
@@ -629,7 +630,7 @@ to the reference in the [Codex section](#codex) above.
 | Perplexity Desktop | MCP bridge | Yes | No | manual / client-specific |
 | Zed | MCP bridge (context_servers) | Yes | No | placeholder |
 | JetBrains | MCP bridge (servers) | Yes | No | placeholder |
-| Cherry Studio | bridge + HTTP examples | Partial | Partial | placeholder |
+| `cherry-studio` | bridge + HTTP examples | Partial | Partial | placeholder |
 | Open WebUI | OpenAI API + Streamable HTTP | Yes | Yes | placeholder / manual |
 | Obsidian | OpenAI API | No | Yes | plugin setup |
 

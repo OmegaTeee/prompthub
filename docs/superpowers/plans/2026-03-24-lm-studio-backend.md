@@ -5,9 +5,20 @@
 > history. It intentionally contains Ollama-era names and step-by-step migration
 > details that no longer describe the current repo state.
 
-**Goal:** Replace Ollama with LM Studio as the local LLM server and rename all internal "Ollama" references to backend-agnostic "LLM" naming.
+> FLAGGED: This plan contains historical model tokens (e.g., `qwen3:14b`,
+> `gemma3`) that were detected by the rewrite verification scan. These occur
+> deep in the plan and in model lists; review ADR-008 before performing any
+> automated substitutions.
 
-**Architecture:** Consolidate from two code paths (native Ollama API + OpenAI-compat) to one (OpenAI-compat only). Delete the native client and thinking-token shim. Rename classes, settings, routes, and templates from "Ollama" to "LLM". Install LM Studio and verify all integration points work.
+Quick mapping note for implementers: enhancement = `qwen3-4b-instruct-2507`,
+orchestrator (thinking) = `qwen3-4b-thinking-2507` (canonicalized in
+`docs/architecture/ADR-008-task-specific-models.md`). When updating the plan,
+prefer annotating historical model names with the modern mapping instead of
+removing them.
+
+**Goal:** Replace LLM with LM Studio as the local LLM server and rename all internal "LLM" references to backend-agnostic "LLM" naming.
+
+**Architecture:** Consolidate from two code paths (native LLM API + OpenAI-compat) to one (OpenAI-compat only). Delete the native client and thinking-token shim. Rename classes, settings, routes, and templates from "LLM" to "LLM". Install LM Studio and verify all integration points work.
 
 **Tech Stack:** Python 3.11+, FastAPI, Pydantic v2, httpx, LM Studio (Homebrew cask), HTMX templates
 
@@ -18,12 +29,12 @@
 ## File Structure
 
 ### Files to Delete
-- `app/router/enhancement/ollama.py` — native Ollama client (230 lines)
+- `app/router/enhancement/llm.py` — native LLM client (230 lines)
 - `app/router/openai_compat/streaming.py` — thinking-token NDJSON→SSE shim (137 lines)
 
 ### Files to Rename
 - `app/router/enhancement/ollama_openai.py` → `app/router/enhancement/llm_client.py`
-- `app/templates/partials/ollama.html` → `app/templates/partials/llm-models.html`
+- `app/templates/partials/llm.html` → `app/templates/partials/llm-models.html`
 
 ### Files to Modify (by task)
 - **Task 1 (Settings):** `app/router/config/settings.py`, `app/.env.example`
@@ -37,7 +48,7 @@
 - **Task 9 (Docstrings):** `app/router/enhancement/service.py` (module docstring), `app/router/pipelines/documentation.py`, `app/router/routes/pipelines.py`, `app/router/memory/router.py`, `app/router/enhancement/context_window.py`
 - **Task 10 (Tests):** All test files listed below
 - **Task 11 (Docs):** `CLAUDE.md`, `.claude/steering/product.md`, `.claude/steering/tech.md`, `.claude/steering/structure.md`, `docs/api/openapi.yaml`, `app/pyproject.toml`
-- **Task 12 (Install):** LM Studio installation, model downloads, Ollama removal
+- **Task 12 (Install):** LM Studio installation, model downloads, LLM removal
 - **Task 13 (Scripts):** `scripts/prompthub-start.zsh`, `scripts/prompthub-kill.zsh`, `scripts/open-webui/start.sh`
 - **Task 14 (Smoke test):** End-to-end verification with LM Studio
 
@@ -155,7 +166,7 @@ git commit -m "feat: rename ollama_* settings to llm_* with backward-compat alia
 - Rename: `app/router/enhancement/ollama_openai.py` → `app/router/enhancement/llm_client.py`
 - Modify: `app/router/enhancement/llm_client.py` (class renames)
 - Modify: `app/router/enhancement/__init__.py`
-- Delete: `app/router/enhancement/ollama.py`
+- Delete: `app/router/enhancement/llm.py`
 
 - [ ] **Step 1: Rename the file**
 
@@ -169,14 +180,14 @@ In `app/router/enhancement/llm_client.py`:
 
 | Line | Before | After |
 |---|---|---|
-| 2 | `"""OpenAI-compatible client for Ollama."""` | `"""OpenAI-compatible client for local LLM servers."""` |
+| 2 | `"""OpenAI-compatible client for LLM."""` | `"""OpenAI-compatible client for local LLM servers."""` |
 | 20 | `class OpenAICompatConfig` | `class LLMConfig` |
 | 56 | `class OllamaOpenAIError` | `class LLMError` |
 | 62 | `class OllamaOpenAIConnectionError(OllamaOpenAIError)` | `class LLMConnectionError(LLMError)` |
 | 68 | `class OllamaOpenAIModelError(OllamaOpenAIError)` | `class LLMModelError(LLMError)` |
 | 74 | `class OllamaOpenAIClient` | `class LLMClient` |
 
-Also update all log messages that say "Ollama" to "LLM server" (lines 251, 252, 257, 258, 261, 262) and all docstrings that mention "Ollama" (lines 5-8, 78-93, 130, 133, 147).
+Also update all log messages that say "LLM" to "LLM server" (lines 251, 252, 257, 258, 261, 262) and all docstrings that mention "LLM" (lines 5-8, 78-93, 130, 133, 147).
 
 - [ ] **Step 3: Delete the native client**
 
@@ -577,7 +588,7 @@ Replace all `_ollama_client` → `_llm_client` throughout the file.
 
 - [ ] **Step 5: Update error messages and audit strings**
 
-Replace all `resource_type="ollama"` → `resource_type="llm"` throughout.
+Replace all `resource_type="llm"` → `resource_type="llm"` throughout.
 
 ```python
 # Line 157:
@@ -816,7 +827,7 @@ git commit -m "feat: update main.py to use LLM naming throughout"
 
 **Files:**
 - Modify: `app/router/dashboard/router.py:42,60,149,398-407`
-- Rename: `app/templates/partials/ollama.html` → `app/templates/partials/llm-models.html`
+- Rename: `app/templates/partials/llm.html` → `app/templates/partials/llm-models.html`
 - Modify: `app/templates/dashboard.html:66-74`
 - Modify: `app/templates/partials/stats.html:22-37`
 - Modify: `app/templates/partials/llm-models.html` (after rename)
@@ -879,7 +890,7 @@ cd app && git mv templates/partials/ollama.html templates/partials/llm-models.ht
 <h3 style="margin-top: 25px;">&#x1F916; LLM Status</h3>
 ```
 
-Replace all `ollama_healthy` → `llm_healthy` and `<strong>Ollama</strong>` → `<strong>LLM</strong>` in the template.
+Replace all `ollama_healthy` → `llm_healthy` and `<strong>LLM</strong>` → `<strong>LLM</strong>` in the template.
 
 - [ ] **Step 5: Update dashboard/router.py**
 
@@ -940,11 +951,11 @@ git commit -m "feat: rename dashboard Ollama panel to LLM"
 - Modify: `app/router/memory/router.py` (3 docstring refs)
 - Modify: `app/router/enhancement/context_window.py:36` (1 comment)
 
-- [ ] **Step 1: Update all "Ollama" → "LLM" in docstrings**
+- [ ] **Step 1: Update all "LLM" → "LLM" in docstrings**
 
-In each file, find-and-replace "Ollama" → "local LLM" or "LLM server" in docstrings and comments only. Do not change code logic.
+In each file, find-and-replace "LLM" → "local LLM" or "LLM server" in docstrings and comments only. Do not change code logic.
 
-In `app/router/enhancement/service.py`, update the module docstring (lines 1-13) — it mentions "Ollama" six times.
+In `app/router/enhancement/service.py`, update the module docstring (lines 1-13) — it mentions "LLM" six times.
 
 In `context_window.py` line 36:
 
@@ -968,7 +979,7 @@ git commit -m "docs: update Ollama references in module docstrings to LLM"
 ### Task 10: Update Test Files
 
 **Files:**
-- Modify: `app/tests/test_enhancement.py` (skipped but has Ollama references)
+- Modify: `app/tests/test_enhancement.py` (skipped but has LLM references)
 - Modify: `app/tests/test_openai_compat.py:96-97`
 - Modify: `app/tests/test_endpoints.py:36,236`
 - Modify: `app/tests/test_cloud_fallback.py:18,323,346,388,409`
@@ -1027,11 +1038,11 @@ The mocks target `agent._client.generate` (native API). Update to target `agent.
 
 - [ ] **Step 5: Update test_enhancement.py**
 
-In `app/tests/test_enhancement.py`, update any `mock_ollama_client` references and Ollama import paths. The file is currently skipped (`pytest.mark.skip`) but broken imports would cause collection errors.
+In `app/tests/test_enhancement.py`, update any `mock_ollama_client` references and LLM import paths. The file is currently skipped (`pytest.mark.skip`) but broken imports would cause collection errors.
 
 - [ ] **Step 6: Update integration test route paths**
 
-In `test_enhancement_and_caching.py` and `test_client_integrations.py`, replace all `/ollama/enhance` → `/llm/enhance`.
+In `test_enhancement_and_caching.py` and `test_client_integrations.py`, replace all `/llm/enhance` → `/llm/enhance`.
 
 - [ ] **Step 7: Update pyproject.toml marker**
 
@@ -1070,9 +1081,9 @@ git commit -m "test: update all test files for Ollama → LLM rename"
 
 - [ ] **Step 1: Update CLAUDE.md**
 
-Replace all "Ollama" references with appropriate alternatives:
+Replace all "LLM" references with appropriate alternatives:
 - Module table: `enhancement/` description → "LLM HTTP client (OpenAI-compat), per-client prompt enhancement..."
-- Architecture → "LLM server" instead of "Ollama"
+- Architecture → "LLM server" instead of "LLM"
 - Settings table → `LLM_HOST`, `LLM_PORT`, etc.
 - API endpoints → `/llm/enhance`, `/llm/stats`, `/llm/orchestrate`
 - Config files description → update `.env` description
@@ -1080,11 +1091,11 @@ Replace all "Ollama" references with appropriate alternatives:
 
 - [ ] **Step 2: Update steering docs**
 
-In each of `product.md`, `tech.md`, `structure.md`: replace "Ollama" with "local LLM server" or "LM Studio" as appropriate to the context. Keep mentions in historical context (e.g., "previously used Ollama").
+In each of `product.md`, `tech.md`, `structure.md`: replace "LLM" with "local LLM server" or "LM Studio" as appropriate to the context. Keep mentions in historical context (e.g., "previously used LLM").
 
 - [ ] **Step 3: Update openapi.yaml**
 
-Replace `/ollama/enhance` → `/llm/enhance` and other renamed paths. Update descriptions.
+Replace `/llm/enhance` → `/llm/enhance` and other renamed paths. Update descriptions.
 
 - [ ] **Step 4: Add CHANGELOG entry**
 
@@ -1103,13 +1114,13 @@ git commit -m "docs: update all documentation for LLM backend rename"
 
 ---
 
-### Task 12: Install LM Studio and Remove Ollama
+### Task 12: Install LM Studio and Remove LLM
 
 This task handles the actual server swap on your machine.
 
 **Prerequisites:** All code changes (Tasks 1-11) must be committed and tests passing.
 
-- [ ] **Step 1: Stop Ollama**
+- [ ] **Step 1: Stop LLM**
 
 ```bash
 # Stop the Ollama service
@@ -1143,9 +1154,9 @@ lms get qwen/qwen3-14b-gguf
 # Or use the GUI: Search tab → search each model → download Q8_0 quantization
 ```
 
-Full model list to match current Ollama inventory:
+Full model list to match current LLM inventory:
 
-| Ollama name | LM Studio search term | Priority |
+| LLM name | LM Studio search term | Priority |
 |---|---|---|
 | `qwen3.5:2b` | `qwen3.5-2b` | High — default enhancement |
 | `qwen3:14b` | `qwen3-14b` | High — orchestrator |
@@ -1187,7 +1198,7 @@ curl -s http://localhost:9090/v1/models | python3 -m json.tool
 kill %1
 ```
 
-- [ ] **Step 8: Remove Ollama**
+- [ ] **Step 8: Remove LLM**
 
 Only after verifying LM Studio works:
 
@@ -1217,10 +1228,10 @@ No git commit needed for `.env`. The `.env.example` was already updated in Task 
 
 - [ ] **Step 1: Update prompthub-start.zsh**
 
-Replace Ollama-specific startup logic:
-- "Starting Ollama" → "Starting LM Studio server" (or remove — LM Studio may already be running)
-- `pgrep -x "ollama"` → check for LM Studio process or just check `curl localhost:1234/v1/models`
-- `ollama serve` → LM Studio starts via the GUI app; the script should just verify the server is reachable
+Replace LLM-specific startup logic:
+- "Starting LLM" → "Starting LM Studio server" (or remove — LM Studio may already be running)
+- `pgrep -x "llm"` → check for LM Studio process or just check `curl localhost:1234/v1/models`
+- `llm serve` → LM Studio starts via the GUI app; the script should just verify the server is reachable
 
 ```bash
 # Health check for LLM server (works with LM Studio or Ollama)
@@ -1235,11 +1246,11 @@ echo "✓ LLM server healthy on port ${LLM_PORT}"
 
 - [ ] **Step 2: Update prompthub-kill.zsh**
 
-Replace `killall ollama` with a note or remove the Ollama kill section. LM Studio is managed via its own GUI — the kill script should focus on PromptHub processes only.
+Replace `killall llm` with a note or remove the LLM kill section. LM Studio is managed via its own GUI — the kill script should focus on PromptHub processes only.
 
 - [ ] **Step 3: Update open-webui/start.sh**
 
-Replace Ollama health check (line 43-47):
+Replace LLM health check (line 43-47):
 
 ```bash
 # Before:
@@ -1324,7 +1335,7 @@ Expected: Standard ChatCompletion response.
 Open `http://localhost:9090/dashboard` in browser. Verify:
 - "Local Models" panel shows loaded models
 - "LLM Status" shows healthy
-- No "Ollama" text visible anywhere
+- No "LLM" text visible anywhere
 
 - [ ] **Step 8: Raycast Chat (if Raycast installed)**
 

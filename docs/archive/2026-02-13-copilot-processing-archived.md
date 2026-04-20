@@ -5,7 +5,7 @@
 ## Action Plan
 1) ✅ Baseline review: Align with existing checklist and reconcile gaps.
 2) ✅ Runtime hardening (audit): Audited async/httpx usage — documented findings in ASYNC-AUDIT.md.
-3) Runtime hardening (fixes): Apply critical and major fixes from audit (circuit breaker for Ollama, aiofiles migration, timeout enforcement).
+3) Runtime hardening (fixes): Apply critical and major fixes from audit (circuit breaker for LLM, aiofiles migration, timeout enforcement).
 4) Test expansion: Add unit and integration tests (router core, MCP routing, dashboard) with mocks for external services; wire into CI (pytest, mypy, black).
 5) Config and security: Validate Pydantic settings, keychain/secrets handling, and structured logging levels.
 6) Docs & examples: Sync getting-started/keychain/launchagent docs and update MCP server config examples.
@@ -13,11 +13,11 @@
 
 ## Task Tracking
 - [x] Review and reconcile with current todo list — confirmed Modules 1–10 (MVP core) and 11–17 (server mgmt) are mostly present; gaps remain in tests, container hardening, and dashboard coverage.
-- [x] Audit async/await + httpx usage and document findings — Created ASYNC-AUDIT.md with 2 critical, 3 major, 4 minor issues; key gaps: no CB on Ollama, blocking file I/O throughout
+- [x] Audit async/await + httpx usage and document findings — Created ASYNC-AUDIT.md with 2 critical, 3 major, 4 minor issues; key gaps: no CB on LLM, blocking file I/O throughout
 - [ ] Add HTTP timeouts everywhere external I/O occurs
-- [ ] Ensure circuit breaker wraps all outbound calls (MCP, Ollama, dashboard data)
+- [ ] Ensure circuit breaker wraps all outbound calls (MCP, LLM, dashboard data)
 - [ ] Expand unit tests for router components
-- [ ] Mock external services in tests (Ollama, MCP servers)
+- [ ] Mock external services in tests (LLM, MCP servers)
 - [ ] Integration tests for MCP routing (success, timeouts, CB open/half-open)
 - [ ] Validate caching strategy and add tests for eviction/hit/miss
 - [ ] Harden secrets/keychain flows (error handling, tests)

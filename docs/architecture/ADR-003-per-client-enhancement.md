@@ -4,7 +4,7 @@
 Accepted (model selection superseded: ADR-006 unified to llama3.2 (now qwen3-4b-instruct-2507), then [ADR-008](ADR-008-task-specific-models.md) replaced with `qwen3-4b-instruct-2507` on LM Studio. Per-client system prompts remain active. LLM references below reflect the state at time of writing; current backend is LM Studio.)
 
 > Historical note: this ADR preserves the original per-client model-routing
-> decision and its LLM-era examples. For the current model strategy and
+> decision and its Ollama-era examples. For the current model strategy and
 > runtime terminology, use [ADR-008](ADR-008-task-specific-models.md), the
 > [architecture README](README.md), and the [glossary](../glossary.md).
 
@@ -20,7 +20,7 @@ mapping (e.g., "llama3.2 (now qwen3-4b-instruct-2507) (now qwen3-4b-instruct-250
 history while making downstream documentation clearer.
 
 > Historical note: this ADR preserves the original per-client model-routing
-> decision and its LLM-era examples. For the current model strategy and
+> decision and its Ollama-era examples. For the current model strategy and
 > runtime terminology, use [ADR-008](ADR-008-task-specific-models.md), the
 > [architecture README](README.md), and the [glossary](../glossary.md).
 
