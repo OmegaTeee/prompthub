@@ -7,7 +7,7 @@
 
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/visualval/.local/share/prompthub/app/.venv/bin/PromptHub</string>
+        <string>/Users/visualval/.local/share/prompthub/app/.venv/bin/uvicorn</string>
         <string>router.main:app</string>
         <string>--host</string>
         <string>127.0.0.1</string>
