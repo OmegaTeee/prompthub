@@ -64,6 +64,17 @@ class ServerConfig(BaseModel):
     max_restarts: int = Field(3, description="Max restart attempts before marking FAILED")
     health_check_interval: int = Field(30, description="Seconds between health checks")
 
+    # Proxy behavior
+    proxy_timeout: float | None = Field(
+        default=None,
+        description=(
+            "Per-server proxy timeout in seconds for tools/call and other "
+            "bridge dispatches. Falls back to the proxy default when unset. "
+            "Raise this for servers whose tools block on external I/O "
+            "(e.g. agentic browsing, long research)."
+        ),
+    )
+
     # Metadata
     description: str = Field("", description="Human-readable description")
 

@@ -152,6 +152,7 @@
       "restart_on_failure": true,
       "max_restarts": 3,
       "health_check_interval": 30,
+      "proxy_timeout": 180,
       "description": "Perplexity research via Comet browser CDP bridge"
     },
     "browsermcp": {

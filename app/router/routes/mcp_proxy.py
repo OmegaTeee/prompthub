@@ -12,6 +12,11 @@ from router.servers import ServerStatus
 
 logger = logging.getLogger(__name__)
 
+# Default bridge timeout for MCP tool dispatches. Servers can opt into a
+# longer ceiling via ServerConfig.proxy_timeout in mcp-servers.json; useful
+# for servers whose tools block on external I/O (e.g. agentic browsing).
+DEFAULT_BRIDGE_TIMEOUT: float = 30.0
+
 
 def normalize_tool_schema(schema: dict) -> dict:
     """
@@ -76,8 +81,9 @@ def create_mcp_proxy_router(
         """
         Proxy JSON-RPC requests to MCP servers.
 
-        Forwards JSON-RPC calls to MCP servers via stdio bridges,
-        with configurable timeouts and circuit breaker protection.
+        Forwards JSON-RPC calls to MCP servers via stdio bridges, guarded by
+        the per-server circuit breaker. Bridge timeout resolves to
+        ``ServerConfig.proxy_timeout`` when set, otherwise ``DEFAULT_BRIDGE_TIMEOUT``.
         """
         sup = get_supervisor()
         reg = get_registry()
@@ -85,12 +91,19 @@ def create_mcp_proxy_router(
         if not sup or not reg or not cbs:
             raise HTTPException(503, "Services not initialized")
 
-        bridge_timeout = 30.0
         start_time = time.time()
 
         config = reg.get(server)
         if not config:
             raise HTTPException(404, f"Server {server} not found")
+
+        # Per-server override (e.g. long-running agentic browsing) falls back
+        # to the proxy-wide default when not set in mcp-servers.json.
+        bridge_timeout = (
+            config.proxy_timeout
+            if getattr(config, "proxy_timeout", None) is not None
+            else DEFAULT_BRIDGE_TIMEOUT
+        )
 
         breaker = cbs.get(server)
         try:
