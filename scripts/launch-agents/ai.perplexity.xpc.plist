@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<dict>
+		<key>Crashed</key>
+		<true/>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+	</dict>
+	<key>Label</key>
+	<string>ai.perplexity.xpc</string>
+	<key>MachServices</key>
+	<dict>
+		<key>ai.perplexity.xpc</key>
+		<true/>
+	</dict>
+	<key>Program</key>
+	<string>/Users/visualval/Library/Application Support/Perplexity/PerplexityXPC.xpc/Contents/MacOS/PerplexityXPC</string>
+</dict>
+</plist>

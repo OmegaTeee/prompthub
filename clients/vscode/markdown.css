@@ -4,12 +4,10 @@
   --font-sans: -apple-system, BlinkMacSystemFont, sans-serif;
 
   --font-dm-mono: 'Liga DM Mono', 'LigaDMMono-Regular', 'DM Mono';
-  --font-dm-sans: 'DM Sans';
+  --font-dm-sans: 'DM Sans 9pt', 'DMSans-9ptRegular', 'DM Sans', 'DMSans-Regular';
   --font-instrument: 'Instrument Sans';
-  --font-bmono: 'Bmono';
-  --font-jetbrains: 'Jetbrains Mono NL', 'Jetbrains Mono';
   --font-lilex: 'Lilex Nerd Font Propo', 'LilexNFP-Regular', 'Lilex Nerd Font Mono', 'LilexNFM-Regular', 'Lilex', 'Lilex-Regular';
-  --font-title: 'Burbank Text', 'BurbankText-Bold', var(--font-sans);
+  --font-title: 'Burbank Text', 'BurbankText-Bold', var(--font-sans, inherit);
   --font-google-sans: 'Google Sans 17pt', 'GoogleSans17pt-Regular', 'Google Sans', 'GoogleSans-Regular';
   --font-google-mono: 'Google Sans Code', 'GoogleSansCode-Regular';
 
@@ -27,13 +25,12 @@
   --text-regular: 400;
 
   /*--- Font features */
-  --ff-sans: 'frac' 0, 'lnum' 1, 'onum' 1, 'tnum' 0, 'zero' 0, 'c2sc' 0, 'calt' 0, 'case' 0, 'dlig' 0, 'hist' 0, 'hlig' 0, 'kern' 1, 'liga' 1, 'locl' 1, 'ordn' 0, 'smcp' 0, 'subs' 0, 'sups' 0, 'swsh' 0;
+  --ff-sans: 'calt' 0, 'case' 0, 'dlig' 0, 'kern' 1, 'liga' 1, 'lnum' 0, 'onum' 0, 'tnum' 0, 'zero' 0, 'locl' 0, 'frac' 0, 'c2sc' 0, 'hist' 0, 'hlig' 0, 'ordn' 0, 'smcp' 0, 'subs' 0, 'sups' 0, 'swsh' 0;
   --ff-mono: 'calt' 1, 'case' 1, 'dlig' 1, 'kern' 1, 'liga' 1, 'lnum' 1, 'onum' 0, 'tnum' 1, 'zero' 1;
 
   /*--- Font features (characters) */
-  --ss-bmono: 'ss03' 1, 'ss06' 1, 'ss07' 1, 'ss08' 1;
-  --ss-dm-mono: 'aalt' 0, 'ss01' 0, 'ss02' 0, 'ss03' 1, 'ss04' 1, 'ss05' 0, 'ss06' 1, 'ss07' 1, 'ss08' 0;
-  --ss-dm-sans: 'aalt' 0, 'ss01' 0, 'ss02' 0, 'ss03' 1, 'ss04' 1, 'ss05' 0, 'ss06' 1, 'ss07' 1, 'ss08' 0;
+  --ss-dm-sans: 'aalt' 0, 'ss01' 0, 'ss02' 0, 'ss03' 1, 'ss04' 0, 'ss05' 0, 'ss06' 0, 'ss07' 0, 'ss08' 0;
+  --ss-dm-mono: 'aalt' 0, 'ss01' 1, 'ss02' 0, 'ss03' 1, 'ss04' 1, 'ss05' 0, 'ss06' 1, 'ss07' 1, 'ss08' 0;
   --ss-instrument-alt: 'ss01' 1, 'ss02' 1, 'ss06' 1;
   --ss-instrument: 'ss04' 1, 'ss05' 1, 'ss07' 1, 'ss08' 1, 'ss09' 1, 'ss10' 1, 'ss12' 1;
   --ss-jetbrains: 'ss01' 1, 'ss02' 1, 'ss03' 1, 'ss04' 1, 'ss20' 0, 'cv07' 0;
@@ -46,8 +43,8 @@
   --font-features-medium: 'wdth' var(--font-normal), 'wght' var(--text-medium);
 
   /*--- Font settings */
-  --font-settings-sans: var(--ff-sans);
-  --font-settings-mono: var(--ff-mono);
+  --font-settings-sans: var(--ff-sans), var(--ss-dm-sans);
+  --font-settings-mono: var(--ff-mono), var(--ss-dm-mono);
 
   /*--- Hues */
   --red: 0;
@@ -116,17 +113,18 @@ html {
   /*--- Theme tokens */
   --surface: hsl(var(--royalblue), 16%, 22%);
   --foreground: hsla(var(--royalblue), 16%, 75%, 0.80);
-  --foreground-text: hsla(var(--royalblue), 24%, 80%, 0.80);
-  --foreground-bold: hsla(var(--azure), 48%, 88%, 0.88);
+  --foreground-text: hsla(var(--royalblue), 24%, 80%, 0.88);
+  --foreground-bold: hsla(var(--azure), 48%, 88%, 0.96);
   --blue-100: hsla(calc(var(--azure) + 16), 12%, 12%, 0.22);
   --blue-200: hsla(calc(var(--skyblue) - 16), 12%, 22%, 0.11);
   --highlight: hsl(var(--skyblue), 16%, 64%);
   --highlight-05: hsla(var(--skyblue), 16%, 48%, 0.1);
   --highlight-10: hsla(var(--skyblue), 16%, 64%, 0.1);
+  --highlight-30: hsla(var(--skyblue), 16%, 64%, 0.3);
   --highlight-border-10: var(--highlight-10) solid var(--px1-5);
   --highlight-border-50: hsla(var(--skyblue), 24%, 72%, 0.5) solid var(--px1-5);
   --highlight-offset: var(--px-1-5);
-  --outline: hsl(var(--indigo), 16%, 10%);
+  --outline: hsla(var(--indigo), 16%, 10%, 0.88);
   --outline-50: hsla(var(--indigo), 16%, 10%, 0.5);
   --outline-border: var(--outline) solid var(--px1-5);
   --outline-shadow: var(--outline) 0 0 0 var(--px1-5);
@@ -141,7 +139,7 @@ html {
     0 0 var(--px0-5) currentColor;
 
   --text-alias-strong: var(--alias),
-    0 0 var(--px1) hsla(var(--indigo), 16%, 10%, 0.25);
+    0 0 var(--px1) var(--outline-50);
 
   --text-stroke:
     /* 1 - 1.5 */
@@ -174,7 +172,7 @@ html {
     var(--px0) var(--px1-5) var(--outline-50),
     var(--px0) var(--px-1-5) var(--outline-50),
     var(--px0) var(--px1-5) var(--outline-50),
-    0 0 var(--px1) var(--outline);
+    0 0 var(--px1-5) black;
 
   --scanlines: repeating-linear-gradient(in srgb-linear to bottom,
       var(--blue-200) var(--px0),
@@ -208,13 +206,13 @@ html {
   --svg-hrule: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxNiI+PHBhdGggZmlsbD0iaHNsKDIyOCwgMTYlLCAxMiUpIiBzdHJva2U9ImhzbCgyMTUsIDE2JSwgMjYlKSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0ic3F1YXJlIiBkPSJNMCAxMy41YzMgMCAzLTEyIDYtMTJzMyAxMiA2IDEyIi8+PC9zdmc+');
   --svg-thead: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxNiI+PHBhdGggZmlsbD0iaHNsKDIyOCwgMTYlLCAyMiUpIiBzdHJva2U9ImhzbCgyNTUsIDE2JSwgMTYlKSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0ic3F1YXJlIiBkPSJNMCAxMy41YzMgMCAzLTEyIDYtMTJzMyAxMiA2IDEyIiBzdHlsZT0ibWl4LWJsZW5kLW1vZGU6b3ZlcmxheSIvPjwvc3ZnPg==');
   --svg-noise: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZmlsdGVyIGlkPSJwcmVmaXhfX2EiPjxmZVR1cmJ1bGVuY2UgYmFzZUZyZXF1ZW5jeT0iLjkiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJzYXR1cmF0ZSIgdmFsdWVzPSIuMyIvPjxmZUNvbXBvbmVudFRyYW5zZmVyPjxmZUZ1bmNSIHR5cGU9ImdhbW1hIiBzbG9wZT0iLjMiIGludGVyY2VwdD0iLjMiLz48ZmVGdW5jRyB0eXBlPSJnYW1tYSIgc2xvcGU9Ii4zIiBpbnRlcmNlcHQ9Ii4zIi8+PGZlRnVuY0IgdHlwZT0iZ2FtbWEiIHNsb3BlPSIuMyIgaW50ZXJjZXB0PSIuMyIvPjxmZUZ1bmNBIHR5cGU9ImxpbmVhciIgc2xvcGU9Ii4zIi8+PC9mZUNvbXBvbmVudFRyYW5zZmVyPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNwcmVmaXhfX2EpIi8+PC9zdmc+');
+  --svg-verti: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12pt 9pt" width="12pt" height="9pt"><path style="transform: rotate(90deg) translateY(-11pt);" fill="hsl(200, 14%, 22%)" stroke="hsl(255, 16%, 16%)" stroke-width="1.5pt" stroke-linecap="square" d="M0,13.5c3,0,3-12,6-12s3,12,6,12" /></svg>');
 }
 
 html,
 body {
   padding: 0;
 }
-
 
 body[data-vscode-theme-kind='vscode-dark'] {
   background-color: hsl(var(--royalblue), 16%, 10%);
@@ -223,13 +221,13 @@ body[data-vscode-theme-kind='vscode-dark'] {
   background-attachment: fixed;
   background-blend-mode: hard-light, normal;
   background-image: var(--svg-noise), var(--scanlines);
-  background-size: 72px 72px, cover;
+  background-size: 72px;
 }
 
 .markdown-body {
   /*--- Editor variables */
   --vscode-font-size: var(--markdown-font-size, 17px) !important;
-  --vscode-editor-font-family: var(--font-google-mono, var(--font-lilex), inherit), var(--font-mono) !important;
+  --vscode-editor-font-family: var(--font-google-mono), var(--font-dm-mono), var(--font-mono, inherit) !important;
   --vscode-editor-foreground: var(--foreground, white) !important;
   --vscode-font-weight: var(--text-regular, 450) !important;
   --vscode-textCodeBlock-background: var(--surface) !important;
@@ -238,9 +236,9 @@ body[data-vscode-theme-kind='vscode-dark'] {
   --vscode-widget-border: var(--outline) !important;
 
   /* Preview variables */
-  --markdown-font-family: var(--font-google-sans), var(--font-instrument, inherit), var(--font-sans);
-  --markdown-font-size: var(--vscode-font-size, 17px);
-  --markdown-line-height: round(1.25rem, 1px);
+  --markdown-font-family: var(--font-google-sans, var(--font-dm-sans)), var(--font-sans, inherit);
+  --markdown-font-size: 17px;
+  --markdown-line-height: 1.4;
 }
 
 .markdown-body {
@@ -251,7 +249,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
   justify-content: flex-start;
   align-items: stretch;
   font-feature-settings: var(--font-settings-sans);
-  gap: 0;
+  gap: var(--gap-xxs);
   margin: auto;
   max-width: 800px;
   min-width: 320px;
@@ -295,17 +293,13 @@ body[data-vscode-theme-kind='vscode-dark'] {
   border-radius: 0;
 }
 
-.markdown-body p,
-.markdown-body p:last-child {
-  margin-block-start: var(--gap-xs);
-  margin-block-end: var(--gap-xs);
-  line-height-step: var(--markdown-font-size, 17px);
-  line-height: var(--markdown-line-height, round(1.25rem, 1px));
+.markdown-body p {
+  margin-block-start: 0;
+  margin-block-end: 0;
+  line-height: 1.3;
 }
 
-.markdown-body p+p,
-.markdown-body p:not(:first-child),
-.markdown-body p:not(:last-child) {
+.markdown-body p+p {
   margin-block-start: var(--gap-xs);
   margin-block-end: 0;
 }
@@ -385,15 +379,14 @@ body[data-vscode-theme-kind='vscode-dark'] {
   position: relative;
   list-style-position: outside;
   flex: 0 1 auto;
-  padding-left: 0;
+  padding-left: var(--gap-xs);
+ line-height: 1.3;
 }
 
 .markdown-body li,
 .markdown-body li:last-child {
   margin-block-start: var(--gap-xxs);
   margin-block-end: var(--gap-xxs);
-  line-height-step: var(--markdown-font-size, 17px);
-  line-height: var(--markdown-line-height, round(1.25rem, 1px));
 }
 
 .markdown-body li+li,
@@ -437,6 +430,11 @@ body[data-vscode-theme-kind='vscode-dark'] {
   margin-left: calc(var(--gap-xs) * -1);
   position: relative;
   padding-left: var(--gap-sm);
+  margin-block-start: var(--gap-sm);
+}
+
+.markdown-body li p:first-child {
+  margin-block-start: 0;
 }
 
 .markdown-body input[type='checkbox'] {
@@ -447,14 +445,14 @@ body[data-vscode-theme-kind='vscode-dark'] {
   border-color: var(--surface);
   box-shadow: var(--outline-shadow);
   box-sizing: content-box;
-  left: var(--px-1-5);
+  left: var(--px-1);
   margin: 0 var(--gap-xxs) 0 calc(var(--gap-sm) * -1);
   min-height: var(--gap);
   min-width: var(--gap);
   outline-offset: var(--highlight-offset);
   outline: var(--highlight-border-50);
   position: absolute;
-  top: var(--px1-5);
+  top: var(--px0);
   vertical-align: text-top;
 }
 
@@ -514,7 +512,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
   align-items: baseline;
 }
 
-.markdown-body h1::slotted {
+.markdown-body image {
   max-width: min-content;
   max-height: min-content;
   height: 100%;
@@ -605,13 +603,15 @@ body[data-vscode-theme-kind='vscode-dark'] {
 .markdown-body h5 code,
 .markdown-body h6 code {
   border-block-end: none;
-  border-radius: var(--round-sm);
   color: currentColor;
   display: inline;
-  font-variation-settings: var(--font-features-medium);
-  font-weight: var(--text-medium) !important;
+  font-variation-settings: var(--font-features-regular);
+  font-weight: var(--text-regular) !important;
   text-shadow: var(--text-alias);
-  vertical-align: baseline;
+  vertical-align: top;
+  font-size: 0.72rem;
+  color: var(--foreground-text, currentColor);
+  letter-spacing: 0;
 }
 
 .markdown-body h1+hr,
@@ -668,23 +668,38 @@ body[data-vscode-theme-kind='vscode-dark'] {
 }
 
 .markdown-body blockquote {
-  position: relative;
-  padding: var(--gap-xs) var(--gap);
-  overflow: hidden;
-  isolation: isolate;
-  border: solid transparent 0;
-  outline: var(--highlight-border-10);
-  outline-offset: var(--highlight-offset);
-  gap: var(--gap);
-  flex: 1 0 auto;
-  flex-direction: column;
-  display: flex;
+  background: hsl(var(--skyblue), 16%, 22%);
+  border-block-start: var(--highlight-border-10);
+  border-left-color: var(--highlight-30);
   box-shadow: var(--outline-shadow);
-  border-radius: var(--round-sm);
-  border-left: var(--px5) solid hsl(var(--aqua), 16%, 33%);
-  background: var(--svg-noise), hsl(var(--skyblue), 16%, 22%);
-  background-blend-mode: hue, normal;
+  outline-offset: var(--highlight-offset);
+  outline: var(--highlight-border-10);
+  overflow: hidden;
+  padding: var(--gap-sm) var(--gap-sm) var(--gap-sm) 24px;
+  position: relative;
+  z-index: 0;
+  border-radius: var(--round);
 }
+
+/*
+.markdown-body blockquote:after {
+  background-image: var(--svg-verti);
+  background-repeat: repeat-y;
+  background-size: 12pt 9pt;
+  color: transparent;
+  content: '';
+  display: block;
+  font-size: 1rem;
+  height: 100%;
+  width: 16px;
+  position: absolute;
+  left: 0.5px;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  box-sizing: content-box;
+}
+*/
 
 .markdown-body table {
   background-color: var(--surface);
@@ -766,10 +781,10 @@ body[data-vscode-theme-kind='vscode-dark'] {
 .markdown-body table thead::before {
   background-image: var(--scanlines);
   background-attachment: fixed;
-  background-position: 0 var(--px1-5);
+  background-position: 0 var(--px-1-5);
   background-repeat: repeat-y;
   border-radius: calc(var(--round) - var(--px1-5)) calc(var(--round) - var(--px1-5)) 0 0;
-  bottom: var(--px1-5);
+  bottom: 0;
   left: var(--px1-5);
   right: var(--px-1-5);
   top: 0;
@@ -785,7 +800,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
   background-image: var(--svg-thead);
   background-position: 0 0;
   background-repeat: repeat-x;
-  bottom: var(--px-1);
+  bottom: calc(var(--px3) * -1);
   left: 0;
   right: 0;
   z-index: 3;
@@ -807,7 +822,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
   font-variation-settings: var(--font-features-heading);
   font-weight: var(--text-bold);
   letter-spacing: -0.005em;
-  line-height: 1.05;
+  line-height: 1.1;
   paint-order: stroke;
   text-rendering: geometricPrecision;
   text-shadow: var(--text-stroke);
@@ -880,42 +895,37 @@ body[data-vscode-theme-kind='vscode-dark'] {
   padding-right: 0.75rem;
 }
 
+
 .markdown-body code {
-  background: var(--svg-noise), var(--surface);
-  background-blend-mode: color-burn, normal;
+  background: hsla(var(--rose), 18%, 18%, 1);
   border: solid transparent var(--px0);
   border-block-start: var(--highlight-05) solid var(--px1);
   border-block-end: solid transparent var(--px1);
   border-radius: var(--round-xs);
   word-break: break-word;
-  color: inherit;
+  color: hsla(var(--orangered), 56%, 64%, 0.88);
   display: inline-flex;
   font-feature-settings: var(--font-settings-mono);
-  font-size: 0.88em;
+  font-size: 0.8rem;
   font-variation-settings: var(--font-features-regular);
   font-weight: var(--text-regular);
   vertical-align: baseline;
   box-shadow: var(--outline-shadow);
-  line-height: round(0.96em, 1px);
   outline: var(--highlight-05) solid var(--px1);
   outline-offset: var(--highlight-offset);
-  text-shadow: var(--text-alias-strong);
-  margin: auto var(--px-1-5);
-}
-
-.markdown-body td code {
-  color: var(--foreground-text);
-  font-size: 0.88em;
-  border: none;
+  text-shadow: var(--text-alias);
+  margin: auto var(--px1);
 }
 
 .markdown-body pre:has(code) {
   padding: var(--gap-sm) var(--gap-sm) var(--gap-sm) var(--gap);
+  overflow-y: auto;
+  overflow-x: hidden;
   outline: var(--highlight-border-10);
   outline-offset: var(--highlight-offset);
+  max-block-size: 16rem;
   line-height: 1.3;
-  font-weight: var(--text-regular);
-  font-size: 0.88em;
+  font-size: 0.88rem;
   display: flow-root;
   color: inherit;
   box-shadow: var(--outline-shadow);
@@ -939,14 +949,14 @@ body[data-vscode-theme-kind='vscode-dark'] {
   display: contents;
   box-shadow: none;
   outline-color: transparent;
-  font-size: inherit;
-  line-height: inherit;
   color: inherit;
 }
 
 .markdown-body td code {
   outline-color: transparent;
   box-shadow: none;
+  border: none;
+  background: transparent;
 }
 
 .markdown-body .admonition {

@@ -10,6 +10,15 @@ tags: [llm, qwen3, model-card, orchestrator, reasoning, lm-studio]
 
 Qwen3 4B Thinking (July 2025 release). Chain-of-thought reasoning variant of Qwen3 4B. Used as the orchestrator model for intent classification — classifies incoming prompts, suggests tools, and annotates for the enhancement layer.
 
+LM Studio Resources:
+- [Qwen3 4B Thinking Model](https://lmstudio.ai/models/qwen/qwen3-4b-thinking-2507): Updated thinking version of Qwen3 4B featuring continued scaling of thinking capability, improving both the quality and depth of reasoning
+
+Qwen3 thinking settings, as recommended by the Qwen team. Also, bundle in an LM Studio compatible prompt template.
+- [neil/qwen3-thinking](https://lmstudio.ai/neil/qwen3-thinking)
+- [pba/qwen3-thinking](https://lmstudio.ai/pba/qwen3-thinking)
+- [rugz007/qwen3-thinking-coding](https://lmstudio.ai/rugz007/qwen3-thinking-coding)
+
+
 ## LM Studio Manifest
 
 ```
@@ -37,11 +46,11 @@ Publisher:        qwen (official)
 
 ## LM Studio Configuration
 
-| Parameter | Value | Notes |
-|---|---|---|
-| Variant | `qwen3-4b-thinking-2507@4bit` | 4-bit quantization via MLX |
-| Keep loaded | Yes | Both 4B models stay resident (~5 GB total) |
-| Reasoning | LM Studio surfaces thinking in `message.reasoning` field (v0.3.23+) |
+| Parameter   | Value                                                               | Notes                                      |
+| ----------- | ------------------------------------------------------------------- | ------------------------------------------ |
+| Variant     | `qwen3-4b-thinking-2507@4bit`                                       | 4-bit quantization via MLX                 |
+| Keep loaded | Yes                                                                 | Both 4B models stay resident (~5 GB total) |
+| Reasoning   | LM Studio surfaces thinking in `message.reasoning` field (v0.3.23+) |                                            |
 
 ## PromptHub Roles
 

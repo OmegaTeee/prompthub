@@ -1,0 +1,42 @@
+{
+  "identifier": "@local:qwen3-4-b-thinking-2507",
+  "name": "Qwen3-4B-Thinking",
+  "operation": {
+    "fields": [
+      {
+        "key": "llm.prediction.temperature",
+        "value": 0.2
+      },
+      {
+        "key": "llm.prediction.topPSampling",
+        "value": {
+          "checked": true,
+          "value": 0.9
+        }
+      },
+      {
+        "key": "llm.prediction.topKSampling",
+        "value": 40
+      },
+      {
+        "key": "llm.prediction.repeatPenalty",
+        "value": {
+          "checked": true,
+          "value": 1.05
+        }
+      },
+      {
+        "key": "llm.prediction.speculativeDecoding.draftModel",
+        "value": "qwen3-0.6b"
+      }
+    ]
+  },
+  "load": {
+    "fields": [
+      {
+        "key": "llm.load.contextLength",
+        "value": 4096
+      }
+    ]
+  }
+}

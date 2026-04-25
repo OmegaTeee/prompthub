@@ -1,0 +1,268 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.4.9",
+    "lastTouchedAt": "2026-04-17T20:44:07.526Z"
+  },
+  "diagnostics": {
+    "enabled": true,
+    "cacheTrace": {
+      "enabled": true,
+      "filePath": "/Users/visualval/.openclaw",
+      "includeMessages": true,
+      "includePrompt": true,
+      "includeSystem": true
+    }
+  },
+  "logging": {
+    "consoleLevel": "info",
+    "redactSensitive": "tools"
+  },
+  "update": {
+    "channel": "stable"
+  },
+  "auth": {
+    "profiles": {
+      "lmstudio:default": {
+        "provider": "lmstudio",
+        "mode": "api_key"
+      },
+      "prompthub": {
+        "provider": "prompthub",
+        "mode": "token"
+      },
+      "cherry": {
+        "provider": "cherry",
+        "mode": "token"
+      }
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "lmstudio": {
+        "baseUrl": "http://localhost:1234",
+        "api": "anthropic-messages",
+        "apiKey": "Bearer sk-lm-WHOsdSxC:Emcb1o1mukwrLVp1nHNy",
+        "models": [
+          {
+            "id": "qwen3.5-4b",
+            "name": "qwen3.5-4b (Custom Provider)",
+            "contextWindow": 16000,
+            "maxTokens": 4096,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "reasoning": false
+          }
+        ]
+      },
+      "prompthub": {
+        "baseUrl": "http://127.0.0.1:9090/v1",
+        "apiKey": "Bearer sk-prompthub-cherry-studio-001",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen3-1.7b",
+            "name": "qwen3-1.7b",
+            "contextWindow": 23890
+          },
+          {
+            "id": "qwen3-0.6b",
+            "name": "qwen3-0.6b",
+            "contextWindow": 23890
+          },
+          {
+            "id": "qwen3-4b-instruct-2507",
+            "name": "qwen3-4b-instruct-2507",
+            "contextWindow": 23890
+          },
+          {
+            "id": "qwen3-4b-thinking-2507",
+            "name": "qwen3-4b-thinking-2507",
+            "contextWindow": 23890
+          },
+          {
+            "id": "qwen3.5-4b",
+            "name": "qwen3.5-4b",
+            "contextWindow": 23890
+          }
+        ]
+      },
+      "cherry": {
+        "baseUrl": "http://127.0.0.1:9090/v1",
+        "apiKey": "Bearer sk-prompthub-cherry-studio-001",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen3-1.7b",
+            "name": "qwen3-1.7b",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen3-0.6b",
+            "name": "qwen3-0.6b",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen3-4b-instruct-2507",
+            "name": "qwen3-4b-instruct-2507",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen3-4b-thinking-2507",
+            "name": "qwen3-4b-thinking-2507",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen3.5-4b",
+            "name": "qwen3.5-4b",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen2.5-coder-32b-instruct",
+            "name": "qwen2.5-coder-32b-instruct",
+            "contextWindow": 128000
+          },
+          {
+            "id": "text-embedding-nomic-embed-text-v1.5",
+            "name": "text-embedding-nomic-embed-text-v1.5",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen2.5-coder-7b-instruct",
+            "name": "qwen2.5-coder-7b-instruct",
+            "contextWindow": 128000
+          },
+          {
+            "id": "deepseek-coder-6.7b-instruct",
+            "name": "deepseek-coder-6.7b-instruct",
+            "contextWindow": 128000
+          },
+          {
+            "id": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "name": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "contextWindow": 128000
+          }
+        ]
+      },
+      "cherry-4b77f302-8c36-4b46-a32c-80be53739489": {
+        "baseUrl": "http://127.0.0.1:9090/v1",
+        "apiKey": "Bearer sk-prompthub-cherry-studio-001",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen3-1.7b",
+            "name": "qwen3-1.7b",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen3-0.6b",
+            "name": "qwen3-0.6b",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen3-4b-instruct-2507",
+            "name": "qwen3-4b-instruct-2507",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen3-4b-thinking-2507",
+            "name": "qwen3-4b-thinking-2507",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen3.5-4b",
+            "name": "qwen3.5-4b",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen2.5-coder-32b-instruct",
+            "name": "qwen2.5-coder-32b-instruct",
+            "contextWindow": 128000
+          },
+          {
+            "id": "text-embedding-nomic-embed-text-v1.5",
+            "name": "text-embedding-nomic-embed-text-v1.5",
+            "contextWindow": 128000
+          },
+          {
+            "id": "qwen2.5-coder-7b-instruct",
+            "name": "qwen2.5-coder-7b-instruct",
+            "contextWindow": 128000
+          },
+          {
+            "id": "deepseek-coder-6.7b-instruct",
+            "name": "deepseek-coder-6.7b-instruct",
+            "contextWindow": 128000
+          },
+          {
+            "id": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "name": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "contextWindow": 128000
+          }
+        ]
+      }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "port": 18790,
+    "auth": {
+      "token": "qyCJWIqVxdrKttKUrjie0BCMYNScfBK8"
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "cherry-4b77f302-8c36-4b46-a32c-80be53739489/qwen3.5-4b"
+      },
+      "models": {
+        "lmstudio-1234/qwen3.5-4b": {
+          "alias": "qwen3.5"
+        }
+      },
+      "workspace": "/Users/visualval/.openclaw/workspace"
+    }
+  },
+  "wizard": {
+    "lastRunAt": "2026-04-17T20:44:07.332Z",
+    "lastRunVersion": "2026.4.9",
+    "lastRunCommand": "configure",
+    "lastRunMode": "local"
+  },
+  "tools": {
+    "web": {
+      "fetch": {
+        "enabled": true
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "discord": {
+        "enabled": true
+      }
+    },
+    "installs": {
+      "discord": {
+        "source": "npm",
+        "spec": "@openclaw/discord",
+        "installPath": "/Users/visualval/.openclaw/extensions/discord",
+        "version": "2026.3.13",
+        "resolvedName": "@openclaw/discord",
+        "resolvedVersion": "2026.3.13",
+        "resolvedSpec": "@openclaw/discord@2026.3.13",
+        "integrity": "sha512-uYCzMmpYVhFPD0TstMmnTNBk9N3Uk/VsZivjr8V/B7g7ajI5HPgsiHBjCLrTmmJZKsVnauo0pAIx/aBcKejYpQ==",
+        "shasum": "52f5af71df52511572ce25995571adace99539ae",
+        "resolvedAt": "2026-04-17T20:41:26.321Z",
+        "installedAt": "2026-04-17T20:41:33.547Z"
+      }
+    }
+  }
+}

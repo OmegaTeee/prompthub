@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.openai.atlas.agent-xpc</string>
+	<key>MachServices</key>
+	<dict>
+		<key>com.openai.atlas.agent-xpc</key>
+		<true/>
+	</dict>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Applications/ChatGPT Atlas.app/Contents/Resources/AuraXPCService</string>
+	</array>
+</dict>
+</plist>

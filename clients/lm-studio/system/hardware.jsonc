@@ -1,0 +1,100 @@
+[
+  {
+    "modelCompatibilityType": "safetensors",
+    "runtime": {
+      "hardwareSurveyResult": {
+        "compatibility": {
+          "status": "compatible"
+        },
+        "cpuSurveyResult": {
+          "result": {
+            "code": "Success",
+            "message": ""
+          },
+          "cpuInfo": {
+            "name": "Apple M3 Max",
+            "architecture": "ARM64",
+            "supportedInstructionSetExtensions": [
+              "AdvSIMD"
+            ]
+          }
+        },
+        "memoryInfo": {
+          "ramCapacity": 38654705664,
+          "vramCapacity": 30150672384,
+          "totalMemory": 38654705664
+        },
+        "gpuSurveyResult": {
+          "result": {
+            "code": "Success",
+            "message": "Successfully queried Apple Silicon for GPU Info."
+          },
+          "gpuInfo": [
+            {
+              "name": "Apple M3 Max",
+              "deviceId": 0,
+              "totalMemoryCapacityBytes": 38654705664,
+              "dedicatedMemoryCapacityBytes": 30150672384,
+              "integrationType": "Integrated",
+              "detectionPlatform": "Metal",
+              "detectionPlatformVersion": "",
+              "otherInfo": {
+                "osProductVersion": "26.3.1",
+                "metalGpuFamilyNumeric": "9"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "modelCompatibilityType": "gguf",
+    "runtime": {
+      "hardwareSurveyResult": {
+        "compatibility": {
+          "status": "compatible"
+        },
+        "cpuSurveyResult": {
+          "result": {
+            "code": "Success",
+            "message": ""
+          },
+          "cpuInfo": {
+            "name": "Apple M3 Max",
+            "architecture": "ARM64",
+            "supportedInstructionSetExtensions": [
+              "AdvSIMD"
+            ]
+          }
+        },
+        "memoryInfo": {
+          "ramCapacity": 38654705664,
+          "vramCapacity": 30150672384,
+          "totalMemory": 38654705664
+        },
+        "gpuSurveyResult": {
+          "result": {
+            "code": "Success",
+            "message": "Successfully queried Apple Silicon for GPU Info."
+          },
+          "gpuInfo": [
+            {
+              "name": "Apple M3 Max",
+              "deviceId": 0,
+              "totalMemoryCapacityBytes": 38654705664,
+              "dedicatedMemoryCapacityBytes": 30150672384,
+              "integrationType": "Integrated",
+              "detectionPlatform": "Metal",
+              "detectionPlatformVersion": "",
+              "otherInfo": {
+                "osProductVersion": "26.3.1",
+                "metalGpuFamilyNumeric": "9"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]

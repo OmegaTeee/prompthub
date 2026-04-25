@@ -10,7 +10,9 @@ Service provides a single local router (`localhost:9090`) that:
 - Provides circuit breakers for graceful degradation
 - Caches responses for performance
 
-**Target clients**: Claude Desktop, VS Code, Raycast, Obsidian, ComfyUI
+**Target Client Apps**: VS Code, Cherry Studio, Obsidian, ComfyUI, Claude-desktop
+
+**Local Provider**: LM Studio, MCP server bridge
 
 ## Project Status
 

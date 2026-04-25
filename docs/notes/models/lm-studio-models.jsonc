@@ -1,0 +1,191 @@
+[
+  //  [Supercoder](https://github.com/huytd/supercoder) is a agent I've downloaded to for code sketches in clients like Cherry Studio to help with drafting project markdown files.
+  //  I use claude-code max and codex pro in vscode when writing code.
+  //  Started some docs here [../../../scripts/supercoder/README.md](scripts/supercoder/README.md) about it.
+  {
+    "comments": "Qwen3 VL 8b Instruct: Testing as a multimodal model that can handle both text and vision inputs, it is larger than the 3.5 4b version and should be tested for tasks that require understanding of visual information in clients like Cherry Studio",
+    "type": "llm",
+    "modelKey": "qwen3-vl-8b-instruct",
+    "format": "gguf",
+    "displayName": "Qwen3 VL 8B Instruct",
+    "publisher": "lmstudio-community",
+    "path": "lmstudio-community/Qwen3-VL-8B-Instruct-GGUF/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+    "sizeBytes": 6186814624,
+    "indexedModelIdentifier": "lmstudio-community/Qwen3-VL-8B-Instruct-GGUF/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+    "deviceIdentifier": null,
+    "paramsString": "8B",
+    "architecture": "qwen3vl",
+    "quantization": {
+      "name": "Q4_K_M",
+      "bits": 4
+    },
+    "vision": true,
+    "trainedForToolUse": true,
+    "maxContextLength": 262144
+  },
+  {
+    "comments": "Qwen2.5 Coder 7b Instruct: Supercoder default model for documentation generation, it is smaller than the 32b version and should be used for most code generation tasks in Supercoder Agent",
+    "type": "llm",
+    "modelKey": "qwen2.5-coder-7b-instruct",
+    "format": "gguf",
+    "displayName": "Qwen2.5 Coder 7B Instruct",
+    "publisher": "lmstudio-community",
+    "path": "lmstudio-community/Qwen2.5-Coder-7B-Instruct-GGUF/Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf",
+    "sizeBytes": 4683074048,
+    "indexedModelIdentifier": "lmstudio-community/Qwen2.5-Coder-7B-Instruct-GGUF/Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf",
+    "deviceIdentifier": null,
+    "paramsString": "7B",
+    "architecture": "qwen2",
+    "quantization": {
+      "name": "Q4_K_M",
+      "bits": 4
+    },
+    "vision": false,
+    "trainedForToolUse": false,
+    "maxContextLength": 32768
+  },
+  {
+    "comments": "Qwen2.5 Coder 32b Instruct: Supercoder Agent 'Max' mode for code generation, but it is too large to load in memory, most of the time should use the 7b version for code generation in Supercoder Agent",
+    "type": "llm",
+    "modelKey": "qwen2.5-coder-32b-instruct",
+    "format": "gguf",
+    "displayName": "Qwen2.5 Coder 32B Instruct",
+    "publisher": "lmstudio-community",
+    "path": "lmstudio-community/Qwen2.5-Coder-32B-Instruct-GGUF/Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf",
+    "sizeBytes": 19851336384,
+    "indexedModelIdentifier": "lmstudio-community/Qwen2.5-Coder-32B-Instruct-GGUF/Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf",
+    "deviceIdentifier": null,
+    "paramsString": "32B",
+    "architecture": "qwen2",
+    "quantization": {
+      "name": "Q4_K_M",
+      "bits": 4
+    },
+    "vision": false,
+    "trainedForToolUse": false,
+    "maxContextLength": 32768
+  },
+  {
+    "comments": "Qwen3.5 4b: Testing as a general purpose model that can be used for various tasks, it is smaller than the 1.7b version and should be used for general use in clients like Cherry Studio, it also has vision capabilities that can be tested for multimodal tasks",
+    "type": "llm",
+    "modelKey": "qwen3.5-4b",
+    "format": "gguf",
+    "displayName": "Qwen3.5 4B",
+    "publisher": "lmstudio-community",
+    "path": "lmstudio-community/Qwen3.5-4B-GGUF/Qwen3.5-4B-Q4_K_M.gguf",
+    "sizeBytes": 3383082464,
+    "indexedModelIdentifier": "lmstudio-community/Qwen3.5-4B-GGUF/Qwen3.5-4B-Q4_K_M.gguf",
+    "deviceIdentifier": null,
+    "paramsString": "4B",
+    "architecture": "qwen35",
+    "quantization": {
+      "name": "Q4_K_M",
+      "bits": 4
+    },
+    "vision": true,
+    "trainedForToolUse": true,
+    "maxContextLength": 262144
+  },
+  {
+    "comments": "Qwen3 1.7b: Testing as a general purpose model that can be used for various tasks, but it is too large to load in memory, most of the time should use the 0.6b version for general use in clients like Cherry Studio.",
+    "type": "llm",
+    "modelKey": "qwen3-1.7b",
+    "format": "gguf",
+    "displayName": "Qwen3 1.7B",
+    "publisher": "lmstudio-community",
+    "path": "lmstudio-community/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q6_K.gguf",
+    "sizeBytes": 1673007264,
+    "indexedModelIdentifier": "lmstudio-community/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q6_K.gguf",
+    "deviceIdentifier": null,
+    "paramsString": "1.7B",
+    "architecture": "qwen3",
+    "quantization": {
+      "name": "Q6_K",
+      "bits": 6
+    },
+    "vision": false,
+    "trainedForToolUse": true,
+    "maxContextLength": 32768
+  },
+  {
+    "comments": "Qwen3 0.6b: Testing as a general purpose model that can be used for various tasks, it is smaller than the 1.7b version and should be used for general use in clients like Cherry Studio.",
+    "type": "llm",
+    "modelKey": "qwen3-0.6b",
+    "format": "gguf",
+    "displayName": "Qwen3 0.6B",
+    "publisher": "lmstudio-community",
+    "path": "lmstudio-community/Qwen3-0.6B-GGUF/Qwen3-0.6B-Q8_0.gguf",
+    "sizeBytes": 804753568,
+    "indexedModelIdentifier": "lmstudio-community/Qwen3-0.6B-GGUF/Qwen3-0.6B-Q8_0.gguf",
+    "deviceIdentifier": null,
+    "paramsString": "0.6B",
+    "architecture": "qwen3",
+    "quantization": {
+      "name": "Q8_0",
+      "bits": 8
+    },
+    "vision": false,
+    "trainedForToolUse": true,
+    "maxContextLength": 32768
+  },
+  {
+    "comments": "Qwen3 4b Instruct 2507: Testing as a prompt enhancement and task execution model, should be tested in clients like Cherry Studio to see if it can help with enhancing prompts and executing tasks",
+    "type": "llm",
+    "modelKey": "qwen3-4b-instruct-2507",
+    "format": "gguf",
+    "displayName": "Qwen3 4B Instruct 2507",
+    "publisher": "lmstudio-community",
+    "path": "lmstudio-community/Qwen3-4B-Instruct-2507-GGUF/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "sizeBytes": 2497280448,
+    "indexedModelIdentifier": "lmstudio-community/Qwen3-4B-Instruct-2507-GGUF/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "deviceIdentifier": null,
+    "paramsString": "4B",
+    "architecture": "qwen3",
+    "quantization": {
+      "name": "Q4_K_M",
+      "bits": 4
+    },
+    "vision": false,
+    "trainedForToolUse": true,
+    "maxContextLength": 262144
+  },
+  {
+    "comments": "Qwen3 4b Thinking 2507: Similar to the instruct version but trained more for deep reasoning and tool use, should be tested as an orchestrator model in clients like Cherry Studio to see if it can help with tool use and reasoning tasks",
+    "type": "llm",
+    "modelKey": "qwen3-4b-thinking-2507",
+    "format": "gguf",
+    "displayName": "Qwen3 4B Thinking 2507",
+    "publisher": "lmstudio-community",
+    "path": "lmstudio-community/Qwen3-4B-Thinking-2507-GGUF/Qwen3-4B-Thinking-2507-Q4_K_M.gguf",
+    "sizeBytes": 2497280448,
+    "indexedModelIdentifier": "lmstudio-community/Qwen3-4B-Thinking-2507-GGUF/Qwen3-4B-Thinking-2507-Q4_K_M.gguf",
+    "deviceIdentifier": null,
+    "paramsString": "4B",
+    "architecture": "qwen3",
+    "quantization": {
+      "name": "Q4_K_M",
+      "bits": 4
+    },
+    "vision": false,
+    "trainedForToolUse": true,
+    "maxContextLength": 262144
+  },
+  {
+    "comments": "Nomic Text Embedding 1.5: Comes installed with LM Studio, but I haven't tested it yet, seems to be a embedding model that can be used for vector database indexing and retrieval in clients like Cherry Studio",
+    "type": "embedding",
+    "modelKey": "text-embedding-nomic-embed-text-v1.5",
+    "format": "gguf",
+    "displayName": "Nomic Embed Text v1.5",
+    "publisher": "nomic-ai",
+    "path": "nomic-ai/nomic-embed-text-v1.5-GGUF/nomic-embed-text-v1.5.Q4_K_M.gguf",
+    "sizeBytes": 84106624,
+    "indexedModelIdentifier": "nomic-ai/nomic-embed-text-v1.5-GGUF/nomic-embed-text-v1.5.Q4_K_M.gguf",
+    "deviceIdentifier": null,
+    "architecture": "nomic-bert",
+    "quantization": {
+      "name": "Q4_K_M",
+      "bits": 4
+    },
+    "maxContextLength": 2048
+  }
+]

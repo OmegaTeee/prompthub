@@ -1,4 +1,6 @@
 personality = "pragmatic"
+model = "gpt-5.2"
+model_reasoning_effort = "medium"
 
 [mcp_servers.prompthub-bridge]
 args = ["/Users/visualval/prompthub/mcps/prompthub-bridge.js"]
@@ -18,6 +20,12 @@ enabled = false
 
 [plugins."github@openai-curated"]
 enabled = true
+
+[plugins."superpowers@openai-curated"]
+enabled = true
+
+# [plugins."hugging-face@openai-curated"]
+# enabled = true
 
 [projects."/Users/visualval/.local/share/prompthub"]
 trust_level = "trusted"

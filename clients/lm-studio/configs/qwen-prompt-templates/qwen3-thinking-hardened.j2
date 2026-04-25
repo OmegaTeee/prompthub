@@ -1,0 +1,137 @@
+{# --------------------------------------------
+   Hardened Qwen3 LM Studio template
+   Goals:
+   - safer missing-field handling
+   - cleaner thinking/tool-call history
+   - less prompt bloat
+   - better LM Studio tool parser compatibility
+   -------------------------------------------- #}
+
+{%- if enable_thinking is not defined %}
+    {%- set enable_thinking = true %}
+{%- endif %}
+
+{%- set has_messages = messages is defined and messages %}
+{%- set first_is_system = has_messages and messages[0].role == 'system' %}
+
+{%- if tools %}
+    {{- '<|im_start|>system\n' }}
+    {%- if first_is_system %}
+        {{- messages[0].content }}
+        {{- '\n\n' }}
+    {%- endif %}
+    {{- '# Tools\n\nYou may call one or more functions to assist with the user query.\n\nYou are provided with function signatures within <tools></tools> XML tags:\n<tools>' }}
+    {%- for tool in tools %}
+        {{- '\n' }}
+        {{- tool | tojson }}
+    {%- endfor %}
+    {{- '\n</tools>\n\nFor each function call, return a JSON object with function name and arguments within <tool_call></tool_call> XML tags:\n<tool_call>\n{"name": <function-name>, "arguments": <args-json-object>}\n</tool_call><|im_end|>\n' }}
+{%- else %}
+    {%- if first_is_system %}
+        {{- '<|im_start|>system\n' }}
+        {{- messages[0].content }}
+        {{- '<|im_end|>\n' }}
+    {%- endif %}
+{%- endif %}
+
+{# Find last real user query, excluding synthetic tool-response user messages #}
+{%- set ns = namespace(last_query_index=-1, multi_step_tool=true) %}
+{%- if has_messages %}
+    {%- set ns.last_query_index = (messages | length) - 1 %}
+    {%- for message in messages[::-1] %}
+        {%- set index = (messages | length - 1) - loop.index0 %}
+        {%- set content = message.content if message.content is defined and message.content is not none else '' %}
+        {%- set tool_start = '<tool_response>' %}
+        {%- set tool_end = '</tool_response>' %}
+        {%- set starts_tool = content[:tool_start|length] == tool_start %}
+        {%- set start_pos = (content|length) - (tool_end|length) %}
+        {%- if start_pos < 0 %}
+            {%- set start_pos = 0 %}
+        {%- endif %}
+        {%- set ends_tool = content[start_pos:] == tool_end %}
+        {%- if ns.multi_step_tool and message.role == 'user' and not (starts_tool and ends_tool) %}
+            {%- set ns.multi_step_tool = false %}
+            {%- set ns.last_query_index = index %}
+        {%- endif %}
+    {%- endfor %}
+{%- endif %}
+
+{%- for message in messages %}
+    {%- set role = message.role %}
+    {%- set raw_content = message.content if message.content is defined and message.content is not none else '' %}
+
+    {%- if role == 'user' or (role == 'system' and not loop.first) %}
+        {{- '<|im_start|>' + role + '\n' + raw_content + '<|im_end|>\n' }}
+
+    {%- elif role == 'assistant' %}
+        {%- set content = raw_content %}
+        {%- set reasoning_content = '' %}
+
+        {%- if message.reasoning_content is defined and message.reasoning_content is not none %}
+            {%- set reasoning_content = message.reasoning_content %}
+        {%- elif '</think>' in raw_content %}
+            {%- set content = (raw_content.split('</think>') | last).lstrip('\n') %}
+            {%- set reasoning_content = (raw_content.split('</think>') | first).rstrip('\n') %}
+            {%- set reasoning_content = (reasoning_content.split('<think>') | last).lstrip('\n') %}
+        {%- endif %}
+
+        {{- '<|im_start|>assistant\n' }}
+
+        {# Only keep historical thinking after the last real user query.
+           This reduces prompt growth and avoids duplicated historical think blocks. #}
+        {%- if loop.index0 > ns.last_query_index and reasoning_content | trim %}
+            {{- '<think>\n' + reasoning_content.strip('\n') + '\n</think>\n\n' }}
+        {%- endif %}
+
+        {{- content.lstrip('\n') }}
+
+        {%- if message.tool_calls is defined and message.tool_calls %}
+            {%- for tc in message.tool_calls %}
+                {%- if (content or reasoning_content) or not loop.first %}
+                    {{- '\n' }}
+                {%- endif %}
+
+                {%- if tc.function is defined and tc.function %}
+                    {%- set call = tc.function %}
+                {%- else %}
+                    {%- set call = tc %}
+                {%- endif %}
+
+                {{- '<tool_call>\n' }}
+                {{- '{"name": "' + call.name + '", "arguments": ' }}
+                {%- if call.arguments is defined %}
+                    {%- if call.arguments is string %}
+                        {{- call.arguments }}
+                    {%- else %}
+                        {{- call.arguments | tojson }}
+                    {%- endif %}
+                {%- else %}
+                    {{- '{}' }}
+                {%- endif %}
+                {{- '}\n</tool_call>' }}
+            {%- endfor %}
+        {%- endif %}
+
+        {{- '<|im_end|>\n' }}
+
+    {%- elif role == 'tool' %}
+        {%- if loop.first or messages[loop.index0 - 1].role != 'tool' %}
+            {{- '<|im_start|>user' }}
+        {%- endif %}
+
+        {{- '\n<tool_response>\n' }}
+        {{- raw_content }}
+        {{- '\n</tool_response>' }}
+
+        {%- if loop.last or messages[loop.index0 + 1].role != 'tool' %}
+            {{- '<|im_end|>\n' }}
+        {%- endif %}
+    {%- endif %}
+{%- endfor %}
+
+{%- if add_generation_prompt %}
+    {{- '<|im_start|>assistant\n' }}
+    {%- if not enable_thinking %}
+        {{- '<think>\n\n</think>\n\n' }}
+    {%- endif %}
+{%- endif %}

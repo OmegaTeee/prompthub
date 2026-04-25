@@ -21,7 +21,8 @@
     "adamvoss.vscode-languagetool-en",
     "adamvoss.vscode-languagetool",
     "be5invis.vscode-icontheme-nomo-dark",
-    "leosj29.bash-sh-runner"
+    "ibm.output-colorizer",
+    "davidmwhynot.markdown-highlightjs"
   ],
   "unwantedRecommendations": [
     "ms-pyright.pyright",
