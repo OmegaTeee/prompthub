@@ -10,7 +10,7 @@ I/O operation timeouts (httpx, subprocess, etc.).
 
 import asyncio
 import logging
-from typing import Callable
+from collections.abc import Callable
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -85,7 +85,7 @@ class RequestTimeoutMiddleware(BaseHTTPMiddleware):
             )
             return response
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(
                 f"Request timeout: {request.method} {request.url.path} "
                 f"exceeded {timeout}s timeout"
