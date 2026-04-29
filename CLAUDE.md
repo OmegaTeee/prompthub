@@ -278,4 +278,22 @@ Steering documents guide AI agents with project-specific conventions and pattern
 
 Steps are independent and can run in parallel. See `AGENTS.md` § "Post-Implementation Documentation Queue" for full details, flow diagram, and agent prompts.
 
+### Documentation Pruning Policy
+
+When asked to "simplify", "clean up", "clarify", or otherwise reduce documentation, default to **deletion over annotation**. Git history is the archive — anything cut from active docs remains recoverable via `git log -p`.
+
+**Do:**
+- Delete stale prose, dead "see also" pointers, and redirect chains that no longer earn their cost.
+- Cut historical names from prose explanations of how the system works today.
+- Treat each active doc as representing *current state*; the past lives in commit history.
+
+**Do not:**
+- Add `FLAGGED:`, `HISTORICAL:`, or `DEPRECATED:` annotations to active docs. If it's stale, cut it.
+- Generate verification reports, audit logs, or migration plans *before* editing. Edit and commit; let the diff be the report.
+- Wrap historical model/tool names in parenthetical "now `X`" suffixes in prose. The current name alone is sufficient.
+
+**Carve-out — preserve historical names in *config and code*** where user environments might still reference them: env-var aliases (`AliasChoices("LLM_HOST", "OLLAMA_HOST")`), keyring keys, deprecated API endpoints, version-pinned dependencies. The compat surface is real; the prose nostalgia isn't.
+
+When in doubt: delete, commit, and let the user say "put it back" if they actually miss it. Default to courage, not caution.
+
 These documents provide focused guidance for AI agents working on this codebase and should be referenced during onboarding and complex tasks.
