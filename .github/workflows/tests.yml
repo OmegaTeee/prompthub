@@ -29,13 +29,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Lint with ruff
-      run: |
-        ruff check router/
-
-    - name: Type check with mypy
-      run: |
-        mypy router/ --no-error-summary || true
+    # Ruff is gated by the standalone Lint job in ci.yml; mypy is informational
+    # and runs locally. Keeping the test matrix focused on actually running tests.
 
     - name: Run unit tests
       run: |
