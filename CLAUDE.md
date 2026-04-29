@@ -280,7 +280,7 @@ Steps are independent and can run in parallel. See `AGENTS.md` § "Post-Implemen
 
 ### Documentation Pruning Policy
 
-When asked to "simplify", "clean up", "clarify", or otherwise reduce documentation, default to **deletion over annotation**. Git history is the archive — anything cut from active docs remains recoverable via `git log -p`.
+When asked to "simplify", "clean up", "clarify", or otherwise reduce documentation, default to **deletion over annotation**. Git history is the archive — anything cut from active docs remains recoverable via `git log --follow -p -- <path>` or `git show <rev>:<path>` (use `--follow` to track renames/moves like `git mv`).
 
 **Do:**
 - Delete stale prose, dead "see also" pointers, and redirect chains that no longer earn their cost.
