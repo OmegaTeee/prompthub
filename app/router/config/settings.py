@@ -4,7 +4,12 @@ Application settings using Pydantic Settings.
 Settings are loaded from environment variables and .env file.
 Secrets that should not live on disk can be stored in macOS Keychain
 via the ``keyring`` library (service="prompthub"). Settings resolved
-from keyring: openrouter_api_key.
+from keyring (env wins if both present):
+
+- ``openrouter_api_key`` <- keyring account ``openrouter_api_key``
+- ``llm_api_key``        <- keyring account ``lm_api_token``
+                            (LM Studio's official env-var name is
+                            LM_API_TOKEN; also accepted as an alias)
 """
 
 import logging
@@ -57,7 +62,7 @@ class Settings(BaseSettings):
     )
     llm_api_key: str | None = Field(
         default=None,
-        validation_alias=AliasChoices("LLM_API_KEY"),
+        validation_alias=AliasChoices("LLM_API_KEY", "LM_API_TOKEN"),
     )
 
     # Data directory — persistent storage for cache, activity log, memory db
@@ -136,6 +141,10 @@ class Settings(BaseSettings):
         # Resolve secrets from keyring when not set via env / .env
         if not self.openrouter_api_key:
             self.openrouter_api_key = _get_from_keyring("openrouter_api_key")
+        if not self.llm_api_key:
+            # Keychain account is "lm_api_token" (matches LM Studio's official
+            # env-var name LM_API_TOKEN); the Settings field stays generic.
+            self.llm_api_key = _get_from_keyring("lm_api_token") or None
 
         # Normalize llm_host: strip scheme and port if present
         # (handles LLM_HOST=http://localhost:1234 from system env)
