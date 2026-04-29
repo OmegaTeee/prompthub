@@ -16,9 +16,9 @@ orchestrator (thinking) = `qwen3-4b-thinking-2507` (canonicalized in
 prefer annotating historical model names with the modern mapping instead of
 removing them.
 
-**Goal:** Replace LLM with LM Studio as the local LLM server and rename all internal "LLM" references to backend-agnostic "LLM" naming.
+**Goal:** Replace Ollama with LM Studio as the local LLM server and rename all internal "Ollama" references to backend-agnostic "LLM" naming.
 
-**Architecture:** Consolidate from two code paths (native LLM API + OpenAI-compat) to one (OpenAI-compat only). Delete the native client and thinking-token shim. Rename classes, settings, routes, and templates from "LLM" to "LLM". Install LM Studio and verify all integration points work.
+**Architecture:** Consolidate from two code paths (native Ollama API + OpenAI-compat) to one (OpenAI-compat only). Delete the native client and thinking-token shim. Rename classes, settings, routes, and templates from "Ollama" to "LLM". Install LM Studio and verify all integration points work.
 
 **Tech Stack:** Python 3.11+, FastAPI, Pydantic v2, httpx, LM Studio (Homebrew cask), HTMX templates
 
@@ -951,11 +951,11 @@ git commit -m "feat: rename dashboard Ollama panel to LLM"
 - Modify: `app/router/memory/router.py` (3 docstring refs)
 - Modify: `app/router/enhancement/context_window.py:36` (1 comment)
 
-- [ ] **Step 1: Update all "LLM" → "LLM" in docstrings**
+- [ ] **Step 1: Update all "Ollama" → "LLM" in docstrings**
 
-In each file, find-and-replace "LLM" → "local LLM" or "LLM server" in docstrings and comments only. Do not change code logic.
+In each file, find-and-replace "Ollama" → "local LLM" or "LLM server" in docstrings and comments only. Do not change code logic.
 
-In `app/router/enhancement/service.py`, update the module docstring (lines 1-13) — it mentions "LLM" six times.
+In `app/router/enhancement/service.py`, update the module docstring (lines 1-13) — it mentions "Ollama" six times.
 
 In `context_window.py` line 36:
 
@@ -1042,7 +1042,7 @@ In `app/tests/test_enhancement.py`, update any `mock_ollama_client` references a
 
 - [ ] **Step 6: Update integration test route paths**
 
-In `test_enhancement_and_caching.py` and `test_client_integrations.py`, replace all `/llm/enhance` → `/llm/enhance`.
+In `test_enhancement_and_caching.py` and `test_client_integrations.py`, replace all `/ollama/enhance` → `/llm/enhance`.
 
 - [ ] **Step 7: Update pyproject.toml marker**
 
@@ -1091,11 +1091,11 @@ Replace all "LLM" references with appropriate alternatives:
 
 - [ ] **Step 2: Update steering docs**
 
-In each of `product.md`, `tech.md`, `structure.md`: replace "LLM" with "local LLM server" or "LM Studio" as appropriate to the context. Keep mentions in historical context (e.g., "previously used LLM").
+In each of `product.md`, `tech.md`, `structure.md`: replace "Ollama" with "local LLM server" or "LM Studio" as appropriate to the context. Keep mentions in historical context (e.g., "previously used Ollama").
 
 - [ ] **Step 3: Update openapi.yaml**
 
-Replace `/llm/enhance` → `/llm/enhance` and other renamed paths. Update descriptions.
+Replace `/ollama/enhance` → `/llm/enhance` and other renamed paths. Update descriptions.
 
 - [ ] **Step 4: Add CHANGELOG entry**
 

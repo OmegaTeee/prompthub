@@ -67,11 +67,12 @@ class ServerConfig(BaseModel):
     # Proxy behavior
     proxy_timeout: float | None = Field(
         default=None,
+        gt=0,
         description=(
             "Per-server proxy timeout in seconds for tools/call and other "
-            "bridge dispatches. Falls back to the proxy default when unset. "
-            "Raise this for servers whose tools block on external I/O "
-            "(e.g. agentic browsing, long research)."
+            "bridge dispatches. Must be > 0 when set; falls back to the "
+            "proxy default when unset. Raise this for servers whose tools "
+            "block on external I/O (e.g. agentic browsing, long research)."
         ),
     )
 

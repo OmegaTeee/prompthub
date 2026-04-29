@@ -17,6 +17,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from pydantic import ValidationError
 
 from router.routes.mcp_proxy import DEFAULT_BRIDGE_TIMEOUT, create_mcp_proxy_router
 from router.servers.models import (
@@ -124,3 +125,10 @@ async def test_proxy_timeout_field_accepts_float() -> None:
 
     assert resp.status_code == 200
     assert bridge_send.await_args.kwargs["timeout"] == 45.5
+
+
+@pytest.mark.parametrize("bad_value", [0, 0.0, -1, -30.5])
+def test_proxy_timeout_rejects_non_positive_values(bad_value: float) -> None:
+    """A misconfigured proxy_timeout fails fast at config-load, not at request time."""
+    with pytest.raises(ValidationError):
+        _make_config("misconfigured", proxy_timeout=bad_value)

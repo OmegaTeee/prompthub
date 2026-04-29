@@ -10,20 +10,20 @@
 
 ## Summary
 
-Replace LLM as PromptHub's local LLM server with LM Studio. Rename all internal "LLM" references to backend-agnostic "LLM" naming. Delete the native LLM API code path and the thinking-token shim, leaving one clean OpenAI-compatible client that works with any backend.
+Replace Ollama as PromptHub's local LLM server with LM Studio. Rename all internal "Ollama" references to backend-agnostic "LLM" naming. Delete the native Ollama API code path and the thinking-token shim, leaving one clean OpenAI-compatible client that works with any backend.
 
 LM Studio becomes the model-serving layer. PromptHub keeps its unique value: MCP orchestration, enhancement pipeline, circuit breakers, audit logging, and the HTMX dashboard.
 
 ## Motivation
 
-1. **LLM's `/v1/` endpoint ignores `think: false`** — hybrid-thinking models (qwen3.5, deepseek-r1) emit reasoning tokens that break non-LLM clients (Raycast, Cursor). We wrote ~150 lines of workaround code routing through the native `/api/chat` endpoint.
+1. **Ollama's `/v1/` endpoint ignores `think: false`** — hybrid-thinking models (qwen3.5, deepseek-r1) emit reasoning tokens that break non-Ollama clients (Raycast, Cursor). We wrote ~150 lines of workaround code routing through the native `/api/chat` endpoint.
 2. **LM Studio handles thinking models correctly** at the server level, separating reasoning tokens into proper fields. This eliminates the workaround entirely.
-3. **LM Studio adds JIT model loading** with idle TTL auto-eviction — better VRAM management than LLM's manual `llm run`/`llm stop`.
+3. **LM Studio adds JIT model loading** with idle TTL auto-eviction — better VRAM management than Ollama's manual `ollama run`/`ollama stop`.
 4. **Two code paths is confusing** — the codebase has `OLLAMA_API_MODE=native` and `OLLAMA_API_MODE=openai` switching between two clients. Only the OpenAI-compat path works with LM Studio (and every other server). Removing the native path simplifies the codebase.
 
 ## Approach: Clean Rename (Option B)
 
-Abstract the internal layer from "LLM" to "LLM". Delete native-only code. Keep one OpenAI-compatible client.
+Abstract the internal layer from "Ollama" to "LLM". Delete native-only code. Keep one OpenAI-compatible client.
 
 ### What this preserves
 
@@ -77,11 +77,11 @@ Abstract the internal layer from "LLM" to "LLM". Delete native-only code. Keep o
 | File | Changes |
 |---|---|
 | `app/router/config/settings.py` | `ollama_host` to `llm_host`, `ollama_port` to `llm_port`, `ollama_model` to `llm_model`, `ollama_timeout` to `llm_timeout`. Remove `ollama_api_mode`. Keep `OLLAMA_*` as env aliases via `AliasChoices`. Default port: `1234`. Update `model_post_init` host normalization to use new field names. |
-| `app/router/routes/enhancement.py` | Route paths: `/llm/enhance` to `/llm/enhance`, `/llm/stats` to `/llm/stats`, `/llm/orchestrate` to `/llm/orchestrate`, `/llm/reset` to `/llm/reset`. |
-| `app/router/routes/health.py` | Health response key: `"llm"` to `"llm"`. |
-| `app/router/dashboard/router.py` | Panel endpoint: `/dashboard/llm-partial` to `/dashboard/llm-partial`. |
+| `app/router/routes/enhancement.py` | Route paths: `/ollama/enhance` to `/llm/enhance`, `/ollama/stats` to `/llm/stats`, `/ollama/orchestrate` to `/llm/orchestrate`, `/ollama/reset` to `/llm/reset`. |
+| `app/router/routes/health.py` | Health response key: `"ollama"` to `"llm"`. |
+| `app/router/dashboard/router.py` | Panel endpoint: `/dashboard/ollama-partial` to `/dashboard/llm-partial`. |
 | `app/templates/dashboard.html` | HTMX polling URL and section title updated. |
-| `app/templates/partials/stats.html` | "LLM Status" to "LLM Status". |
+| `app/templates/partials/stats.html` | "Ollama Status" to "LLM Status". |
 | `app/router/middleware/timeout.py` | Timeout path: `"/llm/enhance"` to `"/llm/enhance"`. |
 | `app/.env.example` | Document both old (`OLLAMA_*`) and new (`LLM_*`) variable names. |
 | `app/router/enhancement/context_window.py` | Update source comment from `/api/show` to `/v1/models`. |
@@ -155,17 +155,17 @@ Note: `validation_alias` overrides default env var resolution, so both names mus
 
 ### Health Check
 
-Today: `GET /api/tags` (LLM proprietary).
-After: `GET /v1/models` (OpenAI standard, works with both LM Studio and LLM).
+Today: `GET /api/tags` (Ollama proprietary).
+After: `GET /v1/models` (OpenAI standard, works with both LM Studio and Ollama).
 
 ## Routes & API
 
 | Today | After |
 |---|---|
-| `POST /llm/enhance` | `POST /llm/enhance` |
-| `GET /llm/stats` | `GET /llm/stats` |
-| `POST /llm/orchestrate` | `POST /llm/orchestrate` |
-| `POST /llm/reset` | `POST /llm/reset` |
+| `POST /ollama/enhance` | `POST /llm/enhance` |
+| `GET /ollama/stats` | `GET /llm/stats` |
+| `POST /ollama/orchestrate` | `POST /llm/orchestrate` |
+| `POST /ollama/reset` | `POST /llm/reset` |
 
 All other endpoints unchanged. No external consumers of the `/llm/*` routes (dashboard-internal only).
 
