@@ -27,8 +27,10 @@ jobs:
           pip install ruff
 
       - name: Run Ruff linter
-        run: ruff check router/ tests/ --output-format=github
-        continue-on-error: true
+        # Scoped to router/ to match what tests.yml's matrix was gating before.
+        # tests/ has its own lint debt (11x F821 undefined names — actual bugs)
+        # that deserves a focused cleanup PR rather than being bundled here.
+        run: ruff check router/ --output-format=github
 
   test:
     name: Test

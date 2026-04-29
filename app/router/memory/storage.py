@@ -340,11 +340,10 @@ class SessionStorage:
 
             if tags:
                 # Filter by tags (JSON array contains)
-                placeholders = ",".join(["?" for _ in tags])
                 query = f"""
                     SELECT * FROM session_facts
                     WHERE session_id = ? AND (
-                        {" OR ".join([f"json_extract(tags, '$[*]') LIKE ?" for _ in tags])}
+                        {" OR ".join(["json_extract(tags, '$[*]') LIKE ?" for _ in tags])}
                     )
                     ORDER BY relevance_score DESC, created_at DESC
                     LIMIT ?

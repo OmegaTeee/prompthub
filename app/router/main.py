@@ -547,13 +547,15 @@ memory_router = create_memory_router(
 )
 app.include_router(memory_router)
 
-# Extracted route modules
-from router.routes.audit import create_audit_router
-from router.routes.enhancement import create_enhancement_router
-from router.routes.health import create_health_router
-from router.routes.mcp_proxy import create_mcp_proxy_router
-from router.routes.pipelines import create_pipelines_router
-from router.routes.servers import create_servers_router
+# Extracted route modules — imports are intentionally mid-file so each
+# router module sits next to its app.include_router(...) registration.
+# Restructuring would scatter the assembly logic across the file.
+from router.routes.audit import create_audit_router  # noqa: E402
+from router.routes.enhancement import create_enhancement_router  # noqa: E402
+from router.routes.health import create_health_router  # noqa: E402
+from router.routes.mcp_proxy import create_mcp_proxy_router  # noqa: E402
+from router.routes.pipelines import create_pipelines_router  # noqa: E402
+from router.routes.servers import create_servers_router  # noqa: E402
 
 app.include_router(create_health_router(
     get_supervisor=lambda: supervisor,
@@ -589,8 +591,9 @@ app.include_router(create_pipelines_router(
     get_documentation_pipeline=lambda: documentation_pipeline,
 ))
 
-# Tool registry router (MCP tool definition cache)
-from router.tool_registry import create_tool_registry_router
+# Tool registry router (MCP tool definition cache) — same colocation
+# pattern as the route modules above; suppress E402 deliberately.
+from router.tool_registry import create_tool_registry_router  # noqa: E402
 
 app.include_router(create_tool_registry_router(
     get_registry=lambda: tool_registry,
