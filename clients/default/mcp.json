@@ -5,6 +5,7 @@
     "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
   ],
   "env": {
+    "CONTENT_TYPE": "application/json",
     "AUTHORIZATION": "Bearer sk-prompthub-default-001",
     "CLIENT_NAME": "default",
     "PROMPTHUB_URL": "http://127.0.0.1:9090",

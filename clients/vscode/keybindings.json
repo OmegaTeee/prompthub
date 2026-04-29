@@ -1,4 +1,4 @@
-// Place your key bindings in this file to override the defaults
+w// Place your key bindings in this file to override the defaults
 [
     {
         "key": "ctrl+shift+up",
@@ -33,11 +33,6 @@
     {
         "key": "ctrl+alt+i",
         "command": "extension.colorHelper.pick",
-        "when": "editorTextFocus"
-    },
-    {
-        "key": "alt+c p",
-        "command": "-extension.colorHelper.pick",
         "when": "editorTextFocus"
     }
 ]

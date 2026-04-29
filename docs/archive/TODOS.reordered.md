@@ -82,7 +82,7 @@ preserve auditability.
 - [x] ~~Remove `@brave/brave-search-mcp-server`~~ — Uninstalled. PR #9.
 - [x] ~~Remove obsidian-wrapper scripts~~ — Deleted, superseded by keyring env blocks in `mcp-servers.json`. PR #9.
 - [x] ~~Add mcp-obsidian as on-demand server~~ — Registered with `auto_start: false`, direct binary + keyring env. PR #9.
-- [x] ~~Rewrite `docs/architecture/README.md`~~ — Replaced the stale LLM-era architecture overview with a glossary-aligned reference centered on the current router/bridge/proxy split, LM Studio runtime, current model roles, and current API surfaces.
+- [x] ~~Rewrite `docs/architecture/README.md`~~ — Replaced the stale Ollama-era architecture overview with a glossary-aligned reference centered on the current router/bridge/proxy split, LM Studio runtime, current model roles, and current API surfaces.
 - [x] ~~Review dashboard plan docs in `docs/notes/plans/`~~ — Moved the two dashboard idea docs from `docs/notes/dashboard/` into `docs/notes/plans/` and updated them to current LM Studio terminology, model names, and MCP server counts.
 - [x] ~~AGENTS.md merged and backup deleted~~ — Merged doc queue, steering docs, commit hygiene, escalation rules from backup; fixed stale client list and removed dead `.firecrawl/` reference.
 - [x] ~~llm.txt consolidated~~ — Deleted stale `docs/python-prompthub-guide.txt`; rewrote root `llm.txt` as a passive project snapshot for Perplexity/Desktop Commander.

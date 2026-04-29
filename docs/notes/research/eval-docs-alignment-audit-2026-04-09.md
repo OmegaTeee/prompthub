@@ -33,7 +33,7 @@ PromptHub's active docs, agent docs, client docs, and historical material.
 ## Audit outcome
 
 Active documentation is now substantially cleaner. Remaining mentions of
-`Ollama` in active surfaces are intentional:
+`LLM` in active surfaces are intentional:
 
 - compatibility guidance in `docs/guides/10-local-llm-recommendations.md`
 - vendor/reference wording in `clients/_cherry-studio/cherry-studio-llm.txt`

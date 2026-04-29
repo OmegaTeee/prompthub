@@ -1,3 +1,17 @@
+# Scripts for npm/pnpm setup and hygiene
+
+Scripts:
+- `setup-node-env.sh` — set npm global prefix to `~/.local/share/npm`, add PATH to shell profile, enable corepack, install pnpm.
+- `install-pnpm.sh` — idempotent installer for pnpm (uses corepack if available).
+- `npm-hygiene.sh` — verify/clean cache, list cache sizes, run audit.
+
+Usage examples:
+
+```sh
+./scripts/setup-node-env.sh
+./scripts/npm-hygiene.sh verify
+./scripts/npm-hygiene.sh clean
+```
 # PromptHub Scripts
 
 Utility scripts for PromptHub development and operations.

@@ -525,7 +525,7 @@ def test_enhancement_middleware_header_variations(header_value, monkeypatch):
 **Latency Impact:**
 
 - Every MCP request pays cost of body parsing when `auto_enhance_mcp` is enabled
-- Enhancement service adds network/compute latency to Ollama
+- Enhancement service adds network/compute latency to LLM
 - Early-exit checks minimize overhead for non-enhanced requests
 
 **Optimization Opportunities:**
@@ -559,7 +559,7 @@ async def dispatch(self, request: Request, call_next):
 
 ##### 2. Verify Caching Strategy
 
-The enhancement service should implement caching to avoid redundant Ollama calls. Verify:
+The enhancement service should implement caching to avoid redundant LLM calls. Verify:
 
 - Cache key includes prompt + client_name
 - TTL is appropriate for use case
@@ -567,7 +567,7 @@ The enhancement service should implement caching to avoid redundant Ollama calls
 
 ##### 3. Consider Circuit Breaker
 
-If Ollama becomes unavailable or slow:
+If LLM becomes unavailable or slow:
 
 ```python
 # In enhancement_service
@@ -857,7 +857,7 @@ enhancement_service = get_enhancement_service()
   - Effort: 30 minutes
 
 - [ ] **Consider circuit breaker integration**
-  - Protect against Ollama failures
+  - Protect against LLM failures
   - Use existing resilience infrastructure
   - File: `router/enhancement/service.py`
   - Effort: 2 hours

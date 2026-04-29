@@ -26,14 +26,14 @@
       "enhance": false
     },
     "sk-prompthub-openwebui-001": {
-      "client_name": "open-webui",
+      "client_name": "openwebui",
       "description": "Open WebUI",
       "enhance": false
     },
     "sk-prompthub-perplexity-001": {
       "client_name": "perplexity",
       "description": "Perplexity Desktop",
-      "enhance": false
+      "enhance": true
     },
     "sk-prompthub-raycast-001": {
       "client_name": "raycast",
@@ -50,15 +50,15 @@
       "description": "JetBrains IDE",
       "enhance": false
     },
-    "sk-prompthub-cherry-001": {
-      "client_name": "cherry",
+    "sk-prompthub-cherry-studio-001": {
+      "client_name": "cherry-studio",
       "description": "Cherry Studio",
       "enhance": false
     },
     "sk-prompthub-lm-studio-001": {
       "client_name": "lm-studio",
       "description": "LM Studio",
-      "enhance": false
+      "enhance": true
     },
     "sk-prompthub-opencode-001": {
       "client_name": "opencode",

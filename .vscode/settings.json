@@ -44,6 +44,7 @@
   "terminal.integrated.cwd": "${workspaceFolder}/app",
   "terminal.integrated.inheritEnv": true,
   "terminal.integrated.enablePersistentSessions": true,
+  "terminal.integrated.commands": ["claude", "--continue", "--fork-session"],
   "terminal.integrated.env.osx": {
     "PATH": "${workspaceFolder}/app/.venv/bin:${env:PATH}",
     "USERHOME": "/Users/visualval"
@@ -74,5 +75,20 @@
     "${workspaceFolder}/app/.venv/bin/python": true
   },
   "explorer.excludeGitIgnore": false,
-  "explorer.autoReveal": false
+  "explorer.autoReveal": false,
+  "vscode-openai.azureApiVersion": "2024-06-01",
+  "vscode-openai.azureDeployment": "setup-required",
+  "vscode-openai.baseUrl": "http://127.0.0.1:9090/v1",
+  "vscode-openai.conversation-configuration.api-headers": [
+    {
+      "Authorization": "Bearer sk-prompthub-vscode-001",
+      "Content-Type": "application/json"
+    }
+  ],
+  "vscode-openai.apiKey": "sk-prompthub-vscode-001",
+  "vscode-openai.defaultModel": "qwen3-1.7b",
+  "vscode-openai.scmModel": "qwen3-1.7b",
+  "markdown.styles": [
+    ".vscode/markdown.css"
+  ]
 }

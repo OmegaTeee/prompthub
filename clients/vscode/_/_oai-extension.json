@@ -1,0 +1,67 @@
+{
+  "version": "0.3.1",
+  "exportDate": "2026-02-16T12:54:57.564Z",
+  "baseUrl": "http://localhost:9090/v1",
+  "apiKey": "sk-prompthub-vscode-001",
+  "providerKeys": {
+    "prompthub": "sk-prompthub-vscode-001"
+  },
+  "models": [
+    {
+      "id": "__provider__prompthub",
+      "owned_by": "prompthub",
+      "apiMode": "openai",
+      "baseUrl": "http://localhost:9090/v1"
+    },
+    {
+      "id": "qwen3-coder:30b",
+      "owned_by": "prompthub",
+      "displayName": "qwen3-coder:30b-oai",
+      "configId": "prompthub",
+      "baseUrl": "http://localhost:9090/v1",
+      "family": "qwen3moe",
+      "context_length": 16384,
+      "max_tokens": 768,
+      "apiMode": "openai",
+      "headers": {
+        "Authorization": "Bearer sk-prompthub-vscode-001"
+      },
+      "extra": {
+        "temperature": 0.5,
+        "top_p": 0.9,
+        "top_k": 20,
+        "min_p": 0.03
+      }
+    },
+    {
+      "id": "__provider__ollama",
+      "owned_by": "ollama",
+      "apiMode": "ollama",
+      "baseUrl": "http://localhost:11434"
+    },
+    {
+      "id": "qwen3:14b",
+      "owned_by": "ollama",
+      "displayName": "qwen3:14b",
+      "configId": "native",
+      "baseUrl": "http://localhost:11434",
+      "family": "qwen3",
+      "context_length": 16384,
+      "max_tokens": 1024,
+      "apiMode": "ollama",
+      "temperature": 0.7,
+      "top_p": 0.8,
+      "top_k": 20,
+      "min_p": 0
+    }
+  ],
+  "delay": 0,
+  "retry": {
+    "enabled": true,
+    "max_attempts": 3,
+    "interval_ms": 1000
+  },
+  "commitLanguage": "English",
+  "commitModel": "qwen3:14b",
+  "readFileLines": 0
+}

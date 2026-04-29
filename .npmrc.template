@@ -1,0 +1,11 @@
+# Example project .npmrc
+# Use in project root as .npmrc to enforce project policies
+save-exact=true
+engine-strict=true
+strict-ssl=true
+
+# Choose registry for this project (uncomment to override)
+#registry=https://registry.npmjs.org/
+
+# Scoped registry example:
+#@myorg:registry=https://npm.myorg.example/

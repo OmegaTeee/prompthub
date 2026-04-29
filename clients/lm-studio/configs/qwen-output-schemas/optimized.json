@@ -1,0 +1,121 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "perplexity-comet_research",
+      "description": "Do multi-source web research in Comet and return concise findings.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 3
+          },
+          "multi_source": {
+            "type": "boolean"
+          },
+          "output_format": {
+            "type": "string",
+            "enum": ["bullets", "table", "summary"]
+          }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "perplexity-comet_compare_sources",
+      "description": "Research a topic and compare entities in a structured way.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "minLength": 3
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 2
+          },
+          "output_format": {
+            "type": "string",
+            "enum": ["table", "bullets"]
+          }
+        },
+        "required": ["topic", "entities"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "desktop-commander_read_file",
+      "description": "Read a text file.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "desktop-commander_write_file",
+      "description": "Write text to a file.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": ["path", "content"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "desktop-commander_run_command",
+      "description": "Run a shell command.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "working_directory": {
+            "type": "string"
+          },
+          "timeout_ms": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": ["command"],
+        "additionalProperties": false
+      }
+    }
+  }
+]

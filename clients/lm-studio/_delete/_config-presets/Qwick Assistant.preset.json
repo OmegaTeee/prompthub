@@ -1,0 +1,47 @@
+{
+  "identifier": "@local:qwick-assistant",
+  "name": "Qwick Assistant",
+  "changed": true,
+  "operation": {
+    "fields": [
+      {
+        "key": "llm.prediction.systemPrompt",
+        "value": "chat.txt\n---\n\nYou are a helpful, concise assistant, keep responses short."
+      },
+      {
+        "key": "llm.prediction.temperature",
+        "value": 0.4
+      },
+      {
+        "key": "llm.prediction.topPSampling",
+        "value": {
+          "checked": true,
+          "value": 0.9
+        }
+      },
+      {
+        "key": "llm.prediction.topKSampling",
+        "value": 40
+      },
+      {
+        "key": "llm.prediction.repeatPenalty",
+        "value": {
+          "checked": true,
+          "value": 1.05
+        }
+      },
+      {
+        "key": "llm.prediction.speculativeDecoding.draftModel",
+        "value": "lmstudio-community/Qwen3-0.6B-GGUF/Qwen3-0.6B-Q8_0.gguf"
+      }
+    ]
+  },
+  "load": {
+    "fields": [
+      {
+        "key": "llm.load.contextLength",
+        "value": 32768
+      }
+    ]
+  }
+}

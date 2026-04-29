@@ -1,6 +1,8 @@
 # Default
 
-Fallback bridge config for unrecognized clients. Also serves as the **template directory** — copy these scripts when adding a new client.
+Fallback bridge config for unrecognized clients. Also serves as the
+**starter boilerplate directory** for new client setup work, including the
+copy-paste workflow used before running the client-setup skill on a new branch.
 
 ## Files in this directory
 
@@ -14,7 +16,7 @@ Fallback bridge config for unrecognized clients. Also serves as the **template d
 # 1. Create the client directory
 mkdir -p clients/<name>
 
-# 2. Copy the templates
+# 2. Copy the default boilerplate
 cp clients/default/setup.sh clients/<name>/setup.sh
 cp clients/default/uninstall.sh clients/<name>/uninstall.sh
 
@@ -35,7 +37,12 @@ cp clients/default/uninstall.sh clients/<name>/uninstall.sh
 | Strategy | When to use | Example |
 |---|---|---|
 | **symlink** | App reads a standalone JSON config file | LM Studio, Claude Desktop |
-| **manual** | App uses shared settings (JSONC, mixed config) | Zed, Cherry Studio |
+| **manual** | App uses shared settings (JSONC, mixed config) | Zed, `cherry-studio` |
 | **merge** | App config has both MCP and non-MCP sections | _(future)_ |
 
-For `manual` strategy clients, `setup.sh` prints paste instructions instead of creating symlinks. See `clients/zed/setup.sh` for an example.
+For `manual` strategy clients, `setup.sh` prints paste instructions instead of
+creating symlinks. See `clients/zed/setup.sh` for an example.
+
+Treat this folder as the repo's default starter template. Copy it into the
+client-config iteration branch first, then customize it before invoking any
+client-specific setup workflow.

@@ -13,8 +13,8 @@
 ## Summary
 
 Overall the codebase demonstrates good async patterns with several strengths:
-- ✅ Consistent use of `httpx.AsyncClient` in enhancement/ollama.py
-- ✅ Proper timeouts on critical paths (stdio bridge, ollama, process shutdown)
+- ✅ Consistent use of `httpx.AsyncClient` in enhancement/llm.py
+- ✅ Proper timeouts on critical paths (stdio bridge, llm, process shutdown)
 - ✅ No blocking HTTP libraries (`requests`, `urllib`)
 - ✅ Proper async/await usage in subprocess management
 
@@ -32,11 +32,11 @@ Overall the codebase demonstrates good async patterns with several strengths:
 **Risk**: Callers may hang indefinitely if bridge doesn't respond.
 **Fix**: Make timeout configurable and expose in API response metadata.
 
-### 🔴 C2: No circuit breaker on ollama calls in enhancement service
-**Location**: `router/enhancement/service.py` + ollama.py
-**Issue**: While httpx has timeouts, there's no circuit breaker wrapping Ollama calls.
-**Risk**: If Ollama becomes slow or unresponsive, requests will accumulate and timeout individually rather than failing fast.
-**Fix**: Wrap Ollama client in circuit breaker, similar to MCP servers.
+### 🔴 C2: No circuit breaker on llm calls in enhancement service
+**Location**: `router/enhancement/service.py` + llm.py
+**Issue**: While httpx has timeouts, there's no circuit breaker wrapping LLM calls.
+**Risk**: If LLM becomes slow or unresponsive, requests will accumulate and timeout individually rather than failing fast.
+**Fix**: Wrap LLM client in circuit breaker, similar to MCP servers.
 
 ---
 
@@ -66,7 +66,7 @@ async with aiofiles.open(path) as f:
 
 ### 🟠 M3: No validation that circuit breaker is called before operations
 **Locations**: Enhancement service, dashboard operations
-**Issue**: Only MCP proxy explicitly checks circuit breaker; enhancement service calls Ollama without CB.
+**Issue**: Only MCP proxy explicitly checks circuit breaker; enhancement service calls LLM without CB.
 **Risk**: Inconsistent resilience patterns across the codebase.
 **Fix**: Add circuit breaker middleware or decorator pattern for consistency.
 
@@ -93,7 +93,7 @@ async with aiofiles.open(path) as f:
 **Fix**: Make all dashboard helpers consistently async for clarity.
 
 ### 🟡 m4: No connection pooling in httpx client
-**Location**: `router/enhancement/ollama.py:100`
+**Location**: `router/enhancement/llm.py:100`
 **Issue**: Using default connection limits; under high load might need tuning.
 **Impact**: Minor - unlikely to be an issue at current scale.
 **Fix**: Add explicit limits if needed: `httpx.Limits(max_keepalive_connections=20, max_connections=100)`
@@ -147,14 +147,14 @@ async with aiofiles.open(path) as f:
 
 ### router/enhancement/
 
-#### ollama.py ✅
+#### llm.py ✅
 - Excellent httpx usage with explicit timeout: `httpx.Timeout(self.config.timeout)`
 - Proper connection reuse pattern
 - Exception handling for `ConnectError`, `TimeoutException`, `RequestError`
 - No blocking HTTP libraries
 
 #### service.py ⚠️
-- **Issue**: No circuit breaker wrapping Ollama calls (C2)
+- **Issue**: No circuit breaker wrapping LLM calls (C2)
 - **Issue**: Blocking file I/O for loading rules (M1)
 - Cache operations are async-friendly (in-memory dict)
 - Otherwise good async patterns
@@ -165,7 +165,7 @@ async with aiofiles.open(path) as f:
 
 ### Immediate (Critical)
 
-1. **Add circuit breaker for Ollama**:
+1. **Add circuit breaker for LLM**:
    ```python
    # In enhancement/service.py
    self._circuit_breaker = CircuitBreaker("ollama", failure_threshold=3, recovery_timeout=30)
@@ -231,8 +231,8 @@ async with aiofiles.open(path) as f:
 |-------------|--------|-------|
 | Use httpx (not requests) | ✅ Pass | All HTTP via httpx.AsyncClient |
 | Async/await for I/O | ⚠️ Partial | Needs aiofiles for file I/O |
-| Timeouts on external calls | ⚠️ Partial | Ollama yes, file I/O no |
-| Circuit breaker coverage | ⚠️ Partial | MCP yes, Ollama no |
+| Timeouts on external calls | ⚠️ Partial | LLM yes, file I/O no |
+| Circuit breaker coverage | ⚠️ Partial | MCP yes, LLM no |
 | No blocking calls in async | ⚠️ Partial | File I/O blocks event loop |
 | Type hints | ✅ Pass | Comprehensive throughout |
 
@@ -241,7 +241,7 @@ async with aiofiles.open(path) as f:
 ## Testing Recommendations
 
 1. **Load test file I/O paths** to measure block duration
-2. **Simulate Ollama failure** to verify circuit breaker needs
+2. **Simulate LLM failure** to verify circuit breaker needs
 3. **Test timeout behavior** under network latency
 4. **Verify process cleanup** on supervisor shutdown
 5. **Test concurrent MCP requests** to ensure bridge thread-safety
@@ -251,7 +251,7 @@ async with aiofiles.open(path) as f:
 ## Next Steps
 
 1. Create GitHub issues for critical/major findings
-2. Prioritize circuit breaker for Ollama (C2)
+2. Prioritize circuit breaker for LLM (C2)
 3. Schedule aiofiles migration sprint (M1)
 4. Add integration tests for timeout/CB scenarios
 5. Document timeout values in API specs (OpenAPI)

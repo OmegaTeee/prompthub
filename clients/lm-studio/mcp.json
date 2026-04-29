@@ -9,13 +9,7 @@
         "AUTHORIZATION": "Bearer sk-prompthub-lm-studio-001",
         "CLIENT_NAME": "lm-studio",
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
-        "SERVERS": "memory,context7,sequential-thinking,desktop-commander,perplexity-comet,obsidian-mcp-tools"
-      }
-    },
-    "hf-mcp-server": {
-      "url": "https://huggingface.co/mcp",
-      "headers": {
-        "Authorization": "Bearer YOUR_HF_TOKEN"
+        "SERVERS": "duckduckgo,sequential-thinking,desktop-commander,perplexity-comet"
       }
     },
     "fetch": {

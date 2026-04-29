@@ -50,18 +50,18 @@ Completed all outstanding test TODOs (6 tests) and reorganized project structure
   - VS Code → Qwen3-Coder
   - Raycast → DeepSeek-R1
 - Verifies model selection in response metadata
-- Handles Ollama unavailability gracefully
+- Handles LLM unavailability gracefully
 
-**Pattern:** Graceful degradation - test passes whether Ollama is running or not
+**Pattern:** Graceful degradation - test passes whether LLM is running or not
 
 ---
 
-### 4. Ollama Fallback Test ([test_enhancement_and_caching.py:98](../../app/tests/integration/test_enhancement_and_caching.py#L98))
+### 4. LLM Fallback Test ([test_enhancement_and_caching.py:98](../../app/tests/integration/test_enhancement_and_caching.py#L98))
 
 **Test:** `test_enhancement_fallback_when_ollama_down`
 
 **Coverage:**
-- Tests enhancement endpoint when Ollama is unavailable
+- Tests enhancement endpoint when LLM is unavailable
 - Accepts two valid behaviors:
   - 503 Service Unavailable (explicit failure)
   - 200 with original prompt (graceful fallback)

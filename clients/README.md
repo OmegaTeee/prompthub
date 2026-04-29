@@ -8,6 +8,10 @@ This folder is still evolving. For Claude agents, use
 activating or repairing a client. Other agents should follow the same pattern
 manually from this README plus `clients/default/`.
 
+For local-model tool-routing guidance (which PromptHub tool handles which
+kind of input), see [TOOL_USE.md](TOOL_USE.md) — the "Rules block" at the
+bottom is copy-paste ready for any client's system prompt.
+
 ## Structure
 
 ```
@@ -38,7 +42,7 @@ Backward-compat symlinks: `claude-code` → `claude/`, `claude-desktop` → `cla
 
 | Directory | Transport | Notes |
 |-----------|-----------|-------|
-| `_cherry-studio/` | bridge + http | Electron dialog, no standalone config file |
+| `_cherry-studio/` | bridge + http | `cherry-studio` placeholder docs; Electron dialog, no standalone config file |
 | `_jetbrains/` | bridge | No enhancement rule yet |
 | `_open-webui/` | http (OpenAI proxy) | No MCP bridge — connects via `/v1/` |
 | `_zed/` | bridge | Manual paste (JSONC shared settings) |

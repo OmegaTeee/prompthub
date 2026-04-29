@@ -1,0 +1,116 @@
+[
+  {
+    // Comet for general research. Keep query natural-language and explicit.
+    "type": "function",
+    "function": {
+      "name": "perplexity-comet_research",
+      "description": "Use Comet for multi-source web research and concise synthesis.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "minLength": 3 },
+          "multi_source": { "type": "boolean" },
+          "output_format": {
+            "type": "string",
+            "enum": ["bullets", "table", "summary"]
+          },
+          "context_aware": { "type": "boolean" }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    // Best when the user asks for a structured comparison table.
+    "type": "function",
+    "function": {
+      "name": "perplexity-comet_compare_sources",
+      "description": "Compare tools, vendors, papers, or approaches using structured output.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "topic": { "type": "string", "minLength": 3 },
+          "entities": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "minItems": 2
+          },
+          "output_format": {
+            "type": "string",
+            "enum": ["table", "bullets"]
+          }
+        },
+        "required": ["topic", "entities"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    // Smallest useful desktop-commander file inspection tool.
+    "type": "function",
+    "function": {
+      "name": "desktop-commander_read_file",
+      "description": "Read a text file from disk.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "minLength": 1 }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    // Only needed when the model is allowed to patch or create files.
+    "type": "function",
+    "function": {
+      "name": "desktop-commander_write_file",
+      "description": "Write or overwrite a text file.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "content": { "type": "string" }
+        },
+        "required": ["path", "content"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    // Keep command execution available, but schema small and literal.
+    "type": "function",
+    "function": {
+      "name": "desktop-commander_run_command",
+      "description": "Run a shell command in a working directory.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "command": { "type": "string", "minLength": 1 },
+          "working_directory": { "type": "string" },
+          "timeout_ms": { "type": "integer", "minimum": 1 }
+        },
+        "required": ["command"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    // Nice optional future addition if you later want safe directory inspection.
+    "type": "function",
+    "function": {
+      "name": "desktop-commander_list_directory",
+      "description": "List files in a directory.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "minLength": 1 }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+      }
+    }
+  }
+]

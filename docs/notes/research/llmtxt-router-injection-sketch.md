@@ -59,7 +59,7 @@ Suggested flow:
    - project guidance from `llm.txt`
    - language/component guide(s)
    - user request
-6. Send to the selected model through existing Ollama/OpenAI-compatible flow.
+6. Send to the selected model through existing LLM/OpenAI-compatible flow.
 7. Preserve all existing privacy gating and fallback behavior.
 
 ---
@@ -138,7 +138,7 @@ class RepoGuidanceService:
         lowered = task_text.lower()
         python_signals = {
             "python", "fastapi", "async", "mcp", "bridge", "router",
-            "openai api", "ollama", "pydantic", "httpx", "circuit breaker",
+            "openai api", "llm", "pydantic", "httpx", "circuit breaker",
         }
 
         if tags.intersection({"python", "repo-code", "mcp"}) or any(s in lowered for s in python_signals):
@@ -189,7 +189,7 @@ async def prepare_model_input(user_prompt: str, task_tags: set[str]) -> dict:
     }
 ```
 
-Then feed `system_prompt` into the existing Ollama/OpenAI-compatible request path.
+Then feed `system_prompt` into the existing LLM/OpenAI-compatible request path.
 
 ---
 

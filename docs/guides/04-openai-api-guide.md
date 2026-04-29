@@ -29,15 +29,10 @@ Your API keys live in `~/prompthub/app/configs/api-keys.json`. Open that file an
 ```json
 {
   "keys": {
-    "sk-prompthub-code-001": {
+    "sk-prompthub-vscode-001": {
       "client_name": "vscode",
       "enhance": false,
-      "description": "VS Code (pass-through)"
-    },
-    "sk-prompthub-copilot-001": {
-      "client_name": "vscode",
-      "enhance": false,
-      "description": "OAI Copilot"
+      "description": "VSCode IDE"
     }
   }
 }
@@ -61,7 +56,7 @@ Open Terminal and run this command to confirm things are working:
 
 ```bash
 curl -s http://localhost:9090/v1/models \
-  -H "Authorization: Bearer sk-prompthub-code-001"
+  -H "Authorization: Bearer sk-prompthub-vscode-001"
 ```
 
 You should see a list of models available in LM Studio. If you get an error, see the Troubleshooting section at the end of this guide.
@@ -79,7 +74,7 @@ To see which models you have, use either of these commands:
 ```bash
 # Via the PromptHub API
 curl http://localhost:9090/v1/models \
-  -H "Authorization: Bearer sk-prompthub-code-001"
+  -H "Authorization: Bearer sk-prompthub-vscode-001"
 
 # Or directly through LM Studio
 lms ls
@@ -103,7 +98,7 @@ This is the most common call. It sends a message and gets a response, like texti
 
 ```bash
 curl -s http://localhost:9090/v1/chat/completions \
-  -H "Authorization: Bearer sk-prompthub-code-001" \
+  -H "Authorization: Bearer sk-prompthub-vscode-001" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3-4b-instruct-2507",
@@ -121,7 +116,7 @@ If enhancement is turned on for your API key, it happens automatically:
 
 ```bash
 curl -s http://localhost:9090/v1/chat/completions \
-  -H "Authorization: Bearer sk-prompthub-code-001" \
+  -H "Authorization: Bearer sk-prompthub-vscode-001" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3-4b-instruct-2507",
@@ -143,7 +138,11 @@ curl -s http://localhost:9090/v1/chat/completions \
 ### VS Code
 
 1. Install an OpenAI extension if you do not already have one.
-2. Edit `settings.json` and add this block:
+2. Put the settings in one of these VS Code config files:
+   `.vscode/settings.json` for project-specific settings, or
+   `clients/vscode/global-settings.json` for the global reference copy used by
+   the `AndrewButson.vscode-openai` extension.
+3. Add this block:
 
     ```json
     {
@@ -151,12 +150,12 @@ curl -s http://localhost:9090/v1/chat/completions \
         "id": "qwen3-4b-instruct-2507",
         "provider": "openaiCompatible",
         "url": "http://localhost:9090/v1",
-        "apiKey": "sk-prompthub-code-001"
+        "apiKey": "sk-prompthub-vscode-001"
       }]
     }
     ```
 
-3. Select the model in the chat panel.
+4. Select the model in the chat panel.
 
 ### Raycast
 
@@ -165,7 +164,7 @@ curl -s http://localhost:9090/v1/chat/completions \
 3. Choose "OpenAI Compatible."
 4. Fill in:
    - **URL:** `http://localhost:9090/v1`
-   - **API Key:** `sk-prompthub-code-001`
+   - **API Key:** `sk-prompthub-vscode-001`
    - **Model:** `qwen3-4b-instruct-2507`
 
 ### Custom Python Script
@@ -176,7 +175,7 @@ import json
 
 url = "http://localhost:9090/v1/chat/completions"
 headers = {
-    "Authorization": "Bearer sk-prompthub-code-001",
+    "Authorization": "Bearer sk-prompthub-vscode-001",
     "Content-Type": "application/json"
 }
 data = {

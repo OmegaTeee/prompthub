@@ -1,0 +1,1 @@
+Model note for qwen3-0.6b, which is a general purpose model that can be used for various tasks, but it is smaller than the 1.7b version and should be used for general use in clients like Cherry Studio.

@@ -11,7 +11,7 @@
   "chat": {
     "showSuggestionsOnNewChat": true,
     "allowOnlyOneNewChat": true,
-    "alwaysShowPromptTemplate": false,
+    "alwaysShowPromptTemplate": true,
     "useShiftEnterToSendMessage": false,
     "useKeychordToRegenerate": false,
     "unloadPreviousModelOnSelect": true,
@@ -26,9 +26,9 @@
     "chatFullWidth": false,
     "neverAskForToolConfirmation": false,
     "skipToolConfirmationPatterns": [
-      "mcp/prompthub-bridge:*",
       "mcp/hf-mcp-server:*",
-      "mcp/fetch:*"
+      "mcp/fetch:*",
+      "mcp/prompthub-bridge:*"
     ],
     "showChatUtilityMenuLabels": true,
     "pinnedPlugins": [],
@@ -49,10 +49,10 @@
   },
   "developer": {
     "showExperimentalFeatures": false,
-    "experimentalLoadPresets": false,
+    "experimentalLoadPresets": true,
     "showDebugInfoBlocksInChat": false,
     "showModelDownloadOptionData": false,
-    "showResourceConsumptionWidget": false,
+    "showResourceConsumptionWidget": true,
     "backendDownloadChannel": "stable",
     "appUpdateChannel": "stable",
     "allowDevelopmentPlugins": true,
@@ -97,7 +97,8 @@
   },
   "dismissedModals": [
     "LM Link Sidebar Button Popover",
-    "Trash Deletion Onboarding"
+    "Trash Deletion Onboarding",
+    "mcp.json Warning"
   ],
   "dismissedConversationSnackbars": [],
   "pre030ChatsMigrated": 3,

@@ -1,0 +1,47 @@
+{
+  "identifier": "@local:qwick-assistant-no-think",
+  "name": "Qwick Assistant No Think",
+  "changed": true,
+  "operation": {
+    "fields": [
+      {
+        "key": "llm.prediction.systemPrompt",
+        "value": "qwick-text-editor.txt\n---\n\nYou are a helpful, concise assistant, keep responses short, and avoid visible thinking. /no_think"
+      },
+      {
+        "key": "llm.prediction.temperature",
+        "value": 0.4
+      },
+      {
+        "key": "llm.prediction.topPSampling",
+        "value": {
+          "checked": true,
+          "value": 0.9
+        }
+      },
+      {
+        "key": "llm.prediction.topKSampling",
+        "value": 40
+      },
+      {
+        "key": "llm.prediction.repeatPenalty",
+        "value": {
+          "checked": true,
+          "value": 1.05
+        }
+      },
+      {
+        "key": "llm.prediction.speculativeDecoding.draftModel",
+        "value": "qwen3-0.6b"
+      }
+    ]
+  },
+  "load": {
+    "fields": [
+      {
+        "key": "llm.load.contextLength",
+        "value": 32768
+      }
+    ]
+  }
+}

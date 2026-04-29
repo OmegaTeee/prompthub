@@ -5,7 +5,7 @@ Provides session, fact, and memory block endpoints under /sessions prefix.
 """
 
 import logging
-from typing import Callable
+from collections.abc import Callable
 
 from fastapi import APIRouter, HTTPException
 

@@ -193,7 +193,7 @@ class OrchestratorAgent:
                 self._call_model(user_msg, prompt),
                 timeout=TIMEOUT_SECONDS,
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"Orchestrator timed out after {TIMEOUT_SECONDS}s — passing through")
             return OrchestratorResult.pass_through(prompt, "timeout")
         except CircuitBreakerError:

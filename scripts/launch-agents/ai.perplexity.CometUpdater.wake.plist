@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AbandonProcessGroup</key>
+	<true/>
+	<key>AssociatedBundleIdentifiers</key>
+	<array>
+		<string>ai.perplexity.CometUpdater</string>
+	</array>
+	<key>Label</key>
+	<string>ai.perplexity.CometUpdater.wake</string>
+	<key>LimitLoadToSessionType</key>
+	<string>Aqua</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/visualval/Library/Application Support/Perplexity/CometUpdater/Current/CometUpdater.app/Contents/MacOS/CometUpdater</string>
+		<string>--wake-all</string>
+		<string>--enable-logging</string>
+		<string>--vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2</string>
+	</array>
+	<key>StartInterval</key>
+	<integer>3600</integer>
+</dict>
+</plist>
