@@ -1,0 +1,133 @@
+{
+  "$version": 3,
+  "permissions": {
+    "allow": [
+      "Bash(bash:*)",
+      "Bash(brew:*)",
+      "Bash(chmod +x:*)",
+      "Bash(gh pr:*)",
+      "Bash(git rm:*)",
+      "Bash(git worktree:*)",
+      "Bash(launchctl list *)",
+      "Bash(lsof:*)",
+      "Bash(npm:*)",
+      "Bash(python3:*)",
+      "Bash(source:*)",
+      "Bash(tree:*)",
+      "Bash(wc:*)",
+      "WebFetch(duckduckgo.com)",
+      "WebFetch(github.com)",
+      "WebFetch(google.com)",
+      "WebFetch(perplexity.ai)",
+      "WebFetch(qwen.ai)",
+      "WebFetch(raw.githubusercontent.com)"
+    ]
+  },
+  "ide": {
+    "enabled": true,
+    "hasSeenNudge": true
+  },
+  "ui.accessibility": {
+    "enableLoadingPhrases": true,
+    "screenReader": true
+  },
+  "security": {
+    "auth": {
+      "selectedType": "openai"
+    }
+  },
+  "env": {
+    "LM_API_TOKEN": "${LM_API_TOKEN}",
+    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+    "PROMPTHUB_API_KEY": "sk-prompthub-qwen-code-001"
+  },
+  "modelProviders": {
+    "openai": [
+      {
+        "baseUrl": "http://127.0.0.1:1234/v1",
+        "envKey": "LM_API_TOKEN",
+        "id": "qwen2.5-coder-3b-instruct",
+        "name": "LM Studio · Qwen2.5 Coder 3B Instruct"
+      },
+      {
+        "baseUrl": "http://127.0.0.1:1234/v1",
+        "envKey": "LM_API_TOKEN",
+        "id": "qwen2.5-coder-7b-instruct",
+        "name": "LM Studio · Qwen2.5 Coder 7B Instruct"
+      },
+      {
+        "baseUrl": "http://127.0.0.1:1234/v1",
+        "envKey": "LM_API_TOKEN",
+        "id": "qwen2.5-coder-14b-instruct",
+        "name": "LM Studio · Qwen2.5 Coder 14B Instruct"
+      },
+      {
+        "baseUrl": "http://127.0.0.1:9090/v1",
+        "envKey": "PROMPTHUB_API_KEY",
+        "id": "qwen2.5-coder-7b-instruct",
+        "name": "PromptHub · Qwen2.5 Coder 7B Instruct"
+      },
+      {
+        "baseUrl": "http://127.0.0.1:9090/v1",
+        "envKey": "PROMPTHUB_API_KEY",
+        "id": "qwen2.5-coder-14b-instruct",
+        "name": "PromptHub · Qwen2.5 Coder 14B Instruct"
+      },
+      {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "envKey": "OPENROUTER_API_KEY",
+        "id": "openrouter/free",
+        "name": "OpenRouter · Free"
+      }
+    ]
+  },
+  "fastModel": "qwen2.5-coder-3b-instruct",
+  "model": {
+    "name": "qwen2.5-coder-7b-instruct"
+  },
+  "mcp": {
+    "allowed": [
+      "prompthub-bridge"
+    ]
+  },
+  "mcpServers": {
+    "prompthub-bridge": {
+      "type": "stdio",
+      "description": "Single aggregated entry point allowing access to various tools and models. Read /Users/visualval/.local/share/prompthub/mcps/TOOL_USE.md for the full roster and rules.",
+      "command": "node",
+      "args": [
+        "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
+      ],
+      "cwd": "/Users/visualval/.local/share/prompthub/mcps/",
+      "authentication": {
+        "key": "sk-prompthub-qwen-code-001",
+        "type": "api_key"
+      },
+      "excludeTools": [
+        "desktop-commander_give_feedback_to_desktop_commander",
+        "perplexity-comet_internal_status"
+      ],
+      "env": {
+        "AUTHORIZATION": "Bearer PROMPTHUB_API_KEY",
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "CLIENT_NAME": "qwen-code",
+        "CONTENT_TYPE": "application/json",
+        "API_KEY": "PROMPTHUB_API_KEY",
+        "MINIFY_SCHEMAS": "true",
+        "DESC_MAX_LENGTH": "200",
+        "SERVERS": "desktop-commander,perplexity-comet,context7,memory,sequential-thinking,duckduckgo",
+        "EXCLUDE_TOOLS": "desktop-commander_give_feedback_to_desktop_commander,perplexity-comet_internal_status",
+        "TOOL_PREFIX_ALIASES": "perplexity-comet:perplexity:comet_,desktop-commander:desktop:",
+        "NODE_ENV": "production"
+      },
+      "headers": {
+        "Authorization": "Bearer PROMPTHUB_API_KEY",
+        "Content-Type": "application/json",
+        "X-Client-Name": "qwen-code",
+        "X-API-KEY": "PROMPTHUB_API_KEY"
+      },
+      "trust": true,
+      "timeout": 60000
+    }
+  }
+}

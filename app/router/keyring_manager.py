@@ -1,10 +1,14 @@
 """
 Keyring Manager for PromptHub
 
-Handles secure credential retrieval for MCP servers.
+Each credential is stored as a distinct Keychain item with
+service=f"{service_name}:{key}" and account=$USER. The shell helper at
+~/.shell_common.sh uses the same convention so a single lookup pattern
+spans Python and shell.
 """
 
 import logging
+import os
 from typing import Any
 
 from router.audit import audit_credential_access
@@ -23,6 +27,7 @@ class KeyringManager:
 
     def __init__(self, service_name: str = "prompthub"):
         self.service_name = service_name
+        self.username = os.getenv("USER") or "default"
         self.enabled = KEYRING_AVAILABLE
 
         if not self.enabled:
@@ -52,7 +57,7 @@ class KeyringManager:
             return None
 
         try:
-            value = keyring.get_password(self.service_name, key)
+            value = keyring.get_password(f"{self.service_name}:{key}", self.username)
             if value:
                 logger.debug(f"Retrieved credential: {key}")
                 audit_credential_access(
@@ -101,7 +106,7 @@ class KeyringManager:
             return False
 
         try:
-            keyring.set_password(self.service_name, key, value)
+            keyring.set_password(f"{self.service_name}:{key}", self.username, value)
             logger.info(f"Stored credential: {key}")
             audit_credential_access(
                 action="set",
@@ -140,7 +145,7 @@ class KeyringManager:
             return False
 
         try:
-            keyring.delete_password(self.service_name, key)
+            keyring.delete_password(f"{self.service_name}:{key}", self.username)
             logger.info(f"Deleted credential: {key}")
             audit_credential_access(
                 action="delete",
@@ -173,7 +178,8 @@ class KeyringManager:
 
         Supports two formats:
         1. Simple string: {"KEY": "value"}
-        2. Keyring reference: {"KEY": {"source": "keyring", "service": "prompthub", "key": "api_key"}}
+        2. Keyring reference: {"KEY": {"source": "keyring", "key": "api_key"}}
+           (resolves to service=f"{service_name}:{key}", account=$USER)
 
         Args:
             env_config: Environment configuration dictionary
@@ -190,7 +196,6 @@ class KeyringManager:
 
             # Handle keyring reference
             if isinstance(env_value, dict) and env_value.get("source") == "keyring":
-                service = env_value.get("service", self.service_name)
                 key = env_value.get("key")
 
                 if not key:
@@ -202,7 +207,8 @@ class KeyringManager:
                 if value is None:
                     logger.error(
                         f"Failed to retrieve {env_key} from keyring. "
-                        f"Set with: keyring.set_password('{service}', '{key}', 'YOUR_VALUE')"
+                        f"Set with: keyring.set_password("
+                        f"'{self.service_name}:{key}', '{self.username}', 'YOUR_VALUE')"
                     )
                     # Don't add to env if missing - let MCP server fail with clear error
                     continue

@@ -1,0 +1,41 @@
+{
+  "mcpServers": {
+    "prompthub-bridge": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
+      ],
+      "cwd": "/Users/visualval/.local/share/prompthub/mcps/",
+      "authentication": {
+        "key": "sk-prompthub-qwen-code-001",
+        "type": "api_key"
+      },
+      "excludeTools": [
+        "desktop-commander_give_feedback_to_desktop_commander",
+        "perplexity-comet_internal_status"
+      ],
+      "env": {
+        "AUTHORIZATION": "Bearer sk-prompthub-qwen-code-001",
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "CLIENT_NAME": "qwen-code",
+        "CONTENT_TYPE": "application/json",
+        "API_KEY": "sk-prompthub-qwen-code-001",
+        "MINIFY_SCHEMAS": "true",
+        "DESC_MAX_LENGTH": "160",
+        "SERVERS": "desktop-commander,perplexity-comet,context7,memory,sequential-thinking,duckduckgo",
+        "EXCLUDE_TOOLS": "desktop-commander_give_feedback_to_desktop_commander,perplexity-comet_internal_status",
+        "TOOL_PREFIX_ALIASES": "perplexity-comet:perplexity:comet_,desktop-commander:desktop:",
+        "NODE_ENV": "production"
+      },
+      "headers": {
+        "Authorization": "Bearer sk-prompthub-qwen-code-001",
+        "Content-Type": "application/json",
+        "X-Client-Name": "qwen-code",
+        "X-API-KEY": "sk-prompthub-qwen-code-001"
+      },
+      "trust": true,
+      "timeout": 60000
+    }
+  }
+}

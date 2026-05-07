@@ -81,9 +81,9 @@ python3 scripts/router/restart_mcp_servers.py obsidian
 ./scripts/test.sh coverage        # With coverage
 ./scripts/test.sh watch           # Watch mode
 
-# Manage API keys
-python3 scripts/security/manage-keys.py list
-python3 scripts/security/manage-keys.py set obsidian_api_key
+# Manage API keys (run from app/ with venv active — see app/scripts/README.md)
+(cd app && source .venv/bin/activate && python scripts/manage-keys.py list)
+(cd app && source .venv/bin/activate && python scripts/manage-keys.py set obsidian_api_key)
 
 # Audit log maintenance
 ./scripts/system/audit-maintenance.sh status

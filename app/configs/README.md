@@ -75,17 +75,18 @@ Credentials are stored in macOS Keychain and referenced inline in `mcp-servers.j
   "env": {
     "MY_API_KEY": {
       "source": "keyring",
-      "service": "prompthub",
       "key": "my_api_key"
     }
   }
 }
 ```
 
+The runtime resolves this to a Keychain entry at service=`prompthub:my_api_key`, account=`$USER`.
+
 Store a credential:
 
 ```bash
-python3 -c "import keyring; keyring.set_password('prompthub', 'my_api_key', 'YOUR_VALUE')"
+python scripts/manage-keys.py set my_api_key
 ```
 
 ## Configuration Philosophy
