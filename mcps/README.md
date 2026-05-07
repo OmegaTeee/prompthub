@@ -2,8 +2,8 @@
 
 MCP servers managed by PromptHub. The router spawns, monitors, and auto-restarts these via [`app/configs/mcp-servers.json`](../app/configs/mcp-servers.json). Clients connect through the `prompthub-bridge.js` aggregator, which prefixes tool names by server and optionally minifies schemas.
 
-- [prompthub-bridge.js](~/prompthub/mcps/prompthub-bridge.js) → Source Node.js bridge script that is the main entry point for all servers to clients via stdio.
-- [mcp-bridge](~/.local/bin/mcp-bridge) → $PATH symlink to the bridge script
+- [`prompthub-bridge.js`](./prompthub-bridge.js) → Source Node.js bridge script that is the main entry point for all servers to clients via stdio.
+- `~/.local/bin/mcp-bridge` → `$PATH` symlink to the bridge script
 
 ## Structure
 
@@ -16,7 +16,7 @@ mcps/
 └── README.md                     This file
 ```
 
-## Server Roster (10 servers)
+## Server Roster (11 servers)
 
 ### Auto-start (7 servers)
 
@@ -29,17 +29,19 @@ Started automatically when the router boots. Restarted on failure up to 3 times.
 | sequential-thinking | `@modelcontextprotocol/server-sequential-thinking` | stdio | Step-by-step reasoning and planning |
 | memory | `@modelcontextprotocol/server-memory` | stdio | Cross-session context persistence |
 | duckduckgo | `ddg-mcp-search` | stdio | DuckDuckGo web search with SafeSearch and region support |
+| obsidian-mcp-tools | `obsidian-mcp-tools` (binary `mcp-obsidian-vault`) | stdio | Obsidian vault operations via the MCP Tools plugin |
 | perplexity-comet | `perplexity-comet-mcp` | stdio | Perplexity research via Comet browser CDP bridge |
 
-### On-demand (3 servers)
+### On-demand (4 servers)
 
 Started manually via `POST /servers/{name}/start` or dashboard. Set `auto_start: false`.
 
 | Server | Package | Transport | Description |
 | --- | --- | --- | --- |
-| mcp-obsidian-vault | `mcp-obsidian-vault` | stdio | $PATH symlink to vault operations via Obsidian's MCP Tools plugin's directory (standalone binary) |
 | chrome-devtools-mcp | `chrome-devtools-mcp` | stdio | Chrome DevTools Protocol debugging and browser automation |
 | browsermcp | `@browsermcp/mcp` | stdio | Browser automation via Chrome extension WebSocket bridge |
+| applescript-mcp | `@peakmojo/applescript-mcp` (global) | stdio | macOS automation via AppleScript |
+| homebrew | (built-in: `brew mcp-server`) | stdio | Homebrew package management |
 
 ### Standalone binaries (not npm-managed)
 
@@ -135,11 +137,12 @@ If the server needs API keys, use the keyring pattern:
 "env": {
   "API_KEY": {
     "source": "keyring",
-    "service": "prompthub",
     "key": "my_api_key"
   }
 }
 ```
+
+The runtime resolves this to a Keychain entry at `service=prompthub:my_api_key`, `account=$USER`.
 
 Then store the key (from `app/` with venv active): `python scripts/manage-keys.py set my_api_key`
 

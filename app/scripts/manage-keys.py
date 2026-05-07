@@ -166,7 +166,8 @@ def list_keys(show_all: bool = False):
     """
     km = get_keyring_manager(SERVICE_NAME)
     keys = discover_keys()
-    user = os.getenv("USER") or "default"
+    # Match KeyringManager: getpass.getuser() works in non-interactive shells too.
+    user = getpass.getuser()
 
     print(f"\nPromptHub Keys (service prefix: {SERVICE_NAME!r}, account: {user!r}):")
     print("-" * 70)
