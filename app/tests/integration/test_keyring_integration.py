@@ -23,7 +23,7 @@ def test_process_env_config():
     km = get_keyring_manager()
 
     test_config = {
-        "PERPLEXITY_API_KEY": {"source": "keyring", "service": "prompthub", "key": "perplexity_api_key"},
+        "PERPLEXITY_API_KEY": {"source": "keyring", "key": "perplexity_api_key"},
         "STATIC_VAR": "plain-value",
         "_comment": "This should be skipped",
     }

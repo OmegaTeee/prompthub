@@ -4,7 +4,7 @@ Unit tests for Settings keyring resolution of llm_api_key.
 Resolution order is (first non-empty wins):
 1. LLM_API_KEY env var
 2. LM_API_TOKEN env var (LM Studio's official name; alias)
-3. Keychain account ``lm_api_token`` (under service ``prompthub``)
+3. Keychain entry at service=``prompthub:lm_api_token``, account=``$USER``
 4. None (no auth header sent)
 
 Tests construct Settings with ``_env_file=None`` so the repo's ``app/.env``

@@ -3,16 +3,18 @@ Application settings using Pydantic Settings.
 
 Settings are loaded from environment variables and .env file.
 Secrets that should not live on disk can be stored in macOS Keychain
-via the ``keyring`` library (service="prompthub"). Settings resolved
-from keyring (env wins if both present):
+via the ``keyring`` library. Each credential lives at
+service=f"prompthub:{key}", account=$USER. Settings resolved from
+keyring (env wins if both present):
 
-- ``openrouter_api_key`` <- keyring account ``openrouter_api_key``
-- ``llm_api_key``        <- keyring account ``lm_api_token``
+- ``openrouter_api_key`` <- keyring key ``openrouter_api_key``
+- ``llm_api_key``        <- keyring key ``lm_api_token``
                             (LM Studio's official env-var name is
                             LM_API_TOKEN; also accepted as an alias)
 """
 
 import logging
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -21,7 +23,7 @@ from pydantic_settings import BaseSettings
 
 logger = logging.getLogger(__name__)
 
-# Keyring service name — must match manage-keys.py and keyring_manager.py
+# Keyring service prefix — must match manage-keys.py and keyring_manager.py
 _KEYRING_SERVICE = "prompthub"
 
 
@@ -161,7 +163,8 @@ def _get_from_keyring(key: str) -> str:
     try:
         import keyring as kr
 
-        value = kr.get_password(_KEYRING_SERVICE, key)
+        username = os.getenv("USER") or "default"
+        value = kr.get_password(f"{_KEYRING_SERVICE}:{key}", username)
         if value:
             logger.debug("Resolved %s from keyring", key)
             return value

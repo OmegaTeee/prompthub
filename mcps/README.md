@@ -2,6 +2,9 @@
 
 MCP servers managed by PromptHub. The router spawns, monitors, and auto-restarts these via [`app/configs/mcp-servers.json`](../app/configs/mcp-servers.json). Clients connect through the `prompthub-bridge.js` aggregator, which prefixes tool names by server and optionally minifies schemas.
 
+- [prompthub-bridge.js](~/prompthub/mcps/prompthub-bridge.js) → Source Node.js bridge script that is the main entry point for all servers to clients via stdio.
+- [mcp-bridge](~/.local/bin/mcp-bridge) → $PATH symlink to the bridge script
+
 ## Structure
 
 ```text
@@ -9,6 +12,7 @@ mcps/
 ├── prompthub-bridge.js           Bridge aggregator (stdio → router → servers)
 ├── package.json                  npm dependencies for Node.js MCP servers
 ├── node_modules/                 Installed packages
+├── TOOL_USE.md                   Tool routing guidance for clients
 └── README.md                     This file
 ```
 
@@ -25,7 +29,6 @@ Started automatically when the router boots. Restarted on failure up to 3 times.
 | sequential-thinking | `@modelcontextprotocol/server-sequential-thinking` | stdio | Step-by-step reasoning and planning |
 | memory | `@modelcontextprotocol/server-memory` | stdio | Cross-session context persistence |
 | duckduckgo | `ddg-mcp-search` | stdio | DuckDuckGo web search with SafeSearch and region support |
-| obsidian-mcp-tools | standalone binary | stdio | Obsidian vault operations via MCP Tools plugin |
 | perplexity-comet | `perplexity-comet-mcp` | stdio | Perplexity research via Comet browser CDP bridge |
 
 ### On-demand (3 servers)
@@ -34,7 +37,7 @@ Started manually via `POST /servers/{name}/start` or dashboard. Set `auto_start:
 
 | Server | Package | Transport | Description |
 | --- | --- | --- | --- |
-| obsidian | `mcp-obsidian` (pipx) | stdio | Obsidian vault file ops, batch reads, periodic notes, recent changes |
+| mcp-obsidian-vault | `mcp-obsidian-vault` | stdio | $PATH symlink to vault operations via Obsidian's MCP Tools plugin's directory (standalone binary) |
 | chrome-devtools-mcp | `chrome-devtools-mcp` | stdio | Chrome DevTools Protocol debugging and browser automation |
 | browsermcp | `@browsermcp/mcp` | stdio | Browser automation via Chrome extension WebSocket bridge |
 
@@ -43,9 +46,25 @@ Started manually via `POST /servers/{name}/start` or dashboard. Set `auto_start:
 | Binary | Location | Installed via |
 | --- | --- | --- |
 | `mcp-server-fetch` | `~/.local/bin/mcp-server-fetch` | pipx (`mcp-server-fetch`) |
-| `obsidian-mcp-tools` | `~/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server` | Obsidian MCP Tools plugin |
+| `mcp-obsidian-vault` | `~/.local/bin/mcp-obsidian-vault` | Obsidian plugin |
 
-`mcp-server-fetch` is referenced directly in client bridge configs (`.mcp.json`, `clients/*/mcp.json`) but is not in the router's `mcp-servers.json` — it runs independently alongside the bridge.
+
+  **MCP_OBSIDIAN_VAULT** is a PATH symlink to Obsidian's MCP Tools plugin's standalone binary. This is the version used by the router since it has direct vault access for features like periodic notes and recent changes. Plugin must run from within Obsidian to access vault files. Used for Obsidian-specific operations like periodic notes and recent changes.
+  - $MCP_OBSIDIAN_VAULT →
+    - SYMLINK="~/.local/bin/mcp-obsidian-vault"
+      - TARGET="~/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server"
+
+  <!--
+  - `mcp-obsidian-pipx` → (~/.local/bin/mcp-obsidian-pipx) -> `~/.local/pipx/venvs/mcp-obsidian/bin/mcp-obsidian`
+    - Separate build outside of plugins for testing. Used for testing and development of Obsidian MCP server without needing to run the full Obsidian app. Lacks vault access, so some features are limited.
+  /-->
+
+  **MCP_SERVER_FETCH** is a $PATH symlink to Standalone Python MCP server for fetching URLs with `requests`. Used for tools that need to fetch web content without CORS issues, like Claude's `fetch_url` tool. Not managed by the router since it's a standalone binary, but referenced directly in client bridge configs.
+  - $PATH="mcp-server-fetch" →
+    - SYMLINK="~/.local/bin/mcp-server-fetch"
+      - TARGET="~/.local/pipx/venvs/mcp-server-fetch/bin/mcp-server-fetch"
+
+Currently `mcp-server-fetch` is referenced directly in client bridge configs (`.mcp.json`, `clients/*/mcp.json`) but is not in the router's `mcp-servers.json` — it runs independently alongside the bridge.
 
 ## Bridge (`prompthub-bridge.js`)
 
@@ -122,7 +141,7 @@ If the server needs API keys, use the keyring pattern:
 }
 ```
 
-Then store the key: `python scripts/security/manage-keys.py set my_api_key`
+Then store the key (from `app/` with venv active): `python scripts/manage-keys.py set my_api_key`
 
 ### Standalone binary
 

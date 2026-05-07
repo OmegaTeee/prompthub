@@ -4,42 +4,38 @@ PromptHub Key Manager
 
 Manage API keys and credentials for MCP servers using system keyring.
 
-NOTE: Run with venv active: source .venv/bin/activate && python scripts/security/manage-keys.py
-Or use: .venv/bin/python scripts/security/manage-keys.py
+Canonical invocation (from the app/ directory with venv active):
+    source .venv/bin/activate
+    python scripts/manage-keys.py <command>
 
 Usage:
-    ./scripts/security/manage-keys.py set <key_name>         # Prompt for value
-    ./scripts/security/manage-keys.py set <key_name> <value> # Set directly
-    ./scripts/security/manage-keys.py get <key_name>         # Retrieve value
-    ./scripts/security/manage-keys.py list                    # List all keys
-    ./scripts/security/manage-keys.py delete <key_name>      # Delete key
-    ./scripts/security/manage-keys.py migrate                 # Migrate from security CLI
+    python scripts/manage-keys.py set <key_name>          # Prompt for value
+    python scripts/manage-keys.py set <key_name> <value>  # Set directly
+    python scripts/manage-keys.py get <key_name>          # Retrieve value
+    python scripts/manage-keys.py list [--all]            # List configured keys (--all also shows orphaned + legacy)
+    python scripts/manage-keys.py delete <key_name>       # Delete key
+    python scripts/manage-keys.py migrate <key_name>      # Migrate from legacy security CLI
 
 Examples:
-    # Set API key (will prompt for value)
-    ./scripts/security/manage-keys.py set perplexity_api_key
-
-    # Set with value directly (less secure, shows in shell history)
-    ./scripts/security/manage-keys.py set perplexity_api_key YOUR_API_KEY
-
-    # Get API key
-    ./scripts/security/manage-keys.py get perplexity_api_key
-
-    # Migrate from macOS Keychain (security CLI)
-    ./scripts/security/manage-keys.py migrate perplexity_api_key
+    python scripts/manage-keys.py set perplexity_api_key
+    python scripts/manage-keys.py set perplexity_api_key YOUR_API_KEY
+    python scripts/manage-keys.py get perplexity_api_key
+    python scripts/manage-keys.py migrate perplexity_api_key
 """
 
 import json
 import logging
+import os
+import re
 import sys
 import getpass
 import subprocess
 from pathlib import Path
 
-# Resolve project paths
+# Resolve project paths (script lives at app/scripts/manage-keys.py)
 SCRIPT_DIR = Path(__file__).parent
-PROJECT_ROOT = SCRIPT_DIR.parent.parent
-APP_DIR = PROJECT_ROOT / "app"
+APP_DIR = SCRIPT_DIR.parent
+PROJECT_ROOT = APP_DIR.parent
 MCP_SERVERS_JSON = APP_DIR / "configs" / "mcp-servers.json"
 
 # Add app/ to path so `from router.keyring_manager` resolves
@@ -57,6 +53,7 @@ SERVICE_NAME = "prompthub"
 SETTINGS_KEYS: dict[str, str] = {
     "openrouter_api_key": "Settings → cloud fallback",
     "hf_api_key": "Settings → Hugging Face",
+    "lm_api_token": "Settings → LM Studio (llm_api_key fallback)",
 }
 
 
@@ -95,6 +92,38 @@ def discover_keys() -> dict[str, list[str]]:
     return keys
 
 
+def discover_keychain_keys() -> tuple[list[str], list[str]]:
+    """
+    Enumerate Keychain entries by shelling out to `security dump-keychain`.
+
+    Returns:
+        (current_keys, legacy_keys) where:
+          current_keys  = accounts under svce='prompthub:<key>' (new convention)
+          legacy_keys   = accounts under svce='prompthub' (pre-migration)
+    """
+    try:
+        result = subprocess.run(
+            ["security", "dump-keychain"],
+            capture_output=True, text=True, check=False, timeout=15,
+        )
+    except (subprocess.SubprocessError, OSError):
+        return [], []
+
+    current, legacy = set(), set()
+    for block in result.stdout.split("keychain:"):
+        svce_m = re.search(r'"svce"<blob>="([^"]+)"', block)
+        acct_m = re.search(r'"acct"<blob>="([^"]*)"', block)
+        if not svce_m:
+            continue
+        svce = svce_m.group(1)
+        acct = acct_m.group(1) if acct_m else ""
+        if svce.startswith(f"{SERVICE_NAME}:"):
+            current.add(svce[len(SERVICE_NAME) + 1:])  # strip "prompthub:"
+        elif svce == SERVICE_NAME and acct:
+            legacy.add(acct)
+    return sorted(current), sorted(legacy)
+
+
 def set_key(key_name: str, value: str = None):
     """Set a credential in the keyring."""
     km = get_keyring_manager(SERVICE_NAME)
@@ -128,27 +157,47 @@ def get_key(key_name: str):
         return 1
 
 
-def list_keys():
-    """List all keys referenced in mcp-servers.json and their keyring status."""
+def list_keys(show_all: bool = False):
+    """List configured keyring keys and their status.
+
+    With show_all=True, also enumerate Keychain entries directly:
+    - 'orphaned' = stored at prompthub:<key> but not referenced anywhere
+    - 'legacy'   = stored at svce='prompthub' (pre-migration convention)
+    """
     km = get_keyring_manager(SERVICE_NAME)
     keys = discover_keys()
+    user = os.getenv("USER") or "default"
 
-    if not keys:
-        print("\nNo keyring references found in mcp-servers.json")
-        print(f"Config: {MCP_SERVERS_JSON}")
-        return 0
+    print(f"\nPromptHub Keys (service prefix: {SERVICE_NAME!r}, account: {user!r}):")
+    print("-" * 70)
 
-    print(f"\nPromptHub Keys (service: {SERVICE_NAME}):")
-    print("-" * 60)
+    if keys:
+        for key_name, consumers in sorted(keys.items()):
+            value = km.get_credential(key_name)
+            status = "✓ SET" if value else "✗ NOT SET"
+            used_by = ", ".join(consumers)
+            print(f"  {key_name:30s} {status:10s} → {used_by}")
+    else:
+        print("  (no configured keys found)")
 
-    for key_name, servers in sorted(keys.items()):
-        value = km.get_credential(key_name)
-        status = "✓ SET" if value else "✗ NOT SET"
-        used_by = ", ".join(servers)
-        print(f"  {key_name:30s} {status:10s} → {used_by}")
+    if show_all:
+        current, legacy = discover_keychain_keys()
+        configured = set(keys.keys())
 
-    print("-" * 60)
-    print(f"\nTo set a key: ./scripts/security/manage-keys.py set <key_name>")
+        orphaned = [k for k in current if k not in configured]
+        if orphaned:
+            print("\nOrphaned in Keychain (no consumer references):")
+            for k in orphaned:
+                print(f"  {k:30s} ✓ SET      → (unused)")
+
+        if legacy:
+            print(f"\nLegacy entries (svce='{SERVICE_NAME}', pre-migration):")
+            for k in legacy:
+                print(f"  {k:30s} ⚠ legacy   → run migration or delete")
+
+    print("-" * 70)
+    print("\nTo set a key:    python scripts/manage-keys.py set <key_name>")
+    print("To see all:      python scripts/manage-keys.py list --all")
     return 0
 
 
@@ -242,7 +291,8 @@ def main():
         return get_key(key_name)
 
     elif command == "list":
-        return list_keys()
+        show_all = "--all" in sys.argv[2:]
+        return list_keys(show_all=show_all)
 
     elif command == "delete":
         if len(sys.argv) < 3:

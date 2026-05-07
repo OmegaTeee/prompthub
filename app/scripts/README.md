@@ -9,26 +9,26 @@ CLI wrapper for `KeyringManager`. All operations go through the router's keyring
 The `list` command auto-discovers keys by scanning `mcp-servers.json` for `{"source": "keyring"}` references — no hardcoded key list to maintain.
 
 ```bash
-# From project root with venv active
-source app/.venv/bin/activate
+# From the app/ directory with venv active
+source .venv/bin/activate
 
 # List all keys referenced in mcp-servers.json and their status
-python scripts/security/manage-keys.py list
+python scripts/manage-keys.py list --all
 
 # Set a credential (prompts securely for value)
-python scripts/security/manage-keys.py set obsidian_api_key
+python scripts/manage-keys.py set obsidian_api_key
 
 # Set with value directly (less secure — shows in shell history)
-python scripts/security/manage-keys.py set obsidian_api_key YOUR_KEY
+python scripts/manage-keys.py set obsidian_api_key YOUR_KEY
 
 # Retrieve a credential
-python scripts/security/manage-keys.py get obsidian_api_key
+python scripts/manage-keys.py get obsidian_api_key
 
 # Delete a credential (safe if already gone)
-python scripts/security/manage-keys.py delete obsidian_api_key
+python scripts/manage-keys.py delete obsidian_api_key
 
 # Migrate from old macOS security CLI to keyring
-python scripts/security/manage-keys.py migrate obsidian_api_key
+python scripts/manage-keys.py migrate obsidian_api_key
 ```
 
 ## Keyring Architecture
@@ -40,10 +40,10 @@ router (runtime)  ──────┘         │
                               audit.py (logs every access)
 ```
 
-- **Service name**: `prompthub`
+- **Naming convention**: each credential lives at service=`prompthub:<key>`, account=`$USER` — one Keychain entry per credential, distinguishable in Keychain Access
 - **Backend**: macOS Keychain via `keyring` library
 - **Audit**: Every `get`, `set`, `delete` operation is logged via `audit_credential_access()`
-- **Key discovery**: `list` scans `app/configs/mcp-servers.json` for `{"source": "keyring"}` entries
+- **Key discovery**: `list` scans `app/configs/mcp-servers.json` for `{"source": "keyring"}` entries; `list --all` also enumerates Keychain directly
 
 ## Adding a New Keyring Credential
 
@@ -54,17 +54,17 @@ router (runtime)  ──────┘         │
        "env": {
          "MY_API_KEY": {
            "source": "keyring",
-           "service": "prompthub",
            "key": "my_api_key"
          }
        }
      }
    }
    ```
-2. Store the value: `python scripts/security/manage-keys.py set my_api_key`
-3. Verify: `python scripts/security/manage-keys.py list`
+2. Store the value: `python scripts/manage-keys.py set my_api_key`
+3. Verify: `python scripts/manage-keys.py list`
 
 The key will appear automatically in `list` output — no code changes needed.
+The actual Keychain entry is created at service=`prompthub:my_api_key`, account=`$USER`.
 
 ## Programmatic Access
 
@@ -75,8 +75,14 @@ km = get_keyring_manager()
 api_key = km.get_credential("obsidian_api_key")
 ```
 
+## Directly add to keychain <small>*(not recommended)*</small>
+
+```bash
+security add-generic-password -U -s "prompthub:my_api_key" -a "$USER" -w "YOUR_VALUE"
+```
+
 ## Related
 
-- [KeyringManager](../../app/router/keyring_manager.py) — core credential module
+- [KeyringManager](../router/keyring_manager.py) — core credential module
 - [Audit System](../../docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md) — credential access logging
-- [MCP Server Config](../../app/configs/mcp-servers.json) — keyring references in server env
+- [MCP Server Config](../configs/mcp-servers.json) — keyring references in server env

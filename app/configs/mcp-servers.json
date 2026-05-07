@@ -75,17 +75,15 @@
     "obsidian-mcp-tools": {
       "package": "obsidian-mcp-tools",
       "transport": "stdio",
-      "command": "/Users/visualval/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server",
+      "command": "mcp-obsidian-vault",
       "args": [],
       "env": {
         "OBSIDIAN_API_KEY": {
           "source": "keyring",
-          "service": "prompthub",
           "key": "obsidian_api_key"
         },
         "OBSIDIAN_AUTHENTICATION": {
           "source": "keyring",
-          "service": "prompthub",
           "key": "obsidian_authentication"
         },
         "OBSIDIAN_HOST": "https://127.0.0.1",
@@ -96,31 +94,6 @@
       "max_restarts": 3,
       "health_check_interval": 30,
       "description": "Obsidian vault operations via MCP Tools plugin"
-    },
-    "obsidian": {
-      "package": "mcp-obsidian",
-      "transport": "stdio",
-      "command": "/Users/visualval/.local/bin/mcp-obsidian",
-      "args": [],
-      "env": {
-        "OBSIDIAN_API_KEY": {
-          "source": "keyring",
-          "service": "prompthub",
-          "key": "obsidian_api_key"
-        },
-        "OBSIDIAN_AUTHENTICATION": {
-          "source": "keyring",
-          "service": "prompthub",
-          "key": "obsidian_authentication"
-        },
-        "OBSIDIAN_HOST": "https://127.0.0.1",
-        "OBSIDIAN_PORT": "27124"
-      },
-      "auto_start": false,
-      "restart_on_failure": true,
-      "max_restarts": 3,
-      "health_check_interval": 30,
-      "description": "Obsidian vault file ops, batch reads, periodic notes, and recent changes (Python, pipx)"
     },
     "chrome-devtools-mcp": {
       "package": "chrome-devtools-mcp",
@@ -168,6 +141,29 @@
       "max_restarts": 3,
       "health_check_interval": 30,
       "description": "Browser automation via Chrome extension WebSocket bridge"
+    },
+    "applescript-mcp": {
+      "package": "@peakmojo/applescript-mcp",
+      "transport": "stdio",
+      "command": "applescript-mcp",
+      "args": [],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "macOS automation via AppleScript"
+    },
+    "homebrew": {
+      "transport": "stdio",
+      "command": "brew",
+      "args": ["mcp-server"],
+      "env": {},
+      "auto_start": false,
+      "restart_on_failure": true,
+      "max_restarts": 3,
+      "health_check_interval": 30,
+      "description": "Homebrew package management via brew mcp-server (built-in)"
     }
   }
 }
