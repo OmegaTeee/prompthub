@@ -749,6 +749,17 @@ class SessionStorage:
         if not query or not query.strip():
             return []
 
+        # Defense-in-depth: clamp limit even if the API-layer Pydantic
+        # validator was bypassed (direct SessionStorage callers, tests,
+        # internal services). SQLite treats LIMIT -1 as "no limit", which
+        # would page through the entire FTS table; very large positive
+        # limits cause heavy scans and oversized responses.
+        try:
+            limit = int(limit)
+        except (TypeError, ValueError):
+            limit = 10
+        limit = max(1, min(limit, 100))
+
         if not cross_client and client_id is None:
             context = get_audit_context()
             client_id = context.get("client_id")

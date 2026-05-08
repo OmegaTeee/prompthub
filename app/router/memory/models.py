@@ -4,7 +4,7 @@ Pydantic models for session memory requests/responses.
 
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # Request Models
@@ -92,11 +92,12 @@ class SearchRequest(BaseModel):
     """Cross-session search query."""
 
     query: str
-    limit: int = 10
+    limit: int = Field(default=10, ge=1, le=100)
     cross_client: bool = False
     # client_id is intentionally not in the request body — it's derived
-    # from the audit context (X-Client-Name header) so callers can't
-    # search other tenants' data without explicit cross_client=True.
+    # from the audit context (X-Client-ID header, populated by
+    # router/middleware/audit_context.py) so callers can't search other
+    # tenants' data without explicit cross_client=True.
 
 
 class SearchResult(BaseModel):

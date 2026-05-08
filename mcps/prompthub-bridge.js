@@ -178,8 +178,14 @@ const META_TOOLS = [
           description: 'Search expression. Plain words work; advanced FTS5 syntax (prefix*, AND/OR, "phrase") is also accepted.',
         },
         limit: {
-          type: 'number',
-          description: 'Max combined results across facts and memory blocks. Default 10.',
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+          description: 'Max combined results across facts and memory blocks (1-100). Default 10.',
+        },
+        cross_client: {
+          type: 'boolean',
+          description: 'Search every session regardless of owning client. Use ONLY when the user explicitly asks to search across all clients/identities; the default (false) keeps results scoped to the current client and preserves the privacy boundary.',
         },
       },
       required: ['query'],
@@ -266,7 +272,23 @@ async function searchMemoryViaRouter(args) {
   if (!args?.query || typeof args.query !== 'string') {
     throw new Error('Missing required argument: query (string)');
   }
-  const limit = Number.isFinite(args.limit) ? args.limit : 10;
+
+  // Coerce + clamp limit to match the API model bounds (1..100). The
+  // router would 422 on an out-of-range value; doing it here gives the
+  // chat model a clean experience regardless of input shape (negative,
+  // fractional, oversized, missing).
+  let limit = 10;
+  if (args.limit !== undefined && args.limit !== null) {
+    const parsed = Math.floor(Number(args.limit));
+    if (Number.isFinite(parsed)) {
+      limit = Math.max(1, Math.min(parsed, 100));
+    }
+  }
+
+  const body = { query: args.query, limit };
+  if (args.cross_client === true) {
+    body.cross_client = true;
+  }
 
   const response = await fetch(`${PROMPTHUB_URL}/sessions/search`, {
     method: 'POST',
@@ -275,7 +297,7 @@ async function searchMemoryViaRouter(args) {
       'X-Client-Name': CLIENT_NAME,
       'X-Client-ID': CLIENT_NAME,
     },
-    body: JSON.stringify({ query: args.query, limit }),
+    body: JSON.stringify(body),
   });
   if (!response.ok) {
     const text = await response.text().catch(() => '');

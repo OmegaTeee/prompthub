@@ -467,3 +467,42 @@ async def test_search_updates_propagate_to_fts(storage):
     await storage.delete_fact("s1", fact["id"])
     post = await storage.search("GraphQL", cross_client=True)
     assert post == []
+
+
+# Limit-validation defense-in-depth (Copilot review fixups)
+@pytest.mark.asyncio
+async def test_search_clamps_negative_limit_to_one(storage):
+    """LIMIT -1 in SQLite means 'no limit'; clamp it to 1 instead."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    for i in range(20):
+        await storage.add_fact("s1", f"PromptHub fact number {i}")
+
+    # Direct call bypasses the API-layer Pydantic validator
+    results = await storage.search("PromptHub", cross_client=True, limit=-1)
+    assert len(results) == 1, f"limit=-1 should clamp to 1, got {len(results)}"
+
+
+@pytest.mark.asyncio
+async def test_search_clamps_oversized_limit(storage):
+    """A 10000 limit is clamped to 100 (the API ceiling)."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    for i in range(150):
+        await storage.add_fact("s1", f"PromptHub fact number {i}")
+
+    results = await storage.search("PromptHub", cross_client=True, limit=10000)
+    # Clamped to 100, but only 150 facts exist; SQLite would return 150
+    # without clamping. Assert the clamp dominated the row count.
+    assert len(results) == 100
+
+
+@pytest.mark.asyncio
+async def test_search_handles_non_int_limit(storage):
+    """Float / string / None limits coerce to default rather than crash."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    for i in range(5):
+        await storage.add_fact("s1", f"PromptHub fact number {i}")
+
+    # int() on these would raise; the storage layer catches and defaults
+    for bad in [3.7, "10", None]:  # 3.7 → int=3, "10" → int=10, None → default 10
+        results = await storage.search("PromptHub", cross_client=True, limit=bad)
+        assert 1 <= len(results) <= 5
