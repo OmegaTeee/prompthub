@@ -2,15 +2,6 @@
 
 ## Now
 
-### Backfill CHANGELOG entries
-
-> **Context:** Two recent merges shipped without CHANGELOG entries when the doc queue was skipped during a rapid PR cycle (2026-04-29 session). Both are user-visible enough to warrant a one-line note in `Unreleased`.
-
-- [ ] Add CHANGELOG entry for PR #15 (`fix(settings): resolve llm_api_key from LM_API_TOKEN env or Keychain`): note the new env alias `LM_API_TOKEN` and Keychain fallback for `llm_api_key` (account `lm_api_token` under service `prompthub`); mirrors the existing `openrouter_api_key` resolution chain at [`app/router/config/settings.py`](app/router/config/settings.py).
-- [ ] Add CHANGELOG entry for PR #16 (`chore(router): clear Ruff debt and align lint CI`): note the 10 `router/` Ruff errors fixed (E402/F841/F541/I001), the strictening of `ci.yml`'s Lint job (dropped `continue-on-error: true`), removal of duplicate Ruff/mypy sub-steps from `tests.yml`, and deletion of the `claude-code-review` auto-runner workflow.
-- [ ] Add CHANGELOG entry for MCP + qwen-code cleanup (2026-05-07 session): `applescript-mcp` (`@peakmojo/applescript-mcp`) and `homebrew` (`brew mcp-server`) added to `app/configs/mcp-servers.json` with `auto_start: false`; direct sidecar entries (`applescript-mcp-server`, `fetch`, `homebrew`, `applescript_mcp`) stripped from `qwen-code`, `claude`, and `vscode` client configs; `qwen-code/setup.sh` filename references fixed (`settings.direct-lmstudio.json` → `settings.direct.json`, `settings.prompthub-router.json` → `settings.router.json`); `qwen-code/README.md` Files list refreshed; `mcpServers` blocks stripped from `settings.direct.json` and `settings.router.json` (now sourced solely from `mcp.json`, matching Qwen Code's preferred separation); literal LM Studio token in `settings.router.json` replaced with `${LM_API_TOKEN}` env var reference; obsolete `QWEN.txt`, `.qwen/`, and `clients/qwen-code/add-mcps.sh` removed.
-- [ ] Add CHANGELOG entry for Keychain naming refactor (2026-05-07 session): unified PromptHub credential storage on `service=prompthub:<key>, account=$USER` (was `service=prompthub, account=<key>`); 12 entries migrated; `KeyringManager`, `Settings._get_from_keyring`, and `manage-keys.py` updated to construct service names from a `prompthub:` prefix; `mcp-servers.json` `{source: "keyring"}` entries dropped the now-redundant `service` field; `manage-keys.py list --all` added (shows configured + orphaned + legacy entries); shell helper `keychain_secret()` in `~/.shell_common.sh` extended to a 3-level fallback chain (`prompthub:<key>/$USER` → `prompthub/<key>` → `<KEY-UPPERCASE>/$USER`); shell call sites switched to snake_case keys (`HUGGINGFACE_API_KEY` → `hf_api_key`, `GITHUB_PAT` → `github_token`, etc.); 8 legacy duplicates deleted (greptile, hf, lm_api_token, lmstudio, obsidian×2, openrouter, perplexity from `svce='prompthub'`); 5 redundant new-convention orphans deleted (`lmstudio_api_key`, `cherryin_api_key`, `cherryin_system_access_token`, `github_api_key`, `github_token`); cherryin and github values now sourced solely from the older `svce='prompthub', account=<key>` form via the helper's middle fallback; `manage-keys.py` and its README moved from `scripts/security/` to `app/scripts/` (canonical invocation `python scripts/manage-keys.py` from `app/` with venv active); empty `scripts/security/` removed; drive-by typo `ZED_OPEN_AI_COMPATIBLE_EDIT_PERDICTION_API_KEY` → `..._PREDICTION_...`. Tests `test_settings_keyring.py` (5) + `test_keyring_integration.py` (3) pass.
-
 ### Agent-Initiated Server Start (priority: high)
 
 > **Context:** On-demand servers (`obsidian`, `chrome-devtools-mcp`, `browsermcp`) don't expose tools until started. Agents currently can't see or start them. This is a prerequisite for effective use of on-demand servers and directly supports Progressive Tool Disclosure Phase 1.
@@ -64,6 +55,13 @@
 - [ ] Enhancement service exception handlers — `service.py` `enhance()` has near-identical handlers around lines ~552–559 with different log levels; consider consolidating after unskipping integration tests in `test_enhancement_and_caching.py`.
 - [ ] Lifespan function length — `main.py` `lifespan()` is ~97 lines initializing 10 services; split into focused init helpers such as `_init_audit()`, `_init_storage()`, `_init_servers()`, and `_init_enhancement()` after adding startup integration tests.
 - [ ] `manage-keys.py` as a `[project.scripts]` entry point — nice-to-have polish. Rename `app/scripts/manage-keys.py` → `manage_keys.py` (Python module names can't contain hyphens), add `[project.scripts] manage-keys = "scripts.manage_keys:main"` to `app/pyproject.toml`, and `pip install -e .` to register a `manage-keys` binary in the venv. Replaces today's shell function `prompthub-keys()` with a proper venv-installed CLI. Worth it once more management CLIs (rotate-tokens, audit-export, etc.) join under `app/router/cli/` or `app/scripts/`.
+
+## Done (2026-05-07)
+
+- [x] ~~Add CHANGELOG entry for PR #15~~ — Backfilled in PR #20 under `Unreleased > Added` (`llm_api_key` keyring fallback, `LM_API_TOKEN` env alias).
+- [x] ~~Add CHANGELOG entry for PR #16~~ — Backfilled in PR #20 under `Unreleased > Fixed` (Ruff debt cleared, lint CI strictened).
+- [x] ~~Add CHANGELOG entry for MCP + qwen-code cleanup~~ — Backfilled in PR #20 across `Unreleased > Added/Changed/Fixed` (PR #18: `applescript-mcp` + `homebrew` added, direct sidecars stripped, `setup.sh`/README aligned, `mcpServers` separated from settings).
+- [x] ~~Add CHANGELOG entry for Keychain naming refactor~~ — Backfilled in PR #20 under `Unreleased > Changed` (PR #18: unified `prompthub:<key>/$USER` convention; `manage-keys.py` moved to `app/scripts/`; `manage-keys.py list --all`).
 
 ## Done (2026-04-20)
 
