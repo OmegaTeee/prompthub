@@ -13,8 +13,8 @@ keyring (env wins if both present):
                             LM_API_TOKEN; also accepted as an alias)
 """
 
+import getpass
 import logging
-import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -163,7 +163,9 @@ def _get_from_keyring(key: str) -> str:
     try:
         import keyring as kr
 
-        username = os.getenv("USER") or "default"
+        # getpass.getuser() falls back to pwd lookup when USER/LOGNAME are
+        # unset (e.g., LaunchAgent context), unlike os.getenv("USER").
+        username = getpass.getuser()
         value = kr.get_password(f"{_KEYRING_SERVICE}:{key}", username)
         if value:
             logger.debug("Resolved %s from keyring", key)

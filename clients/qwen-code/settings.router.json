@@ -30,7 +30,7 @@
   "env": {
     "LM_API_TOKEN": "${LM_API_TOKEN}",
     "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
-    "PROMPTHUB_API_KEY": "sk-prompthub-qwen-code-001"
+    "PROMPTHUB_API_KEY": "${PROMPTHUB_QWEN_CODE_TOKEN}"
   },
   "security": {
     "auth": {

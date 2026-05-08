@@ -3,8 +3,8 @@ set -euo pipefail
 
 CLIENT_DIR="${HOME}/.local/share/prompthub/clients/qwen-code"
 ACTIVE_FILE="${CLIENT_DIR}/settings.json"
-DIRECT_FILE="${CLIENT_DIR}/settings.direct-lmstudio.json"
-ROUTER_FILE="${CLIENT_DIR}/settings.prompthub-router.json"
+DIRECT_FILE="${CLIENT_DIR}/settings.direct.json"
+ROUTER_FILE="${CLIENT_DIR}/settings.router.json"
 PRIMARY_TARGET="${HOME}/.qwen/settings.json"
 COMPAT_TARGET="${HOME}/.config/qwen-code/settings.json"
 

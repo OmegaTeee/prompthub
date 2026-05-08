@@ -7,8 +7,8 @@ service=f"{service_name}:{key}" and account=$USER. The shell helper at
 spans Python and shell.
 """
 
+import getpass
 import logging
-import os
 from typing import Any
 
 from router.audit import audit_credential_access
@@ -27,7 +27,9 @@ class KeyringManager:
 
     def __init__(self, service_name: str = "prompthub"):
         self.service_name = service_name
-        self.username = os.getenv("USER") or "default"
+        # getpass.getuser() falls back to a pwd lookup when USER/LOGNAME are
+        # unset (e.g., LaunchAgent context), unlike os.getenv("USER").
+        self.username = getpass.getuser()
         self.enabled = KEYRING_AVAILABLE
 
         if not self.enabled:
