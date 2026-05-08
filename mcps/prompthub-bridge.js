@@ -35,13 +35,16 @@ const EXCLUDE_TOOLS = new Set(
 );
 
 // Tool prefix aliases: rename server prefixes in tool names to avoid redundancy
-// Built-in defaults fix known double-prefix issues (e.g., perplexity-comet_comet_ask → perplexity_ask)
+// Built-in defaults fix known double-prefix issues (e.g., perplexity-comet_comet_ask → comet_ask)
 // Override or extend via env var TOOL_PREFIX_ALIASES="server:displayPrefix:stripFromTool,..."
+// Comet (the local browser) is the actual surface these tools control; "perplexity"
+// is the parent brand. Keeping the display prefix as "comet" reflects what the tools
+// do (drive a Comet browser via CDP) rather than what brand owns the back end.
 const TOOL_PREFIX_ALIASES = new Map([
-  ['perplexity-comet', { displayPrefix: 'perplexity', stripPrefix: 'comet_' }],
+  ['perplexity-comet', { displayPrefix: 'comet', stripPrefix: 'comet_' }],
 ]);
 const TOOL_REVERSE_MAP = new Map([
-  ['perplexity', { serverName: 'perplexity-comet', stripPrefix: 'comet_' }],
+  ['comet', { serverName: 'perplexity-comet', stripPrefix: 'comet_' }],
 ]);
 if (process.env.TOOL_PREFIX_ALIASES) {
   for (const entry of process.env.TOOL_PREFIX_ALIASES.split(',').map(s => s.trim()).filter(Boolean)) {
