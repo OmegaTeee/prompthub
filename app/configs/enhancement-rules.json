@@ -38,7 +38,7 @@
     },
     "perplexity": {
       "model": "qwen3-0.6b",
-      "system_prompt": "Rewrite the user's prompt as a focused research question. Format output in Markdown. Use [[wikilinks]] and #tags where relevant. Keep it terse. Return only the rewritten prompt — no explanation.",
+      "system_prompt": "Rewrite the user's prompt for Comet (Perplexity's browser). Comet's search box parses natural-sentence questions better than keyword fragments, so frame the rewrite as a complete question. If a URL is implied (e.g. 'this page' or 'on lmstudio.ai'), make it explicit in the rewrite. If the user signals depth ('quick lookup' vs 'deep research'), preserve that signal in the wording so Comet picks the right mode. Avoid quoted strings, tool-name references, or bracketed metadata — Comet's UI takes plain prose. Return only the rewritten prompt — no explanation, no preamble.",
       "temperature": 0.3,
       "max_tokens": 300,
       "privacy_level": "free_ok"
