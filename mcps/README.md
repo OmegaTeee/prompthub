@@ -101,6 +101,17 @@ Enabled by default. Reduces tool context from ~75 KB to ~25 KB (~14K tokens save
 
 Disable with `MINIFY_SCHEMAS=false` for debugging.
 
+### Meta-tools
+
+The bridge exposes two synthetic tools that don't proxy to a backend MCP server. They let agents discover and start on-demand servers (`auto_start: false`) whose tools are otherwise invisible until the server is running.
+
+| Tool | Purpose |
+| --- | --- |
+| `prompthub_list_available_servers` | Calls `GET /servers`. Returns every configured server with status (`running`, `stopped`, `failed`). |
+| `prompthub_start_server` | Calls `POST /servers/{name}/start`, polls `/servers` until the target reaches `running` status (15 s timeout), refreshes the bridge's server cache, then sends a `notifications/tools/list_changed` so MCP clients re-fetch tools. |
+
+Use `prompthub_list_available_servers` to discover what exists, then call `prompthub_start_server` with the chosen name. The new server's tools appear in the next `tools/list` response.
+
 ## Adding a new MCP server
 
 ### npm package

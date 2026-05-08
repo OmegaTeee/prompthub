@@ -122,6 +122,135 @@ async function callPromptHub(serverName, jsonRpcRequest) {
 }
 
 // ---------------------------------------------------------------------------
+// Bridge meta-tools — agent-initiated server start
+// ---------------------------------------------------------------------------
+// These two tools are owned by the bridge itself, not proxied to a backend
+// server. They let agents discover and start on-demand MCP servers
+// (e.g. obsidian, chrome-devtools-mcp, browsermcp) whose tools are
+// otherwise invisible until the server is running.
+// ---------------------------------------------------------------------------
+
+const META_TOOL_NAMES = new Set([
+  'prompthub_list_available_servers',
+  'prompthub_start_server',
+]);
+
+const META_TOOLS = [
+  {
+    name: 'prompthub_list_available_servers',
+    description:
+      'List every MCP server configured in the PromptHub router, including running, stopped, and failed servers. Use this to discover on-demand servers (which do not auto-start) before calling prompthub_start_server.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'prompthub_start_server',
+    description:
+      'Start a configured but stopped MCP server (auto_start=false servers like obsidian, chrome-devtools-mcp, browsermcp). Waits until the server reaches "running" status, then signals tools/list_changed so the client refreshes its tool list. Use prompthub_list_available_servers first to see which servers exist.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Server name as listed by prompthub_list_available_servers (e.g., "obsidian", "browsermcp").',
+        },
+      },
+      required: ['name'],
+      additionalProperties: false,
+    },
+  },
+];
+
+/**
+ * Fetch every configured server (running, stopped, failed) from the router.
+ * Unlike fetchRunningServers(), this returns the full status payload.
+ */
+async function listAvailableServers() {
+  const response = await fetch(`${PROMPTHUB_URL}/servers`, {
+    headers: { 'X-Client-Name': CLIENT_NAME },
+  });
+  if (!response.ok) {
+    throw new Error(`GET /servers failed: HTTP ${response.status}`);
+  }
+  return await response.json();
+}
+
+/**
+ * Start a server via the router and wait for it to reach "running" status.
+ * Returns once running, or throws on failure / timeout (15 s).
+ */
+async function startServerViaRouter(name) {
+  if (!name || typeof name !== 'string') {
+    throw new Error('Missing required argument: name (string)');
+  }
+
+  const startResp = await fetch(
+    `${PROMPTHUB_URL}/servers/${encodeURIComponent(name)}/start`,
+    {
+      method: 'POST',
+      headers: { 'X-Client-Name': CLIENT_NAME },
+    }
+  );
+  /** @type {any} */
+  const startData = await startResp.json().catch(() => ({}));
+  if (!startResp.ok) {
+    const detail = startData.detail || `HTTP ${startResp.status}`;
+    throw new Error(`POST /servers/${name}/start failed: ${detail}`);
+  }
+
+  // Poll /servers until the target reaches "running" or "failed" (or timeout).
+  const deadline = Date.now() + 15000;
+  while (Date.now() < deadline) {
+    const allResp = await fetch(`${PROMPTHUB_URL}/servers`, {
+      headers: { 'X-Client-Name': CLIENT_NAME },
+    });
+    /** @type {any} */
+    const allData = await allResp.json();
+    const found = allData.servers?.find(s => s.name === name);
+    if (found?.status === 'running') {
+      // Refresh cached list so the next tools/list call surfaces the new tools.
+      await fetchRunningServers();
+      return { name, status: 'running', start_response: startData };
+    }
+    if (found?.status === 'failed') {
+      throw new Error(`Server '${name}' transitioned to 'failed' during start`);
+    }
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+  throw new Error(`Timeout: '${name}' did not reach 'running' status within 15 s`);
+}
+
+/**
+ * Dispatch a meta-tool call. Returns the raw result; the request handler
+ * wraps it in MCP content blocks. mcpServer is the active Server instance
+ * (used for sending tools/list_changed notifications post-start).
+ */
+async function handleMetaTool(name, args, mcpServer) {
+  if (name === 'prompthub_list_available_servers') {
+    return await listAvailableServers();
+  }
+  if (name === 'prompthub_start_server') {
+    const result = await startServerViaRouter(args?.name);
+    // Notify client to refresh tools/list. Some clients (Claude Desktop,
+    // Cherry Studio, VS Code) may ignore this until they implement
+    // tools/list_changed; failure is non-fatal.
+    try {
+      await mcpServer.notification({ method: 'notifications/tools/list_changed' });
+      result.notification_sent = true;
+    } catch (err) {
+      result.notification_sent = false;
+      result.notification_error = err.message;
+      console.error(`tools/list_changed notification failed: ${err.message}`);
+    }
+    return result;
+  }
+  throw new Error(`Unknown meta-tool: ${name}`);
+}
+
+// ---------------------------------------------------------------------------
 // Schema minification — strip verbose fields to reduce LLM context usage
 // Keeps: type, properties, required, enum, items, oneOf/anyOf/allOf, format,
 //        additionalProperties, minimum/maximum, minLength/maxLength, pattern
@@ -242,7 +371,9 @@ async function getAllTools() {
     }
   }
 
-  return allTools;
+  // Always append bridge-owned meta-tools so agents can discover and start
+  // on-demand servers even when no backend servers are running.
+  return [...allTools, ...META_TOOLS];
 }
 
 /**
@@ -320,7 +451,9 @@ async function main() {
     const { name, arguments: args } = request.params;
 
     try {
-      const result = await callTool(name, args || {});
+      const result = META_TOOL_NAMES.has(name)
+        ? await handleMetaTool(name, args || {}, server)
+        : await callTool(name, args || {});
 
       return {
         content: [

@@ -2,13 +2,6 @@
 
 ## Now
 
-### Agent-Initiated Server Start (priority: high)
-
-> **Context:** On-demand servers (`obsidian`, `chrome-devtools-mcp`, `browsermcp`) don't expose tools until started. Agents currently can't see or start them. This is a prerequisite for effective use of on-demand servers and directly supports Progressive Tool Disclosure Phase 1.
-
-- [ ] Add `start_server` meta-tool to the bridge; call `POST /servers/{name}/start`, wait for the server to register, then refresh the bridge tool list.
-- [ ] Add `list_available_servers` meta-tool; call `GET /servers` and return all configured servers, including running, stopped, and failed.
-
 ### Progressive Tool Disclosure
 
 > **Plan:** [`docs/notes/plans/progressive-tool-disclosure.md`](docs/notes/plans/progressive-tool-disclosure.md)
@@ -58,6 +51,8 @@
 
 ## Done (2026-05-07)
 
+- [x] ~~Add `start_server` meta-tool to the bridge~~ — Implemented as `prompthub_start_server` in PR #20. Calls `POST /servers/{name}/start`, polls `/servers` until `running` (15 s timeout), refreshes cached server list, and sends `notifications/tools/list_changed` so MCP clients re-fetch tools.
+- [x] ~~Add `list_available_servers` meta-tool~~ — Implemented as `prompthub_list_available_servers` in PR #20. Calls `GET /servers` and returns the full payload (running, stopped, failed).
 - [x] ~~Add CHANGELOG entry for PR #15~~ — Backfilled in PR #20 under `Unreleased > Added` (`llm_api_key` keyring fallback, `LM_API_TOKEN` env alias).
 - [x] ~~Add CHANGELOG entry for PR #16~~ — Backfilled in PR #20 under `Unreleased > Fixed` (Ruff debt cleared, lint CI strictened).
 - [x] ~~Add CHANGELOG entry for MCP + qwen-code cleanup~~ — Backfilled in PR #20 across `Unreleased > Added/Changed/Fixed` (PR #18: `applescript-mcp` + `homebrew` added, direct sidecars stripped, `setup.sh`/README aligned, `mcpServers` separated from settings).
