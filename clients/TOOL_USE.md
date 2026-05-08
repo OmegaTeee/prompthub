@@ -46,10 +46,12 @@ Start with `curl -X POST http://localhost:9090/servers/{name}/start` first.
 
 Pick by the **shape of the input**, not by the task label. When in doubt,
 prefer the cheaper tool — Comet should be reserved for tasks where the
-browser actually adds value.
+browser actually adds value, and memory search comes before research
+tools when the user references earlier work.
 
 | Input                                                     | Use                                            | Why                                       |
 | --------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------- |
+| **References earlier work / past decisions / "we discussed..."** | `prompthub_memory_search` *first*       | Free local lookup; avoids burning Comet on already-known answers |
 | JS-rendered page (lmstudio.ai, GitHub file viewer, SPA UIs) | `comet_ask` with URL                         | Plain fetch gets `<script>` shell only    |
 | Login-gated page, form fill, multi-step browsing          | `comet_ask`                                    | Real browser session, agentic             |
 | Raw URL → plain text/JSON (APIs, GitHub raw, RSS, robots.txt) | `fetch` *(or `duckduckgo_fetch_content`)*  | No browser overhead                       |
@@ -63,6 +65,24 @@ browser actually adds value.
 
 ---
 
+## Memory search before research
+
+`prompthub_memory_search` queries the cross-session fact and memory-block
+store (BM25-ranked). It runs locally against `~/.prompthub/memory.db`
+and costs no tokens — there's no reason not to try it first when the
+user references earlier work.
+
+When to call:
+- The prompt mentions "earlier" / "we discussed" / "previously" / "before"
+- The user references a past decision, plan, or architecture choice
+- The task continues something that's likely been worked on before
+
+When to escalate to a research tool (`comet_ask`, `duckduckgo_search`,
+`context7_query-docs`):
+- Memory search returns empty or low-relevance results (top score is small)
+- The information needed is fresh / external (news, vendor docs, etc.)
+- The user explicitly asks for current state outside the project
+
 ## Comet as a specialized research delegate
 
 Comet is the most expensive tool in the roster (real browser, ~30-180s per
@@ -72,15 +92,17 @@ call). Use it only for tasks that genuinely benefit from browser delegation:
   dynamic-page extraction, multi-source synthesis, anything Perplexity Pro's
   research mode does well.
 - **Don't use Comet for:** primary memory, thread retrieval, repo-history
-  understanding, or anything `fetch` / `duckduckgo_*` / `context7_*` can
-  satisfy.
+  understanding, or anything `prompthub_memory_search` / `fetch` /
+  `duckduckgo_*` / `context7_*` can satisfy.
 
 Sequence for browser tasks:
 
-1. `comet_connect` first — verifies Comet is running, attaches to session
-2. `comet_ask` with the rewritten query (the enhancement layer pre-shapes this)
-3. If `comet_ask` times out, **`comet_poll` before retrying** (see Timeout recovery)
-4. `comet_screenshot` if visual confirmation is needed
+1. **(Memory search first)** if the question could already have an answer
+   in session memory.
+2. `comet_connect` — verifies Comet is running, attaches to session
+3. `comet_ask` with the rewritten query (the enhancement layer pre-shapes this)
+4. If `comet_ask` times out, **`comet_poll` before retrying** (see Timeout recovery)
+5. `comet_screenshot` if visual confirmation is needed
 
 ---
 
@@ -126,6 +148,7 @@ than long ones.
 
 ```markdown
 ## Tool Use Rules
+- References to earlier work / past decisions → `prompthub_memory_search` first
 - JS-rendered sites (lmstudio.ai, GitHub files, SPA UIs) → `comet_ask`
 - Raw URLs (APIs, GitHub raw, plain HTML) → `fetch` or `duckduckgo_fetch_content`
 - Local files, terminal, processes → `desktop_commander_*`
@@ -133,6 +156,11 @@ than long ones.
 - Deep research, login-gated pages → `comet_ask`
 - Library/API docs → `context7_query-docs`
 - Stepwise reasoning on hard problems → `sequential_thinking`
+
+Memory search before research: if the prompt could be answered from
+session history, try `prompthub_memory_search` before `comet_ask` or
+other external tools. Costs nothing locally; escalate only when memory
+returns empty or low-relevance results.
 
 Comet is expensive — prefer cheaper tools first. Always `comet_connect`
 before `comet_ask`.

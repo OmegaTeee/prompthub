@@ -136,6 +136,7 @@ async function callPromptHub(serverName, jsonRpcRequest) {
 const META_TOOL_NAMES = new Set([
   'prompthub_list_available_servers',
   'prompthub_start_server',
+  'prompthub_memory_search',
 ]);
 
 const META_TOOLS = [
@@ -162,6 +163,26 @@ const META_TOOLS = [
         },
       },
       required: ['name'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'prompthub_memory_search',
+    description:
+      'Search prior conversation context (facts and memory blocks across every session for this client) before reaching for browser tools like comet_ask. Use this when the user references earlier work, past decisions, repo plans, or architecture context that may have been discussed before. Returns ranked results (BM25); higher score = more relevant. If results are empty or low-confidence, then escalate to comet_ask or other research tools.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search expression. Plain words work; advanced FTS5 syntax (prefix*, AND/OR, "phrase") is also accepted.',
+        },
+        limit: {
+          type: 'number',
+          description: 'Max combined results across facts and memory blocks. Default 10.',
+        },
+      },
+      required: ['query'],
       additionalProperties: false,
     },
   },
@@ -227,6 +248,33 @@ async function startServerViaRouter(name) {
 }
 
 /**
+ * Search session memory (facts + blocks) via the router's
+ * POST /sessions/search endpoint. The router scopes results to the
+ * caller's client_id automatically (via X-Client-Name header), so
+ * cross-tenant data is invisible without an explicit cross_client flag.
+ */
+async function searchMemoryViaRouter(args) {
+  if (!args?.query || typeof args.query !== 'string') {
+    throw new Error('Missing required argument: query (string)');
+  }
+  const limit = Number.isFinite(args.limit) ? args.limit : 10;
+
+  const response = await fetch(`${PROMPTHUB_URL}/sessions/search`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Client-Name': CLIENT_NAME,
+    },
+    body: JSON.stringify({ query: args.query, limit }),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`POST /sessions/search failed: HTTP ${response.status}${text ? ` — ${text}` : ''}`);
+  }
+  return await response.json();
+}
+
+/**
  * Dispatch a meta-tool call. Returns the raw result; the request handler
  * wraps it in MCP content blocks. mcpServer is the active Server instance
  * (used for sending tools/list_changed notifications post-start).
@@ -234,6 +282,9 @@ async function startServerViaRouter(name) {
 async function handleMetaTool(name, args, mcpServer) {
   if (name === 'prompthub_list_available_servers') {
     return await listAvailableServers();
+  }
+  if (name === 'prompthub_memory_search') {
+    return await searchMemoryViaRouter(args);
   }
   if (name === 'prompthub_start_server') {
     const result = await startServerViaRouter(args?.name);
