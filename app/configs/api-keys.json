@@ -32,7 +32,7 @@
     },
     "sk-prompthub-perplexity-001": {
       "client_name": "perplexity",
-      "description": "Perplexity Desktop",
+      "description": "Comet Web Research",
       "enhance": true
     },
     "sk-prompthub-raycast-001": {
@@ -40,9 +40,9 @@
       "description": "Raycast Commands",
       "enhance": false
     },
-    "sk-prompthub-openclaw-001": {
-      "client_name": "openclaw",
-      "description": "OpenClaw Agent",
+    "sk-prompthub-qwen-code-001": {
+      "client_name": "qwen-code",
+      "description": "Qwen Code Agent",
       "enhance": false
     },
     "sk-prompthub-jetbrains-001": {
