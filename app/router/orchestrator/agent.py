@@ -60,7 +60,15 @@ Rules:
 - Keep annotated_prompt close to the original — do NOT rewrite it
 - Only add a [HINT:...] prefix if it genuinely helps routing
 - Strip any <think>...</think> blocks before outputting
-- Output valid JSON only"""
+- Output valid JSON only
+
+Memory routing:
+- When the prompt references prior work, past decisions, "we discussed",
+  "earlier", "before", or repo-history context, set intent to "memory"
+  OR add "check_memory_first" to context_hints so the chat model knows to
+  call prompthub_memory_search before reaching for browser tools.
+- Do not override an explicit intent (e.g. "search the web for X" stays
+  search/general even if the topic was discussed before)."""
 
 
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
