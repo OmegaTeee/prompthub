@@ -102,6 +102,82 @@ class SessionStorage:
                     "CREATE INDEX IF NOT EXISTS idx_blocks_session ON session_memory_blocks(session_id)"
                 )
 
+                # FTS5 indices for cross-session search.
+                # External-content mode: FTS stores only the inverted index;
+                # base tables remain authoritative. Triggers below keep them
+                # in sync on every INSERT/UPDATE/DELETE.
+                await db.execute("""
+                    CREATE VIRTUAL TABLE IF NOT EXISTS session_facts_fts USING fts5(
+                        fact,
+                        content='session_facts',
+                        content_rowid='id'
+                    )
+                """)
+                await db.execute("""
+                    CREATE VIRTUAL TABLE IF NOT EXISTS session_blocks_fts USING fts5(
+                        value,
+                        content='session_memory_blocks',
+                        content_rowid='id'
+                    )
+                """)
+
+                # Triggers: keep FTS aligned with base tables.
+                # The "delete" sentinel in the first column of an INSERT into
+                # an FTS5 contentless table is the documented way to remove
+                # rows from the index without a real SQL DELETE.
+                await db.execute("""
+                    CREATE TRIGGER IF NOT EXISTS session_facts_ai
+                    AFTER INSERT ON session_facts BEGIN
+                        INSERT INTO session_facts_fts(rowid, fact)
+                        VALUES (new.id, new.fact);
+                    END
+                """)
+                await db.execute("""
+                    CREATE TRIGGER IF NOT EXISTS session_facts_ad
+                    AFTER DELETE ON session_facts BEGIN
+                        INSERT INTO session_facts_fts(session_facts_fts, rowid, fact)
+                        VALUES ('delete', old.id, old.fact);
+                    END
+                """)
+                await db.execute("""
+                    CREATE TRIGGER IF NOT EXISTS session_facts_au
+                    AFTER UPDATE ON session_facts BEGIN
+                        INSERT INTO session_facts_fts(session_facts_fts, rowid, fact)
+                        VALUES ('delete', old.id, old.fact);
+                        INSERT INTO session_facts_fts(rowid, fact)
+                        VALUES (new.id, new.fact);
+                    END
+                """)
+                await db.execute("""
+                    CREATE TRIGGER IF NOT EXISTS session_blocks_ai
+                    AFTER INSERT ON session_memory_blocks BEGIN
+                        INSERT INTO session_blocks_fts(rowid, value)
+                        VALUES (new.id, new.value);
+                    END
+                """)
+                await db.execute("""
+                    CREATE TRIGGER IF NOT EXISTS session_blocks_ad
+                    AFTER DELETE ON session_memory_blocks BEGIN
+                        INSERT INTO session_blocks_fts(session_blocks_fts, rowid, value)
+                        VALUES ('delete', old.id, old.value);
+                    END
+                """)
+                await db.execute("""
+                    CREATE TRIGGER IF NOT EXISTS session_blocks_au
+                    AFTER UPDATE ON session_memory_blocks BEGIN
+                        INSERT INTO session_blocks_fts(session_blocks_fts, rowid, value)
+                        VALUES ('delete', old.id, old.value);
+                        INSERT INTO session_blocks_fts(rowid, value)
+                        VALUES (new.id, new.value);
+                    END
+                """)
+
+                await db.commit()
+
+                # Backfill FTS from existing rows when the indexes are stale
+                # (e.g. first run after the FTS schema was added). FTS5's
+                # 'rebuild' command re-indexes from the base tables.
+                await self._backfill_fts_if_stale(db)
                 await db.commit()
 
             self._initialized = True
@@ -605,6 +681,176 @@ class SessionStorage:
             "total_blocks": total_blocks,
             "closed_sessions": closed_sessions,
         }
+
+    async def _backfill_fts_if_stale(self, db: aiosqlite.Connection) -> None:
+        """
+        Re-index FTS tables from base tables when they're out of sync.
+
+        Runs once per session-storage initialize. Cheap when the row counts
+        already match (the COUNT comparisons short-circuit). Required when
+        the FTS schema is added to a database that already has data.
+        """
+        for fts_table, base_table in (
+            ("session_facts_fts", "session_facts"),
+            ("session_blocks_fts", "session_memory_blocks"),
+        ):
+            cursor = await db.execute(f"SELECT COUNT(*) FROM {fts_table}")
+            fts_count = (await cursor.fetchone())[0]
+            cursor = await db.execute(f"SELECT COUNT(*) FROM {base_table}")
+            base_count = (await cursor.fetchone())[0]
+            if fts_count != base_count:
+                logger.info(
+                    "Rebuilding %s (fts=%d, base=%d)",
+                    fts_table, fts_count, base_count,
+                )
+                await db.execute(
+                    f"INSERT INTO {fts_table}({fts_table}) VALUES('rebuild')"
+                )
+
+    async def search(
+        self,
+        query: str,
+        client_id: str | None = None,
+        limit: int = 10,
+        cross_client: bool = False,
+    ) -> list[dict[str, Any]]:
+        """
+        Full-text search across session facts and memory blocks (BM25-ranked).
+
+        Args:
+            query: FTS5 match expression. Supports prefix*, AND/OR, and
+                quoted phrases. Empty/whitespace queries return [].
+            client_id: Filter to sessions owned by this client. Defaults to
+                the audit-context client when None. Ignored if cross_client=True.
+            limit: Max combined results across facts + blocks.
+            cross_client: When True, search every session regardless of owner.
+
+        Returns:
+            List of result dicts ordered by relevance (highest first):
+
+                {
+                    "kind": "fact" | "block",
+                    "session_id": str,
+                    "content": str,                # the matched text
+                    "score": float,                # higher = more relevant
+                    "fact_id": int | None,         # set when kind == "fact"
+                    "tags": list[str] | None,      # set when kind == "fact"
+                    "block_key": str | None,       # set when kind == "block"
+                }
+
+            FTS5's bm25() returns negative numbers where smaller = better;
+            we negate so callers see positive scores with the conventional
+            "higher = more relevant" semantic.
+        """
+        if not self._initialized:
+            await self.initialize()
+
+        # Empty query is a no-op; FTS5 would error on whitespace-only MATCH
+        if not query or not query.strip():
+            return []
+
+        # Defense-in-depth: clamp limit even if the API-layer Pydantic
+        # validator was bypassed (direct SessionStorage callers, tests,
+        # internal services). SQLite treats LIMIT -1 as "no limit", which
+        # would page through the entire FTS table; very large positive
+        # limits cause heavy scans and oversized responses.
+        try:
+            limit = int(limit)
+        except (TypeError, ValueError):
+            limit = 10
+        limit = max(1, min(limit, 100))
+
+        if not cross_client and client_id is None:
+            context = get_audit_context()
+            client_id = context.get("client_id")
+
+        # Build conditional client_id filter. Use a subquery against sessions
+        # rather than a JOIN to keep the FTS plan focused on the FTS index.
+        client_filter = ""
+        params: list[Any] = [query]
+        if not cross_client and client_id:
+            client_filter = (
+                "AND f.session_id IN (SELECT id FROM sessions WHERE client_id = ?)"
+            )
+            params.append(client_id)
+
+        sql_facts = f"""
+            SELECT
+                'fact' AS kind,
+                f.session_id AS session_id,
+                f.fact AS content,
+                f.id AS fact_id,
+                f.tags AS tags_json,
+                NULL AS block_key,
+                bm25(session_facts_fts) AS rank
+            FROM session_facts_fts
+            JOIN session_facts f ON f.id = session_facts_fts.rowid
+            WHERE session_facts_fts MATCH ?
+            {client_filter}
+        """
+
+        # Same conditional filter, swapped for the blocks query
+        block_filter = ""
+        block_params: list[Any] = [query]
+        if not cross_client and client_id:
+            block_filter = (
+                "AND b.session_id IN (SELECT id FROM sessions WHERE client_id = ?)"
+            )
+            block_params.append(client_id)
+
+        sql_blocks = f"""
+            SELECT
+                'block' AS kind,
+                b.session_id AS session_id,
+                b.value AS content,
+                NULL AS fact_id,
+                NULL AS tags_json,
+                b.key AS block_key,
+                bm25(session_blocks_fts) AS rank
+            FROM session_blocks_fts
+            JOIN session_memory_blocks b ON b.id = session_blocks_fts.rowid
+            WHERE session_blocks_fts MATCH ?
+            {block_filter}
+        """
+
+        sql = f"""
+            SELECT * FROM (
+                {sql_facts}
+                UNION ALL
+                {sql_blocks}
+            )
+            ORDER BY rank ASC
+            LIMIT ?
+        """
+        all_params = params + block_params + [limit]
+
+        async with aiosqlite.connect(str(self.db_path)) as db:
+            db.row_factory = aiosqlite.Row
+            try:
+                cursor = await db.execute(sql, all_params)
+                rows = await cursor.fetchall()
+            except aiosqlite.OperationalError as e:
+                # FTS5 raises on malformed match expressions (unbalanced
+                # quotes, lone "AND"/"OR" operators, etc.). Log and return
+                # empty rather than 500-ing — callers should be free to
+                # forward arbitrary user input.
+                logger.warning("FTS5 search rejected query %r: %s", query, e)
+                return []
+
+        results: list[dict[str, Any]] = []
+        for row in rows:
+            row_dict = dict(row)
+            tags_json = row_dict.pop("tags_json")
+            results.append({
+                "kind": row_dict["kind"],
+                "session_id": row_dict["session_id"],
+                "content": row_dict["content"],
+                "score": -row_dict["rank"],  # negate so higher = more relevant
+                "fact_id": row_dict["fact_id"],
+                "tags": json.loads(tags_json) if tags_json else None,
+                "block_key": row_dict["block_key"],
+            })
+        return results
 
 
 # Global session storage instance

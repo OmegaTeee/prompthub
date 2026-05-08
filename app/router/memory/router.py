@@ -17,6 +17,9 @@ from .models import (
     FactResponse,
     MemoryBlockResponse,
     MemoryBlockUpsert,
+    SearchRequest,
+    SearchResponse,
+    SearchResult,
     SessionContextResponse,
     SessionCreate,
     SessionListResponse,
@@ -82,6 +85,27 @@ def create_memory_router(
             total=total,
             limit=limit,
             offset=offset,
+        )
+
+    # POST /sessions/search — Cross-session full-text search
+    @router.post("/search", response_model=SearchResponse)
+    async def search_sessions(req: SearchRequest) -> SearchResponse:
+        """
+        Search across session facts and memory blocks (BM25-ranked).
+
+        Scope defaults to the caller's client_id (from audit context).
+        Use cross_client=True to search every session regardless of owner.
+        """
+        storage = get_storage()
+        results = await storage.search(
+            query=req.query,
+            limit=req.limit,
+            cross_client=req.cross_client,
+        )
+        return SearchResponse(
+            results=[SearchResult(**r) for r in results],
+            query=req.query,
+            limit=req.limit,
         )
 
     # GET /sessions/{id} — Get session details
