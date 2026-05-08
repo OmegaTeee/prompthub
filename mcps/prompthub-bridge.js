@@ -250,8 +250,17 @@ async function startServerViaRouter(name) {
 /**
  * Search session memory (facts + blocks) via the router's
  * POST /sessions/search endpoint. The router scopes results to the
- * caller's client_id automatically (via X-Client-Name header), so
- * cross-tenant data is invisible without an explicit cross_client flag.
+ * caller's client_id automatically (via the audit context populated
+ * from X-Client-ID), so cross-tenant data is invisible without an
+ * explicit cross_client flag.
+ *
+ * NOTE: Two headers are sent because they serve different layers:
+ *   - X-Client-Name: enhancement-rule lookup (which client's rule to apply)
+ *   - X-Client-ID:   audit-context client_id (which sessions to search)
+ * Both carry CLIENT_NAME because the bridge represents one identity to
+ * the router. The audit layer reads X-Client-ID; without it the
+ * default is "anonymous" and the search returns no rows for sessions
+ * owned by the caller.
  */
 async function searchMemoryViaRouter(args) {
   if (!args?.query || typeof args.query !== 'string') {
@@ -264,6 +273,7 @@ async function searchMemoryViaRouter(args) {
     headers: {
       'Content-Type': 'application/json',
       'X-Client-Name': CLIENT_NAME,
+      'X-Client-ID': CLIENT_NAME,
     },
     body: JSON.stringify({ query: args.query, limit }),
   });
