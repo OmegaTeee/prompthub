@@ -320,3 +320,150 @@ async def test_mcp_client_graceful_degradation():
     # Sync should return False
     success = await client.sync_session_entity("session-1", "client-1")
     assert success is False
+
+
+# Cross-session search tests (Phase 1 of Tier 2)
+@pytest.mark.asyncio
+async def test_search_returns_empty_on_empty_query(storage):
+    """Empty / whitespace-only query short-circuits to []."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    await storage.add_fact("s1", "the cat sat on the mat")
+
+    assert await storage.search("", cross_client=True) == []
+    assert await storage.search("   ", cross_client=True) == []
+
+
+@pytest.mark.asyncio
+async def test_search_finds_facts_by_keyword(storage):
+    """Single-keyword search returns matching facts ranked by BM25."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    await storage.add_fact("s1", "PromptHub uses FastAPI for the router")
+    await storage.add_fact("s1", "The cache uses SQLite with WAL mode")
+    await storage.add_fact("s1", "Cherry Studio connects via /v1/responses")
+
+    results = await storage.search("FastAPI", cross_client=True)
+
+    assert len(results) == 1
+    assert results[0]["kind"] == "fact"
+    assert "FastAPI" in results[0]["content"]
+    assert results[0]["score"] > 0  # negated BM25; positive after negation
+    assert results[0]["session_id"] == "s1"
+
+
+@pytest.mark.asyncio
+async def test_search_finds_memory_blocks(storage):
+    """Memory blocks are searchable via the same query path as facts."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    await storage.upsert_memory_block(
+        "s1", "active_branch", "feat/memory-search-tier-2"
+    )
+    await storage.upsert_memory_block(
+        "s1", "current_focus", "writing FTS5 unit tests"
+    )
+
+    results = await storage.search("FTS5", cross_client=True)
+
+    assert len(results) == 1
+    assert results[0]["kind"] == "block"
+    assert results[0]["block_key"] == "current_focus"
+    assert "FTS5" in results[0]["content"]
+
+
+@pytest.mark.asyncio
+async def test_search_returns_facts_and_blocks_unified(storage):
+    """A query that matches both kinds returns interleaved results."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    await storage.add_fact("s1", "Comet is the local browser surface")
+    await storage.upsert_memory_block(
+        "s1", "current_branch_focus", "Comet rename and enhancement tuning"
+    )
+
+    results = await storage.search("Comet", cross_client=True)
+
+    kinds = {r["kind"] for r in results}
+    assert kinds == {"fact", "block"}, f"expected both kinds, got {kinds}"
+
+
+@pytest.mark.asyncio
+async def test_search_filters_by_client_id_by_default(storage):
+    """When cross_client=False, only the caller's client_id sees results."""
+    await storage.create_session(session_id="s_alice", client_id="alice")
+    await storage.create_session(session_id="s_bob", client_id="bob")
+
+    await storage.add_fact("s_alice", "Alice prefers tabs over spaces")
+    await storage.add_fact("s_bob", "Bob prefers spaces over tabs")
+
+    # alice scope: only alice's fact
+    alice_results = await storage.search("tabs", client_id="alice")
+    assert len(alice_results) == 1
+    assert alice_results[0]["session_id"] == "s_alice"
+
+    # bob scope: only bob's fact
+    bob_results = await storage.search("tabs", client_id="bob")
+    assert len(bob_results) == 1
+    assert bob_results[0]["session_id"] == "s_bob"
+
+
+@pytest.mark.asyncio
+async def test_search_cross_client_overrides_scope(storage):
+    """cross_client=True ignores client_id and returns every match."""
+    await storage.create_session(session_id="s_alice", client_id="alice")
+    await storage.create_session(session_id="s_bob", client_id="bob")
+    await storage.add_fact("s_alice", "Alice mentions FastAPI")
+    await storage.add_fact("s_bob", "Bob mentions FastAPI")
+
+    results = await storage.search("FastAPI", cross_client=True)
+    assert len(results) == 2
+    assert {r["session_id"] for r in results} == {"s_alice", "s_bob"}
+
+
+@pytest.mark.asyncio
+async def test_search_respects_limit(storage):
+    """limit caps total results across both kinds."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    for i in range(8):
+        await storage.add_fact("s1", f"PromptHub feature number {i}")
+
+    results = await storage.search("PromptHub", cross_client=True, limit=3)
+    assert len(results) == 3
+
+
+@pytest.mark.asyncio
+async def test_search_ranks_by_relevance(storage):
+    """BM25 ranking puts facts with more query-term matches first."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    # The first fact mentions "FastAPI" once; the second mentions it twice.
+    await storage.add_fact("s1", "PromptHub is a FastAPI app")
+    await storage.add_fact("s1", "FastAPI gives FastAPI-style decorators here")
+
+    results = await storage.search("FastAPI", cross_client=True)
+    assert len(results) == 2
+    # The fact with 2x mentions should outrank the one with 1x mentions
+    assert results[0]["content"].count("FastAPI") >= results[1]["content"].count("FastAPI")
+
+
+@pytest.mark.asyncio
+async def test_search_handles_malformed_fts_query(storage):
+    """Unbalanced quotes / lone operators don't 500 — return empty."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    await storage.add_fact("s1", "some content here")
+
+    # FTS5 rejects lone " or unbalanced quotes
+    results = await storage.search('"', cross_client=True)
+    assert results == []
+
+
+@pytest.mark.asyncio
+async def test_search_updates_propagate_to_fts(storage):
+    """After a fact is updated/deleted, FTS reflects the change immediately."""
+    await storage.create_session(session_id="s1", client_id="c1")
+    fact = await storage.add_fact("s1", "early version mentions GraphQL")
+
+    # Sanity: searchable
+    pre = await storage.search("GraphQL", cross_client=True)
+    assert len(pre) == 1
+
+    # Delete the fact; FTS DELETE trigger removes from index
+    await storage.delete_fact("s1", fact["id"])
+    post = await storage.search("GraphQL", cross_client=True)
+    assert post == []
