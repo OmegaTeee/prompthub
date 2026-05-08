@@ -8,7 +8,9 @@ role decisions, the profiles file wins for sampling knobs.
 
 See also [ADR-008](../../architecture/ADR-008-task-specific-models.md) for
 the canonical current model assignments that both files should stay in
-sync with.
+sync with, and [docs/guides/enhancement-tuning.md](../../guides/enhancement-tuning.md)
+for how to write the per-client `system_prompt`s that drive the rewriter
+(the model selection here is the start of the conversation, not the end).
 
 ---
 

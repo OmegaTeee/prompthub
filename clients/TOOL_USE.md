@@ -8,6 +8,13 @@ that need explicit rules to pick the right tool.
 Copy the **Rules block** at the bottom into your client's system prompt.
 Keep this file as the single source of truth; per-client copies drift.
 
+> **Related:** [`docs/guides/enhancement-tuning.md`](../docs/guides/enhancement-tuning.md)
+> covers how the local rewriter shapes the prompts the chat model receives
+> *before* these tool-routing rules fire. Tuning the rewriter (in
+> [`app/configs/enhancement-rules.json`](../app/configs/enhancement-rules.json))
+> and tuning the chat model's tool-routing system prompt (this file) are
+> two different surfaces — both contribute to whether a tool call lands.
+
 ---
 
 ## Tool roster (what PromptHub exposes)
