@@ -22,7 +22,8 @@
     "adamvoss.vscode-languagetool",
     "be5invis.vscode-icontheme-nomo-dark",
     "ibm.output-colorizer",
-    "davidmwhynot.markdown-highlightjs"
+    "davidmwhynot.markdown-highlightjs",
+    "ms-vscode.vscode-chat-customizations-evaluations"
   ],
   "unwantedRecommendations": [
     "ms-pyright.pyright",
