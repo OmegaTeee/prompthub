@@ -1,0 +1,23 @@
+name: doc-drift
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: doc-drift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  doc-drift:
+    name: Doc drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run doc drift check
+        run: bash scripts/doc-drift/check-doc-drift.sh
