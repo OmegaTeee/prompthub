@@ -153,6 +153,59 @@ Retrieve the block later:
 curl http://localhost:9090/sessions/{session-id}/memory/user_settings
 ```
 
+## Searching Across Sessions
+
+After you store a few weeks of facts, scrolling through them by hand stops working. PromptHub has a search endpoint that ranks facts and memory blocks by how well they match your query.
+
+The ranking uses BM25, a standard text-search method that scores results by how often your search words appear and how rare those words are across all your notes. Think of it as a librarian who knows which keywords are common ("the", "and") and which ones actually mean something.
+
+### Search From an MCP Client
+
+If your client is connected through the bridge, the tool is `prompthub_memory_search`. Ask the AI:
+
+> "Search my memory for facts about FastAPI startup hooks."
+
+The agent calls the tool with your query and gets back the top matches.
+
+### Search Through the API
+
+```bash
+curl -X POST http://localhost:9090/sessions/search \
+  -H "Content-Type: application/json" \
+  -H "X-Client-ID: my-app" \
+  -d '{
+    "query": "FastAPI startup hooks",
+    "limit": 10
+  }'
+```
+
+The `limit` field accepts values from 1 to 100. The response includes the matching facts and memory blocks with their relevance scores.
+
+### Privacy Boundary
+
+By default, search only returns results from sessions that share your client ID. So `claude-desktop` searches see only `claude-desktop` data, even if other clients have stored similar facts.
+
+The client ID comes from the `X-Client-ID` header on your request, not from the request body. The bridge sets this header for you when an agent calls the tool.
+
+To search across every client, add `"cross_client": true` to the request body. Use this rarely. It is meant for admin queries or when you genuinely want to combine notes from many apps.
+
+```bash
+curl -X POST http://localhost:9090/sessions/search \
+  -H "Content-Type: application/json" \
+  -H "X-Client-ID: admin" \
+  -d '{
+    "query": "API key rotation policy",
+    "limit": 5,
+    "cross_client": true
+  }'
+```
+
+**Key points:**
+
+- `prompthub_memory_search` (chat) and `POST /sessions/search` (HTTP) both rank results with BM25.
+- Results are scoped to your client ID by default.
+- `cross_client: true` opts out of that scope. Use it sparingly.
+
 ## Dashboard Memory Panel
 
 The dashboard shows real-time memory statistics at a glance.

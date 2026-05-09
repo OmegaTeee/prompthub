@@ -158,7 +158,7 @@ PromptHub exposes several distinct surfaces:
 | MCP HTTP gateway | `/mcp-direct/mcp` | Streamable HTTP MCP transport |
 | Enhancement API | `/llm/enhance`, `/llm/orchestrate`, `/llm/stats` | Debugging and direct enhancement calls |
 | OpenAI-compatible proxy | `/v1/chat/completions`, `/v1/responses`, `/v1/models` | LLM-compatible client integration |
-| Memory API | `/sessions/*` | Session memory CRUD and context assembly |
+| Memory API | `/sessions/*`, `/sessions/search` | Session memory CRUD, context assembly, BM25 search |
 | Tool registry API | `/tools/*` | Cached tool snapshots and maintenance |
 | Dashboard | `/dashboard*` | HTMX operational UI |
 | Audit and security | `/audit/*`, `/security/alerts*` | Audit inspection and anomaly views |

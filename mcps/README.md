@@ -103,14 +103,15 @@ Disable with `MINIFY_SCHEMAS=false` for debugging.
 
 ### Meta-tools
 
-The bridge exposes two synthetic tools that don't proxy to a backend MCP server. They let agents discover and start on-demand servers (`auto_start: false`) whose tools are otherwise invisible until the server is running.
+The bridge exposes synthetic tools that don't proxy to a backend MCP server. They let agents discover and start on-demand servers (`auto_start: false`) whose tools are otherwise invisible until the server is running, and search persistent session memory.
 
 | Tool | Purpose |
 | --- | --- |
 | `prompthub_list_available_servers` | Calls `GET /servers`. Returns every configured server with status (`running`, `stopped`, `failed`). |
 | `prompthub_start_server` | Calls `POST /servers/{name}/start`, polls `/servers` until the target reaches `running` status (15 s timeout), refreshes the bridge's server cache, then sends a `notifications/tools/list_changed` so MCP clients re-fetch tools. |
+| `prompthub_memory_search` | Calls `POST /sessions/search`. BM25-ranked search over session facts and memory blocks (SQLite FTS5). Validates `limit` 1-100. Scoped to the caller's client ID by default; pass `cross_client: true` to opt out. |
 
-Use `prompthub_list_available_servers` to discover what exists, then call `prompthub_start_server` with the chosen name. The new server's tools appear in the next `tools/list` response.
+Use `prompthub_list_available_servers` to discover what exists, then call `prompthub_start_server` with the chosen name. The new server's tools appear in the next `tools/list` response. Use `prompthub_memory_search` to retrieve previously stored facts before answering.
 
 ## Adding a new MCP server
 
