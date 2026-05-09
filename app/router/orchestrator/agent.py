@@ -46,6 +46,14 @@ CONTEXT_TOKEN_BUDGET = 800     # Max tokens of session context to prepend
 HEALTH_PROBE_COOLDOWN = 10.0   # Seconds between health re-probes when unhealthy
 
 
+# The memory-routing block at the bottom of SYSTEM_PROMPT is here because the
+# bridge exposes a `prompthub_memory_search` meta-tool that searches prior
+# session facts/blocks. Without an explicit hint, chat models tend to reach
+# straight for browser tools (comet_ask, duckduckgo_search) on questions that
+# are actually answerable from in-thread or repo-history context. This nudges
+# the orchestrator to either label the intent "memory" or attach a
+# "check_memory_first" context hint so the downstream model checks memory
+# before paying for a web round-trip.
 SYSTEM_PROMPT = """You are an intent classifier for a local AI router. Analyze the user's prompt and respond ONLY with a JSON object — no markdown, no preamble.
 
 Required fields:

@@ -1,0 +1,44 @@
+# Path-based label rules for actions/labeler@v5.
+# Labels are auto-applied on PR open/synchronize so reviewers can filter
+# (e.g. "show me docs-only PRs") and triagers can spot mis-scoped diffs.
+# Multiple labels per PR are normal — a PR that touches both `app/router/`
+# and `docs/` will get both `area:router` and `area:docs`.
+
+"area:router":
+  - changed-files:
+      - any-glob-to-any-file: ["app/router/**"]
+
+"area:bridge":
+  - changed-files:
+      - any-glob-to-any-file: ["mcps/**"]
+
+"area:configs":
+  - changed-files:
+      - any-glob-to-any-file: ["app/configs/**"]
+
+"area:tests":
+  - changed-files:
+      - any-glob-to-any-file: ["app/tests/**"]
+
+"area:clients":
+  - changed-files:
+      - any-glob-to-any-file: ["clients/**"]
+
+"area:docs":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+          - "*.md"
+          - "CLAUDE.md"
+          - "AGENTS.md"
+          - "TODOS.md"
+          - "CHANGELOG.md"
+          - "README.md"
+
+"area:scripts":
+  - changed-files:
+      - any-glob-to-any-file: ["scripts/**"]
+
+"area:ci":
+  - changed-files:
+      - any-glob-to-any-file: [".github/**"]
