@@ -71,8 +71,8 @@ literal format. `"Frame the rewrite as a complete-sentence question."`
 
 ### Tool-name leakage
 
-❌ **Don't:** `"Use perplexity_ask for web research"` in the rewriter
-prompt — the rewriter will mention `perplexity_ask` in the rewritten user
+❌ **Don't:** `"Use comet_ask for web research"` in the rewriter
+prompt — the rewriter will mention `comet_ask` in the rewritten user
 prompt, confusing the chat model.
 
 ✅ **Do:** `"Do not name specific tool names."` Keep the chat model's
@@ -113,7 +113,7 @@ When a rewrite comes back wrong, work through these in order:
 | Output truncated mid-word                            | `max_tokens` exhausted                             | Bump `max_tokens` *or* switch to a model that doesn't think |
 | Output identical or nearly-identical to input        | Rewriter model too small to follow instructions    | Use a larger rewriter (4b-instruct vs 0.6b)         |
 | Output contains literal `[URL]` / `[path]` / `<query>` | System prompt has bracketed examples              | Rephrase system prompt without brackets             |
-| Output mentions `perplexity_ask` / `comet_ask` / etc. | Tool names leaked from the system prompt or rules  | Add `"Do not name specific tool names"` to system prompt |
+| Output mentions `comet_ask` / `memory_create_entities` / etc. | Tool names leaked from the system prompt or rules  | Add `"Do not name specific tool names"` to system prompt |
 | Output is a hallucinated *different* prompt           | Input was a placeholder ("test prompt here") that the rewriter substituted | Test with a real input — placeholders are an LLM trap, not a rule failure |
 | `provider: openrouter` when expected `llm`            | Local LLM is down; cloud fallback engaged          | Check `/health` for `llm: up`, restart LM Studio if needed |
 | `enhanced_by_llm: false` and `enhanced == original`   | Privacy level forbids leaving localhost AND local LLM is down | Either start the local LLM or change `privacy_level` to `free_ok` |
