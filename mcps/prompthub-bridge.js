@@ -125,12 +125,16 @@ async function callPromptHub(serverName, jsonRpcRequest) {
 }
 
 // ---------------------------------------------------------------------------
-// Bridge meta-tools — agent-initiated server start
+// Bridge meta-tools — owned by the bridge, not proxied to a backend server
 // ---------------------------------------------------------------------------
-// These two tools are owned by the bridge itself, not proxied to a backend
-// server. They let agents discover and start on-demand MCP servers
-// (e.g. obsidian, chrome-devtools-mcp, browsermcp) whose tools are
-// otherwise invisible until the server is running.
+// Two responsibilities:
+//   1. Server discovery and on-demand start
+//      (prompthub_list_available_servers, prompthub_start_server) —
+//      surfaces servers like obsidian / chrome-devtools-mcp / browsermcp
+//      whose tools are invisible until the server is running.
+//   2. Cross-session memory search (prompthub_memory_search) —
+//      lets chat models consult prior facts/blocks before reaching for
+//      browser tools; routes to the FastAPI POST /sessions/search endpoint.
 // ---------------------------------------------------------------------------
 
 const META_TOOL_NAMES = new Set([

@@ -93,8 +93,11 @@ def create_memory_router(
         """
         Search across session facts and memory blocks (BM25-ranked).
 
-        Scope defaults to the caller's client_id (from audit context).
-        Use cross_client=True to search every session regardless of owner.
+        client_id is not in the request body; the storage layer derives it
+        from the audit context (X-Client-ID header) and scopes results to
+        sessions owned by that client. Setting cross_client=True opts out
+        of that privacy boundary and searches every session regardless of
+        owner.
         """
         storage = get_storage()
         results = await storage.search(
@@ -318,11 +321,9 @@ def create_memory_router(
                     logger.warning(f"Summary generation failed: {e}")
                     summary = f"Summary generation failed: {e}"
 
-        # Store summary
-        await storage.get_session(session_id)  # Refresh
-        # Note: In a full implementation, we'd update the session's context_summary field
-        # For now, just return the summary
-
+        # context_summary on the session record is not persisted; the
+        # summary is computed and returned to the caller only. Wire this
+        # to a storage write when sessions need a durable summary field.
         return {"session_id": session_id, "summary": summary}
 
     return router
