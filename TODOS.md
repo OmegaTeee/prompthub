@@ -2,11 +2,11 @@
 
 ## Now
 
-### Progressive Tool Disclosure
+### Progressive Tool Disclosure (priority: high)
 
 > **Plan:** [`docs/notes/plans/progressive-tool-disclosure.md`](docs/notes/plans/progressive-tool-disclosure.md)
 > **Depends on:** Agent-Initiated Server Start.
-> **Context:** PromptHub is a router + enhancement middleware rather than a gateway, but lazy-loading tools still reduces tool-context waste.
+> **Context:** PromptHub is a router + enhancement middleware rather than a gateway, but lazy-loading tools still reduces tool-context waste. Flagged 2026-05-08 as the next key optimization priority — bridge currently exposes the full tool list from every running server on connect; tier-1/tier-2 disclosure with meta-tool gating cuts initial context by ~80%.
 
 - [ ] Test `notifications/tools/list_changed` in Claude Desktop, Cherry Studio, and VS Code; clients that fail remain on `disclosure: full`.
 - [ ] Phase 1: Add `discover_tools` and `load_server_tools` to `mcps/prompthub-bridge.js`, building on `start_server` and `list_available_servers`; add `TOOL_DISCLOSURE` and `TIER1_SERVERS` env vars.
@@ -15,6 +15,7 @@
 
 ### OpenAI-Compatible Proxy
 
+- [ ] **Cherry Studio auth via PromptHub router stopped working** — was working previously, now Cherry Studio fails to authenticate against `/v1/`. Suspected cause: a proxy setting in Cherry Studio got flipped (it has both direct-LLM and proxy-via-PromptHub modes; the LevelDB-backed config may have reverted). First debug step: capture a request from Cherry Studio with verbose HTTP logging and compare against the `Authorization: Bearer sk-prompthub-cherry-studio-001` shape that should reach `app/router/openai_compat/auth.py`. Verify the api-keys.json entry for cherry-studio is still intact and `enhance: false` (it shouldn't need to be flipped).
 - [ ] Support `response_format` passthrough; add `response_format` to `ChatCompletionRequest`, preserve and forward it in `app/router/openai_compat/router.py`, extend `LLMClient.chat_completion()` in `app/router/enhancement/llm_client.py` to accept passthrough options, add tests for `json_object` and `json_schema`, and document backend compatibility and fallback behavior.
 - [ ] Audit dropped OpenAI-compatible fields; review whether `frequency_penalty`, `presence_penalty`, `user`, and Responses API structured-output fields should also pass through consistently.
 
@@ -26,6 +27,14 @@
 
 ## Next
 
+### Bridge-wide `X-Client-ID` consistency
+
+> **Memory:** [`reference_audit_context_headers.md`](~/.claude/projects/-Users-visualval--local-share-prompthub/memory/reference_audit_context_headers.md)
+> **Context:** PR #23 caught the `X-Client-Name` (enhancement) vs `X-Client-ID` (audit-context) header drift via smoke test. Only `searchMemoryViaRouter` in `mcps/prompthub-bridge.js` currently sends both. Other bridge endpoints (`fetchRunningServers`, `callPromptHub`, `listAvailableServers`, `startServerViaRouter`) send only `X-Client-Name`. Not currently broken — those endpoints don't filter by audit-context client_id. Becomes a silent-failure trap the moment any future endpoint does.
+
+- [ ] Add `X-Client-ID: CLIENT_NAME` to every `fetch()` call in `mcps/prompthub-bridge.js` (alongside the existing `X-Client-Name`). One-line change per call site, ~5 sites total.
+- [ ] Optional: extract a `routerHeaders()` helper so future bridge endpoints can't forget either header.
+
 ### Client llm.txt knowledge files
 
 - [ ] Add `<client>-llm.txt` knowledge files for active clients: Claude, Codex, LM Studio, Perplexity Desktop, and VS Code; base each on official docs and client-specific quirks.
@@ -35,6 +44,16 @@
 - [ ] Update `README.md` to reflect the current architecture, active clients, and primary documentation entry points; remove the project status table if it cannot be kept current.
 
 ## Later
+
+### Feature: Dashboard Chat Sidecar (`feature/open-webui-chat`)
+
+> **Branch:** `feature/open-webui-chat` (preserved on origin; vision-stage exploration, not active development).
+> **Vision:** Add a chat UI sidecar to the dashboard for generating, exploring, and fixing client config files. Could extend to enhancement-rule editing — a wizard component that guides users toward config that matches their workflow rather than blank-page editing of `mcp.json` / `enhancement-rules.json`. Pairs naturally with the existing dashboard observability surface: see what a client is doing, then chat-edit its config in the same view.
+
+### Feature: PromptHub RAG Improvements (`feature/prompthub-rag-improvements`)
+
+> **Branch:** `feature/prompthub-rag-improvements` (local-only; vision-stage exploration).
+> **Vision:** Promising direction — needs more learning to fully leverage. Aligns well with integrations like Obsidian (vault as knowledge base) and Raycast (quick recall). Likely composes with the FTS5 memory_search work (PR #23) — RAG could ride on top of the same SQLite/FTS5 foundation, with embedding-based retrieval as the next layer once lexical search is well-understood.
 
 ### Refactor and standardize `scripts/` folder
 
