@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "name": "doc-drift-check",
+            "description": "Block Stop if runtime code changed without doc updates",
+            "command": "$QWEN_PROJECT_DIR/scripts/doc-drift/qwen-stop-hook.sh",
+            "timeout": 30000
+          }
+        ]
+      }
+    ]
+  }
+}

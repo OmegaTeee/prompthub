@@ -7,52 +7,40 @@ This setup assumes:
 - Model: `qwen3-4b-instruct-2507` (PromptHub's standard Qwen3 chat/enhancement model)
 - Primary docs to guard: `AGENTS.md`, `README.md`, `QUICKSTART.md`, `CHANGELOG.md`, `docs/**`, `clients/README.md`, `clients/WORKFLOW.md`, `clients/TOOL_USE.md`, `scripts/README.md`, `app/README.md`, `app/AGENTS.md`
 
-## 1) Qwen Code hook config
+## 1) Qwen Code hook config (project-local)
 
-Create or merge into `/Users/visualval/.qwen/settings.json`:
+The hook configuration is checked into the repo at
+[`.qwen/settings.json`](../../.qwen/settings.json), so it activates automatically
+whenever you run Qwen Code from inside this checkout — no edits to `~/.qwen/settings.json`
+required.
 
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/visualval/prompthub/scripts/doc-drift/qwen-stop-hook.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+Qwen Code resolves settings in [layered precedence](https://github.com/QwenLM/qwen-code/blob/main/docs/users/configuration/settings.md):
+defaults → user (`~/.qwen/settings.json`) → **project (`<repo>/.qwen/settings.json`, layer 4)** →
+system overrides → env → CLI args. Project settings *merge with* user settings rather than
+replacing them, so your existing model providers, MCP servers, and permissions all still apply.
 
-Notes:
-- This uses a `Stop` hook so the check runs when Qwen Code is finishing a task.
-- Keep the hook script in the repo so CI and local Git hooks can reuse the same logic.
+The committed file contains only the `hooks.Stop` block. The hook command uses
+`$QWEN_PROJECT_DIR/scripts/doc-drift/qwen-stop-hook.sh`, where `QWEN_PROJECT_DIR` is the env
+var Qwen Code populates with the project root — so the hook resolves correctly for any
+checkout location.
+
+Note: per Qwen Code's docs, the `Stop` event does **not** support a `matcher` (it always
+fires when the agent loop concludes). Earlier examples that included `"matcher": "Write|Edit|MultiEdit"`
+on a Stop hook were decoration; the runtime ignores it.
+
+To temporarily disable the hook for a session without removing it, set
+`"disableAllHooks": true` at the top level of your user `~/.qwen/settings.json`.
 
 ## 2) Local Git hook
 
-Create `.githooks/pre-commit` in the repo:
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-REPO_ROOT="$(git rev-parse --show-toplevel)"
-"$REPO_ROOT/scripts/doc-drift/check-doc-drift.sh" --staged
-```
-
-Enable it once:
+The repo ships [`.githooks/pre-commit`](../../.githooks/pre-commit) which delegates to the
+shared checker. Enable it once per checkout:
 
 ```bash
 git config core.hooksPath .githooks
-chmod +x .githooks/pre-commit
-chmod +x scripts/doc-drift/check-doc-drift.sh
-chmod +x scripts/doc-drift/qwen-stop-hook.sh
 ```
+
+The `chmod +x` bits are committed as `100755`, so no manual `chmod` is needed.
 
 ## 3) Shared checker script
 
