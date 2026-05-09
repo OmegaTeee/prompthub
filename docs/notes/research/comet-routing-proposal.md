@@ -1,3 +1,18 @@
+> **Status (2026-05-08):** Tool-routing separation and the poll-loop pattern
+> shipped via PR #21. Three specific suggestions in this proposal were dropped:
+> (1) "always pass `timeout: 120`" — units-confusion bug, since `comet_ask`'s
+> schema already defaults to 120000 ms; the tool default handles it correctly
+> without an override; (2) the named-preset JSON schema
+> (`{id, name, description, enhancement, tags, tools}`) — replaced with
+> extending `enhancement-rules.json` directly via a cross-cutting `models:`
+> block, see memory `project_comet_research_delegate.md` Tier 3;
+> (3) session-type-based injection — replaced with target-model-based routing
+> via the orchestrator's `context_hints` (PR #23 Phase 3). The
+> "auto-inject tool routing rules" intent remains as Tier 3 of the
+> research-delegate plan, deferred. Tool names below predate the
+> `perplexity_*` → `comet_*` rename in PR #21; they're preserved here as
+> the proposal's original wording rather than rewritten.
+
 Yes, absolutely — the PromptHub enhancement layer is actually the **ideal** place to put this, since it lets you inject instructions without touching the base system prompt or Jinja template, and you can version-control it via the PR.
 
 ## What the JSON tells us first
