@@ -192,24 +192,14 @@
         "perplexity-comet_internal_status"
       ],
       "env": {
-        "AUTHORIZATION": "Bearer PROMPTHUB_API_KEY",
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
         "CLIENT_NAME": "qwen-code",
-        "CONTENT_TYPE": "application/json",
-        "API_KEY": "PROMPTHUB_API_KEY",
         "MINIFY_SCHEMAS": "true",
         "DESC_MAX_LENGTH": "200",
         "SERVERS": "desktop-commander,perplexity-comet,context7,memory,sequential-thinking,duckduckgo",
         "EXCLUDE_TOOLS": "desktop-commander_give_feedback_to_desktop_commander,perplexity-comet_internal_status",
         "TOOL_PREFIX_ALIASES": "perplexity-comet:perplexity:comet_,desktop-commander:desktop:",
         "NODE_ENV": "production"
-      },
-      "headers": {
-        "Authorization": "Bearer PROMPTHUB_API_KEY",
-        "Content-Type": "application/json",
-        "X-Client-Name": "qwen-code",
-        "X-Client-ID": "qwen-code",
-        "X-API-KEY": "PROMPTHUB_API_KEY"
       },
       "trust": true,
       "timeout": 60000

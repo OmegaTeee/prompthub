@@ -55,8 +55,10 @@ Set your env vars (sourced from `clients/dotfiles/shell_common.sh` if you use
 the dotfiles symlink):
 
 ```bash
-export LM_API_TOKEN="$(security find-generic-password -s prompthub -a lm_api_token -w)"
-export OPENROUTER_API_KEY="$(security find-generic-password -s prompthub -a openrouter_api_key -w)"
+# PromptHub stores Keychain entries as service="prompthub:<key>" with account=$USER
+# (see app/router/keyring_manager.py for the canonical naming).
+export LM_API_TOKEN="$(security find-generic-password -s "prompthub:lm_api_token" -a "$USER" -w)"
+export OPENROUTER_API_KEY="$(security find-generic-password -s "prompthub:openrouter_api_key" -a "$USER" -w)"
 export PROMPTHUB_API_KEY="sk-prompthub-qwen-code-001"
 ```
 
@@ -90,8 +92,15 @@ if multiple share that `id`, since first-match wins).
 
 ## Notes
 
-- `envKey` is the **environment variable name**, not the value. Credentials
-  are read from `process.env[envKey]` at runtime; nothing is persisted.
+- `envKey` is the **environment variable name**, not the value. Qwen Code
+  reads the actual credential from `process.env[envKey]` at runtime; secrets
+  are not persisted in `settings.json`.
+- The exception is `PROMPTHUB_API_KEY = "sk-prompthub-qwen-code-001"` in the
+  top-level `env` block — this is intentionally repo-tracked because it's
+  not a secret. It's a local-only bearer token issued by the PromptHub
+  router at `localhost:9090`, identifying which entry in `app/configs/api-keys.json`
+  to apply. Sensitive credentials (`LM_API_TOKEN`, `OPENROUTER_API_KEY`)
+  are sourced from the user's environment via `${VAR}` interpolation.
 - `LM_API_TOKEN` is PromptHub's canonical local LM Studio token name.
   `LMSTUDIO_API_KEY` works as a backward-compat alias in `Settings`.
 - PromptHub Router entries send `X-Client-Name: qwen-code` AND

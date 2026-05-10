@@ -57,12 +57,23 @@ printf '  PROMPTHUB_API_KEY:   %s\n' "$(mask_status "${PROMPTHUB_API_KEY:-}")"
 printf '  OPENROUTER_API_KEY:  %s\n' "$(mask_status "${OPENROUTER_API_KEY:-}")"
 printf '\n'
 printf 'Providers (id @ baseUrl) in /model picker order:\n'
+# Reads the env block from settings.json and substitutes ${VAR} placeholders in
+# baseUrl values, so this stays accurate when the env block changes.
 python3 - <<'PY'
-import json, os
+import json, re
 from pathlib import Path
+
 data = json.loads((Path.home() / ".local/share/prompthub/clients/qwen-code/settings.json").read_text())
+env_block = data.get("env", {})
+
+
+def expand(value: str) -> str:
+    # ${VAR} placeholders resolve against the settings.json env block.
+    # Unresolved placeholders pass through unchanged so the user sees them.
+    return re.sub(r"\$\{(\w+)\}", lambda m: env_block.get(m.group(1), m.group(0)), value)
+
+
 for p in data["modelProviders"]["openai"]:
-    base = p["baseUrl"].replace("${LM_BASE_URL}", "http://127.0.0.1:1234/v1").replace("${PROMPTHUB_BASE_URL}", "http://127.0.0.1:9090/v1")
-    print(f'  - {p["id"]:35s} @ {base}')
+    print(f'  - {p["id"]:35s} @ {expand(p["baseUrl"])}')
     print(f'    {p["name"]}')
 PY
