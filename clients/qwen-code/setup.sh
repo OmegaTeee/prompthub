@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Symlinks the repo-tracked Qwen Code settings.json into both the primary
-# (~/.qwen) and compatibility (~/.config/qwen-code) locations so Qwen Code
-# reads the in-repo source of truth regardless of which path it inspects.
+# Installs the repo-tracked Qwen Code settings.json into Qwen Code's primary
+# (~/.qwen) and compatibility (~/.config/qwen-code) locations.
 #
-# Single unified settings.json (no per-provider modes). Provider selection
-# happens at runtime via Qwen Code's /model picker — PromptHub Router is
-# the default; Direct LM Studio and OpenRouter Free are listed as alternates.
+# Uses **copy** rather than symlink because Qwen Code persists state in-place
+# (e.g. on `/model` switch, `/auth`, etc.) — a symlink would let those writes
+# clobber the repo-tracked source. With copy semantics, the live file is free
+# to drift; re-running this script reinstalls the canonical version (after
+# backing up the prior live file to <target>.bak-<timestamp>).
+#
+# To pull live edits back into the repo:
+#   cp ~/.qwen/settings.json clients/qwen-code/settings.json
+# (review with `git diff` before committing.)
 
 CLIENT_DIR="${HOME}/.local/share/prompthub/clients/qwen-code"
 SOURCE_FILE="${CLIENT_DIR}/settings.json"
@@ -23,13 +28,22 @@ fi
 
 mkdir -p "${PRIMARY_TARGET_DIR}" "${COMPAT_TARGET_DIR}"
 
+TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 for target in "${PRIMARY_TARGET_FILE}" "${COMPAT_TARGET_FILE}"; do
-  if [ -e "${target}" ] || [ -L "${target}" ]; then
+  if [ -L "${target}" ]; then
     rm -f "${target}"
+    echo "Removed legacy symlink: ${target}"
+  elif [ -f "${target}" ]; then
+    backup="${target}.bak-${TIMESTAMP}"
+    cp "${target}" "${backup}"
+    echo "Backed up: ${target} -> ${backup}"
   fi
-  ln -s "${SOURCE_FILE}" "${target}"
-  echo "Linked ${target} -> ${SOURCE_FILE}"
+  cp "${SOURCE_FILE}" "${target}"
+  echo "Installed: ${SOURCE_FILE} -> ${target}"
 done
 
 echo
 echo "Done. Verify with: bash ${CLIENT_DIR}/check.sh"
+echo
+echo "Note: Qwen Code may rewrite ${PRIMARY_TARGET_FILE} on /model switch."
+echo "Re-run this script to restore the canonical version (auto-backs-up first)."

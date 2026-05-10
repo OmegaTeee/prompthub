@@ -34,10 +34,10 @@ served to both routes.
 ## Files
 
 - `settings.json` — single unified config (replaces the old `settings.direct.json` + `settings.router.json` toggle pair)
-- `mcp.json` — standalone MCP block (loaded separately by Qwen Code if `~/.qwen/mcp.json` is symlinked here; the `mcpServers` block in `settings.json` covers it for the primary path)
-- `setup.sh` — one-shot symlink installer; no mode argument
-- `check.sh` — reports symlink targets, default model, fastModel, and env-var presence
-- `uninstall.sh` — removes the live symlinks
+- `mcp.json` — standalone MCP block (the `mcpServers` block in `settings.json` covers the primary path)
+- `setup.sh` — one-shot **copy** installer (auto-backs-up any existing live file); no mode argument
+- `check.sh` — reports drift between repo and live, default model, fastModel, and env-var presence
+- `uninstall.sh` — removes the live config files
 - `qwen-cli-help.md` — reference notes for the Qwen CLI
 
 ## Live config paths
@@ -47,22 +47,43 @@ served to both routes.
 ~/.config/qwen-code/settings.json       ← compatibility (older Qwen Code builds)
 ```
 
-`setup.sh` symlinks both to the in-repo `settings.json`.
+`setup.sh` **copies** the in-repo `settings.json` to both paths (with timestamped
+backup of any prior live file). Earlier versions used symlinks, but Qwen Code
+persists state in-place on `/model` switch / `/auth` etc., so a symlink would
+let those writes clobber the repo source. Copy semantics keep the repo file
+canonical: re-running `setup.sh` resets the live file to repo state, with the
+prior live file preserved as `<target>.bak-<timestamp>`.
+
+To pull live edits back into the repo (review carefully first):
+
+```bash
+cp ~/.qwen/settings.json clients/qwen-code/settings.json
+git diff clients/qwen-code/settings.json   # review what Qwen Code rewrote
+```
 
 ## Setup
 
-Set your env vars (sourced from `clients/dotfiles/shell_common.sh` if you use
-the dotfiles symlink):
+Required shell env vars — these should already be in `~/.shell_common.sh` if
+you use the dotfiles. The critical one is `PROMPTHUB_API_KEY`:
 
 ```bash
-# PromptHub stores Keychain entries as service="prompthub:<key>" with account=$USER
-# (see app/router/keyring_manager.py for the canonical naming).
+# Bearer token for the local PromptHub router — not a secret, just an identifier
+# that maps to the qwen-code entry in app/configs/api-keys.json.
+export PROMPTHUB_API_KEY="sk-prompthub-qwen-code-001"
+
+# These come from Keychain. PromptHub stores entries as service="prompthub:<key>"
+# with account=$USER (see app/router/keyring_manager.py for the convention).
 export LM_API_TOKEN="$(security find-generic-password -s "prompthub:lm_api_token" -a "$USER" -w)"
 export OPENROUTER_API_KEY="$(security find-generic-password -s "prompthub:openrouter_api_key" -a "$USER" -w)"
-export PROMPTHUB_API_KEY="sk-prompthub-qwen-code-001"
 ```
 
-Install the symlinks:
+Why explicit shell exports rather than relying on settings.json's `env` block?
+Qwen Code's OpenAI SDK reads credentials from `process.env[envKey]` at request
+time. The settings.json `env` block is supposed to populate `process.env` but
+its loading order vs. SDK init isn't reliable — explicit shell exports remove
+the dependency on internal init order.
+
+Install the live config:
 
 ```bash
 ./clients/qwen-code/setup.sh
@@ -77,6 +98,9 @@ Verify:
 # or:
 qwen-code-check
 ```
+
+`check.sh` reports each live file as **in sync with repo**, **DRIFTED from repo**
+(Qwen Code rewrote it — re-run `setup.sh` to reset), or **missing**.
 
 ## Provider switching at runtime
 

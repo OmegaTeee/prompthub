@@ -11,14 +11,23 @@ SOURCE_FILE="${CLIENT_DIR}/settings.json"
 PRIMARY_TARGET="${HOME}/.qwen/settings.json"
 COMPAT_TARGET="${HOME}/.config/qwen-code/settings.json"
 
-resolve_link() {
+# setup.sh installs as a copy (not symlink) so Qwen Code's in-place persistence
+# (on /model, /auth, etc.) doesn't clobber the repo-tracked source. So a regular
+# file at the target IS the expected state. We compare its content to the repo
+# source to surface drift.
+describe_target() {
   local path="$1"
+  local source="$2"
   if [ -L "$path" ]; then
-    readlink "$path"
-  elif [ -e "$path" ]; then
-    printf '%s\n' "(regular file, not a symlink)"
+    printf 'symlink → %s (legacy install; re-run setup.sh)' "$(readlink "$path")"
+  elif [ -f "$path" ]; then
+    if cmp -s "$path" "$source"; then
+      printf 'in sync with repo'
+    else
+      printf 'DRIFTED from repo (Qwen Code likely rewrote it; re-run setup.sh to reset)'
+    fi
   else
-    printf '%s\n' "(missing)"
+    printf 'missing (run setup.sh)'
   fi
 }
 
@@ -31,8 +40,8 @@ mask_status() {
   fi
 }
 
-PRIMARY_TARGET_VALUE="$(resolve_link "${PRIMARY_TARGET}")"
-COMPAT_TARGET_VALUE="$(resolve_link "${COMPAT_TARGET}")"
+PRIMARY_TARGET_VALUE="$(describe_target "${PRIMARY_TARGET}" "${SOURCE_FILE}")"
+COMPAT_TARGET_VALUE="$(describe_target "${COMPAT_TARGET}" "${SOURCE_FILE}")"
 
 # Pull default model, fastModel, and unique providers from settings.json.
 read -r DEFAULT_MODEL FAST_MODEL <<< "$(
