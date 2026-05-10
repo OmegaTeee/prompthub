@@ -1,39 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODE="${1:-direct}"
-CLIENT_DIR="${HOME}/.local/share/prompthub/clients/qwen-code"
-case "${MODE}" in
-  direct)
-    SOURCE_FILE="${CLIENT_DIR}/settings.direct.json"
-    ;;
-  router)
-    SOURCE_FILE="${CLIENT_DIR}/settings.router.json"
-    ;;
-  *)
-    echo "Usage: $0 [direct|router]" >&2
-    exit 1
-    ;;
-esac
+# Symlinks the repo-tracked Qwen Code settings.json into both the primary
+# (~/.qwen) and compatibility (~/.config/qwen-code) locations so Qwen Code
+# reads the in-repo source of truth regardless of which path it inspects.
+#
+# Single unified settings.json (no per-provider modes). Provider selection
+# happens at runtime via Qwen Code's /model picker — PromptHub Router is
+# the default; Direct LM Studio and OpenRouter Free are listed as alternates.
 
-CANONICAL_FILE="${CLIENT_DIR}/settings.json"
+CLIENT_DIR="${HOME}/.local/share/prompthub/clients/qwen-code"
+SOURCE_FILE="${CLIENT_DIR}/settings.json"
 PRIMARY_TARGET_DIR="${HOME}/.qwen"
 PRIMARY_TARGET_FILE="${PRIMARY_TARGET_DIR}/settings.json"
 COMPAT_TARGET_DIR="${HOME}/.config/qwen-code"
 COMPAT_TARGET_FILE="${COMPAT_TARGET_DIR}/settings.json"
 
-mkdir -p "${PRIMARY_TARGET_DIR}" "${COMPAT_TARGET_DIR}"
-
-if [ -e "${CANONICAL_FILE}" ] || [ -L "${CANONICAL_FILE}" ]; then
-  rm -f "${CANONICAL_FILE}"
+if [ ! -f "${SOURCE_FILE}" ]; then
+  echo "Source not found: ${SOURCE_FILE}" >&2
+  exit 1
 fi
-ln -s "${SOURCE_FILE}" "${CANONICAL_FILE}"
-echo "Linked ${CANONICAL_FILE} -> ${SOURCE_FILE}"
+
+mkdir -p "${PRIMARY_TARGET_DIR}" "${COMPAT_TARGET_DIR}"
 
 for target in "${PRIMARY_TARGET_FILE}" "${COMPAT_TARGET_FILE}"; do
   if [ -e "${target}" ] || [ -L "${target}" ]; then
     rm -f "${target}"
   fi
-  ln -s "${CANONICAL_FILE}" "${target}"
-  echo "Linked ${target} -> ${CANONICAL_FILE}"
+  ln -s "${SOURCE_FILE}" "${target}"
+  echo "Linked ${target} -> ${SOURCE_FILE}"
 done
+
+echo
+echo "Done. Verify with: bash ${CLIENT_DIR}/check.sh"
