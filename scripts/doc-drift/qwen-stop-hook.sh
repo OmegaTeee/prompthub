@@ -7,9 +7,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
-# Drain Qwen Code's stop-hook JSON payload from stdin so the pipe doesn't break.
-# We don't currently use it, but reading it prevents a SIGPIPE if Qwen sends a large message.
-cat >/dev/null || true
+# Drain Qwen Code's stop-hook JSON payload from stdin if one is piped in.
+# Guarded by `[ ! -t 0 ]` so manual invocation (stdin is a TTY) doesn't hang
+# waiting for input that will never arrive.
+if [ ! -t 0 ]; then
+  cat >/dev/null || true
+fi
 
 if "$REPO_ROOT/scripts/doc-drift/check-doc-drift.sh"; then
   printf '{"continue":true}\n'

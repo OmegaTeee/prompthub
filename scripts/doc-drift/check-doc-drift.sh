@@ -25,6 +25,15 @@ fi
 
 if [[ "$MODE" == "--staged" ]]; then
   CHANGED_FILES="$(git diff --cached --name-only --diff-filter=ACMR)"
+elif [[ -n "${DOC_DRIFT_BASE_SHA:-}" ]]; then
+  # Workflow may pass an explicit base SHA (e.g. github.event.before for push events
+  # where GITHUB_BASE_REF is unset). Prefer it when set.
+  BASE_REF="$DOC_DRIFT_BASE_SHA"
+  if ! git rev-parse --verify --quiet "$BASE_REF^{commit}" >/dev/null; then
+    echo "❌ doc-drift: DOC_DRIFT_BASE_SHA='$BASE_REF' is not a valid commit." >&2
+    exit 1
+  fi
+  CHANGED_FILES="$(git diff --name-only --diff-filter=ACMR "$BASE_REF"...HEAD)"
 else
   # In GH Actions GITHUB_BASE_REF is the branch name (e.g. "main"); prefix with origin/
   # to reference the remote-tracking ref that actions/checkout fetch-depth: 0 supplies.
@@ -33,7 +42,12 @@ else
   else
     BASE_REF="origin/main"
   fi
-  CHANGED_FILES="$(git diff --name-only --diff-filter=ACMR "$BASE_REF"...HEAD 2>/dev/null || true)"
+  if ! git rev-parse --verify --quiet "$BASE_REF" >/dev/null; then
+    echo "❌ doc-drift: BASE_REF '$BASE_REF' does not exist." >&2
+    echo "   Run 'git fetch origin' or set DOC_DRIFT_BASE_SHA to an explicit commit." >&2
+    exit 1
+  fi
+  CHANGED_FILES="$(git diff --name-only --diff-filter=ACMR "$BASE_REF"...HEAD)"
 fi
 
 CHANGED_FILES="$(printf '%s\n' "$CHANGED_FILES" | sed '/^$/d' | grep -Ev "$IGNORE_PATTERNS" || true)"
