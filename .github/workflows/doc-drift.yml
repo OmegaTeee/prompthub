@@ -1,0 +1,29 @@
+name: doc-drift
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: doc-drift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  doc-drift:
+    name: Doc drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run doc drift check
+        # For pull_request events, GITHUB_BASE_REF is set (e.g. "main") and the script
+        # diffs origin/${GITHUB_BASE_REF}...HEAD. For push-to-main events, GITHUB_BASE_REF
+        # is unset and origin/main...HEAD is empty (both refs point at the same commit),
+        # so we explicitly pass the previous commit SHA via DOC_DRIFT_BASE_SHA.
+        env:
+          DOC_DRIFT_BASE_SHA: ${{ github.event_name == 'push' && github.event.before || '' }}
+        run: bash scripts/doc-drift/check-doc-drift.sh
