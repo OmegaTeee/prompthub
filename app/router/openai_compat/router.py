@@ -193,11 +193,24 @@ def create_openai_compat_router(
             stream=body.stream,
         )
 
-        # Guard: reject placeholder model names (e.g. OpenAPI default "string")
-        if not body.model or body.model in ("string", "model", "") or " " in body.model:
+        # Guard: reject OpenAPI swagger placeholder model names. Spaces are NOT
+        # rejected — clients like Qwen Code's VS Code Companion send the provider
+        # display name (e.g. "PromptHub Router · Qwen3 4B Instruct") as the model
+        # field; rejecting those produced 422s for valid provider configurations.
+        if not body.model or body.model.strip() in ("", "string", "model"):
             raise HTTPException(
                 status_code=422,
-                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen3-4b-instruct-2507').",
+                detail={
+                    "error": {
+                        "message": (
+                            f"Invalid model name: '{body.model}'. "
+                            "Provide a valid model name (e.g. 'qwen3-4b-instruct-2507')."
+                        ),
+                        "type": "invalid_request_error",
+                        "param": "model",
+                        "code": "invalid_model_name",
+                    }
+                },
             )
 
         # Circuit breaker check
@@ -356,11 +369,22 @@ def create_openai_compat_router(
                 },
             )
 
-        # Guard: reject placeholder model names
-        if not body.model or body.model in ("string", "model", "") or " " in body.model:
+        # Guard: reject OpenAPI swagger placeholder model names. Spaces are NOT
+        # rejected — see notes on the matching guard in chat_completions.
+        if not body.model or body.model.strip() in ("", "string", "model"):
             raise HTTPException(
                 status_code=422,
-                detail=f"Invalid model name: '{body.model}'. Provide a valid model name (e.g. 'qwen3-4b-instruct-2507').",
+                detail={
+                    "error": {
+                        "message": (
+                            f"Invalid model name: '{body.model}'. "
+                            "Provide a valid model name (e.g. 'qwen3-4b-instruct-2507')."
+                        ),
+                        "type": "invalid_request_error",
+                        "param": "model",
+                        "code": "invalid_model_name",
+                    }
+                },
             )
 
         # Circuit breaker check

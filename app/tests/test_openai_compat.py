@@ -9,7 +9,7 @@ Tests cover:
 
 import json
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import FastAPI
@@ -301,6 +301,103 @@ class TestApiKeysReload:
         assert data["message"] == "API keys reloaded"
 
 
+class TestChatCompletionsModelValidation:
+    """Validate the /v1/chat/completions model-name guard.
+
+    The guard rejects OpenAPI swagger placeholders (`"string"`, `"model"`, empty),
+    but accepts any other string — including names with spaces, which Qwen Code's
+    VS Code Companion sends as provider display labels. An earlier version of
+    this guard rejected any model name containing a space, which broke valid
+    provider configurations.
+    """
+
+    AUTH = {"Authorization": "Bearer sk-prompthub-passthrough-def456"}
+
+    def test_placeholder_string_returns_422(self, client):
+        """OpenAPI swagger default `"string"` is rejected."""
+        response = client.post(
+            "/v1/chat/completions",
+            json={"model": "string", "messages": [{"role": "user", "content": "hi"}]},
+            headers=self.AUTH,
+        )
+        assert response.status_code == 422
+
+    def test_placeholder_model_returns_422(self, client):
+        """OpenAPI default `"model"` placeholder is rejected."""
+        response = client.post(
+            "/v1/chat/completions",
+            json={"model": "model", "messages": [{"role": "user", "content": "hi"}]},
+            headers=self.AUTH,
+        )
+        assert response.status_code == 422
+
+    def test_empty_model_returns_422(self, client):
+        """Empty/whitespace-only model is rejected."""
+        response = client.post(
+            "/v1/chat/completions",
+            json={"model": "   ", "messages": [{"role": "user", "content": "hi"}]},
+            headers=self.AUTH,
+        )
+        assert response.status_code == 422
+
+    def test_invalid_model_error_uses_openai_shape(self, client):
+        """The 422 body matches OpenAI's error envelope so SDK clients parse it."""
+        response = client.post(
+            "/v1/chat/completions",
+            json={"model": "string", "messages": [{"role": "user", "content": "hi"}]},
+            headers=self.AUTH,
+        )
+        assert response.status_code == 422
+        body = response.json()
+        # FastAPI wraps HTTPException.detail in `{"detail": ...}`; the detail
+        # itself is the OpenAI-style `{"error": {...}}` envelope.
+        assert "error" in body["detail"]
+        err = body["detail"]["error"]
+        assert err["type"] == "invalid_request_error"
+        assert err["param"] == "model"
+        assert err["code"] == "invalid_model_name"
+        assert "Invalid model name" in err["message"]
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_model_name_with_spaces_accepted(self, mock_chat, client):
+        """Display names with spaces (e.g. 'GPT-4 Turbo') must not 422.
+
+        Regression test: an earlier guard rejected any model name with a space,
+        which broke Qwen Code Companion and similar clients that send the
+        provider display label.
+        """
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-test",
+            object="chat.completion",
+            created=1700000000,
+            model="PromptHub Router · Qwen3 4B Instruct 2507",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="hi"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+        )
+
+        response = client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "PromptHub Router · Qwen3 4B Instruct 2507",
+                "messages": [{"role": "user", "content": "hi"}],
+            },
+            headers=self.AUTH,
+        )
+        assert response.status_code != 422, response.json()
+
+
 # =============================================================================
 # Responses API Model Tests
 # =============================================================================
@@ -500,9 +597,6 @@ class TestBuildResponsesResponse:
 # =============================================================================
 
 
-from unittest.mock import patch
-
-
 class TestResponsesEndpoint:
     """Test POST /v1/responses endpoint behavior."""
 
@@ -534,13 +628,48 @@ class TestResponsesEndpoint:
         assert "streaming" in response.json()["detail"]["error"]["message"].lower()
 
     def test_invalid_model_returns_422(self, client):
-        """Placeholder model name returns 422."""
+        """Placeholder model name returns 422 with OpenAI-shaped error body."""
         response = client.post(
             "/v1/responses",
             json={"model": "string", "input": "Hello"},
             headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
         )
         assert response.status_code == 422
+        err = response.json()["detail"]["error"]
+        assert err["type"] == "invalid_request_error"
+        assert err["param"] == "model"
+        assert err["code"] == "invalid_model_name"
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_model_name_with_spaces_accepted_on_responses(self, mock_chat, client):
+        """Regression: model names with spaces must not 422 on /v1/responses either."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-test",
+            object="chat.completion",
+            created=1700000000,
+            model="GPT-4 Turbo (via OpenRouter)",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="hi"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+        )
+
+        response = client.post(
+            "/v1/responses",
+            json={"model": "GPT-4 Turbo (via OpenRouter)", "input": "Hello"},
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code != 422, response.json()
 
     @patch("router.openai_compat.router.LLMClient.chat_completion")
     def test_string_input_success(self, mock_chat, client):
