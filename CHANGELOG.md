@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 
 ## [Unreleased]
 
+### Added
+- **`GET /v1/health` endpoint** (this PR): Lightweight OpenAI-style health probe under the `/v1` prefix for clients that follow the LM Studio convention of pre-flight-checking `/v1/health` before issuing requests. The existing root `/health` route remains the canonical detailed status endpoint with the full supervisor snapshot, services map, and cache statistics; `/v1/health` returns a minimal `{"status": "healthy", "servers": {"total", "running", "failed"}}` payload so probes get a 200 without paying the cost of the full snapshot. Falls back to just `{"status": "healthy"}` during early startup before the supervisor is initialized.
+
 ### Security
 - **Keyring migration for external API keys** (PR #5): Moved `OPENROUTER_API_KEY`, `OBSIDIAN_API_KEY`, `HF_API_KEY` from plaintext `.env` to macOS Keychain via Python `keyring` (service=`prompthub`). `Settings.model_post_init` now resolves `openrouter_api_key` from keyring when not set in env. Removed `CHERRYIN_API_KEY` (unused).
 - **Auto-discovery in `manage-keys.py`**: Replaced hardcoded `KNOWN_KEYS` list with `discover_keys()` that scans `mcp-servers.json` for `{"source": "keyring"}` references plus a `SETTINGS_KEYS` dict for router-level keys. `list` command now shows which server or service consumes each key.
