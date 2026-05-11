@@ -7,25 +7,51 @@ provider switching happens at runtime via the `/model` picker.
 
 ## Provider lineup (in `/model` picker order)
 
-| # | Provider                                  | Model id                       | Base URL                       | Auth env             |
-| - | ----------------------------------------- | ------------------------------ | ------------------------------ | -------------------- |
-| 1 | **PromptHub Router** (default)            | `qwen3-4b-instruct-2507`       | `http://127.0.0.1:9090/v1`     | `PROMPTHUB_API_KEY`  |
-| 2 | PromptHub Router · thinking               | `qwen3-4b-thinking-2507`       | `http://127.0.0.1:9090/v1`     | `PROMPTHUB_API_KEY`  |
-| 3 | LM Studio Direct · instruct (fallback)    | `qwen3-4b-instruct-2507`       | `http://127.0.0.1:1234/v1`     | `LM_API_TOKEN`       |
-| 4 | LM Studio Direct · thinking (fallback)    | `qwen3-4b-thinking-2507`       | `http://127.0.0.1:1234/v1`     | `LM_API_TOKEN`       |
-| 5 | LM Studio Direct · 0.6B (fast)            | `qwen3-0.6b`                   | `http://127.0.0.1:1234/v1`     | `LM_API_TOKEN`       |
-| 6 | LM Studio Direct · vision                 | `qwen/qwen3-vl-4b`             | `http://127.0.0.1:1234/v1`     | `LM_API_TOKEN`       |
-| 7 | LM Studio Direct · Qwen2.5 Coder 3B/7B/14B| `qwen2.5-coder-{3,7,14}b-instruct` | `http://127.0.0.1:1234/v1` | `LM_API_TOKEN`       |
-| 8 | OpenRouter · Free Router                  | `openrouter/free`              | `https://openrouter.ai/api/v1` | `OPENROUTER_API_KEY` |
+Each provider entry has `name` set to match `id` — the human-readable label
+lives in `description`. See [Why `name` = `id`](#why-name--id) below for the
+rationale.
+
+| # | Routes via            | id (= `name`)                   | Base URL                       | Auth env             |
+| - | --------------------- | ------------------------------- | ------------------------------ | -------------------- |
+| 1 | **PromptHub Router**  | `qwen3-4b-instruct-2507`        | `http://127.0.0.1:9090/v1`     | `PROMPTHUB_API_KEY`  |
+| 2 | PromptHub Router      | `qwen3-4b-thinking-2507`        | `http://127.0.0.1:9090/v1`     | `PROMPTHUB_API_KEY`  |
+| 3 | LM Studio Direct      | `qwen3-0.6b`                    | `http://127.0.0.1:1234/v1`     | `LM_API_TOKEN`       |
+| 4 | LM Studio Direct      | `qwen/qwen3-vl-4b`              | `http://127.0.0.1:1234/v1`     | `LM_API_TOKEN`       |
+| 5 | LM Studio Direct      | `qwen2.5-coder-3b-instruct`     | `http://127.0.0.1:1234/v1`     | `LM_API_TOKEN`       |
+| 6 | LM Studio Direct      | `qwen2.5-coder-7b-instruct`     | `http://127.0.0.1:1234/v1`     | `LM_API_TOKEN`       |
+| 7 | LM Studio Direct      | `qwen2.5-coder-14b-instruct`    | `http://127.0.0.1:1234/v1`     | `LM_API_TOKEN`       |
+| 8 | OpenRouter            | `openrouter/free`               | `https://openrouter.ai/api/v1` | `OPENROUTER_API_KEY` |
 
 `fastModel` = `qwen3-0.6b` via LM Studio direct. Top-level `model.name` =
-`qwen3-4b-instruct-2507`, which resolves to **provider 1 (PromptHub Router)**
-because of [first-match-by-id ordering](https://github.com/QwenLM/qwen-code/blob/main/docs/users/configuration/model-providers.md)
-when multiple providers share an id.
+`qwen3-4b-instruct-2507` resolves to **provider 1 (PromptHub Router)**.
 
-Why both Router and Direct entries for the same model id? Per Qwen Code's docs,
-"models within the same authType are uniquely identified by the combination of
-`id` + `baseUrl`." Same model, two routes — picker disambiguates by `name`.
+PromptHub Router only proxies the two Qwen3-4b text models (`-instruct-2507`
+and `-thinking-2507`); requests for any other model id flow direct to LM Studio
+(`qwen3-0.6b`, vision, Qwen2.5 Coder lineup) or out to OpenRouter
+(`openrouter/free`). The router doesn't need to be a passthrough for everything
+— it only sits in the path of the models you want enhancement / audit / MCP
+injection on.
+
+## Why `name` = `id`
+
+Some Qwen Code clients (notably the VS Code Companion at the time of writing)
+send the provider's **`name`** field as the `model` parameter in API requests,
+not the `id`. By keeping `name` identical to `id`, the config is robust to
+which field a client picks — every request reaches the upstream API with a
+valid model id that LM Studio or OpenRouter can resolve.
+
+Tradeoffs accepted:
+
+- `/model` picker shows the bare id (`qwen3-4b-instruct-2507`) rather than a
+  friendlier label (`"PromptHub Router · Qwen3 4B Instruct 2507"`). To
+  compensate, the route and full description live in the `description` field,
+  visible when hovering an entry in the picker or via `/model info`.
+- We can't have two provider entries with the same `id` + different `baseUrl`
+  (the picker would show two visually identical lines). PR-#27's earlier draft
+  included LM Studio Direct fallbacks for the two Router models; those were
+  dropped because (a) the picker UX broke and (b) PromptHub Router already
+  does its own cloud fallback via OpenRouter, so the LM Studio Direct
+  duplication wasn't earning its keep.
 
 LM Studio's JIT loading + keep-warm settings mean naming the same model under
 two providers does **not** spawn two instances; the model is loaded once and
