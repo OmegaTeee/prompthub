@@ -601,6 +601,25 @@ app.include_router(create_tool_registry_router(
 ))
 
 
+# OpenAI-compatible clients (LM Studio, some agent CLIs) probe `/v1/health`
+# before issuing requests. The existing `/health` route lives at the root and
+# returns a rich supervisor snapshot — this is a lightweight probe under the
+# `/v1` prefix so OpenAI-style clients don't 404. Returns a minimal `{status,
+# server_count}` payload; clients that want detailed state can use `/health`.
+@app.get("/v1/health")
+async def health_v1():
+    """Lightweight OpenAI-style health probe under the `/v1` prefix."""
+    payload: dict[str, Any] = {"status": "healthy"}
+    if supervisor:
+        summary = supervisor.get_status_summary()
+        payload["servers"] = {
+            "total": summary.get("total"),
+            "running": summary.get("running"),
+            "failed": summary.get("failed"),
+        }
+    return payload
+
+
 # =============================================================================
 # Main Entry Point
 # =============================================================================
