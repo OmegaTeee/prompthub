@@ -1,75 +1,80 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Reports the current Qwen Code config state: symlink targets, default model,
+# fastModel, and whether the env vars referenced by each provider are set.
+# No mode logic — single unified settings.json since the toggle pattern was
+# retired. Provider switching happens at runtime via Qwen Code's /model picker.
+
 CLIENT_DIR="${HOME}/.local/share/prompthub/clients/qwen-code"
-ACTIVE_FILE="${CLIENT_DIR}/settings.json"
-DIRECT_FILE="${CLIENT_DIR}/settings.direct.json"
-ROUTER_FILE="${CLIENT_DIR}/settings.router.json"
+SOURCE_FILE="${CLIENT_DIR}/settings.json"
 PRIMARY_TARGET="${HOME}/.qwen/settings.json"
 COMPAT_TARGET="${HOME}/.config/qwen-code/settings.json"
 
-resolve_link() {
+# setup.sh installs as a copy (not symlink) so Qwen Code's in-place persistence
+# (on /model, /auth, etc.) doesn't clobber the repo-tracked source. So a regular
+# file at the target IS the expected state. We compare its content to the repo
+# source to surface drift.
+describe_target() {
   local path="$1"
+  local source="$2"
   if [ -L "$path" ]; then
-    readlink "$path"
-  elif [ -e "$path" ]; then
-    printf '%s\n' "(regular file)"
+    printf 'symlink → %s (legacy install; re-run setup.sh)' "$(readlink "$path")"
+  elif [ -f "$path" ]; then
+    if cmp -s "$path" "$source"; then
+      printf 'in sync with repo'
+    else
+      printf 'DRIFTED from repo (Qwen Code likely rewrote it; re-run setup.sh to reset)'
+    fi
   else
-    printf '%s\n' "(missing)"
+    printf 'missing (run setup.sh)'
   fi
 }
 
 mask_status() {
   local value="${1:-}"
   if [ -n "$value" ]; then
-    printf 'present (%s chars)\n' "${#value}"
+    printf 'present (%s chars)' "${#value}"
   else
-    printf 'missing\n'
+    printf 'missing'
   fi
 }
 
-ACTIVE_TARGET="$(resolve_link "${ACTIVE_FILE}")"
-PRIMARY_TARGET_VALUE="$(resolve_link "${PRIMARY_TARGET}")"
-COMPAT_TARGET_VALUE="$(resolve_link "${COMPAT_TARGET}")"
+PRIMARY_TARGET_VALUE="$(describe_target "${PRIMARY_TARGET}" "${SOURCE_FILE}")"
+COMPAT_TARGET_VALUE="$(describe_target "${COMPAT_TARGET}" "${SOURCE_FILE}")"
 
-case "${ACTIVE_TARGET}" in
-  "${DIRECT_FILE}") MODE="direct" ;;
-  "${ROUTER_FILE}") MODE="router" ;;
-  *) MODE="unknown" ;;
-esac
-
-MODEL_NAME="$(
+# Pull default model, fastModel, and unique providers from settings.json.
+read -r DEFAULT_MODEL FAST_MODEL <<< "$(
   python3 - <<'PY'
 import json
 from pathlib import Path
-path = Path.home() / ".local/share/prompthub/clients/qwen-code/settings.json"
-data = json.loads(path.read_text())
-print(data["model"]["name"])
+data = json.loads((Path.home() / ".local/share/prompthub/clients/qwen-code/settings.json").read_text())
+print(data["model"]["name"], data.get("fastModel", "(unset)"))
 PY
 )"
 
-readarray -t CONFIG_FIELDS < <(
-  python3 - <<'PY'
+printf 'Qwen Code config check\n'
+printf '  Source:       %s\n' "${SOURCE_FILE}"
+printf '  ~/.qwen:      %s\n' "${PRIMARY_TARGET_VALUE}"
+printf '  ~/.config:    %s\n' "${COMPAT_TARGET_VALUE}"
+printf '  Default model: %s\n' "${DEFAULT_MODEL}"
+printf '  fastModel:     %s\n' "${FAST_MODEL}"
+printf '\n'
+printf 'Env vars referenced by providers:\n'
+printf '  LM_API_TOKEN:        %s\n' "$(mask_status "${LM_API_TOKEN:-}")"
+printf '  PROMPTHUB_API_KEY:   %s\n' "$(mask_status "${PROMPTHUB_API_KEY:-}")"
+printf '  OPENROUTER_API_KEY:  %s\n' "$(mask_status "${OPENROUTER_API_KEY:-}")"
+printf '\n'
+printf 'Providers (id @ baseUrl) in /model picker order:\n'
+# Qwen Code does not interpolate ${VAR} in baseUrl strings — they're passed
+# to fetch() literally. So baseUrls in settings.json are stored as fully
+# resolved URLs, and we display them as-is here.
+python3 - <<'PY'
 import json
 from pathlib import Path
-path = Path.home() / ".local/share/prompthub/clients/qwen-code/settings.json"
-data = json.loads(path.read_text())
-provider = data["modelProviders"]["openai"][0]
-print(provider["baseUrl"])
-print(provider["envKey"])
+
+data = json.loads((Path.home() / ".local/share/prompthub/clients/qwen-code/settings.json").read_text())
+for p in data["modelProviders"]["openai"]:
+    print(f'  - {p["id"]:35s} @ {p["baseUrl"]}')
+    print(f'    {p["name"]}')
 PY
-)
-
-BASE_URL="${CONFIG_FIELDS[0]}"
-ENV_KEY="${CONFIG_FIELDS[1]}"
-ENV_VALUE="$(printenv "${ENV_KEY}" || true)"
-
-printf 'Qwen Code check\n'
-printf 'Mode: %s\n' "${MODE}"
-printf 'Active config: %s -> %s\n' "${ACTIVE_FILE}" "${ACTIVE_TARGET}"
-printf 'Live config: %s -> %s\n' "${PRIMARY_TARGET}" "${PRIMARY_TARGET_VALUE}"
-printf 'Compat config: %s -> %s\n' "${COMPAT_TARGET}" "${COMPAT_TARGET_VALUE}"
-printf 'Model: %s\n' "${MODEL_NAME}"
-printf 'Base URL: %s\n' "${BASE_URL}"
-printf 'Env key: %s\n' "${ENV_KEY}"
-printf 'Env value: %s' "$(mask_status "${ENV_VALUE}")"

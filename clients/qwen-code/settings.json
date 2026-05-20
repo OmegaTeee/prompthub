@@ -1,5 +1,18 @@
 {
   "$version": 3,
+  "ide": {
+    "enabled": true,
+    "hasSeenNudge": true
+  },
+  "ui.accessibility": {
+    "enableLoadingPhrases": true,
+    "screenReader": true
+  },
+  "security": {
+    "auth": {
+      "selectedType": "openai"
+    }
+  },
   "permissions": {
     "allow": [
       "Bash(bash:*)",
@@ -15,75 +28,115 @@
       "Bash(source:*)",
       "Bash(tree:*)",
       "Bash(wc:*)",
-      "WebFetch(duckduckgo.com)",
-      "WebFetch(github.com)",
-      "WebFetch(google.com)",
-      "WebFetch(perplexity.ai)",
       "WebFetch(qwen.ai)",
       "WebFetch(raw.githubusercontent.com)"
     ]
-  },
-  "ide": {
-    "enabled": true,
-    "hasSeenNudge": true
-  },
-  "ui.accessibility": {
-    "enableLoadingPhrases": true,
-    "screenReader": true
-  },
-  "security": {
-    "auth": {
-      "selectedType": "openai"
-    }
   },
   "env": {
     "LM_API_TOKEN": "${LM_API_TOKEN}",
     "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
     "PROMPTHUB_API_KEY": "sk-prompthub-qwen-code-001"
   },
+  "model": {
+    "name": "qwen3-4b-instruct-2507"
+  },
+  "fastModel": "qwen3-0.6b",
   "modelProviders": {
     "openai": [
       {
-        "baseUrl": "http://127.0.0.1:1234/v1",
+        "id": "qwen3-4b-instruct-2507",
+        "name": "qwen3-4b-instruct-2507",
+        "description": "PromptHub Router · Qwen3 4B Instruct 2507. Default. Routes through PromptHub at :9090 — applies enhancement, audit logging, MCP tool injection, and OpenRouter cloud fallback when LM Studio is down.",
+        "envKey": "PROMPTHUB_API_KEY",
+        "baseUrl": "http://127.0.0.1:9090/v1",
+        "customHeaders": {
+          "Authorization": "Bearer ${PROMPTHUB_API_KEY}",
+          "Content-Type": "application/json",
+          "X-Client-Name": "qwen-code",
+          "X-Client-ID": "qwen-code"
+        },
+        "capabilities": {
+          "tools": true
+        }
+      },
+      {
+        "id": "qwen3-4b-thinking-2507",
+        "name": "qwen3-4b-thinking-2507",
+        "description": "PromptHub Router · Qwen3 4B Thinking 2507. Reasoning variant via PromptHub. Use for plans, intent classification, careful analysis.",
+        "envKey": "PROMPTHUB_API_KEY",
+        "baseUrl": "http://127.0.0.1:9090/v1",
+        "customHeaders": {
+          "Authorization": "Bearer ${PROMPTHUB_API_KEY}",
+          "Content-Type": "application/json",
+          "X-Client-Name": "qwen-code",
+          "X-Client-ID": "qwen-code"
+        },
+        "extra_body": {
+          "enable_thinking": true
+        },
+        "capabilities": {
+          "tools": true
+        }
+      },
+      {
+        "id": "qwen3-0.6b",
+        "name": "qwen3-0.6b",
+        "description": "LM Studio Direct · Qwen3 0.6B. fastModel target — lightweight draft/scaffolding model. Bypasses PromptHub (no enhancement/audit/MCP); ideal for one-shot rewrites.",
         "envKey": "LM_API_TOKEN",
+        "baseUrl": "http://127.0.0.1:1234/v1"
+      },
+      {
+        "id": "qwen/qwen3-vl-4b",
+        "name": "qwen/qwen3-vl-4b",
+        "description": "LM Studio Direct · Qwen3 VL 4B. Vision/multimodal model. PromptHub Router doesn't proxy multimodal yet, so this is the direct path.",
+        "envKey": "LM_API_TOKEN",
+        "baseUrl": "http://127.0.0.1:1234/v1",
+        "generationConfig": {
+          "modalities": {
+            "image": true,
+            "video": true,
+            "audio": true
+          },
+          "extra_body": {
+            "enable_thinking": true
+          }
+        }
+      },
+      {
         "id": "qwen2.5-coder-3b-instruct",
-        "name": "LM Studio · Qwen2.5 Coder 3B Instruct"
-      },
-      {
-        "baseUrl": "http://127.0.0.1:1234/v1",
+        "name": "qwen2.5-coder-3b-instruct",
+        "description": "LM Studio Direct · Qwen2.5 Coder 3B. Lightweight coder; fast suggestions and small refactors.",
         "envKey": "LM_API_TOKEN",
-        "id": "qwen2.5-coder-7b-instruct",
-        "name": "LM Studio · Qwen2.5 Coder 7B Instruct"
+        "baseUrl": "http://127.0.0.1:1234/v1"
       },
       {
-        "baseUrl": "http://127.0.0.1:1234/v1",
+        "id": "qwen2.5-coder-7b-instruct",
+        "name": "qwen2.5-coder-7b-instruct",
+        "description": "LM Studio Direct · Qwen2.5 Coder 7B. Balanced coder; daily coding, function/class generation.",
         "envKey": "LM_API_TOKEN",
+        "baseUrl": "http://127.0.0.1:1234/v1"
+      },
+      {
         "id": "qwen2.5-coder-14b-instruct",
-        "name": "LM Studio · Qwen2.5 Coder 14B Instruct"
+        "name": "qwen2.5-coder-14b-instruct",
+        "description": "LM Studio Direct · Qwen2.5 Coder 14B. Heavy coder; multi-file architecture, large refactors.",
+        "envKey": "LM_API_TOKEN",
+        "baseUrl": "http://127.0.0.1:1234/v1"
       },
       {
-        "baseUrl": "http://127.0.0.1:9090/v1",
-        "envKey": "PROMPTHUB_API_KEY",
-        "id": "qwen2.5-coder-7b-instruct",
-        "name": "PromptHub · Qwen2.5 Coder 7B Instruct"
-      },
-      {
-        "baseUrl": "http://127.0.0.1:9090/v1",
-        "envKey": "PROMPTHUB_API_KEY",
-        "id": "qwen2.5-coder-14b-instruct",
-        "name": "PromptHub · Qwen2.5 Coder 14B Instruct"
-      },
-      {
-        "baseUrl": "https://openrouter.ai/api/v1",
-        "envKey": "OPENROUTER_API_KEY",
         "id": "openrouter/free",
-        "name": "OpenRouter · Free"
+        "name": "openrouter/free",
+        "description": "OpenRouter · Free Router. Cloud auto-router across OpenRouter's free-tier models. Use only when local options are unavailable. PromptHub Router already does this internally for free_ok/any clients — direct entry kept for explicit override.",
+        "envKey": "OPENROUTER_API_KEY",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "generationConfig": {
+          "customHeaders": {
+            "HTTP-Referer": "http://localhost",
+            "X-Title": "Qwen Code (PromptHub)"
+          }
+        }
       }
     ]
-  },
-  "fastModel": "qwen2.5-coder-3b-instruct",
-  "model": {
-    "name": "qwen2.5-coder-7b-instruct"
   },
   "mcp": {
     "allowed": [
@@ -93,7 +146,7 @@
   "mcpServers": {
     "prompthub-bridge": {
       "type": "stdio",
-      "description": "Single aggregated entry point allowing access to various tools and models. Read /Users/visualval/.local/share/prompthub/mcps/TOOL_USE.md for the full roster and rules.",
+      "description": "Single aggregated entry point allowing access to PromptHub-managed MCP servers and tools. Read /Users/visualval/.local/share/prompthub/clients/TOOL_USE.md for the full roster and routing rules.",
       "command": "node",
       "args": [
         "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
@@ -108,23 +161,14 @@
         "perplexity-comet_internal_status"
       ],
       "env": {
-        "AUTHORIZATION": "Bearer PROMPTHUB_API_KEY",
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
         "CLIENT_NAME": "qwen-code",
-        "CONTENT_TYPE": "application/json",
-        "API_KEY": "PROMPTHUB_API_KEY",
         "MINIFY_SCHEMAS": "true",
         "DESC_MAX_LENGTH": "200",
         "SERVERS": "desktop-commander,perplexity-comet,context7,memory,sequential-thinking,duckduckgo",
         "EXCLUDE_TOOLS": "desktop-commander_give_feedback_to_desktop_commander,perplexity-comet_internal_status",
         "TOOL_PREFIX_ALIASES": "perplexity-comet:perplexity:comet_,desktop-commander:desktop:",
         "NODE_ENV": "production"
-      },
-      "headers": {
-        "Authorization": "Bearer PROMPTHUB_API_KEY",
-        "Content-Type": "application/json",
-        "X-Client-Name": "qwen-code",
-        "X-API-KEY": "PROMPTHUB_API_KEY"
       },
       "trust": true,
       "timeout": 60000

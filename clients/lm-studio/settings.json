@@ -56,7 +56,7 @@
     "backendDownloadChannel": "stable",
     "appUpdateChannel": "stable",
     "allowDevelopmentPlugins": true,
-    "unloadPreviousJITModelOnLoad": true,
+    "unloadPreviousJITModelOnLoad": false,
     "jitModelTTL": {
       "enabled": true,
       "ttlSeconds": 3600
