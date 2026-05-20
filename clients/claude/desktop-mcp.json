@@ -9,8 +9,8 @@
         "AUTHORIZATION": "Bearer sk-prompthub-claude-desktop-001",
         "CLIENT_NAME": "claude-desktop",
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
-        "SERVERS": "memory,context7,sequential-thinking,desktop-commander",
-        "EXCLUDE_TOOLS": "duckduckgo,perplexity-comet"
+        "SERVERS": "memory,context7,sequential-thinking,desktop-commander,perplexity-comet",
+        "EXCLUDE_TOOLS": "duckduckgo"
       }
     }
   },
@@ -18,10 +18,9 @@
     "quickEntryShortcut": "off",
     "launchPreviewPersistSession": true,
     "localAgentModeTrustedFolders": [
-      "/Users/visualval/Code",
-      "/Users/visualval/Library/AppSupport/",
+      "/Users/visualval/code",
+      "/Users/visualval/Library/Application Support/",
       "/Users/visualval/prompthub",
-      "/Users/visualval/raycast",
       "/Users/visualval/Vault"
     ],
     "coworkScheduledTasksEnabled": true,
@@ -30,6 +29,23 @@
     "bypassPermissionsModeEnabled": true,
     "dockBounceEnabled": true,
     "coworkWebSearchEnabled": true,
-    "keepAwakeEnabled": true
+    "keepAwakeEnabled": true,
+    "epitaxyPrefs": {
+      "starred-local-code-sessions": [],
+      "starred-cowork-spaces": [],
+      "starred-session-groups": [],
+      "dframe-local-slice": {
+        "pinnedOrder": [],
+        "customGroupAssignments": {},
+        "customGroupOrder": {}
+      },
+      "epitaxy-perm-mode-acks.c871710b-2727-4ecf-bb86-7a4961970698": [
+        "/Users/visualval:auto"
+      ],
+      "epitaxy-folder-permission-mode.c871710b-2727-4ecf-bb86-7a4961970698": {
+        "/Users/visualval": "auto"
+      }
+    },
+    "remoteToolsDeviceName": "visualvals-macbook-pro-local"
   }
 }

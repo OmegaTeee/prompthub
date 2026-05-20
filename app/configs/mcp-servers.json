@@ -75,7 +75,7 @@
     "obsidian-mcp-tools": {
       "package": "obsidian-mcp-tools",
       "transport": "stdio",
-      "command": "mcp-obsidian-vault",
+      "command": "/Users/visualval/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server",
       "args": [],
       "env": {
         "OBSIDIAN_API_KEY": {
@@ -145,7 +145,7 @@
     "applescript-mcp": {
       "package": "@peakmojo/applescript-mcp",
       "transport": "stdio",
-      "command": "applescript-mcp",
+      "command": "/opt/homebrew/bin/applescript-mcp",
       "args": [],
       "env": {},
       "auto_start": false,

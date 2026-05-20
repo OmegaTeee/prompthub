@@ -2,6 +2,8 @@ personality = "pragmatic"
 model = "gpt-5.2"
 model_reasoning_effort = "medium"
 
+notify = ["/Users/visualval/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+
 [mcp_servers.prompthub-bridge]
 args = ["/Users/visualval/prompthub/mcps/prompthub-bridge.js"]
 command = "node"
@@ -24,8 +26,39 @@ enabled = true
 [plugins."superpowers@openai-curated"]
 enabled = true
 
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
 # [plugins."hugging-face@openai-curated"]
 # enabled = true
 
 [projects."/Users/visualval/.local/share/prompthub"]
 trust_level = "trusted"
+
+[projects."/Users/visualval/code/grandgardens"]
+trust_level = "trusted"
+
+[marketplaces.openai-bundled]
+last_updated = "2026-05-18T01:41:52Z"
+source_type = "local"
+source = "/Users/visualval/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-05-18T02:06:41Z"
+source_type = "local"
+source = "/Users/visualval/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[features]
+memories = true
