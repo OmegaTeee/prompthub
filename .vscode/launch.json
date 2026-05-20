@@ -44,6 +44,12 @@
       "args": ["${relativeFile}", "-v"],
       "cwd": "${workspaceFolder}/app",
       "console": "integratedTerminal"
+    },
+    {
+      "name": "VSCode: Web Developer Tools",
+      "type": "chrome",
+      "request": "launch",
+      "url": "vscode-webview://**"
     }
   ]
 }

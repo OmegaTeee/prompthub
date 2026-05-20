@@ -1,15 +1,17 @@
 :root {
   /*--- Font families */
-  --font-mono: SFMono, SFMono-Regular, monospace;
-  --font-sans: -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: SFMono, SFMono-Regular, ui-monospace, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, ui-sans-serif, sans-serif;
 
   --font-dm-mono: 'Liga DM Mono', 'LigaDMMono-Regular', 'DM Mono';
   --font-dm-sans: 'DM Sans 9pt', 'DMSans-9ptRegular', 'DM Sans', 'DMSans-Regular';
-  --font-instrument: 'Instrument Sans';
+  --font-instrument: 'InstrumentSans-Regular', 'Instrument Sans';
   --font-lilex: 'Lilex Nerd Font Propo', 'LilexNFP-Regular', 'Lilex Nerd Font Mono', 'LilexNFM-Regular', 'Lilex', 'Lilex-Regular';
-  --font-title: 'Burbank Text', 'BurbankText-Bold', var(--font-sans, inherit);
+  --font-title: 'Burbank Text', 'BurbankText-Bold', var(--font-instrument), var(--font-sans);
   --font-google-sans: 'Google Sans 17pt', 'GoogleSans17pt-Regular', 'Google Sans', 'GoogleSans-Regular';
   --font-google-mono: 'Google Sans Code', 'GoogleSansCode-Regular';
+  --font-family-sans: var(--font-google-sans), var(--font-dm-sans), var(--font-sans);
+  --font-family-mono: var(--font-google-mono), var(--font-dm-mono), var(--font-mono);
 
   /*--- Font variations (variables) */
   --font-normal: 100;
@@ -31,20 +33,21 @@
   /*--- Font features (characters) */
   --ss-dm-sans: 'aalt' 0, 'ss01' 0, 'ss02' 0, 'ss03' 1, 'ss04' 0, 'ss05' 0, 'ss06' 0, 'ss07' 0, 'ss08' 0;
   --ss-dm-mono: 'aalt' 0, 'ss01' 1, 'ss02' 0, 'ss03' 1, 'ss04' 1, 'ss05' 0, 'ss06' 1, 'ss07' 1, 'ss08' 0;
-  --ss-instrument-alt: 'ss01' 1, 'ss02' 1, 'ss06' 1;
-  --ss-instrument: 'ss04' 1, 'ss05' 1, 'ss07' 1, 'ss08' 1, 'ss09' 1, 'ss10' 1, 'ss12' 1;
+  --ss-instrument-alt: 'ss01' 1, 'ss02' 1, 'ss03' 0, 'ss04' 0, 'ss05' 0, 'ss06' 0, 'ss07' 1, 'ss08' 1, 'ss09' 0, 'ss10' 1, 'ss11' 0, 'ss12' 1;
+  --ss-instrument: 'ss01' 1, 'ss02' 0, 'ss03' 1, 'ss04' 1, 'ss05' 1, 'ss06' 1, 'ss07' 0, 'ss08' 0, 'ss09' 1, 'ss10' 0, 'ss11' 0, 'ss12' 1;
   --ss-jetbrains: 'ss01' 1, 'ss02' 1, 'ss03' 1, 'ss04' 1, 'ss20' 0, 'cv07' 0;
   --ss-lilex: 'ss02' 1, 'ss04' 1, 'cv03' 1, 'cv05' 1, 'cv06' 1, 'cv10' 1;
-  --font-features-bolder: 'wdth' var(--font-compact), 'wght' var(--text-bolder);
-  --font-features-bold: 'wdth' var(--font-compact), 'wght' var(--text-bold);
-  --font-features-heading: 'wdth' var(--font-condensed), 'wght' var(--text-semibold);
-  --font-features-regular: 'wdth' var(--font-normal), 'wght' var(--text-regular);
-  --font-features-semibold: 'wdth' var(--font-normal), 'wght' var(--text-semibold);
-  --font-features-medium: 'wdth' var(--font-normal), 'wght' var(--text-medium);
+  --font-variation-heading: 'wdth' var(--font-narrow), 'wght' var(--text-semibold);
+  --font-variation-bolder: 'wdth' var(--font-condensed), 'wght' var(--text-bolder);
+  --font-variation-bold: 'wdth' var(--font-compact), 'wght' var(--text-bold);
+  --font-variation-regular: 'wdth' var(--font-normal), 'wght' var(--text-regular);
+  --font-variation-semibold: 'wdth' var(--font-normal), 'wght' var(--text-semibold);
+  --font-variation-medium: 'wdth' var(--font-normal), 'wght' var(--text-medium);
 
-  /*--- Font settings */
-  --font-settings-sans: var(--ff-sans), var(--ss-dm-sans);
-  --font-settings-mono: var(--ff-mono), var(--ss-dm-mono);
+  /*--- Font features' settings */
+  --font-features-sans: var(--ff-sans), var(--ss-dm-sans);
+  --font-features-mono: var(--ff-mono), var(--ss-dm-mono);
+  --font-features-heading: var(--ss-instrument-alt);
 
   /*--- Hues */
   --red: 0;
@@ -92,43 +95,43 @@
   --px1-5: 1.5px;
   --px1: 1px;
   --px0-5: 0.5px;
-  --px0: 0;
   --px-0-5: -0.5px;
   --px-1: -1px;
   --px-1-5: -1.5px;
   --px-2: -2px;
-
-  --round: 9px;
+  --round: 8px;
   --round-sm: 6px;
   --round-xs: 3px;
   --gap: 1rem;
   --gap-sm: calc(var(--gap) * 0.75);
   --gap-xs: calc(var(--gap) * 0.5);
   --gap-xxs: calc(var(--gap) * 0.25);
-
   text-rendering: optimizelegibility;
 }
 
 html {
   /*--- Theme tokens */
   --surface: hsl(var(--royalblue), 16%, 22%);
-  --foreground: hsla(var(--royalblue), 16%, 75%, 0.80);
-  --foreground-text: hsla(var(--royalblue), 24%, 80%, 0.88);
-  --foreground-bold: hsla(var(--azure), 48%, 88%, 0.96);
+  --foreground-bold: hsla(var(--azure), 48%, 96%, 0.88);
+  --foreground-text: hsla(var(--azure), 40%, 80%, 0.80);
+  --foreground: hsla(var(--blue), 32%, 88%, 0.72);
+  --foreground-subtle: hsla(var(--royalblue), 24%, 72%, 0.64);
+  --foreground-muted: hsla(var(--royalblue), 16%, 64%, 0.56);
   --blue-100: hsla(calc(var(--azure) + 16), 12%, 12%, 0.22);
   --blue-200: hsla(calc(var(--skyblue) - 16), 12%, 22%, 0.11);
   --highlight: hsl(var(--skyblue), 16%, 64%);
   --highlight-05: hsla(var(--skyblue), 16%, 48%, 0.1);
-  --highlight-10: hsla(var(--skyblue), 16%, 64%, 0.1);
+  --highlight-10: hsla(var(--skyblue), 16%, 64%, 0.12);
   --highlight-30: hsla(var(--skyblue), 16%, 64%, 0.3);
+  --highlight-border-05: var(--highlight-05) solid var(--px1);
   --highlight-border-10: var(--highlight-10) solid var(--px1-5);
-  --highlight-border-50: hsla(var(--skyblue), 24%, 72%, 0.5) solid var(--px1-5);
+  --highlight-border-30: var(--highlight-30) solid var(--px1-5);
   --highlight-offset: var(--px-1-5);
   --outline: hsla(var(--indigo), 16%, 10%, 0.88);
   --outline-50: hsla(var(--indigo), 16%, 10%, 0.5);
   --outline-border: var(--outline) solid var(--px1-5);
-  --outline-shadow: var(--outline) 0 0 0 var(--px1-5);
-  --stroke-cell: var(--outline) solid var(--px1-5);
+  --outline-shadow: var(--outline) 0 0 0 var(--px1-5), var(--outline-50) 0 0 0 var(--px1);
+  --stroke-cell: var(--outline-50) solid var(--px1-5);
 
   --alias: var(--px1-5) 0 hsla(var(--indigo), 16%, 10%, 0.125),
     var(--px-1-5) 0 hsla(var(--indigo), 16%, 10%, 0.125),
@@ -164,18 +167,18 @@ html {
     var(--px1-5) var(--px-1-5) var(--outline-50),
     var(--px-1-5) var(--px1-5) var(--outline-50),
     var(--px1-5) var(--px1-5) var(--outline-50),
-    var(--px-1-5) var(--px0) var(--outline-50),
-    var(--px1-5) var(--px0) var(--outline-50),
-    var(--px-1-5) var(--px0) var(--outline-50),
-    var(--px1-5) var(--px0) var(--outline-50),
-    var(--px0) var(--px-1-5) var(--outline-50),
-    var(--px0) var(--px1-5) var(--outline-50),
-    var(--px0) var(--px-1-5) var(--outline-50),
-    var(--px0) var(--px1-5) var(--outline-50),
+    var(--px-1-5) 0 var(--outline-50),
+    var(--px1-5) 0 var(--outline-50),
+    var(--px-1-5) 0 var(--outline-50),
+    var(--px1-5) 0 var(--outline-50),
+    0 var(--px-1-5) var(--outline-50),
+    0 var(--px1-5) var(--outline-50),
+    0 var(--px-1-5) var(--outline-50),
+    0 var(--px1-5) var(--outline-50),
     0 0 var(--px1-5) black;
 
   --scanlines: repeating-linear-gradient(in srgb-linear to bottom,
-      var(--blue-200) var(--px0),
+      var(--blue-200) 0,
       var(--blue-200) var(--px2),
       var(--blue-100) var(--px2),
       var(--blue-100) var(--px4));
@@ -214,9 +217,10 @@ body {
   padding: 0;
 }
 
-body[data-vscode-theme-kind='vscode-dark'] {
+html {
+  /*--- Background */
   background-color: hsl(var(--royalblue), 16%, 10%);
-  background-position: var(--px-2) var(--px0);
+  background-position: var(--px-2) 0;
   background-repeat: repeat;
   background-attachment: fixed;
   background-blend-mode: hard-light, normal;
@@ -224,47 +228,48 @@ body[data-vscode-theme-kind='vscode-dark'] {
   background-size: 72px;
 }
 
-.markdown-body {
+body[data-vscode-theme-kind='vscode-dark'] {
   /*--- Editor variables */
-  --vscode-font-size: var(--markdown-font-size, 17px) !important;
-  --vscode-editor-font-family: var(--font-google-mono), var(--font-dm-mono), var(--font-mono, inherit) !important;
+  --vscode-font-size: var(--markdown-font-size, 15px) !important;
+  --vscode-editor-font-family: var(--font-family-mono, inherit) !important;
   --vscode-editor-foreground: var(--foreground, white) !important;
-  --vscode-font-weight: var(--text-regular, 450) !important;
+  --vscode-font-weight: var(--text-regular) !important;
   --vscode-textCodeBlock-background: var(--surface) !important;
   --vscode-textPreformat-background: var(--surface) !important;
-  --vscode-textPreformat-foreground: var(--foreground, white) !important;
+  --vscode-textPreformat-foreground: var(--foreground, hsla(0, 0%, 96%, 0.96)) !important;
   --vscode-widget-border: var(--outline) !important;
-
-  /* Preview variables */
-  --markdown-font-family: var(--font-google-sans, var(--font-dm-sans)), var(--font-sans, inherit);
-  --markdown-font-size: 17px;
-  --markdown-line-height: 1.4;
+  /*--- Preview variables */
+  --markdown-font-family: var(--font-family-sans, inherit);
+  --markdown-font-size: 15px;
+  --markdown-line-height: 1.3;
 }
 
 .markdown-body {
+  font-family: var(--font-family-sans, inherit);
   color: var(--foreground-text);
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
   justify-content: flex-start;
   align-items: stretch;
-  font-feature-settings: var(--font-settings-sans);
-  gap: var(--gap-xxs);
+  font-feature-settings: var(--font-features-sans);
   margin: auto;
   max-width: 800px;
   min-width: 320px;
   padding: var(--gap-sm) calc(var(--gap) * 2.5);
   text-rendering: optimizeLegibility;
   text-shadow: var(--text-alias);
+  gap: var(--gap-xs);
 }
 
 .markdown-body::selection {
   background: hsla(var(--cyan), 64%, 56%, 0.2);
 }
 
-.markdown-body strong {
+.markdown-body strong,
+.markdown-body u {
   color: var(--foreground-bold);
-  font-variation-settings: var(--font-features-bolder);
+  font-variation-settings: var(--font-variation-bolder);
   font-weight: var(--text-bolder);
   letter-spacing: 0.01em;
   paint-order: stroke;
@@ -294,12 +299,13 @@ body[data-vscode-theme-kind='vscode-dark'] {
 }
 
 .markdown-body p {
+  line-height: var(--markdown-line-height);
   margin-block-start: 0;
   margin-block-end: 0;
   line-height: 1.3;
 }
 
-.markdown-body p+p {
+.markdown-body p:not(:first-child)+p {
   margin-block-start: var(--gap-xs);
   margin-block-end: 0;
 }
@@ -309,14 +315,11 @@ body[data-vscode-theme-kind='vscode-dark'] {
   text-decoration-skip-ink: auto;
   text-decoration-style: solid;
   text-decoration-thickness: var(--px1);
-  text-underline-offset: var(--px1);
   vertical-align: baseline;
-  position: relative;
-  z-index: 1;
 }
 
 .markdown-body strong:has(a) {
-  font-variation-settings: var(--font-features-bold);
+  font-variation-settings: var(--font-variation-bold);
   font-weight: var(--text-bold);
   text-decoration-color: inherit;
   color: inherit;
@@ -324,7 +327,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
 
 .markdown-body strong code,
 .markdown-body strong:has(code) {
-  font-variation-settings: var(--font-features-regular);
+  font-variation-settings: var(--font-variation-regular);
   font-weight: var(--text-regular);
   color: var(--foreground-text);
   text-shadow: var(--text-alias);
@@ -332,14 +335,13 @@ body[data-vscode-theme-kind='vscode-dark'] {
 
 .markdown-body a code,
 .markdown-body a:has(code) {
-  font-variation-settings: var(--font-features-regular);
-  text-decoration-color: inherit;
+  font-variation-settings: var(--font-variation-regular);
   color: inherit;
 }
 
-.markdown-body a:has(code):focus {
-  outline-offset: var(--px0-5);
-  outline: transparent solid var(--px2);
+.markdown-body a:hover code,
+.markdown-body a:has(code):hover {
+  outline-color: transparent;
 }
 
 .markdown-body a:link,
@@ -362,97 +364,95 @@ body[data-vscode-theme-kind='vscode-dark'] {
 
 .markdown-body ul,
 .markdown-body ol {
-  display: flex;
-  flex: 1 0 auto;
   flex-direction: column;
-  gap: var(--gap-xs);
-  position: relative;
-  margin: var(--gap-xs) 0 var(--gap-sm) calc(var(--gap) * -1.5);
-}
-
-.markdown-body ol,
-.markdown-body ol li>ul {
-  margin-left: -1rem;
-}
-
-.markdown-body li {
-  position: relative;
-  list-style-position: outside;
+  display: flex;
   flex: 0 1 auto;
-  padding-left: var(--gap-xs);
- line-height: 1.3;
+  gap: var(--gap-xs) 0;
+  padding-inline-start: var(--gap-sm);
+  margin-inline-start: var(--gap-sm);
 }
 
-.markdown-body li,
-.markdown-body li:last-child {
-  margin-block-start: var(--gap-xxs);
-  margin-block-end: var(--gap-xxs);
-}
-
-.markdown-body li+li,
-.markdown-body li:not(:first-child),
-.markdown-body li:not(:last-child) {
-  margin-block-start: var(--gap-xxs);
-  margin-block-end: 0;
-}
-
-.markdown-body ol li {
-  list-style-type: decimal;
-}
-
-.markdown-body ul li {
-  list-style-type: disc;
+.markdown-body ol li>ul,
+.markdown-body ol li>ol,
+.markdown-body ul li>ul,
+.markdown-body ul li>ol {
+  margin-block-start: var(--gap-sm);
 }
 
 .markdown-body li::marker {
-  font-size: 1.05em;
-  font-variation-settings: var(--font-features-regular);
-  font-weight: var(--text-regular);
-  text-shadow: var(--text-alias-strong);
-  font-feature-settings: 'case' 1, 'lnum' 1, 'tnum' 1, 'zero' 0;
-  vertical-align: text-top;
-  color: var(--vscode-textPreformat-foreground);
-  align-self: start;
+  font-variation-settings: var(--font-variation-medium);
+  font-weight: var(--text-medium);
+  font-feature-settings: var(--font-features-mono);
+  font-size: 1.1em;
+  color: var(--foreground-muted);
+  vertical-align: baseline;
+}
+
+.markdown-body li {
+  font-size: var(--markdown-font-size);
+  line-height: var(--markdown-line-height);
+  list-style-position: outside;
+  position: relative;
+}
+
+.markdown-body ol {
+  list-style-type: decimal;
 }
 
 .markdown-body ol li::marker {
-  font-family: var(--font-title, sans-serif);
+  font-family: var(--font-title, inherit);
+  color: var(--foreground-subtle);
   list-style: decimal;
 }
 
+.markdown-body ul {
+  list-style-type: disc;
+}
+
 .markdown-body ul li::marker {
-  font-family: var(--font-mono, monospace);
   list-style: disc;
 }
 
-.markdown-body li:has(input[type='checkbox']) {
-  display: table;
-  margin-left: calc(var(--gap-xs) * -1);
-  position: relative;
-  padding-left: var(--gap-sm);
-  margin-block-start: var(--gap-sm);
+.markdown-body ul ul {
+  list-style-type: "→ ";
+}
+
+.markdown-body ul ul ul {
+  list-style-type: "∗ ";
 }
 
 .markdown-body li p:first-child {
   margin-block-start: 0;
 }
 
+.markdown-body li p+p {
+  margin-block-start: var(--gap-xs);
+}
+
+.markdown-body li:has(input[type='checkbox']) {
+  display: table;
+  margin-block-start: 0;
+  margin-inline-start: var(--gap-xs);
+  position: relative;
+}
+
 .markdown-body input[type='checkbox'] {
   appearance: none;
-  background: var(--outline-50);
+  background: var(--surface);
   border-radius: var(--round);
   border: var(--outline-border);
-  border-color: var(--surface);
+  border-color: var(--highlight-10);
   box-shadow: var(--outline-shadow);
   box-sizing: content-box;
-  left: var(--px-1);
-  margin: 0 var(--gap-xxs) 0 calc(var(--gap-sm) * -1);
-  min-height: var(--gap);
-  min-width: var(--gap);
+  margin-inline-start: calc(var(--gap-sm) * -1);
+  margin-inline-end: var(--gap-sm);
+  min-height: calc(var(--gap) - var(--px1-5));
+  min-width: calc(var(--gap) - var(--px1-5));
   outline-offset: var(--highlight-offset);
-  outline: var(--highlight-border-50);
+  outline: var(--highlight-border-10);
   position: absolute;
-  top: var(--px0);
+  top: calc(var(--gap) * -0.08);
+  left: calc(var(--gap) * -1);
   vertical-align: text-top;
 }
 
@@ -461,55 +461,32 @@ body[data-vscode-theme-kind='vscode-dark'] {
 }
 
 .markdown-body input[type='checkbox']:checked {
-  outline: var(--highlight-border-10);
-  background: var(--surface);
+  outline-color: hsla(var(--purple), 32%, 32%, 0.32);
+  background: hsl(var(--violet), 32%, 16%);
 }
 
 .markdown-body input[type="checkbox"]:checked::after {
-  content: "✓";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.5rem;
   color: hsl(var(--chartreuse), 32%, 64%);
-  font-weight: bold;
-  font-family: var(--font-title);
-  font-feature-settings: var(--font-features-semibold);
+  /*--- Unicode checkmark character "✓" */
+  content: "\2713";
+  font-family: var(--font-title, inherit);
+  font-feature-settings: var(--font-features-mono);
+  font-size: 1.4rem;
   font-variant-emoji: unicode;
-  outline-color: var(--highlight-05);
-  outline: none;
-  text-shadow: var(--text-stroke);
+  font-variant: var(--font-variation-bold);
+  font-weight: var(--text-bold);
+  left: 50%;
+  position: absolute;
   text-indent: var(--px-2);
   text-rendering: geometricPrecision;
+  text-shadow: var(--text-stroke);
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .markdown-body input[type='checkbox']+label {
   display: inline-block;
-}
-
-.markdown-body h1,
-.markdown-body h2,
-.markdown-body h3,
-.markdown-body h4,
-.markdown-body h5,
-.markdown-body h6 {
-  -webkit-text-stroke: var(--px3-5, thin) var(--outline-50);
-  font-family: var(--font-title);
-  font-feature-settings: var(--ss-instrument-alt);
-  font-variation-settings: var(--font-features-bold);
-  font-weight: var(--text-bold);
-  letter-spacing: -0.005em;
-  padding: 0;
-  paint-order: stroke;
-  text-rendering: geometricPrecision;
-  text-shadow: var(--text-stroke);
-  z-index: 2;
-  margin-bottom: var(--gap-xs);
-  flex-direction: column;
-  flex: 0 1 auto;
-  flex-flow: wrap;
-  align-items: baseline;
+  margin: var(--px-0-5) var(--px1-5) 0 0;
 }
 
 .markdown-body image {
@@ -521,18 +498,80 @@ body[data-vscode-theme-kind='vscode-dark'] {
 
 .markdown-body h1,
 .markdown-body h2,
-.markdown-body h3 {
-  border: none;
-  margin: var(--gap) 0 0 0;
-  margin-bottom: 0;
-}
-
+.markdown-body h3,
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
+  -webkit-text-stroke: var(--px3-5, thin) var(--outline-50);
+  align-items: baseline;
   border: none;
-  margin: var(--gap-sm) 0 0 0;
+  flex-direction: column;
+  flex-flow: wrap;
+  flex: 0 1 auto;
+  font-family: var(--font-title, inherit);
+  font-feature-settings: var(--font-features-heading);
+  font-variation-settings: var(--font-variation-bold);
+  font-weight: var(--text-bold);
   margin-bottom: 0;
+  padding: 0;
+  paint-order: stroke;
+  text-rendering: geometricPrecision;
+  text-shadow: var(--text-stroke);
+  z-index: 2;
+}
+
+.markdown-body h1,
+.markdown-body h2 {
+  font-variation-settings: var(--font-variation-bolder);
+  font-weight: var(--text-bolder);
+  margin: var(--gap) 0 0 0;
+  line-height: 0.88;
+  letter-spacing: -0.024em;
+}
+
+.markdown-body h3,
+.markdown-body h4 {
+  margin: var(--gap-sm) 0 0 0;
+  line-height: 0.96;
+  letter-spacing: -0.016em;
+}
+
+.markdown-body h5,
+.markdown-body h6 {
+  margin: 0;
+  font-variant: small-caps;
+  line-height: 0.92;
+  letter-spacing: 0.016em;
+}
+
+.markdown-body h1 {
+  font-size: 1.80em;
+  color: hsl(var(--yellow), 56%, 64%);
+}
+
+.markdown-body h2 {
+  font-size: 1.64em;
+  color: hsl(var(--chartreuse), 40%, 64%);
+}
+
+.markdown-body h3 {
+  font-size: 1.48em;
+  color: hsl(var(--teal), 40%, 64%);
+}
+
+.markdown-body h4 {
+  font-size: 1.40em;
+  color: hsl(var(--azure), 72%, 72%);
+}
+
+.markdown-body h5 {
+  font-size: 1.32em;
+  color: hsl(var(--violet), 56%, 72%);
+}
+
+.markdown-body h6 {
+  font-size: 1.24em;
+  color: hsl(var(--rose), 56%, 72%);
 }
 
 .markdown-body h1+h2,
@@ -545,55 +584,15 @@ body[data-vscode-theme-kind='vscode-dark'] {
   margin-block-end: 0;
 }
 
-.markdown-body h1 {
-  font-size: round(1.75rem, 1px);
-  line-height: 0.88;
-  letter-spacing: -0.035em;
-  color: hsl(var(--yellow), 56%, 64%);
-}
-
-.markdown-body h2 {
-  font-size: round(1.5rem, 1px);
-  line-height: 0.96;
-  letter-spacing: -0.025em;
-  color: hsl(var(--chartreuse), 40%, 64%);
-}
-
-.markdown-body h3 {
-  font-size: round(1.4rem, 1px);
-  line-height: 1;
-  letter-spacing: -0.015em;
-  color: hsl(var(--teal), 40%, 64%);
-}
-
-.markdown-body h4 {
-  font-size: round(1.3rem, 1px);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: hsl(var(--azure), 72%, 72%);
-}
-
-.markdown-body h5 {
-  font-size: round(1.2rem, 1px);
-  line-height: 1.2;
-  color: hsl(var(--violet), 56%, 72%);
-}
-
-.markdown-body h6 {
-  font-size: 1.1rem;
-  line-height: 1.2;
-  color: hsl(var(--rose), 56%, 72%);
-}
-
 .markdown-body h1 strong,
 .markdown-body h2 strong,
 .markdown-body h3 strong,
 .markdown-body h4 strong,
 .markdown-body h5 strong,
 .markdown-body h6 strong {
-  text-shadow: inherit;
   color: inherit;
   font-size: inherit;
+  text-shadow: inherit;
 }
 
 .markdown-body h1 code,
@@ -602,16 +601,13 @@ body[data-vscode-theme-kind='vscode-dark'] {
 .markdown-body h4 code,
 .markdown-body h5 code,
 .markdown-body h6 code {
-  border-block-end: none;
-  color: currentColor;
   display: inline;
-  font-variation-settings: var(--font-features-regular);
+  font-size: 0.72em;
+  letter-spacing: normal;
+  font-variation-settings: var(--font-variation-regular) !important;
   font-weight: var(--text-regular) !important;
-  text-shadow: var(--text-alias);
-  vertical-align: top;
-  font-size: 0.72rem;
-  color: var(--foreground-text, currentColor);
-  letter-spacing: 0;
+  text-shadow: var(--text-alias) !important;
+  border-radius: var(--round);
 }
 
 .markdown-body h1+hr,
@@ -675,37 +671,23 @@ body[data-vscode-theme-kind='vscode-dark'] {
   outline-offset: var(--highlight-offset);
   outline: var(--highlight-border-10);
   overflow: hidden;
-  padding: var(--gap-sm) var(--gap-sm) var(--gap-sm) 24px;
   position: relative;
   z-index: 0;
   border-radius: var(--round);
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding: var(--gap-sm);
+  margin: var(--gap-xs) auto;
 }
 
-/*
-.markdown-body blockquote:after {
-  background-image: var(--svg-verti);
-  background-repeat: repeat-y;
-  background-size: 12pt 9pt;
-  color: transparent;
-  content: '';
-  display: block;
-  font-size: 1rem;
-  height: 100%;
-  width: 16px;
-  position: absolute;
-  left: 0.5px;
-  top: 0;
-  bottom: 0;
-  z-index: 2;
-  box-sizing: content-box;
-}
-*/
 
 .markdown-body table {
   background-color: var(--surface);
   border-collapse: separate;
   border-color: var(--outline);
-  border-radius: var(--round);
+  border-radius: var(--round-sm);
   border-spacing: 0;
   box-shadow: var(--outline-shadow);
   margin: 0.5rem 0;
@@ -747,20 +729,19 @@ body[data-vscode-theme-kind='vscode-dark'] {
 
 .markdown-body table tr td a sub b {
   font-size: 0.8em;
-  font-variation-settings: var(--font-features-medium);
+  font-variation-settings: var(--font-variation-medium);
   font-weight: var(--text-medium) !important;
 }
 
 .markdown-body table+table {
   margin-top: 0;
-  border-radius: var(--round) var(--round) 0 0;
+  border-radius: var(--round-sm) var(--round-sm) 0 0;
 }
 
 .markdown-body table thead {
   background-color: var(--surface);
   background-image: var(--thead-gradient), var(--thead-fill);
-  border-radius: var(--round) var(--round) 0 0;
-  border-block-start: var(--outline-border);
+  border-radius: var(--round-sm) var(--round-sm) 0 0;
   border-block-end: none;
   outline-offset: var(--highlight-offset);
   outline: var(--highlight-border-10);
@@ -779,14 +760,16 @@ body[data-vscode-theme-kind='vscode-dark'] {
 }
 
 .markdown-body table thead::before {
+  border-inline-start: var(--highlight-border-10);
+  border-inline-end: var(--highlight-border-10);
   background-image: var(--scanlines);
-  background-attachment: fixed;
   background-position: 0 var(--px-1-5);
   background-repeat: repeat-y;
-  border-radius: calc(var(--round) - var(--px1-5)) calc(var(--round) - var(--px1-5)) 0 0;
+  border-block-start: var(--highlight-border-30);
+  border-radius: var(--round-sm) var(--round-sm) 0 0;
   bottom: 0;
-  left: var(--px1-5);
-  right: var(--px-1-5);
+  left: 0;
+  right: 0;
   top: 0;
   width: calc(100% - var(--px3));
   height: calc(100% - var(--px3));
@@ -800,7 +783,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
   background-image: var(--svg-thead);
   background-position: 0 0;
   background-repeat: repeat-x;
-  bottom: calc(var(--px3) * -1);
+  bottom: var(--px-1-5);
   left: 0;
   right: 0;
   z-index: 3;
@@ -817,9 +800,9 @@ body[data-vscode-theme-kind='vscode-dark'] {
 .markdown-body thead strong {
   -webkit-text-stroke: var(--px3, thin) var(--outline-50);
   color: var(--foreground-bold);
-  font-family: var(--font-title);
+  font-family: var(--font-title, inherit);
   font-size: 1.1em;
-  font-variation-settings: var(--font-features-heading);
+  font-variation-settings: var(--font-variation-heading);
   font-weight: var(--text-bold);
   letter-spacing: -0.005em;
   line-height: 1.1;
@@ -832,23 +815,23 @@ body[data-vscode-theme-kind='vscode-dark'] {
 
 .markdown-body tfoot {
   background: var(--surface);
-  border-radius: 0 0 var(--round) var(--round);
+  border-radius: 0 0 var(--round-sm) var(--round-sm);
   overflow: hidden;
 }
 
 .markdown-body tfoot tr td {
-  border-radius: 0 0 var(--round) var(--round);
+  border-radius: 0 0 var(--round-sm) var(--round-sm);
 }
 
 .markdown-body th:first-child,
 .markdown-body thead+tbody tr:first-child td:first-child {
-  border-radius: var(--round) 0 0 0;
+  border-radius: var(--round-sm) 0 0 0;
   padding-left: 0.75rem;
 }
 
 .markdown-body th:last-child,
 .markdown-body thead+tbody tr:first-child td:last-child {
-  border-radius: 0 var(--round) 0 0;
+  border-radius: 0 var(--round-sm) 0 0;
   padding-right: 0.75rem;
 }
 
@@ -860,17 +843,15 @@ body[data-vscode-theme-kind='vscode-dark'] {
 .markdown-body td {
   border-top: var(--highlight-border-10);
   border-bottom: var(--stroke-cell);
-  font-size: 0.96rem;
   padding: 0.25rem;
   max-width: calc(100% - 2rem);
   background: var(--surface);
   text-shadow: var(--text-alias);
   border-collapse: separate;
-  line-height: 1.2;
 }
 
 .markdown-body tr:last-child td:last-child {
-  border-radius: 0 0 var(--round) 0;
+  border-radius: 0 0 var(--round-sm) 0;
 }
 
 .markdown-body tr:first-child td {
@@ -883,7 +864,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
 }
 
 .markdown-body tr:last-child td:first-child {
-  border-radius: 0 0 0 var(--round);
+  border-radius: 0 0 0 var(--round-sm);
 }
 
 .markdown-body tr:last-child td {
@@ -895,48 +876,52 @@ body[data-vscode-theme-kind='vscode-dark'] {
   padding-right: 0.75rem;
 }
 
-
 .markdown-body code {
-  background: hsla(var(--rose), 18%, 18%, 1);
-  border: solid transparent var(--px0);
-  border-block-start: var(--highlight-05) solid var(--px1);
+  /*--- other */
+  all: revert;
+  /*--- layout */
+  margin: 0 var(--px0-5);
+  vertical-align: var(--px1);
+  /*--- text */
+  font-size: 0.84em;
+  font-feature-settings: var(--font-features-mono);
+  font-family: var(--font-family-mono);
+  list-style: var(--markdown-line-height);
+  color: hsla(var(--orange), 64%, 64%, 0.80);
+  /*--- appearance */
+  background: hsla(var(--rose), 24%, 24%, 0.80);
   border-block-end: solid transparent var(--px1);
+  border-block-start: var(--highlight-10) solid var(--px1);
+  border-left: solid transparent var(--px3);
   border-radius: var(--round-xs);
-  word-break: break-word;
-  color: hsla(var(--orangered), 56%, 64%, 0.88);
-  display: inline-flex;
-  font-feature-settings: var(--font-settings-mono);
-  font-size: 0.8rem;
-  font-variation-settings: var(--font-features-regular);
-  font-weight: var(--text-regular);
-  vertical-align: baseline;
+  border-right: solid transparent var(--px3);
   box-shadow: var(--outline-shadow);
-  outline: var(--highlight-05) solid var(--px1);
-  outline-offset: var(--highlight-offset);
-  text-shadow: var(--text-alias);
-  margin: auto var(--px1);
+  outline-offset: var(--px-1);
+  outline: var(--highlight-border-05);
 }
 
 .markdown-body pre:has(code) {
-  padding: var(--gap-sm) var(--gap-sm) var(--gap-sm) var(--gap);
+  padding: var(--gap-xs) var(--gap-sm) var(--gap-xs) var(--gap);
   overflow-y: auto;
   overflow-x: hidden;
   outline: var(--highlight-border-10);
   outline-offset: var(--highlight-offset);
   max-block-size: 16rem;
-  line-height: 1.3;
-  font-size: 0.88rem;
   display: flow-root;
   color: inherit;
   box-shadow: var(--outline-shadow);
   border: solid transparent var(--px1-5);
-  border-radius: var(--round);
+  border-radius: var(--round-sm);
   border-block-start: var(--highlight-border-10);
+  border-inline-start: var(--highlight-border-10);
+  border-inline-end: var(--outline-border);
+  border-block-end: var(--outline-border);
   background-color: var(--surface);
+  line-height: 1.1;
 }
 
 .markdown-body pre {
-  margin-top: var(--gap-xxs);
+  margin-top: var(--gap-xs);
   margin-bottom: var(--gap);
 }
 
@@ -944,19 +929,15 @@ body[data-vscode-theme-kind='vscode-dark'] {
   margin-top: 0;
 }
 
-.markdown-body pre code {
+.markdown-body pre>code {
   background-color: transparent;
   display: contents;
   box-shadow: none;
   outline-color: transparent;
   color: inherit;
-}
-
-.markdown-body td code {
-  outline-color: transparent;
-  box-shadow: none;
-  border: none;
-  background: transparent;
+  border-radius: var(--round-sm);
+  clip-path: stroke-box;
+  margin: 0 0 var(--gap-sm) 0;
 }
 
 .markdown-body .admonition {
@@ -983,7 +964,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
   border-bottom: 0 none transparent;
   border-bottom-color: transparent;
   color: var(--foreground-bold);
-  font-variation-settings: var(--font-features-semibold);
+  font-variation-settings: var(--font-variation-semibold);
   font-weight: var(--text-semibold);
 }
 
@@ -1044,8 +1025,8 @@ body[data-vscode-theme-kind='vscode-dark'] {
   stroke-linecap: round;
   stroke-linejoin: round;
   color: currentColor;
-  font-family: var(--font-title);
-  font-variation-settings: var(--font-features-heading);
+  font-family: var(--font-title, inherit);
+  font-variation-settings: var(--font-variation-heading);
   font-weight: var(--text-bold);
   letter-spacing: -0.005em;
   line-height: 1.05;
@@ -1060,4 +1041,50 @@ body[data-vscode-theme-kind='vscode-dark'] {
   height: calc(var(--gap) * 1.15);
   width: calc(var(--gap) * 1.15);
   margin: calc(var(--gap) * -0.3) 0 calc(var(--gap) * -0.15) 0;
+}
+
+.markdown-body .hljs-comment,
+.markdown-body .hljs-quote {
+  color: var(--foreground-muted);
+}
+
+
+.markdown-body details summary {
+  background: var(--surface);
+  border-radius: var(--round-sm);
+  box-shadow: var(--outline-shadow);
+  cursor: pointer;
+  font-family: var(--font-family-mono);
+  font-feature-settings: var(--font-features-mono);
+  font-size: smaller;
+  font-weight: var(--text-semibold);
+  letter-spacing: 0.05em;
+  margin-block-end: var(--gap-xxs);
+  outline-offset: var(--highlight-offset);
+  outline: var(--highlight-border-10);
+  padding: var(--gap-xxs) var(--gap-sm);
+  text-shadow: var(--text-alias-strong);
+  text-transform: uppercase;
+}
+
+.markdown-body summary:hover {
+  color: var(--foreground-subtle);
+}
+
+.markdown-body summary::marker {
+  background-color: var(--outline-50);
+  border-radius: var(--round);
+  color: var(--foreground-subtle);
+  content: "▶︎";
+  display: inline-block;
+  max-height: var(--gap-sm);
+  max-width: var(--gap-sm);
+  line-height: var(--markdown-line-height);
+}
+
+.markdown-body details[open]>summary::marker {
+  content: "▼";
+  font-size: larger;
+  vertical-align: baseline;
+  max-height: var(--gap-sm);
 }

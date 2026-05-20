@@ -86,8 +86,8 @@
     }
   ],
   "vscode-openai.apiKey": "sk-prompthub-vscode-001",
-  "vscode-openai.defaultModel": "qwen3-1.7b",
-  "vscode-openai.scmModel": "qwen3-1.7b",
+  "vscode-openai.defaultModel": "qwen3-4b-instruct-2507",
+  "vscode-openai.scmModel": "qwen3-4b-instruct-2507",
   "markdown.styles": [
     ".vscode/markdown.css"
   ]
