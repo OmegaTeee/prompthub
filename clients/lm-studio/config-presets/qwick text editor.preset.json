@@ -17,6 +17,21 @@
           },
           "stopStrings": []
         }
+      },
+      {
+        "key": "llm.prediction.temperature",
+        "value": 0.4
+      },
+      {
+        "key": "llm.prediction.topKSampling",
+        "value": 20
+      },
+      {
+        "key": "llm.prediction.topPSampling",
+        "value": {
+          "checked": true,
+          "value": 0.8
+        }
       }
     ]
   },

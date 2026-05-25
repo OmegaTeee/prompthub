@@ -268,7 +268,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
 
 .markdown-body strong,
 .markdown-body u {
-  color: var(--foreground-bold);
+  color: color-mix(in lch shorter hue, currentColor, white 30%);
   font-variation-settings: var(--font-variation-bolder);
   font-weight: var(--text-bolder);
   letter-spacing: 0.01em;
@@ -337,6 +337,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
 .markdown-body a:has(code) {
   font-variation-settings: var(--font-variation-regular);
   color: inherit;
+  background: color-mix(in lch shorter hue, currentColor, black 70%);
 }
 
 .markdown-body a:hover code,
@@ -365,9 +366,11 @@ body[data-vscode-theme-kind='vscode-dark'] {
 .markdown-body ul,
 .markdown-body ol {
   flex-direction: column;
+  position: relative;
+  margin: var(--gap-xxs) 0 var(--gap-xxs) calc(var(--gap) * -1.75);
   display: flex;
   flex: 0 1 auto;
-  gap: var(--gap-xs) 0;
+  gap: var(--gap-xxs) 0;
   padding-inline-start: var(--gap-sm);
   margin-inline-start: var(--gap-sm);
 }
@@ -384,14 +387,16 @@ body[data-vscode-theme-kind='vscode-dark'] {
   font-weight: var(--text-medium);
   font-feature-settings: var(--font-features-mono);
   font-size: 1.1em;
-  color: var(--foreground-muted);
-  vertical-align: baseline;
+  color: color-mix(in lch shorter hue, currentColor, black 30%);
+  vertical-align: var(--px-1-5);
 }
 
 .markdown-body li {
   font-size: var(--markdown-font-size);
   line-height: var(--markdown-line-height);
   list-style-position: outside;
+  flex: 0 1 auto;
+  line-height: 1.4;
   position: relative;
 }
 
@@ -401,7 +406,6 @@ body[data-vscode-theme-kind='vscode-dark'] {
 
 .markdown-body ol li::marker {
   font-family: var(--font-title, inherit);
-  color: var(--foreground-subtle);
   list-style: decimal;
 }
 
@@ -590,7 +594,7 @@ body[data-vscode-theme-kind='vscode-dark'] {
 .markdown-body h4 strong,
 .markdown-body h5 strong,
 .markdown-body h6 strong {
-  color: inherit;
+  color: color-mix(in lch shorter hue, currentColor, white);
   font-size: inherit;
   text-shadow: inherit;
 }
@@ -601,13 +605,28 @@ body[data-vscode-theme-kind='vscode-dark'] {
 .markdown-body h4 code,
 .markdown-body h5 code,
 .markdown-body h6 code {
-  display: inline;
-  font-size: 0.72em;
-  letter-spacing: normal;
-  font-variation-settings: var(--font-variation-regular) !important;
-  font-weight: var(--text-regular) !important;
-  text-shadow: var(--text-alias) !important;
-  border-radius: var(--round);
+  /*--- other */
+  all: initial;
+  /*--- layout */
+  display: inline-block;
+  padding: var(--px1)  var(--px1-5) var(--px1);
+  vertical-align: var(--px0-5);
+  /*--- text */
+  font-family: var(--font-family-mono, inherit);
+  font-variation-settings: var(--font-variation-medium);
+  font-weight: var(--text-medium);
+  text-shadow: var(--text-alias-strong);
+  color: color-mix(in lch longer hue, currentColor, white 10%);
+  /*--- appearance */
+  background: color-mix(in lch shorter hue, currentColor 30%, black 100%);
+  border-block-start: var(--highlight-10) solid var(--px1);
+  border-block-end: solid transparent var(--px1-5);
+  border-inline-start: solid transparent var(--px3);
+  border-inline-end: solid transparent var(--px3);
+  border-radius: var(--round-xs);
+  box-shadow: var(--outline-shadow);
+  outline-offset: var(--px-1);
+  outline: var(--highlight-border-05);
 }
 
 .markdown-body h1+hr,
@@ -880,21 +899,24 @@ body[data-vscode-theme-kind='vscode-dark'] {
   /*--- other */
   all: revert;
   /*--- layout */
-  margin: 0 var(--px0-5);
-  vertical-align: var(--px1);
+  margin: auto var(--px0-5);
+  padding: var(--px0-5) var(--px1-5) var(--px1);
+  vertical-align: var(--px1-5);
   /*--- text */
-  font-size: 0.84em;
+  font-size: 80%;
   font-feature-settings: var(--font-features-mono);
   font-family: var(--font-family-mono);
-  list-style: var(--markdown-line-height);
-  color: hsla(var(--orange), 64%, 64%, 0.80);
+  text-shadow: var(--text-alias);
+  line-height: inherit;
+  color: hsla(var(--orange), 64%, 64%, 80%);
   /*--- appearance */
   background: hsla(var(--rose), 24%, 24%, 0.80);
+  background: color-mix(in lch longer hue, currentColor 30%, black);
   border-block-end: solid transparent var(--px1);
   border-block-start: var(--highlight-10) solid var(--px1);
-  border-left: solid transparent var(--px3);
+  border-inline-start: solid transparent var(--px3);
+  border-inline-end: solid transparent var(--px3);
   border-radius: var(--round-xs);
-  border-right: solid transparent var(--px3);
   box-shadow: var(--outline-shadow);
   outline-offset: var(--px-1);
   outline: var(--highlight-border-05);
