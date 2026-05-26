@@ -1,7 +1,7 @@
 # ADR-008: Task-Specific Models & Orchestrator Agent
 
 ## Status
-Accepted (updated 2026-03-28)
+Accepted (updated 2026-05-25)
 
 > NOTE: ADR-008 is the canonical source for current model assignments. The
 > rewrite verification pass flagged model tokens across the docs — ADR-008
@@ -9,12 +9,44 @@ Accepted (updated 2026-03-28)
 > avoid accidental drift.
 
 Canonical mapping (editor quick-reference):
-- Enhancement (all clients) → `qwen3-4b-instruct-2507`
+- Enhancement (default for clients without `model_profile`) → `qwen3-4b-instruct-2507`
 - Orchestrator (thinking) → `qwen3-4b-thinking-2507`
+- Per-client opt-in models → resolved via `model_profile` (see *Update 2026-05-25* below)
 
 When editing other documents, prefer adding parenthetical mappings such as
 `llama3.2 (now qwen3-4b-instruct-2507)` instead of wholesale replacement to
 preserve historical context.
+
+## Update 2026-05-25 — Per-Client Model Profiles (Opt-In)
+
+The two-model assignment from 2026-03-28 stays in place as the default. This update introduces an **opt-in mechanism** for steering specific clients to alternate models without changing the daemon default.
+
+### What's new
+
+- `app/configs/enhancement-rules.json` gains a top-level `model_profiles` map and a per-client `model_profile` key.
+- `EnhancementService._load_rules_async` resolves a client's `model_profile` to the profile's model id *before* constructing the rule, so the rest of the service is unaware of the indirection.
+- Read-only endpoint `GET /clients/{name}/model-profile` returns `{model_profile, resolved_model, source}` where `source ∈ {default, client_override, profile_missing}`. The `profile_missing` value is the operability bit — a typo'd profile name surfaces in the dashboard instead of silently falling back.
+
+### Seeded profiles
+
+| Profile | Model | Used for |
+|---|---|---|
+| `daemon` | `qwen3-4b-instruct-2507` | Identical to the canonical default (made explicit) |
+| `coder` | `Qwopus3.5-9B-Coder-GGUF` | Code-tooling clients (currently `vscode`, `claude-code`) |
+| `claude_feel` | `Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF` | Heavier planner — defined but unassigned, ready for a future `lobe-chat` opt-in |
+
+### Why opt-in vs. flipping the default
+
+The original PR draft swapped the daemon default to `Qwopus3.5-4B-v3-GGUF` and rewrote this ADR's canonical mapping accordingly. Review feedback flagged that this collapsed a settled architectural decision with an experimental model change. The split: keep the canonical mapping (and this ADR) stable, ship the *mechanism* as a separate concern, and let individual clients opt in. If the distilled-Qwen set proves itself in `vscode` + `claude-code`, flipping the daemon default becomes a one-line follow-up; if not, reverting the experiment is two key deletions in `enhancement-rules.json`.
+
+### What did *not* change
+
+- Daemon enhancement default — still `qwen3-4b-instruct-2507`.
+- Orchestrator model — still `qwen3-4b-thinking-2507` (thinking variant retained; the orchestrator does not currently use `model_profile`).
+- LM Studio as inference backend.
+- Memory footprint envelope.
+
+---
 
 ## Update 2026-03-28 -- Simplified to Two-Model Architecture
 

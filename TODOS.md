@@ -10,7 +10,7 @@
 
 - [ ] Test `notifications/tools/list_changed` in Claude Desktop, Cherry Studio, and VS Code; clients that fail remain on `disclosure: full`.
 - [x] Phase 1: Add `discover_tools` and `load_server_tools` to `mcps/prompthub-bridge.js`, building on `start_server` and `list_available_servers`; add `TOOL_DISCLOSURE` and `TIER1_SERVERS` env vars.
-- [ ] Phase 2: Add `tool_profile` to `enhancement-rules.json`, expose `GET /clients/{name}/tool-profile`, and show disclosure mode per client in the dashboard.
+- [x] Phase 2: Add `tool_profile` to `enhancement-rules.json`, expose `GET /clients/{name}/tool-profile`, and show disclosure mode per client in the dashboard.
 - [ ] Phase 3 (optional): Use tool registry `serve_count` to auto-promote frequently used servers to tier 1.
 
 ### OpenAI-Compatible Proxy
