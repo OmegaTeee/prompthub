@@ -121,7 +121,8 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - **FastMCP bridges**: MCP servers communicate via FastMCP Client + StdioTransport
 - **Factory-with-getter-callables**: Route modules use `create_X_router(get_service=lambda: service)` to defer global resolution past lifespan init
 - **Tiered timeouts**: httpx client (120s) → middleware (60s default, 180s for slow paths) → LLM keep_alive (5min)
-- **Model roles**: All clients use the same enhancement model (`qwen3-4b-instruct-2507`) with a separate thinking variant (`qwen3-4b-thinking-2507`) for the orchestrator agent's intent classification (see ADR-008)
+- **Model roles**: The router daemon defaults to `qwen3-4b-instruct-2507` for enhancement and `qwen3-4b-thinking-2507` for the orchestrator (see ADR-008). Per-client `model_profile` in `enhancement-rules.json` opts specific clients into alternate models (e.g. `vscode`/`claude-code` → `coder` → `Qwopus3.5-9B-Coder-GGUF`) without changing the default.
+- **Tool disclosure modes**: `TOOL_DISCLOSURE=full|progressive` on the bridge plus per-client `tool_profile` in `enhancement-rules.json` decide whether `tools/list` returns every running server's tools or only tier-1 + on-demand-loaded servers + meta-tools. Progressive mode cuts initial tool context by ~80% on typical fleets. The bridge fetches each client's profile from `GET /clients/{name}/tool-profile` when env vars are unset.
 - **Privacy boundary**: `PrivacyLevel` enum (`local_only`, `free_ok`, `any`) controls whether prompts leave localhost (see ADR-007)
 - **Cloud fallback**: When the LLM server fails, `free_ok`/`any` clients fall back to OpenRouter free-tier; `local_only` never leaves localhost
 - **Tool registry cache-through**: `tools/list` responses cached in SQLite (24h TTL), served from cache on subsequent requests; old snapshots archived automatically for long-term access
@@ -131,7 +132,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 ## Configuration Files
 
 - `app/configs/mcp-servers.json` - MCP server registry (command, args, env, auto_start, restart_on_failure)
-- `app/configs/enhancement-rules.json` - Per-client enhancement system prompts, privacy_level, model, temperature, max_tokens
+- `app/configs/enhancement-rules.json` - Per-client enhancement system prompts, privacy_level, model, temperature, max_tokens. Also holds the top-level `model_profiles` map (named model bundles like `daemon`/`coder`/`claude_feel`) and per-client `model_profile` / `tool_profile` keys.
 - `app/configs/api-keys.json` - Bearer tokens for OpenAI-compatible proxy (client_name, enhance flag)
 - `app/configs/cloud-models.json` - Cloud fallback model mapping (local models → free-tier cloud equivalents)
 - `app/.env` - Runtime settings (`LLM_HOST`, `LLM_PORT`, `LLM_MODEL`, `LLM_ORCHESTRATOR_MODEL`, `LLM_TIMEOUT`, `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, etc. — old `OLLAMA_*` names still work as aliases)
@@ -178,6 +179,8 @@ POST /tools/{server}/refresh    Force re-fetch tools from live server
 DEL  /tools/{server}            Clear cached tools for a server
 POST /tools/archive             Archive expired tool cache entries
 POST /tools/cleanup             Delete old archived snapshots (retention_days param)
+GET  /clients/{name}/tool-profile   Resolved {disclosure, tier1_servers, source} for a client
+GET  /clients/{name}/model-profile  Resolved {model_profile, resolved_model, source} for a client
 ```
 
 ## Code Style

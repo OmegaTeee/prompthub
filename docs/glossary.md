@@ -48,9 +48,20 @@ The process of rewriting a user's prompt through a local LLM before forwarding i
 ### Enhancement rules
 
 Per-client configuration in `app/configs/enhancement-rules.json` defining:
-model, system prompt, temperature, max_tokens, and privacy_level. Clients
-share the same default enhancement model today, but can still have different
-rewriting policies and safety/privacy settings.
+model, system prompt, temperature, max_tokens, privacy_level, plus the
+optional `model_profile` and `tool_profile` keys (defined below).
+
+### Model profile
+
+A named bundle in the top-level `model_profiles` map of
+`enhancement-rules.json` (currently `daemon`, `coder`, `claude_feel`). A
+client opts in by setting `"model_profile": "<name>"` on its rule; the
+EnhancementService resolves the name to the profile's `model` at rule-load
+time, overriding any explicit `model` field on the rule. Unknown profile
+names fall back to the rule's `model` and surface as `source:
+profile_missing` from `GET /clients/{name}/model-profile`. The daemon
+default stays `qwen3-4b-instruct-2507` regardless of which profiles exist —
+profiles are opt-in, not a global flip.
 
 ### Privacy level
 
@@ -98,9 +109,26 @@ SQLite-backed cache (`app/router/tool_registry/`) storing raw MCP tool definitio
 
 ### Progressive disclosure
 
-*(Planned — see `docs/notes/plans/progressive-tool-disclosure.md`)*
+Two-tier tool loading shipped in the bridge: tier-1 tools (per-client
+essentials) are always visible in `tools/list`; tier-2 tools are
+discoverable via the `discover_tools` meta-tool (schemas-free catalog) and
+loaded on demand via `load_server_tools` (which emits
+`notifications/tools/list_changed`). Disclosure mode is `full` (default)
+or `progressive`, controlled by env var `TOOL_DISCLOSURE` or — when
+unset — by the per-client `tool_profile` fetched at startup from
+`GET /clients/{name}/tool-profile`. Cuts initial tool context by ~80% on
+typical fleets. Plan and follow-up phases in
+`docs/notes/plans/progressive-tool-disclosure.md`.
 
-Two-tier tool loading: tier-1 tools (per-client essentials) are always visible; tier-2 tools are discoverable via a `discover_tools` meta-tool and loaded on demand via `load_server_tools`. Reduces initial tool context by ~80%.
+### Tool profile
+
+Per-client block in `enhancement-rules.json` shaped as
+`{"disclosure": "full|progressive", "tier1_servers": [...]}`. Read by the
+dashboard for its "Tools" column and by the bridge when no
+`TOOL_DISCLOSURE` / `TIER1_SERVERS` env vars are set. Bridge precedence:
+explicit env > router profile > default `full`. The router never blocks
+bridge startup — any error fetching the profile silently falls through to
+the default.
 
 ## Resilience
 
