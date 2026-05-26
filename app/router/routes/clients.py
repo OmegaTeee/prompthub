@@ -1,7 +1,8 @@
 """Client profile endpoints — read-only derived configuration per client.
 
-Currently exposes `GET /clients/{name}/tool-profile` only. A model-profile
-endpoint lands in a follow-up PR with the model_profiles mechanism.
+Exposes:
+  GET /clients/{name}/tool-profile   -> disclosure mode + tier-1 servers
+  GET /clients/{name}/model-profile  -> resolved model + profile name
 
 Design goals:
 - Keep tool_profile and model_profile decoupled (they can be combined later
@@ -49,6 +50,25 @@ class ToolProfileResponse(BaseModel):
     source: str = Field(
         default="default",
         description="default (no override in config) | client_override",
+    )
+
+
+class ModelProfileResponse(BaseModel):
+    client: str
+    model_profile: str | None = Field(
+        default=None,
+        description="Profile name from the client's `model_profile` field, "
+        "or null when the client did not opt in.",
+    )
+    resolved_model: str = Field(
+        description="The actual model id that will be used at enhancement "
+        "time, after applying profile resolution and default fallback.",
+    )
+    source: str = Field(
+        default="default",
+        description="default (no profile set) | client_override (profile or "
+        "explicit model field on the client) | profile_missing (profile name "
+        "set but not registered in model_profiles)",
     )
 
 
@@ -141,6 +161,64 @@ def create_clients_router(rules_path: Path | None = None) -> APIRouter:
             disclosure=disclosure,
             tier1_servers=tier1,
             source="client_override",
+        )
+
+    @router.get("/clients/{name}/model-profile", response_model=ModelProfileResponse)
+    async def get_model_profile(name: str) -> ModelProfileResponse:
+        rules = await _load_rules(rules_path)
+        merged = _merged_client_rule(rules, name)
+
+        profiles = rules.get("model_profiles", {})
+        if not isinstance(profiles, dict):
+            profiles = {}
+
+        # Anchor for fallback. Order: client `model` > default `model` > unknown.
+        # Identical to the resolution EnhancementService performs at load
+        # time, so the bridge/dashboard see what the service will use.
+        base_model = (
+            merged.get("model")
+            or rules.get("default", {}).get("model")
+            or "unknown"
+        )
+
+        requested = merged.get("model_profile")
+
+        # Happy path: client opted into a profile that exists.
+        if isinstance(requested, str) and requested and requested in profiles:
+            info = profiles.get(requested, {})
+            resolved = info.get("model") if isinstance(info, dict) else None
+            if resolved:
+                return ModelProfileResponse(
+                    client=name,
+                    model_profile=requested,
+                    resolved_model=str(resolved),
+                    source="client_override",
+                )
+
+        # Client referenced a profile that doesn't exist — surface a
+        # distinct source so config drift is easy to spot in the dashboard.
+        if isinstance(requested, str) and requested:
+            return ModelProfileResponse(
+                client=name,
+                model_profile=requested,
+                resolved_model=str(base_model),
+                source="profile_missing",
+            )
+
+        # No profile referenced. If the client has an explicit `model`
+        # field (other than the default), call that client_override too —
+        # otherwise default.
+        client_section = rules.get("clients", {})
+        client_section = client_section if isinstance(client_section, dict) else {}
+        client_rule = client_section.get(name, {})
+        client_rule = client_rule if isinstance(client_rule, dict) else {}
+        source = "client_override" if "model" in client_rule else "default"
+
+        return ModelProfileResponse(
+            client=name,
+            model_profile=None,
+            resolved_model=str(base_model),
+            source=source,
         )
 
     return router
