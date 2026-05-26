@@ -219,6 +219,7 @@ class EnhancementService:
         self._cloud_client: LLMClient | None = None
         self._default_cloud_model = openrouter_default_model
         self._cloud_model_map: dict[str, str] = {}
+        self._model_profiles: dict[str, str] = {}
 
         if openrouter_enabled and openrouter_api_key:
             cloud_config = LLMConfig(
@@ -284,6 +285,16 @@ class EnhancementService:
             content = await asyncio.to_thread(self.rules_path.read_text)
             data = json.loads(content)
 
+            # Load model profiles (optional)
+            self._model_profiles = {}
+            profiles = data.get("model_profiles", {})
+            if isinstance(profiles, dict):
+                for name, info in profiles.items():
+                    if not isinstance(name, str) or not name:
+                        continue
+                    if isinstance(info, dict) and info.get("model"):
+                        self._model_profiles[name] = str(info["model"])
+
             # Load default rule
             if "default" in data and isinstance(data["default"], dict):
                 self._rules["default"] = EnhancementRule(**data["default"])
@@ -298,6 +309,14 @@ class EnhancementService:
                         # Merge with default rule for missing fields
                         merged = self._default_rule.model_dump()
                         merged.update(rule_data)
+                        # Resolve model via model_profile when present.
+                        model_profile = rule_data.get("model_profile")
+                        if (
+                            isinstance(model_profile, str)
+                            and model_profile
+                            and model_profile in self._model_profiles
+                        ):
+                            merged["model"] = self._model_profiles[model_profile]
                         self._rules[name] = EnhancementRule(**merged)
                         logger.debug(f"Loaded enhancement rule: {name}")
 

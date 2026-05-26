@@ -11,6 +11,7 @@
   <tr>
     <th>Client</th>
     <th>Model</th>
+    <th>Profiles</th>
     <th style="text-align:right;">Ctx</th>
     <th style="text-align:right;">System</th>
     <th style="text-align:right;">Response</th>
@@ -26,6 +27,19 @@
       {% endif %}
     </td>
     <td><code style="font-size:0.8rem;">{{ row.model }}</code></td>
+    <td style="font-size:0.8rem;">
+      {% if row.model_profile %}
+      <span class="badge badge-info">{{ row.model_profile }}</span>
+      {% else %}
+      <span class="text-muted">—</span>
+      {% endif %}
+      {% if row.tool_disclosure %}
+      <span class="text-muted" style="margin-left:6px;">tools: {{ row.tool_disclosure }}</span>
+      {% endif %}
+      {% if row.tier1_servers %}
+      <span class="text-muted" style="margin-left:6px;">t1: {{ row.tier1_servers|join(", ") }}</span>
+      {% endif %}
+    </td>
     <td style="text-align:right;" class="text-muted">{{ row.context_k }}K</td>
     <td style="text-align:right;" class="text-muted">~{{ row.system_tokens }}</td>
     <td style="text-align:right;" class="text-muted">{{ row.max_response_tokens }}</td>

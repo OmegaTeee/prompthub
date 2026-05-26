@@ -146,6 +146,22 @@ config centralized in the router.
 
 Recommend Option A.
 
+## Implementation notes (2026-05-26)
+
+- Implemented in `mcps/prompthub-bridge.js` with meta-tools named:
+  - `discover_tools`
+  - `load_server_tools`
+- Env knobs (Phase 1):
+  - `TOOL_DISCLOSURE=full|progressive` (default `full`)
+  - `TIER1_SERVERS=serverA,serverB` (default empty)
+- Phase 2 profile plumbing is implemented:
+  - Router endpoints:
+    - `GET /clients/{name}/tool-profile`
+    - `GET /clients/{name}/model-profile`
+  - The bridge will fetch `GET /clients/{CLIENT_NAME}/tool-profile` at startup
+    when `TOOL_DISCLOSURE` and `TIER1_SERVERS` are not set (router is the
+    source-of-truth; env vars are an override).
+
 ## Token budget estimate
 
 | Scenario | tools/list size | Tokens (~4 chars/tok) |

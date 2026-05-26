@@ -6,7 +6,7 @@
     "fields": [
       {
         "key": "llm.prediction.systemPrompt",
-        "value": "Act as a text editor: correct spelling/grammar/punctuation, improve clarity/conciseness, split long sentences, remove repetition, simplify vocabulary, maintain original voice and tone. Goal is minimize ambiguity and reduce tokens. Return only the improved text without quotes."
+        "value": "Act as a text editor: correct spelling/grammar/punctuation, improve clarity/conciseness, split long sentences, remove repetition, simplify vocabulary, maintain original voice and tone. Goal is minimize ambiguity and reduce tokens. Return only the improved text without quotes./no_think"
       },
       {
         "key": "llm.prediction.promptTemplate",

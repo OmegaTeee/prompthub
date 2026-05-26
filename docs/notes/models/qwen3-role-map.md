@@ -19,12 +19,12 @@ for how to write the per-client `system_prompt`s that drive the rewriter
 | Role                  | Model                        | Loaded in LM Studio | Triggered by                                 |
 | --------------------- | ---------------------------- | ------------------- | -------------------------------------------- |
 | **Chat / tools**      | `qwen3-4b-thinking-2507`     | Yes                 | User chat in LM Studio, Claude clients, etc. |
-| **Prompt enhancement**| `qwen3-4b-instruct-2507`     | Yes                 | `POST /llm/enhance`, `/v1/chat/completions` when `enhance: true` |
-| **Orchestrator**      | `qwen3-4b-thinking-2507`     | Yes *(shared)*      | `POST /llm/orchestrate` intent classification |
+| **Prompt enhancement**| `Qwopus3.5-4B-v3-GGUF`      | Yes                 | `POST /llm/enhance`, `/v1/chat/completions` when `enhance: true` |
+| **Orchestrator**      | `Qwopus3.5-4B-v3-GGUF`      | Yes *(shared)*      | `POST /llm/orchestrate` intent classification (`/no_think`) |
 | **Text rewrite**      | `qwen3-0.6b`                 | Yes                 | Short-form text-editor prompt templates       |
 | **Speculative draft** | `qwen3-0.6b`                 | Yes *(shared)*      | LM Studio's speculative decoding for `-4b-*`  |
 
-**Settings env**: `LLM_MODEL=qwen3-4b-instruct-2507`, `LLM_ORCHESTRATOR_MODEL=qwen3-4b-thinking-2507` (see [app/.env](../../../app/.env) and [CLAUDE.md § Configuration](../../../CLAUDE.md#configuration-files)).
+**Settings env**: `LLM_MODEL=Qwopus3.5-4B-v3-GGUF`, `LLM_ORCHESTRATOR_MODEL=Qwopus3.5-4B-v3-GGUF` (see [app/.env](../../../app/.env) and [CLAUDE.md § Configuration](../../../CLAUDE.md#configuration-files)).
 
 ---
 

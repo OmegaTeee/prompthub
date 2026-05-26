@@ -136,7 +136,7 @@ A knowledge file (`{name}-llm.txt`) in a client's directory providing project co
 
 ### LM Studio
 
-The local model server running on `localhost:1234`. Provides an OpenAI-compatible API. Hosts the enhancement model (`qwen3-4b-instruct-2507`) and the orchestrator model (`qwen3-4b-thinking-2507`).
+The local model server running on `localhost:1234`. Provides an OpenAI-compatible API. Hosts the enhancement model (`Qwopus3.5-4B-v3-GGUF`) and the orchestrator model (`Qwopus3.5-4B-v3-GGUF`, `/no_think`).
 
 ### Orchestrator
 

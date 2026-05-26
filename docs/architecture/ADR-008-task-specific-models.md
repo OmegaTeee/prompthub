@@ -10,7 +10,7 @@ Accepted (updated 2026-03-28)
 
 Canonical mapping (editor quick-reference):
 - Enhancement (all clients) → `qwen3-4b-instruct-2507`
-- Orchestrator (thinking) → `qwen3-4b-thinking-2507`
+- Orchestrator (no-think) → `Qwopus3.5-4B-v3-GGUF` (`/no_think`)
 
 When editing other documents, prefer adding parenthetical mappings such as
 `llama3.2 (now qwen3-4b-instruct-2507)` instead of wholesale replacement to
@@ -25,7 +25,7 @@ Per-client model specialization has been removed. All clients now use a single e
 | Role | Model | Params | Context | Format | Notes |
 |------|-------|--------|---------|--------|-------|
 | Enhancement (all clients) | `qwen3-4b-instruct-2507` | 4B | 262K | MLX | Fast rewriting for every client |
-| Orchestrator (thinking model) | `qwen3-4b-thinking-2507` | 4B | 262K | MLX | Intent classification with reasoning |
+| Orchestrator (no-think model) | `Qwopus3.5-4B-v3-GGUF` | 4B | 262K | GGUF | Intent classification with structured output |
 | Embedding (standby) | `text-embedding-nomic-embed-text-v1.5` | -- | -- | GGUF | 84 MB, loaded on demand |
 
 **Total memory footprint: ~5 GB** for both active LLMs (down from ~13 GB+ under the previous multi-model setup).
@@ -75,7 +75,7 @@ The original plan assigned different models per client workload:
 *This per-client matrix was replaced by a single enhancement model for all clients (see update above).*
 
 #### 2. Orchestrator agent (module retained, model changed)
-A pre-enhancement classification layer originally used `qwen3:14b`. Now uses the thinking model (`qwen3-4b-thinking-2507`):
+A pre-enhancement classification layer originally used `qwen3:14b`. Now uses the daemon model (`Qwopus3.5-4B-v3-GGUF`) with `/no_think`:
 
 ```
 incoming prompt

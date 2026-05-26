@@ -29,8 +29,12 @@ SAMPLE_SYSTEM = (
     "Return only the rewritten prompt — no explanation, no preamble."
 )
 
-# All models used by enhancement-rules.json
-ACTIVE_MODELS = ["qwen3-4b-instruct-2507", "qwen3-4b-thinking-2507"]
+# All models used by enhancement-rules.json (model + model_profiles)
+ACTIVE_MODELS = [
+    "Qwopus3.5-4B-v3-GGUF",
+    "Qwopus3.5-9B-Coder-GGUF",
+    "Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF",
+]
 
 
 # ---------------------------------------------------------------------------

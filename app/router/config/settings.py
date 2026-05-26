@@ -9,8 +9,8 @@ keyring (env wins if both present):
 
 - ``openrouter_api_key`` <- keyring key ``openrouter_api_key``
 - ``llm_api_key``        <- keyring key ``lm_api_token``
-                            (LM Studio's official env-var name is
-                            LM_API_TOKEN; also accepted as an alias)
+                            (also accepts LM_API_TOKEN as a backwards-compatible
+                            alias for existing setups)
 """
 
 import getpass
@@ -51,7 +51,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("LLM_PORT", "OLLAMA_PORT"),
     )
     llm_model: str = Field(
-        default="qwen3-4b-instruct-2507",
+        default="Qwopus3.5-4B-v3-GGUF",
         validation_alias=AliasChoices("LLM_MODEL", "OLLAMA_MODEL"),
     )
     llm_timeout: int = Field(
@@ -59,7 +59,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("LLM_TIMEOUT", "OLLAMA_TIMEOUT"),
     )
     llm_orchestrator_model: str = Field(
-        default="qwen3-4b-thinking-2507",
+        default="Qwopus3.5-4B-v3-GGUF",
         validation_alias=AliasChoices("LLM_ORCHESTRATOR_MODEL"),
     )
     llm_api_key: str | None = Field(
@@ -145,7 +145,8 @@ class Settings(BaseSettings):
             self.openrouter_api_key = _get_from_keyring("openrouter_api_key")
         if not self.llm_api_key:
             # Keychain account is "lm_api_token" (matches LM Studio's official
-            # env-var name LM_API_TOKEN); the Settings field stays generic.
+            # env-var name LM_API_TOKEN); LM_API_TOKEN is supported as a legacy
+            # alias, but repo docs should prefer LLM_API_KEY going forward.
             self.llm_api_key = _get_from_keyring("lm_api_token") or None
 
         # Normalize llm_host: strip scheme and port if present

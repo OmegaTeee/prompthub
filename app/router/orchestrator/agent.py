@@ -1,5 +1,5 @@
 """
-Orchestrator Agent — local reasoning layer using qwen3-4b-thinking.
+Orchestrator Agent — local routing layer (no-think) using Qwopus3.5 4B.
 
 Sits upstream of EnhancementService. Classifies intent, injects
 session context within a token budget, and annotates prompts with
@@ -7,7 +7,7 @@ routing hints before they reach the enhancement layer.
 
 Flow:
     incoming prompt
-        → OrchestratorAgent.process()  (qwen3-4b-thinking, 2s timeout)
+        → OrchestratorAgent.process()  (Qwopus3.5-4B, 2s timeout)
         → OrchestratorResult (intent + annotated_prompt)
         → EnhancementService.enhance() (qwen3-4b, fast rewrite)
         → downstream client
@@ -35,7 +35,7 @@ from router.resilience import CircuitBreaker, CircuitBreakerConfig, CircuitBreak
 logger = logging.getLogger(__name__)
 
 # ── Model config ──────────────────────────────────────────────────────────────
-DEFAULT_MODEL = "qwen3-4b-thinking-2507"
+DEFAULT_MODEL = "Qwopus3.5-4B-v3-GGUF"
 TIMEOUT_SECONDS = 2.5          # Hard ceiling — must not block enhancement
 MAX_TOKENS = 300               # Keep responses tight; we only need JSON
 TEMPERATURE = 0.1              # Low randomness for reliable structured output
@@ -76,7 +76,9 @@ Memory routing:
   OR add "check_memory_first" to context_hints so the chat model knows to
   call prompthub_memory_search before reaching for browser tools.
 - Do not override an explicit intent (e.g. "search the web for X" stays
-  search/general even if the topic was discussed before)."""
+  search/general even if the topic was discussed before).
+
+/no_think"""
 
 
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)

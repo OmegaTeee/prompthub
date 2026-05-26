@@ -519,15 +519,16 @@ def create_dashboard_router(
         from pathlib import Path
 
         settings = get_settings()
-        rules_path = (
-            Path(settings.workspace_root) / "app" / settings.enhancement_rules_config
-        )
+        rules_path = Path(settings.workspace_root) / "app" / settings.enhancement_rules_config
 
         rows = []
         try:
             data = json.loads(rules_path.read_text())
             default_rule = data.get("default", {})
             clients = data.get("clients", {})
+            model_profiles = data.get("model_profiles", {}) if isinstance(
+                data.get("model_profiles"), dict
+            ) else {}
 
             # Merge default into each client rule (same logic as service.py)
             merged_clients = {"default": default_rule}
@@ -536,21 +537,41 @@ def create_dashboard_router(
                 merged_clients[name] = merged
 
             for client_name, rule in merged_clients.items():
+                # Resolve model via model_profile (if configured and valid)
+                model_profile = rule.get("model_profile")
                 model = rule.get("model", "unknown")
+                resolved_model = model
+                if isinstance(model_profile, str) and model_profile in model_profiles:
+                    info = model_profiles.get(model_profile, {})
+                    if isinstance(info, dict) and info.get("model"):
+                        resolved_model = str(info["model"])
+
                 max_tokens = rule.get("max_tokens") or 500
                 system_prompt = rule.get("system_prompt", "")
                 enabled = rule.get("enabled", True)
 
                 budget = TokenBudget(
-                    model=model,
+                    model=resolved_model,
                     max_response_tokens=max_tokens,
                     system_prompt=system_prompt,
                 )
                 s = budget.summary()
+
+                tool_profile = rule.get("tool_profile") if isinstance(
+                    rule.get("tool_profile"), dict
+                ) else {}
+                disclosure = tool_profile.get("disclosure", "full")
+                tier1_servers = tool_profile.get("tier1_servers", [])
+                if not isinstance(tier1_servers, list):
+                    tier1_servers = []
+
                 rows.append(
                     {
                         "client": client_name,
-                        "model": model,
+                        "model": resolved_model,
+                        "model_profile": model_profile if isinstance(model_profile, str) else None,
+                        "tool_disclosure": str(disclosure),
+                        "tier1_servers": [str(s) for s in tier1_servers if s],
                         "enabled": enabled,
                         "context_k": s["context_limit_tokens"] // 1024,
                         "available_tokens": s["available_for_input_tokens"],

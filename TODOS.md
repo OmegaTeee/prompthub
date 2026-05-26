@@ -9,15 +9,9 @@
 > **Context:** PromptHub is a router + enhancement middleware rather than a gateway, but lazy-loading tools still reduces tool-context waste. Flagged 2026-05-08 as the next key optimization priority — bridge currently exposes the full tool list from every running server on connect; tier-1/tier-2 disclosure with meta-tool gating cuts initial context by ~80%.
 
 - [ ] Test `notifications/tools/list_changed` in Claude Desktop, Cherry Studio, and VS Code; clients that fail remain on `disclosure: full`.
-- [ ] Phase 1: Add `discover_tools` and `load_server_tools` to `mcps/prompthub-bridge.js`, building on `start_server` and `list_available_servers`; add `TOOL_DISCLOSURE` and `TIER1_SERVERS` env vars.
-- [ ] Phase 2: Add `tool_profile` to `enhancement-rules.json`, expose `GET /clients/{name}/tool-profile`, and show disclosure mode per client in the dashboard.
+- [x] Phase 1: Add `discover_tools` and `load_server_tools` to `mcps/prompthub-bridge.js`, building on `start_server` and `list_available_servers`; add `TOOL_DISCLOSURE` and `TIER1_SERVERS` env vars.
+- [x] Phase 2: Add `tool_profile` to `enhancement-rules.json`, expose `GET /clients/{name}/tool-profile`, and show disclosure mode per client in the dashboard.
 - [ ] Phase 3 (optional): Use tool registry `serve_count` to auto-promote frequently used servers to tier 1.
-
-### OpenAI-Compatible Proxy
-
-- [ ] **Cherry Studio auth via PromptHub router stopped working** — was working previously, now Cherry Studio fails to authenticate against `/v1/`. Suspected cause: a proxy setting in Cherry Studio got flipped (it has both direct-LLM and proxy-via-PromptHub modes; the LevelDB-backed config may have reverted). First debug step: capture a request from Cherry Studio with verbose HTTP logging and compare against the `Authorization: Bearer sk-prompthub-cherry-studio-001` shape that should reach `app/router/openai_compat/auth.py`. Verify the api-keys.json entry for cherry-studio is still intact and `enhance: false` (it shouldn't need to be flipped).
-- [ ] Support `response_format` passthrough; add `response_format` to `ChatCompletionRequest`, preserve and forward it in `app/router/openai_compat/router.py`, extend `LLMClient.chat_completion()` in `app/router/enhancement/llm_client.py` to accept passthrough options, add tests for `json_object` and `json_schema`, and document backend compatibility and fallback behavior.
-- [ ] Audit dropped OpenAI-compatible fields; review whether `frequency_penalty`, `presence_penalty`, `user`, and Responses API structured-output fields should also pass through consistently.
 
 ### Review MCPs folder and README
 
@@ -44,6 +38,12 @@
 - [ ] Update `README.md` to reflect the current architecture, active clients, and primary documentation entry points; remove the project status table if it cannot be kept current.
 
 ## Later
+
+### OpenAI-Compatible Proxy (deferred)
+
+- [ ] **Cherry Studio auth via PromptHub router stopped working** — was working previously, now Cherry Studio fails to authenticate against `/v1/`. Suspected cause: a proxy setting in Cherry Studio got flipped (it has both direct-LLM and proxy-via-PromptHub modes; the LevelDB-backed config may have reverted). First debug step: capture a request from Cherry Studio with verbose HTTP logging and compare against the `Authorization: Bearer sk-prompthub-cherry-studio-001` shape that should reach `app/router/openai_compat/auth.py`. Verify the api-keys.json entry for cherry-studio is still intact and `enhance: false` (it shouldn't need to be flipped).
+- [ ] Support `response_format` passthrough; add `response_format` to `ChatCompletionRequest`, preserve and forward it in `app/router/openai_compat/router.py`, extend `LLMClient.chat_completion()` in `app/router/enhancement/llm_client.py` to accept passthrough options, add tests for `json_object` and `json_schema`, and document backend compatibility and fallback behavior.
+- [ ] Audit dropped OpenAI-compatible fields; review whether `frequency_penalty`, `presence_penalty`, `user`, and Responses API structured-output fields should also pass through consistently.
 
 ### Feature: Dashboard Chat Sidecar (`feature/open-webui-chat`)
 

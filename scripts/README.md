@@ -6,6 +6,9 @@ Utility scripts for PromptHub development and operations.
 
 ```
 scripts/
+├── models/                           # Model download helpers (Hugging Face)
+│   ├── download-qwen-distilled.sh    # Download coder-first distilled models (configurable)
+│   └── qwen-distilled.env.example    # Deployment swap-point config example
 ├── dev/                             # Development and maintenance helpers
 │   ├── cleanup.sh                   # Remove temp files, caches (.DS_Store, __pycache__, etc.)
 │   ├── release.sh                   # Version bump, changelog, git tag, GitHub release
@@ -58,6 +61,9 @@ python3 scripts/router/restart_mcp_servers.py obsidian
 
 # Diagnose the full stack
 ./scripts/diagnose.sh
+
+# Download distilled models (configurable via --config)
+./scripts/models/download-qwen-distilled.sh --dry-run
 
 # Run tests
 ./scripts/test.sh                 # Unit tests only by default

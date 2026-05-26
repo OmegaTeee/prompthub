@@ -38,6 +38,9 @@ logger = logging.getLogger(__name__)
 MODEL_CONTEXT_TOKENS: dict[str, int] = {
     "qwen3-4b-instruct-2507":      262_144,
     "qwen3-4b-thinking-2507":      262_144,
+    "Qwopus3.5-4B-v3-GGUF":        262_144,
+    "Qwopus3.5-9B-Coder-GGUF":     262_144,
+    "Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF": 262_144,
     "_default":                      8_192,
 }
 
