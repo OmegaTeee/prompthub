@@ -541,6 +541,16 @@ def create_dashboard_router(
                 system_prompt = rule.get("system_prompt", "")
                 enabled = rule.get("enabled", True)
 
+                # Tool profile (PR 2). Defensive parsing keeps a malformed
+                # entry from breaking the dashboard render.
+                tp = rule.get("tool_profile")
+                tp = tp if isinstance(tp, dict) else {}
+                disclosure = tp.get("disclosure", "full")
+                tier1 = tp.get("tier1_servers", [])
+                if not isinstance(tier1, list):
+                    tier1 = []
+                tier1 = [str(s) for s in tier1 if s]
+
                 budget = TokenBudget(
                     model=model,
                     max_response_tokens=max_tokens,
@@ -551,6 +561,8 @@ def create_dashboard_router(
                     {
                         "client": client_name,
                         "model": model,
+                        "tool_disclosure": str(disclosure),
+                        "tier1_servers": tier1,
                         "enabled": enabled,
                         "context_k": s["context_limit_tokens"] // 1024,
                         "available_tokens": s["available_for_input_tokens"],

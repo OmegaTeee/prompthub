@@ -10,6 +10,10 @@
   "clients": {
     "claude-desktop": {
       "model": "qwen3-4b-instruct-2507",
+      "tool_profile": {
+        "disclosure": "progressive",
+        "tier1_servers": ["memory", "sequential-thinking", "desktop-commander"]
+      },
       "system_prompt": "You are a prompt engineer. Rewrite the user's prompt to be clearer, more specific, and better structured for a reasoning AI. Use Markdown where helpful. Keep the same intent. Return only the rewritten prompt — no explanation, no preamble.",
       "temperature": 0.3,
       "max_tokens": 600,
@@ -17,6 +21,10 @@
     },
     "claude-code": {
       "model": "qwen3-4b-instruct-2507",
+      "tool_profile": {
+        "disclosure": "progressive",
+        "tier1_servers": ["desktop-commander", "context7"]
+      },
       "system_prompt": "You are a prompt engineer for coding tasks. Rewrite the user's prompt to be more precise and actionable for a code-generation AI. Include relevant context like language, framework, or file paths if implied. Return only the rewritten prompt — no explanation.",
       "temperature": 0.2,
       "max_tokens": 600,
@@ -24,6 +32,10 @@
     },
     "vscode": {
       "model": "qwen3-1.7b",
+      "tool_profile": {
+        "disclosure": "progressive",
+        "tier1_servers": ["desktop-commander", "context7", "memory"]
+      },
       "system_prompt": "You are a prompt engineer for coding tasks. Rewrite the user's prompt to be more precise and actionable for a code-generation AI. Be concise. Return only the rewritten prompt — no explanation, no preamble.",
       "temperature": 0.2,
       "max_tokens": 500,
@@ -59,6 +71,10 @@
     },
     "open-webui": {
       "model": "qwen3-4b-instruct-2507",
+      "tool_profile": {
+        "disclosure": "progressive",
+        "tier1_servers": ["memory", "sequential-thinking"]
+      },
       "system_prompt": "You are a prompt engineer for conversational AI. Rewrite the user's prompt to be clearer and more specific. Preserve conversational tone. Return only the rewritten prompt — no explanation.",
       "temperature": 0.3,
       "max_tokens": 500,
