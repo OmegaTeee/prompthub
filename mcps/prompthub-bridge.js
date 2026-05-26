@@ -21,6 +21,25 @@ import {
 const PROMPTHUB_URL = process.env.PROMPTHUB_URL || 'http://127.0.0.1:9090';
 const CLIENT_NAME = process.env.CLIENT_NAME || 'claude-desktop';
 
+// Progressive tool disclosure (Phase 1 — env-driven only).
+//   TOOL_DISCLOSURE=full        (default): return tools for every running server
+//   TOOL_DISCLOSURE=progressive          : return only tier-1 + explicitly loaded
+//                                          servers + meta-tools
+//   TIER1_SERVERS=a,b,c                  : comma-separated server names seeded
+//                                          into the active set on startup
+// Router-driven defaults (per-client tool profile fetch) land in PR 2.
+const TOOL_DISCLOSURE_ENV = process.env.TOOL_DISCLOSURE;
+const TIER1_SERVERS_ENV = process.env.TIER1_SERVERS;
+
+const toolDisclosure = (TOOL_DISCLOSURE_ENV || '').toLowerCase().trim();
+const tier1Servers = TIER1_SERVERS_ENV
+  ? TIER1_SERVERS_ENV.split(',').map(s => s.trim()).filter(Boolean)
+  : [];
+
+// Per-session tool disclosure state — reset on bridge restart / client reconnect.
+// Holds server names whose tools are currently included in tools/list.
+const activeServers = new Set(tier1Servers);
+
 // Optional: comma-separated list of servers to expose (empty = all running)
 const SERVERS_FILTER = process.env.SERVERS
   ? process.env.SERVERS.split(',').map(s => s.trim()).filter(Boolean)
@@ -141,6 +160,8 @@ const META_TOOL_NAMES = new Set([
   'prompthub_list_available_servers',
   'prompthub_start_server',
   'prompthub_memory_search',
+  'discover_tools',
+  'load_server_tools',
 ]);
 
 const META_TOOLS = [
@@ -193,6 +214,41 @@ const META_TOOLS = [
         },
       },
       required: ['query'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'discover_tools',
+    description:
+      'Discover available tools without loading full schemas. Returns a lightweight catalog (server, tool name, one-line description) across running servers. Use this to decide which server to load before calling load_server_tools. Especially useful when TOOL_DISCLOSURE=progressive hides most tools by default.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        server: {
+          type: 'string',
+          description: 'Optional server name filter (router server name, e.g. "memory", "desktop-commander").',
+        },
+        query: {
+          type: 'string',
+          description: 'Optional substring query to filter tool names/descriptions (case-insensitive).',
+        },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'load_server_tools',
+    description:
+      'Promote a server into the active tool set (progressive disclosure). After loading, the bridge emits notifications/tools/list_changed so the client refreshes tools/list and the LLM can call the new tools. No-op effect in TOOL_DISCLOSURE=full mode since all running servers are already active.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        server: {
+          type: 'string',
+          description: 'Server name to load (router server name, e.g. "memory", "desktop-commander").',
+        },
+      },
+      required: ['server'],
       additionalProperties: false,
     },
   },
@@ -337,6 +393,44 @@ async function handleMetaTool(name, args, mcpServer) {
     }
     return result;
   }
+  if (name === 'discover_tools') {
+    return await discoverTools(args || {});
+  }
+  if (name === 'load_server_tools') {
+    const serverName = args?.server;
+    if (!serverName || typeof serverName !== 'string') {
+      throw new Error('Missing required argument: server (string)');
+    }
+
+    // Validate the server is actually running so the caller gets a clear
+    // error instead of a silent no-op tools/list_changed.
+    const running = await fetchRunningServers();
+    if (!running.includes(serverName)) {
+      throw new Error(`Unknown or stopped server: ${serverName}`);
+    }
+
+    // Ordering: mutate active set before sending the notification so the
+    // client's next tools/list reflects the new server. A tools/list that
+    // races *between* the activeServers.add and the notification still sees
+    // the new server; the notification just prompts an extra refresh.
+    activeServers.add(serverName);
+    const result = {
+      server: serverName,
+      loaded: true,
+      disclosure: toolDisclosure || 'full',
+      active_servers: [...activeServers].sort(),
+    };
+
+    try {
+      await mcpServer.notification({ method: 'notifications/tools/list_changed' });
+      result.notification_sent = true;
+    } catch (err) {
+      result.notification_sent = false;
+      result.notification_error = err.message;
+      console.error(`tools/list_changed notification failed: ${err.message}`);
+    }
+    return result;
+  }
   throw new Error(`Unknown meta-tool: ${name}`);
 }
 
@@ -403,10 +497,10 @@ function jsonSize(obj) {
 }
 
 /**
- * Fetch tools from all servers
+ * Fetch tools from the specified servers (already filtered to running ones).
+ * Returns a list with the bridge-owned META_TOOLS appended.
  */
-async function getAllTools() {
-  const servers = await fetchRunningServers();
+async function getToolsForServers(servers) {
   const allTools = [];
 
   for (const serverName of servers) {
@@ -464,6 +558,89 @@ async function getAllTools() {
   // Always append bridge-owned meta-tools so agents can discover and start
   // on-demand servers even when no backend servers are running.
   return [...allTools, ...META_TOOLS];
+}
+
+/**
+ * Lightweight catalog of tools (server, tool name, description) across
+ * running servers. Does NOT return schemas — agents use this to decide
+ * which server to load via load_server_tools.
+ *
+ * Goes through callPromptHub → POST /mcp/{server}/tools/list, so the
+ * router's tool_registry cache-through (24h TTL) absorbs repeated calls.
+ */
+async function discoverTools(args) {
+  const running = await fetchRunningServers();
+  const serverFilter = args?.server && typeof args.server === 'string' ? args.server.trim() : '';
+  const query = args?.query && typeof args.query === 'string' ? args.query.toLowerCase().trim() : '';
+
+  const servers = serverFilter
+    ? running.filter(s => s === serverFilter)
+    : running;
+
+  if (serverFilter && servers.length === 0) {
+    throw new Error(`Unknown or stopped server: ${serverFilter}`);
+  }
+
+  /** @type {{server: string, tool: string, description: string}[]} */
+  const catalog = [];
+
+  for (const serverName of servers) {
+    try {
+      const response = await callPromptHub(serverName, {
+        jsonrpc: '2.0',
+        method: 'tools/list',
+        id: 1,
+      });
+
+      if (response.result && response.result.tools) {
+        const rawTools = response.result.tools;
+        const alias = TOOL_PREFIX_ALIASES.get(serverName);
+        const displayPrefix = alias ? alias.displayPrefix : serverName;
+        const stripPrefix = alias ? alias.stripPrefix : '';
+
+        for (const tool of rawTools) {
+          const toolName = stripPrefix && tool.name.startsWith(stripPrefix)
+            ? tool.name.substring(stripPrefix.length)
+            : tool.name;
+          const fullName = `${displayPrefix}_${toolName}`;
+          if (EXCLUDE_TOOLS.has(fullName)) continue;
+
+          const description = truncateDescription(
+            `[${displayPrefix}] ${tool.description || ''}`.trim()
+          ) || `[${displayPrefix}]`;
+
+          const row = { server: serverName, tool: fullName, description };
+          if (query) {
+            const haystack = `${row.tool} ${row.description}`.toLowerCase();
+            if (!haystack.includes(query)) continue;
+          }
+          catalog.push(row);
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to fetch tools from ${serverName}:`, error.message);
+    }
+  }
+
+  return { servers, tool_count: catalog.length, tools: catalog };
+}
+
+/**
+ * Effective tools/list payload, gated by TOOL_DISCLOSURE.
+ *   full         : every running server's tools + META_TOOLS
+ *   progressive  : only tier-1 + explicitly loaded servers + META_TOOLS
+ */
+async function getEffectiveToolsList() {
+  const running = await fetchRunningServers();
+
+  if ((toolDisclosure || 'full') !== 'progressive') {
+    return await getToolsForServers(running);
+  }
+
+  // Progressive: only tier-1 + explicitly loaded servers (intersected with
+  // running so a stopped tier-1 entry doesn't surface stale tools).
+  const allowed = [...activeServers].filter(name => running.includes(name));
+  return await getToolsForServers(allowed);
 }
 
 /**
@@ -532,7 +709,7 @@ async function main() {
 
   // Handle tools/list requests
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    const tools = await getAllTools();
+    const tools = await getEffectiveToolsList();
     return { tools };
   });
 
@@ -576,6 +753,10 @@ async function main() {
   console.error('PromptHub MCP Bridge started');
   console.error(`Connected to: ${PROMPTHUB_URL}`);
   console.error(`Client name: ${CLIENT_NAME}`);
+  console.error(
+    `Tool disclosure: ${toolDisclosure || 'full'} ` +
+    `(tier1: ${tier1Servers.join(', ') || '(none)'})`
+  );
   console.error(`Schema minification: ${MINIFY_SCHEMAS ? 'ON' : 'OFF'} (desc limit: ${DESC_MAX_LENGTH || 'none'})`);
   if (TOOL_PREFIX_ALIASES.size > 0) {
     const aliasDesc = [...TOOL_PREFIX_ALIASES.entries()]
