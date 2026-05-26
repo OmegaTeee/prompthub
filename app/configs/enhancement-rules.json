@@ -7,6 +7,17 @@
     "max_tokens": 500,
     "privacy_level": "local_only"
   },
+  "model_profiles": {
+    "daemon": {
+      "model": "qwen3-4b-instruct-2507"
+    },
+    "coder": {
+      "model": "Qwopus3.5-9B-Coder-GGUF"
+    },
+    "claude_feel": {
+      "model": "Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF"
+    }
+  },
   "clients": {
     "claude-desktop": {
       "model": "qwen3-4b-instruct-2507",
@@ -21,6 +32,7 @@
     },
     "claude-code": {
       "model": "qwen3-4b-instruct-2507",
+      "model_profile": "coder",
       "tool_profile": {
         "disclosure": "progressive",
         "tier1_servers": ["desktop-commander", "context7"]
@@ -32,6 +44,7 @@
     },
     "vscode": {
       "model": "qwen3-1.7b",
+      "model_profile": "coder",
       "tool_profile": {
         "disclosure": "progressive",
         "tier1_servers": ["desktop-commander", "context7", "memory"]
