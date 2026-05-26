@@ -16,6 +16,9 @@ scripts/
 ├── manual-tests/                    # Interactive debugging scripts
 │   ├── test_keyring_integration.py  # Verify Keychain credential access
 │   └── test_security_alerts.py      # Trigger and verify alert patterns
+├── models/                          # Hugging Face model download helpers
+│   ├── download-qwen-distilled.sh   # Download the coder-first distilled set (configurable)
+│   └── qwen-distilled.env.example   # Deployment swap-point for repos/globs
 ├── open-webui/                      # Open WebUI lifecycle helpers
 │   ├── start.sh
 │   └── stop.sh
@@ -58,6 +61,13 @@ python3 scripts/router/restart_mcp_servers.py obsidian
 
 # Diagnose the full stack
 ./scripts/diagnose.sh
+
+# Download the coder-first distilled models (uses huggingface-cli).
+# Profiles match model_profiles in app/configs/enhancement-rules.json.
+./scripts/models/download-qwen-distilled.sh --dry-run         # preview commands
+./scripts/models/download-qwen-distilled.sh --profile coder   # only the coder model
+./scripts/models/download-qwen-distilled.sh \
+    --config ./scripts/models/qwen-distilled.env.example      # deploy-time override
 
 # Run tests
 ./scripts/test.sh                 # Unit tests only by default
