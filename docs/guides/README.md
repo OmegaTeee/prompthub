@@ -34,6 +34,7 @@ PromptHub uses **local API secrets and model paths** (e.g., LM Studio model loca
 1. **[Prompt Enhancement Guide](02-prompt-enhancement-user-guide.md)** — Automatically improve your prompts (8 min read)
 2. **[Session Memory Guide](03-session-memory-guide.md)** — Remember information across conversations (10 min read)
 3. **[OpenAI API Guide](04-openai-api-guide.md)** — Use PromptHub like an OpenAI-compatible server (10 min read)
+4. **[Progressive Tool Disclosure Guide](11-progressive-tool-disclosure.md)** — Cut tool context ~80% by loading MCP tools on demand (12 min read)
 
 ---
 
@@ -98,6 +99,12 @@ Topics:
 - VS Code: [App Configuration — VS Code](06-client-configuration-guide.md#vs-code)
 - Raycast: [App Configuration — Raycast](06-client-configuration-guide.md#raycast)
 - Custom apps: [App Configuration — Generic Setup](06-client-configuration-guide.md#generic-http-client-setup)
+
+### MCP Tools & Disclosure
+- How it works: [Progressive Tool Disclosure Guide](11-progressive-tool-disclosure.md)
+- Turn it on: [Progressive Disclosure — How to Turn It On](11-progressive-tool-disclosure.md#how-to-turn-it-on)
+- Verify it: [Progressive Disclosure — Testing & Verification](11-progressive-tool-disclosure.md#testing--verification)
+- Bridge reference: [`mcps/README.md`](../../mcps/README.md#progressive-tool-disclosure)
 
 ### Using the API
 - Overview: [OpenAI API Guide](04-openai-api-guide.md)
@@ -226,7 +233,7 @@ These guides focus on end-user experience. For technical/developer documentation
 
 ---
 
-**Last Updated:** March 2, 2026
+**Last Updated:** May 28, 2026
 **PromptHub Version:** Latest
 **Documentation:** Non-Technical User Guides
 
