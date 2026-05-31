@@ -132,3 +132,60 @@ def test_tool_profile_missing_tier1_list_is_empty(tmp_path):
     assert body["disclosure"] == "progressive"
     assert body["tier1_servers"] == []
     assert body["source"] == "client_override"
+
+
+# ---------------------------------------------------------------------------
+# Normalization + 503 paths (Copilot review follow-up)
+# ---------------------------------------------------------------------------
+
+
+def test_tool_profile_disclosure_is_case_normalized(tmp_path):
+    """`Progressive` and surrounding whitespace should normalize to `progressive`."""
+    client = _make_client(
+        tmp_path,
+        {
+            "default": {},
+            "clients": {
+                "wonky": {
+                    "tool_profile": {
+                        "disclosure": "  Progressive  ",
+                        "tier1_servers": [" memory ", "context7"],
+                    }
+                }
+            },
+        },
+    )
+    r = client.get("/clients/wonky/tool-profile")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["disclosure"] == "progressive"
+    # tier1 entries are also whitespace-stripped.
+    assert body["tier1_servers"] == ["memory", "context7"]
+
+
+def test_tool_profile_disclosure_clamps_to_full_on_invalid(tmp_path):
+    """An unknown disclosure value (`bogus`) falls back to `full`."""
+    client = _make_client(
+        tmp_path,
+        {
+            "default": {},
+            "clients": {
+                "wat": {"tool_profile": {"disclosure": "bogus"}}
+            },
+        },
+    )
+    r = client.get("/clients/wat/tool-profile")
+    assert r.status_code == 200
+    assert r.json()["disclosure"] == "full"
+
+
+def test_tool_profile_returns_503_on_non_object_root(tmp_path):
+    """A syntactically valid but wrong-shape config (top-level array) → 503."""
+    rules_path = tmp_path / "enhancement-rules.json"
+    rules_path.write_text(json.dumps(["not", "a", "dict"]))
+    app = FastAPI()
+    app.include_router(create_clients_router(rules_path=rules_path))
+    c = TestClient(app)
+    r = c.get("/clients/whatever/tool-profile")
+    # Was previously 500 from a downstream .get() on a list.
+    assert r.status_code == 503

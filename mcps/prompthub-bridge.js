@@ -801,17 +801,23 @@ async function main() {
     }
   });
 
-  // Start stdio transport
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  // ---------------------------------------------------------------------
+  // Resolve startup config BEFORE binding stdio. If we connected the
+  // transport first, an MCP client that sends `tools/list` immediately
+  // after `initialize` could race the router-profile fetch and receive
+  // the env-default tool list (typically `full` mode) instead of the
+  // resolved progressive profile. By blocking on config resolution
+  // here, the first request handler invocation is guaranteed to see
+  // the final state.
+  // ---------------------------------------------------------------------
 
-  // Fetch initial server list
+  // Fetch initial server list (populates cachedServers used by load_server_tools).
   const servers = await fetchRunningServers();
 
   // Router-profile fallback. Skipped when the operator has pinned either
   // env var, so explicit env wins over router config (predictable, easy
   // to debug). Failure here is silent — the bridge falls back to env-driven
-  // "full" mode, which is the safe pre-Phase-2 behavior.
+  // "full" mode, which is the safe default.
   let profileSource = 'env';
   if (!TOOL_DISCLOSURE_ENV && !TIER1_SERVERS_ENV) {
     const profile = await fetchToolProfileFromRouter();
@@ -820,7 +826,11 @@ async function main() {
       profileSource = 'router';
     }
     if (profile && Array.isArray(profile.tier1_servers)) {
-      tier1Servers = profile.tier1_servers.map(s => String(s)).filter(Boolean);
+      // .trim() matches env-var parsing — stray whitespace from hand-edited
+      // config would otherwise break running-server matching downstream.
+      tier1Servers = profile.tier1_servers
+        .map(s => String(s).trim())
+        .filter(Boolean);
       resetActiveServers(tier1Servers);
       profileSource = 'router';
     }
@@ -854,6 +864,10 @@ async function main() {
       );
     }
   }
+
+  // Bind stdio transport only after config is finalized.
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
 
   console.error('PromptHub MCP Bridge started');
   console.error(`Connected to: ${PROMPTHUB_URL}`);

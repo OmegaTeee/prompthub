@@ -15,6 +15,7 @@ Design goals:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from pathlib import Path
@@ -26,6 +27,19 @@ from pydantic import BaseModel, Field
 from router.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
+
+_VALID_DISCLOSURE_MODES = frozenset({"full", "progressive"})
+
+
+def _normalize_disclosure(raw: Any) -> str:
+    """Lowercase, strip, and clamp `disclosure` to {full, progressive}.
+
+    Invalid or unexpected values fall back to `full` — the same defensive
+    posture the bridge takes for `TOOL_DISCLOSURE`. Centralized here so the
+    endpoint, the dashboard, and any future consumer see consistent values.
+    """
+    value = str(raw).lower().strip() if raw is not None else ""
+    return value if value in _VALID_DISCLOSURE_MODES else "full"
 
 
 class ToolProfileResponse(BaseModel):
@@ -44,16 +58,32 @@ def _rules_path() -> Path:
     return Path(settings.workspace_root) / "app" / settings.enhancement_rules_config
 
 
-def _load_rules(path: Path | None = None) -> dict[str, Any]:
-    """Read and parse enhancement-rules.json, raising 503 on missing/invalid."""
+async def _load_rules(path: Path | None = None) -> dict[str, Any]:
+    """Read and parse enhancement-rules.json, raising 503 on missing/invalid.
+
+    Async + thread-pool file read for consistency with the rest of the
+    service layer (EnhancementService uses asyncio.to_thread for the same
+    file). Also validates that the top-level value is a JSON object — a
+    valid-but-wrong-shape file (e.g., a top-level array) would otherwise
+    surface as a 500 from a downstream `.get()` instead of a controlled 503.
+    """
     path = path or _rules_path()
     if not path.exists():
         raise HTTPException(status_code=503, detail=f"Enhancement rules not found: {path}")
     try:
-        return json.loads(path.read_text())
+        content = await asyncio.to_thread(path.read_text)
+        data = json.loads(content)
     except Exception as e:
         logger.warning("Failed to parse enhancement rules: %s", e)
         raise HTTPException(status_code=503, detail="Enhancement rules invalid JSON")
+    if not isinstance(data, dict):
+        logger.warning(
+            "Enhancement rules root is %s, expected object", type(data).__name__
+        )
+        raise HTTPException(
+            status_code=503, detail="Enhancement rules root must be a JSON object"
+        )
+    return data
 
 
 def _merged_client_rule(rules: dict[str, Any], client: str) -> dict[str, Any]:
@@ -76,7 +106,7 @@ def create_clients_router(rules_path: Path | None = None) -> APIRouter:
 
     @router.get("/clients/{name}/tool-profile", response_model=ToolProfileResponse)
     async def get_tool_profile(name: str) -> ToolProfileResponse:
-        rules = _load_rules(rules_path)
+        rules = await _load_rules(rules_path)
         merged = _merged_client_rule(rules, name)
 
         tp = merged.get("tool_profile")
@@ -91,17 +121,24 @@ def create_clients_router(rules_path: Path | None = None) -> APIRouter:
                 source="default",
             )
 
-        disclosure = tp.get("disclosure", "full")
+        # Normalize disclosure once at the boundary so downstream consumers
+        # (dashboard template, bridge) see a known-good lowercase value.
+        # Hand-edited config with "Progressive" or "PROGRESSIVE" otherwise
+        # silently falls through to `full` in the dashboard's exact-match
+        # comparison.
+        disclosure = _normalize_disclosure(tp.get("disclosure"))
         raw_tier1 = tp.get("tier1_servers", [])
         if not isinstance(raw_tier1, list):
             raw_tier1 = []
-        # Coerce + filter so the bridge never has to defend against bad
-        # config: drop empties, force-string everything else.
-        tier1 = [str(s) for s in raw_tier1 if s]
+        # Coerce + trim + filter so the bridge never has to defend against
+        # bad config: strip whitespace, drop empties, force-string everything
+        # else. Matches the bridge's env-var parsing behavior.
+        tier1 = [str(s).strip() for s in raw_tier1 if s]
+        tier1 = [s for s in tier1 if s]
 
         return ToolProfileResponse(
             client=name,
-            disclosure=str(disclosure),
+            disclosure=disclosure,
             tier1_servers=tier1,
             source="client_override",
         )
