@@ -31,8 +31,18 @@ const CLIENT_NAME = process.env.CLIENT_NAME || 'claude-desktop';
 const TOOL_DISCLOSURE_ENV = process.env.TOOL_DISCLOSURE;
 const TIER1_SERVERS_ENV = process.env.TIER1_SERVERS;
 
-const toolDisclosure = (TOOL_DISCLOSURE_ENV || '').toLowerCase().trim();
-const tier1Servers = TIER1_SERVERS_ENV
+// `let` (not `const`) so misconfiguration can be re-normalized to '' below,
+// and so PR 2's router-profile fetch can override these without churn.
+const VALID_DISCLOSURE_MODES = new Set(['full', 'progressive']);
+let toolDisclosure = (TOOL_DISCLOSURE_ENV || '').toLowerCase().trim();
+if (toolDisclosure && !VALID_DISCLOSURE_MODES.has(toolDisclosure)) {
+  console.error(
+    `[bridge] Invalid TOOL_DISCLOSURE='${TOOL_DISCLOSURE_ENV}'. ` +
+    `Expected 'full' or 'progressive'. Falling back to 'full'.`
+  );
+  toolDisclosure = '';
+}
+let tier1Servers = TIER1_SERVERS_ENV
   ? TIER1_SERVERS_ENV.split(',').map(s => s.trim()).filter(Boolean)
   : [];
 
@@ -402,8 +412,24 @@ async function handleMetaTool(name, args, mcpServer) {
       throw new Error('Missing required argument: server (string)');
     }
 
+    // Short-circuit in full mode: every running server's tools are already
+    // visible, so loading anything is a no-op. Returning here avoids a
+    // misleading `loaded: true` response *and* a wasteful
+    // tools/list_changed refresh in clients that act on it.
+    if ((toolDisclosure || 'full') !== 'progressive') {
+      return {
+        server: serverName,
+        loaded: false,
+        disclosure: 'full',
+        note: 'load_server_tools is a no-op in full disclosure mode; ' +
+              'all running servers are already active.',
+      };
+    }
+
     // Validate the server is actually running so the caller gets a clear
-    // error instead of a silent no-op tools/list_changed.
+    // error instead of a silent no-op tools/list_changed. The check is
+    // deliberately fresh (not cached) so a server that stopped between
+    // discover_tools and load_server_tools is caught.
     const running = await fetchRunningServers();
     if (!running.includes(serverName)) {
       throw new Error(`Unknown or stopped server: ${serverName}`);
@@ -749,6 +775,33 @@ async function main() {
 
   // Fetch initial server list
   const servers = await fetchRunningServers();
+
+  // Validate TIER1_SERVERS against the configured roster. We check against
+  // *configured* (not just *running*) so a tier-1 entry for an on-demand
+  // server like `obsidian` doesn't get flagged — it's legitimate to seed
+  // it now and start it later. The actual run-time intersection happens in
+  // getEffectiveToolsList(); this is purely a config-typo guard.
+  if (tier1Servers.length > 0) {
+    try {
+      const allConfigured = await listAvailableServers();
+      const knownNames = new Set(
+        Array.isArray(allConfigured?.servers)
+          ? allConfigured.servers.map(s => s.name).filter(Boolean)
+          : []
+      );
+      const unknownTier1 = tier1Servers.filter(s => !knownNames.has(s));
+      if (unknownTier1.length > 0) {
+        console.error(
+          `[bridge] TIER1_SERVERS contains server(s) not configured in the ` +
+          `router: ${unknownTier1.join(', ')}. These will be ignored.`
+        );
+      }
+    } catch (err) {
+      console.error(
+        `[bridge] Could not validate TIER1_SERVERS against router: ${err.message}`
+      );
+    }
+  }
 
   console.error('PromptHub MCP Bridge started');
   console.error(`Connected to: ${PROMPTHUB_URL}`);
