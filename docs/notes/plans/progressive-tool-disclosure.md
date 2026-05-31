@@ -146,6 +146,31 @@ config centralized in the router.
 
 Recommend Option A.
 
+## Implementation notes — Phase 1 (2026-05-25)
+
+Shipped as a bridge-only change. No router endpoint yet; env vars drive the
+behavior so the rollout can be reverted by unsetting two variables.
+
+**Meta-tools added** (`mcps/prompthub-bridge.js`):
+- `discover_tools({ server?, query? })` → lightweight catalog
+  (`{server, tool, description}`); no schemas. Goes through the existing
+  `POST /mcp/{server}/tools/list` path, so the router's `tool_registry`
+  cache-through (24 h TTL) absorbs repeated calls — no extra cache layer
+  needed in the bridge.
+- `load_server_tools({ server })` → promotes a server into `activeServers`
+  and emits `notifications/tools/list_changed`. Validates the server is
+  actually running (clear error vs. silent no-op).
+
+**Env knobs:**
+- `TOOL_DISCLOSURE=full|progressive` — default `full` preserves existing
+  behavior; `progressive` returns only tier-1 + loaded + meta-tools.
+- `TIER1_SERVERS=a,b,c` — seeded into `activeServers` on startup.
+
+**Deferred to Phase 2 (separate PR):** router-side `GET
+/clients/{name}/tool-profile` endpoint and bridge fallback fetch when env
+vars are unset. Keeping Phase 1 env-only means rollout is gated entirely
+by client launch configuration; no router-side migration required.
+
 ## Token budget estimate
 
 | Scenario | tools/list size | Tokens (~4 chars/tok) |
