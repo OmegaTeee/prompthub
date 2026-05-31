@@ -55,6 +55,11 @@
 > **Status (2026-05-31):** Vision-stage idea. The earlier exploration branch (`feature/prompthub-rag-improvements`) was deleted on 2026-05-31; vision preserved here.
 > **Vision:** Promising direction — needs more learning to fully leverage. Aligns well with integrations like Obsidian (vault as knowledge base) and Raycast (quick recall). Likely composes with the FTS5 memory_search work (PR #23) — RAG could ride on top of the same SQLite/FTS5 foundation, with embedding-based retrieval as the next layer once lexical search is well-understood.
 
+### Sunset the `clients/<name>/` directory pattern
+
+> **Status (2026-05-31):** Vision-stage idea. Full thinking in [`docs/notes/plans/idea-clients-folder-sunset.md`](docs/notes/plans/idea-clients-folder-sunset.md).
+> **Vision:** After PRs #31–#41 made per-client behavior server-side (`tool_profile` + `model_profile` in `enhancement-rules.json`), every client's MCP config block converges to a near-identical bridge entry. That uniformity is what generic MCP-sync tools assume — [agentsync](https://github.com/dallay/agentsync) (symlinks, 32+ client coverage) or [mcp-sync](https://github.com/ztripez/mcp-sync) (smart-merge hierarchy) could replace the bespoke `clients/<name>/setup.sh` plumbing. **Recommended next step (not committed):** audit the `clients/<name>/` folders for content that's actually unique (LM Studio presets, `llm.txt` knowledge files) vs. boilerplate the sync tool would replace, then pick a pilot client.
+
 ### Refactor and standardize `scripts/` folder
 
 - [ ] Audit `scripts/` for dead, redundant, or misplaced scripts.
