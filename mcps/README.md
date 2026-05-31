@@ -91,6 +91,8 @@ The bridge is a stdio MCP server that aggregates tools from all router-managed s
 | `SERVERS` | (all) | Comma-separated server filter (e.g., `memory,context7,sequential-thinking`) |
 | `MINIFY_SCHEMAS` | `true` | Strip `description`, `title`, `examples`, `default` from tool schemas |
 | `DESC_MAX_LENGTH` | `200` | Truncate remaining descriptions to this length |
+| `TOOL_DISCLOSURE` | `full` | `full` (all running servers' tools) or `progressive` (tier-1 + on-demand). See [Progressive tool disclosure](#progressive-tool-disclosure). |
+| `TIER1_SERVERS` | (none) | Comma-separated servers seeded into the active set when `TOOL_DISCLOSURE=progressive` |
 
 ### Schema minification
 
@@ -110,8 +112,39 @@ The bridge exposes synthetic tools that don't proxy to a backend MCP server. The
 | `prompthub_list_available_servers` | Calls `GET /servers`. Returns every configured server with status (`running`, `stopped`, `failed`). |
 | `prompthub_start_server` | Calls `POST /servers/{name}/start`, polls `/servers` until the target reaches `running` status (15 s timeout), refreshes the bridge's server cache, then sends a `notifications/tools/list_changed` so MCP clients re-fetch tools. |
 | `prompthub_memory_search` | Calls `POST /sessions/search`. BM25-ranked search over session facts and memory blocks (SQLite FTS5). Validates `limit` 1-100. Scoped to the caller's client ID by default; pass `cross_client: true` to opt out. |
+| `discover_tools` | Returns a lightweight catalog (`{server, tool, description}`) across running servers — no parameter schemas. Optional `server` and `query` filters. Used to find a tool before loading it in progressive mode. |
+| `load_server_tools` | Promotes a server's tools into the active set and sends `notifications/tools/list_changed`. No-op effect in `full` mode (everything is already active). |
 
-Use `prompthub_list_available_servers` to discover what exists, then call `prompthub_start_server` with the chosen name. The new server's tools appear in the next `tools/list` response. Use `prompthub_memory_search` to retrieve previously stored facts before answering.
+Use `prompthub_list_available_servers` to discover what exists, then call `prompthub_start_server` with the chosen name. The new server's tools appear in the next `tools/list` response. Use `prompthub_memory_search` to retrieve previously stored facts before answering. In `progressive` mode, use `discover_tools` to find a hidden tool and `load_server_tools` to make it callable.
+
+### Progressive tool disclosure
+
+Controls how many tools the bridge exposes in `tools/list`. Default `full` preserves the historical behavior (every running server's tools). `progressive` returns only tier-1 servers + the bridge meta-tools, then loads more on demand — cutting initial tool context by ~80% on a typical fleet.
+
+**Modes:**
+
+- `full` — `tools/list` returns every running server's tools plus all meta-tools.
+- `progressive` — `tools/list` returns only servers in the active set (seeded from tier-1) plus meta-tools. The agent calls `discover_tools` to find a hidden tool, then `load_server_tools` to add its server to the active set; the bridge emits `notifications/tools/list_changed` so the client re-fetches.
+
+**Configuration precedence** (highest first):
+
+1. **Env vars** — `TOOL_DISCLOSURE` and/or `TIER1_SERVERS`. Setting either pins the bridge to env-driven config and skips the router fetch.
+2. **Router profile** — when *both* env vars are unset, the bridge fetches `GET /clients/{CLIENT_NAME}/tool-profile` at startup and uses its `disclosure` + `tier1_servers`. This keeps per-client config centralized in `enhancement-rules.json` (`tool_profile` block).
+3. **Default** — `full`. Used when env is unset and the router is unreachable or has no profile for the client. Any error fetching the profile silently falls back here; the router never blocks bridge startup.
+
+**Active-set rules:**
+
+- The active set is seeded from tier-1 at startup and reset on every reconnect (it is per-session, not persisted).
+- Tier-1 entries are intersected with *running* servers, so a stopped tier-1 server is silently skipped until it starts.
+- `load_server_tools` validates the target is running and throws a clear error otherwise (no silent no-op).
+
+**Startup log** confirms the resolved configuration:
+
+```
+Tool disclosure: progressive (tier1: memory, sequential-thinking, desktop-commander, source: router)
+```
+
+`source` is `env` or `router`, telling you which path won. End-user setup, tier-1 selection guidance, and verification chat examples live in [docs/guides/11-progressive-tool-disclosure.md](../docs/guides/11-progressive-tool-disclosure.md).
 
 ## Adding a new MCP server
 
