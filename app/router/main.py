@@ -551,6 +551,7 @@ app.include_router(memory_router)
 # router module sits next to its app.include_router(...) registration.
 # Restructuring would scatter the assembly logic across the file.
 from router.routes.audit import create_audit_router  # noqa: E402
+from router.routes.clients import create_clients_router  # noqa: E402
 from router.routes.enhancement import create_enhancement_router  # noqa: E402
 from router.routes.health import create_health_router  # noqa: E402
 from router.routes.mcp_proxy import create_mcp_proxy_router  # noqa: E402
@@ -570,6 +571,10 @@ app.include_router(create_servers_router(
     get_circuit_breakers=lambda: circuit_breakers,
     rebuild_gateway=_rebuild_gateway,
 ))
+
+# Client profile endpoints (read-only). Reads enhancement-rules.json
+# on every request; no service dependency to inject.
+app.include_router(create_clients_router())
 
 app.include_router(create_mcp_proxy_router(
     get_registry=lambda: registry,

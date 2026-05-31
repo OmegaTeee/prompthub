@@ -541,6 +541,23 @@ def create_dashboard_router(
                 system_prompt = rule.get("system_prompt", "")
                 enabled = rule.get("enabled", True)
 
+                # Tool profile (PR 2). Defensive parsing + normalization
+                # mirrors the /clients/{name}/tool-profile endpoint, so a
+                # hand-edited "Progressive" in config is treated the same way
+                # the bridge would see it (and the template's exact-match
+                # comparison against `progressive` works regardless).
+                tp = rule.get("tool_profile")
+                tp = tp if isinstance(tp, dict) else {}
+                raw_disclosure = tp.get("disclosure", "full")
+                disclosure = str(raw_disclosure).lower().strip()
+                if disclosure not in ("full", "progressive"):
+                    disclosure = "full"
+                tier1 = tp.get("tier1_servers", [])
+                if not isinstance(tier1, list):
+                    tier1 = []
+                tier1 = [str(s).strip() for s in tier1 if s]
+                tier1 = [s for s in tier1 if s]
+
                 budget = TokenBudget(
                     model=model,
                     max_response_tokens=max_tokens,
@@ -551,6 +568,8 @@ def create_dashboard_router(
                     {
                         "client": client_name,
                         "model": model,
+                        "tool_disclosure": disclosure,
+                        "tier1_servers": tier1,
                         "enabled": enabled,
                         "context_k": s["context_limit_tokens"] // 1024,
                         "available_tokens": s["available_for_input_tokens"],

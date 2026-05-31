@@ -21,18 +21,24 @@ import {
 const PROMPTHUB_URL = process.env.PROMPTHUB_URL || 'http://127.0.0.1:9090';
 const CLIENT_NAME = process.env.CLIENT_NAME || 'claude-desktop';
 
-// Progressive tool disclosure (Phase 1 — env-driven only).
+// Progressive tool disclosure.
 //   TOOL_DISCLOSURE=full        (default): return tools for every running server
 //   TOOL_DISCLOSURE=progressive          : return only tier-1 + explicitly loaded
 //                                          servers + meta-tools
 //   TIER1_SERVERS=a,b,c                  : comma-separated server names seeded
 //                                          into the active set on startup
-// Router-driven defaults (per-client tool profile fetch) land in PR 2.
+//
+// Precedence: explicit env vars > router /clients/{name}/tool-profile > default
+// "full". When BOTH env vars are unset, the bridge fetches the per-client
+// profile from the router at startup (Phase 2). Setting either env var pins
+// the bridge to env-driven config and skips the router fetch — useful for
+// debugging or running the bridge against a profile-less router.
 const TOOL_DISCLOSURE_ENV = process.env.TOOL_DISCLOSURE;
 const TIER1_SERVERS_ENV = process.env.TIER1_SERVERS;
 
 // `let` (not `const`) so misconfiguration can be re-normalized to '' below,
-// and so PR 2's router-profile fetch can override these without churn.
+// AND so the startup router-profile fetch (below in main()) can override
+// these when the operator hasn't pinned them via env.
 const VALID_DISCLOSURE_MODES = new Set(['full', 'progressive']);
 let toolDisclosure = (TOOL_DISCLOSURE_ENV || '').toLowerCase().trim();
 if (toolDisclosure && !VALID_DISCLOSURE_MODES.has(toolDisclosure)) {
@@ -49,6 +55,11 @@ let tier1Servers = TIER1_SERVERS_ENV
 // Per-session tool disclosure state — reset on bridge restart / client reconnect.
 // Holds server names whose tools are currently included in tools/list.
 const activeServers = new Set(tier1Servers);
+
+function resetActiveServers(nextTier1) {
+  activeServers.clear();
+  for (const name of nextTier1) activeServers.add(name);
+}
 
 // Optional: comma-separated list of servers to expose (empty = all running)
 const SERVERS_FILTER = process.env.SERVERS
@@ -151,6 +162,27 @@ async function callPromptHub(serverName, jsonRpcRequest) {
   }
 
   return data;
+}
+
+/**
+ * Fetch the per-client tool profile from the router (Phase 2 plumbing).
+ * Returns `null` on any error so the caller can silently fall back to
+ * `full` disclosure — a router that is down, missing the endpoint, or
+ * returning garbage must never prevent the bridge from starting.
+ */
+async function fetchToolProfileFromRouter() {
+  try {
+    const response = await fetch(
+      `${PROMPTHUB_URL}/clients/${encodeURIComponent(CLIENT_NAME)}/tool-profile`,
+      { headers: { 'X-Client-Name': CLIENT_NAME } }
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (!data || typeof data !== 'object') return null;
+    return data;
+  } catch (error) {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -769,18 +801,48 @@ async function main() {
     }
   });
 
-  // Start stdio transport
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  // ---------------------------------------------------------------------
+  // Resolve startup config BEFORE binding stdio. If we connected the
+  // transport first, an MCP client that sends `tools/list` immediately
+  // after `initialize` could race the router-profile fetch and receive
+  // the env-default tool list (typically `full` mode) instead of the
+  // resolved progressive profile. By blocking on config resolution
+  // here, the first request handler invocation is guaranteed to see
+  // the final state.
+  // ---------------------------------------------------------------------
 
-  // Fetch initial server list
+  // Fetch initial server list (populates cachedServers used by load_server_tools).
   const servers = await fetchRunningServers();
 
-  // Validate TIER1_SERVERS against the configured roster. We check against
-  // *configured* (not just *running*) so a tier-1 entry for an on-demand
-  // server like `obsidian` doesn't get flagged — it's legitimate to seed
-  // it now and start it later. The actual run-time intersection happens in
-  // getEffectiveToolsList(); this is purely a config-typo guard.
+  // Router-profile fallback. Skipped when the operator has pinned either
+  // env var, so explicit env wins over router config (predictable, easy
+  // to debug). Failure here is silent — the bridge falls back to env-driven
+  // "full" mode, which is the safe default.
+  let profileSource = 'env';
+  if (!TOOL_DISCLOSURE_ENV && !TIER1_SERVERS_ENV) {
+    const profile = await fetchToolProfileFromRouter();
+    if (profile && typeof profile.disclosure === 'string') {
+      toolDisclosure = profile.disclosure.toLowerCase().trim();
+      profileSource = 'router';
+    }
+    if (profile && Array.isArray(profile.tier1_servers)) {
+      // .trim() matches env-var parsing — stray whitespace from hand-edited
+      // config would otherwise break running-server matching downstream.
+      tier1Servers = profile.tier1_servers
+        .map(s => String(s).trim())
+        .filter(Boolean);
+      resetActiveServers(tier1Servers);
+      profileSource = 'router';
+    }
+  }
+
+  // Validate the resolved TIER1_SERVERS against the configured roster.
+  // Runs *after* the router-profile fallback so it validates the final
+  // tier1 list (either env-provided or router-supplied), not just env.
+  // We check against *configured* (not just *running*) so a tier-1 entry
+  // for an on-demand server like `obsidian` doesn't get flagged — it's
+  // legitimate to seed it now and start it later. The actual run-time
+  // intersection happens in getEffectiveToolsList().
   if (tier1Servers.length > 0) {
     try {
       const allConfigured = await listAvailableServers();
@@ -803,12 +865,16 @@ async function main() {
     }
   }
 
+  // Bind stdio transport only after config is finalized.
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+
   console.error('PromptHub MCP Bridge started');
   console.error(`Connected to: ${PROMPTHUB_URL}`);
   console.error(`Client name: ${CLIENT_NAME}`);
   console.error(
     `Tool disclosure: ${toolDisclosure || 'full'} ` +
-    `(tier1: ${tier1Servers.join(', ') || '(none)'})`
+    `(tier1: ${tier1Servers.join(', ') || '(none)'}, source: ${profileSource})`
   );
   console.error(`Schema minification: ${MINIFY_SCHEMAS ? 'ON' : 'OFF'} (desc limit: ${DESC_MAX_LENGTH || 'none'})`);
   if (TOOL_PREFIX_ALIASES.size > 0) {
