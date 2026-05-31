@@ -28,9 +28,13 @@
     </td>
     <td>
       <code style="font-size:0.8rem;">{{ row.model }}</code>
-      {% if row.model_profile %}
+      {% if row.model_profile and row.model_profile_resolved %}
       <br><span class="text-muted" style="font-size:0.72rem;">
         via profile <code>{{ row.model_profile }}</code>
+      </span>
+      {% elif row.model_profile %}
+      <br><span class="badge badge-warning" style="font-size:0.7rem;" title="Profile name set but not registered in model_profiles — falling back to the rule's model field.">
+        profile <code>{{ row.model_profile }}</code> not found
       </span>
       {% endif %}
     </td>

@@ -623,8 +623,11 @@ async function getToolsForServers(servers) {
  * running servers. Does NOT return schemas — agents use this to decide
  * which server to load via load_server_tools.
  *
- * Goes through callPromptHub → POST /mcp/{server}/tools/list, so the
- * router's tool_registry cache-through (24h TTL) absorbs repeated calls.
+ * Goes through callPromptHub, which POSTs to /mcp/{server}/tools/call
+ * with JSON-RPC `method: "tools/list"` (the router multiplexes all
+ * JSON-RPC methods through the `/tools/call` endpoint). Same path used
+ * by getToolsForServers, so the router's tool_registry cache-through
+ * (24h TTL) absorbs repeated calls.
  */
 async function discoverTools(args) {
   const running = await fetchRunningServers();

@@ -555,13 +555,19 @@ def create_dashboard_router(
                 # names fall through to the raw `model` field (matches
                 # EnhancementService behavior; surfaces drift without
                 # breaking the dashboard render).
+                # `profile_resolved` distinguishes "resolved via profile" from
+                # "profile name set but not registered" — without it, a typo'd
+                # profile name renders as "via profile X" alongside the
+                # fallback model, which is misleading.
                 requested_profile = rule.get("model_profile")
                 resolved_model = model
+                profile_resolved = False
                 if (
                     isinstance(requested_profile, str)
                     and requested_profile in model_profiles
                 ):
                     resolved_model = model_profiles[requested_profile]
+                    profile_resolved = True
 
                 # Tool profile (PR 2). Defensive parsing + normalization
                 # mirrors the /clients/{name}/tool-profile endpoint, so a
@@ -595,6 +601,7 @@ def create_dashboard_router(
                             if isinstance(requested_profile, str)
                             else None
                         ),
+                        "model_profile_resolved": profile_resolved,
                         "tool_disclosure": disclosure,
                         "tier1_servers": tier1,
                         "enabled": enabled,
