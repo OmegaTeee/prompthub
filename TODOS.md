@@ -45,14 +45,14 @@
 
 ## Later
 
-### Feature: Dashboard Chat Sidecar (`feature/open-webui-chat`)
+### Feature: Dashboard Chat Sidecar
 
-> **Branch:** `feature/open-webui-chat` (preserved on origin; vision-stage exploration, not active development).
+> **Status (2026-05-31):** Vision-stage idea. The earlier exploration branch (`feature/open-webui-chat`) was deleted on 2026-05-31 — only some settings and exploration were ever there; the vision below is the canonical artifact. Recoverable via `git log --all` if the historical commits are ever needed.
 > **Vision:** Add a chat UI sidecar to the dashboard for generating, exploring, and fixing client config files. Could extend to enhancement-rule editing — a wizard component that guides users toward config that matches their workflow rather than blank-page editing of `mcp.json` / `enhancement-rules.json`. Pairs naturally with the existing dashboard observability surface: see what a client is doing, then chat-edit its config in the same view.
 
-### Feature: PromptHub RAG Improvements (`feature/prompthub-rag-improvements`)
+### Feature: PromptHub RAG Improvements
 
-> **Branch:** `feature/prompthub-rag-improvements` (local-only; vision-stage exploration).
+> **Status (2026-05-31):** Vision-stage idea. The earlier exploration branch (`feature/prompthub-rag-improvements`) was deleted on 2026-05-31; vision preserved here.
 > **Vision:** Promising direction — needs more learning to fully leverage. Aligns well with integrations like Obsidian (vault as knowledge base) and Raycast (quick recall). Likely composes with the FTS5 memory_search work (PR #23) — RAG could ride on top of the same SQLite/FTS5 foundation, with embedding-based retrieval as the next layer once lexical search is well-understood.
 
 ### Refactor and standardize `scripts/` folder
