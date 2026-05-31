@@ -529,6 +529,16 @@ def create_dashboard_router(
             default_rule = data.get("default", {})
             clients = data.get("clients", {})
 
+            # Model profiles (PR 3). Mirror the EnhancementService loader:
+            # if a client has a `model_profile` that resolves, its profile
+            # model wins over any explicit `model` field on the rule.
+            model_profiles_raw = data.get("model_profiles", {})
+            model_profiles: dict[str, str] = {}
+            if isinstance(model_profiles_raw, dict):
+                for profile_name, info in model_profiles_raw.items():
+                    if isinstance(info, dict) and info.get("model"):
+                        model_profiles[str(profile_name)] = str(info["model"])
+
             # Merge default into each client rule (same logic as service.py)
             merged_clients = {"default": default_rule}
             for name, rule in clients.items():
@@ -540,6 +550,18 @@ def create_dashboard_router(
                 max_tokens = rule.get("max_tokens") or 500
                 system_prompt = rule.get("system_prompt", "")
                 enabled = rule.get("enabled", True)
+
+                # Resolve model_profile -> resolved model. Unknown profile
+                # names fall through to the raw `model` field (matches
+                # EnhancementService behavior; surfaces drift without
+                # breaking the dashboard render).
+                requested_profile = rule.get("model_profile")
+                resolved_model = model
+                if (
+                    isinstance(requested_profile, str)
+                    and requested_profile in model_profiles
+                ):
+                    resolved_model = model_profiles[requested_profile]
 
                 # Tool profile (PR 2). Defensive parsing + normalization
                 # mirrors the /clients/{name}/tool-profile endpoint, so a
@@ -559,7 +581,7 @@ def create_dashboard_router(
                 tier1 = [s for s in tier1 if s]
 
                 budget = TokenBudget(
-                    model=model,
+                    model=resolved_model,
                     max_response_tokens=max_tokens,
                     system_prompt=system_prompt,
                 )
@@ -567,7 +589,12 @@ def create_dashboard_router(
                 rows.append(
                     {
                         "client": client_name,
-                        "model": model,
+                        "model": resolved_model,
+                        "model_profile": (
+                            requested_profile
+                            if isinstance(requested_profile, str)
+                            else None
+                        ),
                         "tool_disclosure": disclosure,
                         "tier1_servers": tier1,
                         "enabled": enabled,

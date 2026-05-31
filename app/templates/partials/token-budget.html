@@ -26,7 +26,14 @@
       <span class="badge badge-warning" style="font-size:0.7rem;">off</span>
       {% endif %}
     </td>
-    <td><code style="font-size:0.8rem;">{{ row.model }}</code></td>
+    <td>
+      <code style="font-size:0.8rem;">{{ row.model }}</code>
+      {% if row.model_profile %}
+      <br><span class="text-muted" style="font-size:0.72rem;">
+        via profile <code>{{ row.model_profile }}</code>
+      </span>
+      {% endif %}
+    </td>
     <td style="font-size:0.8rem;">
       {% if row.tool_disclosure == 'progressive' %}
       <span class="badge badge-info">progressive</span>

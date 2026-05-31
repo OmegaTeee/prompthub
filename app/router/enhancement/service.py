@@ -74,7 +74,16 @@ def resolve_privacy_level(
 
 
 class EnhancementRule(BaseModel):
-    """Configuration for how to enhance prompts for a specific client."""
+    """Configuration for how to enhance prompts for a specific client.
+
+    Pydantic's default `extra="ignore"` is intentional here: per-client
+    config in `enhancement-rules.json` carries fields the enhancement
+    service doesn't consume directly (currently `model_profile` and
+    `tool_profile`). Those fields are resolved upstream of construction
+    (see `_load_rules_async`) and the rule object only needs the resolved
+    `model` string. If a future field needs typed access from a rule
+    object, add it explicitly here.
+    """
 
     enabled: bool = True
     model: str = "llama3.2:3b"
@@ -220,6 +229,14 @@ class EnhancementService:
         self._default_cloud_model = openrouter_default_model
         self._cloud_model_map: dict[str, str] = {}
 
+        # Model profile mapping: profile_name -> resolved model id.
+        # Populated from enhancement-rules.json `model_profiles` block.
+        # When a client rule has `model_profile` referring to a known
+        # profile, the profile's `model` overrides any explicit `model`
+        # field on the rule. Empty by default so the existing single-model
+        # behavior is preserved.
+        self._model_profiles: dict[str, str] = {}
+
         if openrouter_enabled and openrouter_api_key:
             cloud_config = LLMConfig(
                 base_url=openrouter_base_url,
@@ -284,6 +301,22 @@ class EnhancementService:
             content = await asyncio.to_thread(self.rules_path.read_text)
             data = json.loads(content)
 
+            # Load model profiles first so per-client rules can resolve
+            # their `model_profile` references during merge.
+            self._model_profiles = {}
+            profiles = data.get("model_profiles", {})
+            if isinstance(profiles, dict):
+                for name, info in profiles.items():
+                    if not isinstance(name, str) or not name:
+                        continue
+                    if isinstance(info, dict) and info.get("model"):
+                        self._model_profiles[name] = str(info["model"])
+                if self._model_profiles:
+                    logger.debug(
+                        f"Loaded {len(self._model_profiles)} model profiles: "
+                        f"{sorted(self._model_profiles)}"
+                    )
+
             # Load default rule
             if "default" in data and isinstance(data["default"], dict):
                 self._rules["default"] = EnhancementRule(**data["default"])
@@ -298,6 +331,18 @@ class EnhancementService:
                         # Merge with default rule for missing fields
                         merged = self._default_rule.model_dump()
                         merged.update(rule_data)
+                        # Resolve `model_profile` -> `model` *after* merge so
+                        # the profile wins over both the rule's explicit
+                        # `model` field and the default's `model`. Unknown
+                        # profile name falls through to the merged `model`
+                        # (defensive: a typo shouldn't break enhancement).
+                        model_profile = rule_data.get("model_profile")
+                        if (
+                            isinstance(model_profile, str)
+                            and model_profile
+                            and model_profile in self._model_profiles
+                        ):
+                            merged["model"] = self._model_profiles[model_profile]
                         self._rules[name] = EnhancementRule(**merged)
                         logger.debug(f"Loaded enhancement rule: {name}")
 
