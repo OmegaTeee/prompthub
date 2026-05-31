@@ -114,10 +114,12 @@ essentials) are always visible in `tools/list`; tier-2 tools are
 discoverable via the `discover_tools` meta-tool (schemas-free catalog) and
 loaded on demand via `load_server_tools` (which emits
 `notifications/tools/list_changed`). Disclosure mode is `full` (default)
-or `progressive`, controlled by env var `TOOL_DISCLOSURE` or — when
-unset — by the per-client `tool_profile` fetched at startup from
-`GET /clients/{name}/tool-profile`. Cuts initial tool context by ~80% on
-typical fleets. Plan and follow-up phases in
+or `progressive`, controlled by env vars `TOOL_DISCLOSURE` and
+`TIER1_SERVERS` — or, **when both env vars are unset**, by the
+per-client `tool_profile` fetched at startup from
+`GET /clients/{name}/tool-profile`. (Setting either env var pins
+behavior to env-driven and skips the router fetch.) Cuts initial tool
+context by ~80% on typical fleets. Plan and follow-up phases in
 `docs/notes/plans/progressive-tool-disclosure.md`.
 
 ### Tool profile

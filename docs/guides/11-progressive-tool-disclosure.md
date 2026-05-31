@@ -43,10 +43,12 @@ PromptHub's bridge runs in one of two modes per client:
 
 ## How the AI Loads Tools (the magic, explained)
 
-In progressive mode, the bridge adds two small "meta-tools" the AI can call:
+The bridge always exposes two small "meta-tools" — in either disclosure mode — that the AI can call:
 
 1. **`discover_tools`** — Returns a lightweight catalog: server name, tool name, and a one-line description for every available tool. No bulky parameter schemas. This is how the AI *finds out what's possible* without paying the full context cost.
 2. **`load_server_tools`** — Promotes a whole server's tools into the active set. After loading, the bridge tells your client "the tool list changed," and your client refreshes so the AI can call the new tools.
+
+In `full` mode these are essentially decorative — every server's tools are already visible, so there's nothing to discover or load. In `progressive` mode they're the mechanism that lets a tier-2 tool become reachable when the AI actually needs it.
 
 A typical progressive-mode flow looks like this:
 
@@ -187,7 +189,15 @@ Some clients don't act on the `tools/list_changed` signal. As a fallback, the AI
 Config is read at bridge startup. Fully restart the client (quit, not just close the window) so the bridge re-reads its profile.
 
 **I set env vars but the router profile is still being used.**
-Both `TOOL_DISCLOSURE` and `TIER1_SERVERS` must be present for the env path to fully take over tier-1. If only one is set, check the startup log to see what the bridge actually resolved.
+The bridge fetches the router profile only when **both** `TOOL_DISCLOSURE` and `TIER1_SERVERS` are unset. Setting *either* env var skips the router fetch entirely. Check the bridge startup log — it ends with `source: env` (env-pinned) or `source: router` (router-fetched).
+
+**I set only one of the env vars and got surprising behavior.**
+Two specific failure modes to know about:
+
+- **`TOOL_DISCLOSURE=progressive` with `TIER1_SERVERS` unset** → the bridge runs in progressive mode but the tier-1 set is empty, so `tools/list` returns *only* the bridge meta-tools. The AI has to call `discover_tools` for everything. This is a valid "discovery-only" starting state but can look like a broken setup.
+- **`TIER1_SERVERS=memory,context7` with `TOOL_DISCLOSURE` unset** → the bridge defaults to `full` mode and ignores the active set entirely. Your tier-1 list has no effect because full mode shows every server's tools.
+
+In both cases the startup log tells the truth (`Tool disclosure: progressive (tier1: (none), …)` or `full (tier1: memory, context7, …)`); the per-client `tool_profile` in the config is the cleaner way to avoid these.
 
 **A server in my tier-1 isn't showing up.**
 Tier-1 only surfaces servers that are *running*. A stopped or on-demand server in your tier-1 list is silently skipped until it starts. Check the dashboard's Servers panel.

@@ -128,9 +128,16 @@ Controls how many tools the bridge exposes in `tools/list`. Default `full` prese
 
 **Configuration precedence** (highest first):
 
-1. **Env vars** — `TOOL_DISCLOSURE` and/or `TIER1_SERVERS`. Setting either pins the bridge to env-driven config and skips the router fetch.
-2. **Router profile** — when *both* env vars are unset, the bridge fetches `GET /clients/{CLIENT_NAME}/tool-profile` at startup and uses its `disclosure` + `tier1_servers`. This keeps per-client config centralized in `enhancement-rules.json` (`tool_profile` block).
+1. **Env vars** — `TOOL_DISCLOSURE` and/or `TIER1_SERVERS`. Setting *either one* pins the bridge to env-driven config and skips the router fetch entirely.
+2. **Router profile** — only when *both* env vars are unset. The bridge fetches `GET /clients/{CLIENT_NAME}/tool-profile` at startup and uses its `disclosure` + `tier1_servers`. This keeps per-client config centralized in `enhancement-rules.json` (`tool_profile` block).
 3. **Default** — `full`. Used when env is unset and the router is unreachable or has no profile for the client. Any error fetching the profile silently falls back here; the router never blocks bridge startup.
+
+**Partial-env gotchas.** Because step 1 fires on *either* env var, two operator-friendly mistakes are worth knowing about:
+
+- `TOOL_DISCLOSURE=progressive` alone → progressive mode, but `tier1Servers` is empty. `tools/list` returns only the bridge meta-tools and the agent has to `discover_tools` for everything. Valid as a "pure discovery" starting state; surprising if you expected tier-1 to come from the router.
+- `TIER1_SERVERS=memory,context7` alone → `full` mode (the default). The active set is seeded, but `getEffectiveToolsList` ignores it in `full` mode, so the seeding has no effect.
+
+The startup log line reflects what actually resolved, so a partial config is always visible there.
 
 **Active-set rules:**
 

@@ -36,13 +36,13 @@ logger = logging.getLogger(__name__)
 # Source: model metadata (context_length from model manifest)
 # ---------------------------------------------------------------------------
 MODEL_CONTEXT_TOKENS: dict[str, int] = {
-    "qwen3-4b-instruct-2507":                                    262_144,
-    "qwen3-4b-thinking-2507":                                    262_144,
+    "qwen3-4b-instruct-2507": 262_144,
+    "qwen3-4b-thinking-2507": 262_144,
     # Distilled-Qwen "Opus-feel" set opt-in via model_profiles
     # (enhancement-rules.json). Same 262K window as base Qwen3.
-    "Qwopus3.5-9B-Coder-GGUF":                                   262_144,
-    "Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF":   262_144,
-    "_default":                                                    8_192,
+    "Qwopus3.5-9B-Coder-GGUF": 262_144,
+    "Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF": 262_144,
+    "_default": 8_192,
 }
 
 # ---------------------------------------------------------------------------
@@ -132,7 +132,10 @@ class TokenBudget:
         result = truncated + "\n[... input truncated to fit context window ...]"
         logger.debug(
             "Truncated prompt from %d to ~%d chars for model=%s (budget=%d tokens)",
-            len(prompt), len(result), self.model, self.available_for_input,
+            len(prompt),
+            len(result),
+            self.model,
+            self.available_for_input,
         )
         return result, True
 

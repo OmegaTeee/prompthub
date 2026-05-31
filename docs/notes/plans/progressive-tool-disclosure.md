@@ -154,9 +154,10 @@ behavior so the rollout can be reverted by unsetting two variables.
 **Meta-tools added** (`mcps/prompthub-bridge.js`):
 - `discover_tools({ server?, query? })` → lightweight catalog
   (`{server, tool, description}`); no schemas. Goes through the existing
-  `POST /mcp/{server}/tools/list` path, so the router's `tool_registry`
-  cache-through (24 h TTL) absorbs repeated calls — no extra cache layer
-  needed in the bridge.
+  `POST /mcp/{server}/tools/call` path with JSON-RPC `method: "tools/list"`
+  (the router multiplexes JSON-RPC methods through the `/tools/call`
+  endpoint), so the router's `tool_registry` cache-through (24 h TTL)
+  absorbs repeated calls — no extra cache layer needed in the bridge.
 - `load_server_tools({ server })` → promotes a server into `activeServers`
   and emits `notifications/tools/list_changed`. Validates the server is
   actually running (clear error vs. silent no-op).
