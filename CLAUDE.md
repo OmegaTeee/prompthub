@@ -135,7 +135,7 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 - `app/configs/enhancement-rules.json` - Per-client enhancement system prompts, privacy_level, model, temperature, max_tokens. Also holds the top-level `model_profiles` map (named model bundles like `daemon`/`coder`/`claude_feel`) and per-client `model_profile` / `tool_profile` keys.
 - `app/configs/api-keys.json` - Bearer tokens for OpenAI-compatible proxy (client_name, enhance flag)
 - `app/configs/cloud-models.json` - Cloud fallback model mapping (local models → free-tier cloud equivalents)
-- `app/.env` - Runtime settings (`LLM_HOST`, `LLM_PORT`, `LLM_MODEL`, `LLM_ORCHESTRATOR_MODEL`, `LLM_TIMEOUT`, `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, etc. — old `OLLAMA_*` names still work as aliases)
+- `app/.env` - Runtime settings (`LLM_HOST`, `LLM_PORT`, `LLM_MODEL`, `LLM_ORCHESTRATOR_MODEL`, `LLM_TIMEOUT`, `LLM_API_KEY` / `LM_API_TOKEN`, `OPENROUTER_ENABLED`, `OPENROUTER_API_KEY`, etc.). `LLM_*` is backend-agnostic and works for either Ollama or LM Studio.
 
 ### Persistent Data Directory (`~/.prompthub/`)
 
@@ -295,7 +295,7 @@ When asked to "simplify", "clean up", "clarify", or otherwise reduce documentati
 - Generate verification reports, audit logs, or migration plans *before* editing. Edit and commit; let the diff be the report.
 - Wrap historical model/tool names in parenthetical "now `X`" suffixes in prose. The current name alone is sufficient.
 
-**Carve-out — preserve historical names in *config and code*** where user environments might still reference them: env-var aliases (`AliasChoices("LLM_HOST", "OLLAMA_HOST")`), keyring keys, deprecated API endpoints, version-pinned dependencies. The compat surface is real; the prose nostalgia isn't.
+**Carve-out — preserve historical names in *config and code*** where user environments might still reference them: vendor-native env-var aliases (`AliasChoices("LLM_API_KEY", "LM_API_TOKEN")`), keyring keys, deprecated API endpoints, version-pinned dependencies. The compat surface is real; the prose nostalgia isn't. (Pure-legacy aliases that nobody is reasonably using anymore — e.g. the retired `OLLAMA_*` env vars dropped 2026-06-01 — are fair game to remove, since they're cruft on the compat surface rather than load-bearing.)
 
 When in doubt: delete, commit, and let the user say "put it back" if they actually miss it. Default to courage, not caution.
 
