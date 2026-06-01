@@ -29,11 +29,11 @@ prompthub/                        # Workspace root
 │   ├── audit/                    # Audit system docs
 │   └── archive/                  # Historical docs
 ├── clients/                      # Per-client directories (MCP configs, setup.sh, llm.txt knowledge files)
-│   ├── claude-desktop/           # mcp.json, setup.sh, README.md
-│   ├── cherry-studio/            # mcp-servers-example.json, setup.sh, cherry-studio-llm.txt
-│   ├── zed/                      # settings.json, setup.sh, zed-llm.txt
-│   ├── jetbrains/                # mcp.json, setup.sh, jetbrains-llm.txt
-│   └── ...                       # 16 client directories total
+│   ├── claude/                   # Claude Desktop + Claude Code (desktop-setup.sh, code-setup.sh)
+│   ├── lm-studio/                # mcp.json, setup.sh, lm-studio-llm.txt, config-presets/
+│   ├── vscode/                   # mcp.json, setup.sh, vscode-llm.txt
+│   ├── codex/                    # config.toml, setup.sh
+│   └── ...                       # ~9 client directories total
 ├── mcps/                         # MCP servers (Node.js bridge)
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
 │   ├── configs/                  # Bridge-specific configs (mcp-inspector only)

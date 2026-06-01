@@ -12,7 +12,7 @@ Current supported-now clients include:
 - `claude-code-mcp`
 - `claude-desktop-mcp`
 - `lm-studio-mcp`
-- `raycast-mcp`
+- `codex-mcp`
 
 Treat this list as the current compatibility surface when making shared config changes.
 
