@@ -105,6 +105,10 @@ qdrant_data/
 # OpenCode project config (contains LM Studio API key)
 opencode.json
 
+# Local parking lot for archived/abandoned client folders.
+# Kept on disk so historical exploration stays accessible; never tracked.
+clients/_ignore/
+
 # Temporary files
 *.tmp
 *.temp

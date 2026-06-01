@@ -26,7 +26,6 @@ cd ~/prompthub
 ./clients/claude/desktop-setup.sh   # Claude Desktop
 ./clients/claude/code-setup.sh      # Claude Code
 ./clients/vscode/setup.sh           # VS Code + Copilot
-./clients/raycast/setup.sh          # Raycast
 ./clients/lm-studio/setup.sh        # LM Studio
 ./clients/codex/setup.sh            # Codex instructions / symlink setup
 
@@ -43,14 +42,10 @@ uses a copy or merge strategy, the setup script handles the app-specific step.
 |--------|-------------|------------------|
 | `clients/claude/` | Claude Desktop + Claude Code | desktop symlink + code copy |
 | `clients/vscode/` | VS Code + Copilot settings | merge / guided file update |
-| `clients/raycast/` | `~/.config/raycast/mcp.json` and provider config | symlink |
 | `clients/lm-studio/` | `~/.lmstudio/mcp.json` | symlink |
 | `clients/codex/` | `~/.codex/config.toml` | manual / TOML |
 | `clients/perplexity-desktop/` | Perplexity Desktop config | manual / client-specific |
 | `clients/_open-webui/` | Open WebUI example config | placeholder |
-| `clients/_zed/` | Zed shared settings | placeholder |
-| `clients/_jetbrains/` | JetBrains MCP config | placeholder |
-| `clients/_cherry-studio/` | `cherry-studio` examples | placeholder |
 
 ---
 
@@ -63,7 +58,7 @@ following handwritten instructions for a proprietary app (manual).
 
 ### Symlink Install
 
-**Used by:** LM Studio, Raycast, Claude Desktop (for some assets)
+**Used by:** LM Studio, Claude Desktop (for some assets)
 
 The setup script keeps the real config in `clients/<client-name>/` and creates
  a symlink from the app's expected config path to that repo file.
@@ -135,7 +130,7 @@ you need to inspect or troubleshoot the repo-managed client files.
 
 ### Standard format (mcpServers)
 
-Used by Claude Desktop, Claude Code, LM Studio, Raycast, and similar bridge
+Used by Claude Desktop, Claude Code, LM Studio, and similar bridge
 clients:
 
 ```json
@@ -167,37 +162,6 @@ clients:
         "args": ["/Users/you/prompthub/mcps/prompthub-bridge.js"],
         "env": { "..." }
       }
-    }
-  }
-}
-```
-
-### Zed format (context_servers)
-
-```json
-{
-  "context_servers": {
-    "prompthub": {
-      "enabled": true,
-      "remote": false,
-      "command": "node",
-      "args": ["/Users/you/prompthub/mcps/prompthub-bridge.js"],
-      "env": { "..." }
-    }
-  }
-}
-```
-
-### JetBrains format (servers)
-
-```json
-{
-  "servers": {
-    "prompthub": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["/Users/you/prompthub/mcps/prompthub-bridge.js"],
-      "env": { "..." }
     }
   }
 }
@@ -283,25 +247,6 @@ The API key and enhancement rule names still use `claude-code`.
 }
 ```
 
-### Raycast
-
-**Type:** Bridge client (MCP) + OpenAI API (chat), symlink install
-
-Uses the OpenAI-compatible API for AI Chat:
-
-1. **Raycast Settings** > AI > OpenAI Compatible
-2. **API Endpoint:** `http://localhost:9090/v1`
-3. **API Key:** `sk-prompthub-raycast-001`
-4. **Model:** `qwen3-4b-instruct-2507`
-
-For MCP tools, install the bridge config:
-
-```bash
-./clients/raycast/setup.sh
-```
-
-Test: `Cmd+Space` > "Ask AI" > send a question.
-
 ### LM Studio
 
 **Type:** Bridge client, symlink install
@@ -327,64 +272,6 @@ ls -la ~/.lmstudio/mcp.json
 
 After editing or installing, restart MCP servers in LM Studio's Developer tab.
 
-### Zed
-
-**Type:** Placeholder client
-
-Zed is currently tracked as a placeholder under `clients/_zed/`. The examples
-still matter because Zed uses the `context_servers` key in a shared JSONC
-settings file:
-
-```json
-{
-  "context_servers": {
-    "prompthub": {
-      "enabled": true,
-      "remote": false,
-      "command": "node",
-      "args": ["/Users/you/prompthub/mcps/prompthub-bridge.js"],
-      "env": {
-        "AUTHORIZATION": "Bearer sk-prompthub-default-001",
-        "CLIENT_NAME": "zed",
-        "PROMPTHUB_URL": "http://127.0.0.1:9090",
-        "SERVERS": "memory,context7,sequential-thinking,desktop-commander"
-      }
-    }
-  }
-}
-```
-
-Use `clients/_zed/README.md` for the current manual steps.
-
-### JetBrains IDEs
-
-**Type:** Placeholder client
-
-JetBrains support is tracked under `clients/_jetbrains/`. The config shape is
-still useful because JetBrains expects a `servers` object with
-`"type": "stdio"`:
-
-```json
-{
-  "servers": {
-    "prompthub": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["/Users/you/prompthub/mcps/prompthub-bridge.js"],
-      "env": {
-        "AUTHORIZATION": "Bearer sk-prompthub-jetbrains-001",
-        "CLIENT_NAME": "jetbrains",
-        "PROMPTHUB_URL": "http://127.0.0.1:9090",
-        "SERVERS": "memory,context7,sequential-thinking,desktop-commander"
-      }
-    }
-  }
-}
-```
-
-Use `clients/_jetbrains/README.md` for the current manual steps and product-
-specific paths.
-
 ### Codex
 
 **Type:** Manual config only (TOML format)
@@ -408,14 +295,6 @@ SERVERS = "memory,sequential-thinking,desktop-commander,perplexity-comet,context
 ```
 
 Replace `/Users/you/prompthub/` with your actual path. Save the file and restart Codex.
-
-### `cherry-studio`
-
-**Type:** Placeholder client
-
-The documented repo/client identifier is `cherry-studio`. The current examples
-live under `clients/_cherry-studio/`. Use that folder if you want to adapt the
-current bridge or HTTP examples manually.
 
 ### Open WebUI
 
@@ -495,10 +374,10 @@ Each app gets its own key in `app/configs/api-keys.json`:
       "enhance": false,
       "description": "Claude Desktop"
     },
-    "sk-prompthub-raycast-001": {
-      "client_name": "raycast",
+    "sk-prompthub-lm-studio-001": {
+      "client_name": "lm-studio",
       "enhance": false,
-      "description": "Raycast Commands"
+      "description": "LM Studio MCP bridge"
     }
   }
 }
@@ -538,10 +417,10 @@ Per-client prompt rewriting behavior is configured in `app/configs/enhancement-r
     "privacy_level": "local_only"
   },
   "clients": {
-    "raycast": {
+    "perplexity-desktop": {
       "temperature": 0.3,
-      "max_tokens": 300,
-      "system_prompt": "...action-oriented, CLI-style, under 150 words...",
+      "max_tokens": 600,
+      "system_prompt": "...complete-sentence question, name URLs directly...",
       "privacy_level": "free_ok"
     }
   }
@@ -561,7 +440,7 @@ Per-client prompt rewriting behavior is configured in `app/configs/enhancement-r
 | Level | Behavior |
 |-------|----------|
 | `local_only` | Prompts never leave localhost. Cloud fallback disabled. Default for most clients. |
-| `free_ok` | Falls back to OpenRouter free-tier if LM Studio is down. Used by Raycast, Perplexity. |
+| `free_ok` | Falls back to OpenRouter free-tier if LM Studio is down. Used by Perplexity. |
 | `any` | Any cloud provider allowed (not currently used). |
 
 The `X-Privacy-Level` header can downgrade privacy (more restrictive) but never upgrade it.
@@ -600,16 +479,6 @@ lms get qwen3-4b-instruct-2507                 # Download missing model
 1. Set `"enhance": false` in the app's API key entry
 2. Check if LM Studio is busy: `lms ps`
 
-### Zed config has parse errors after install
-
-Zed uses JSONC (JSON with comments). Check `clients/_zed/README.md` for the
-current manual process and back up your settings before editing.
-
-### JetBrains IDE does not detect MCP config
-
-JetBrains products often use product-specific config paths. Check
-`clients/_jetbrains/README.md` for the current manual instructions.
-
 ### Codex config still does not load
 
 Codex uses TOML, not JSON. Edit `~/.codex/config.toml` by hand and compare it
@@ -624,13 +493,9 @@ to the reference in the [Codex section](#codex) above.
 | Claude Desktop | MCP bridge | Yes | No (uses own models) | desktop setup script |
 | Claude Code | MCP bridge | Yes | No | code setup script |
 | VS Code | MCP bridge + OpenAI API | Yes | Yes | setup script |
-| Raycast | MCP bridge + OpenAI API | Yes | Yes | symlink setup script |
 | LM Studio | MCP bridge | Yes | No (is the model server) | symlink setup script |
 | Codex | MCP bridge (TOML) | Yes | No | manual |
 | Perplexity Desktop | MCP bridge | Yes | No | manual / client-specific |
-| Zed | MCP bridge (context_servers) | Yes | No | placeholder |
-| JetBrains | MCP bridge (servers) | Yes | No | placeholder |
-| `cherry-studio` | bridge + HTTP examples | Partial | Partial | placeholder |
 | Open WebUI | OpenAI API + Streamable HTTP | Yes | Yes | placeholder / manual |
 | Obsidian | OpenAI API | No | Yes | plugin setup |
 

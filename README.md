@@ -95,9 +95,9 @@ User-facing guides live in [`docs/guides/`](docs/guides/):
 ### Client Setup
 Client setup now lives under [`clients/`](clients/):
 - [Claude](clients/claude/) - Claude app configs and setup helpers
-- [Raycast](clients/raycast/) - MCP and provider configuration
 - [VS Code](clients/vscode/) - MCP and editor integration files
 - [LM Studio](clients/lm-studio/) - local model presets and setup notes
+- [Codex](clients/codex/) - Codex CLI configuration
 
 ### Developer Documentation
 See **[docs/](docs/)** for technical documentation:
@@ -335,8 +335,8 @@ POST /llm/enhance
 
 # Headers:
 X-Client-Name: claude-desktop  # Routes to qwen3-4b-instruct-2507
-X-Client-Name: vscode          # Routes to qwen3-4b-instruct-2507
-X-Client-Name: raycast         # Routes to qwen3-4b-instruct-2507
+X-Client-Name: vscode          # Routes to qwen3-4b-instruct-2507 (via coder profile)
+X-Client-Name: claude-code     # Routes via coder profile
 X-Client-Name: obsidian        # Routes to qwen3-4b-instruct-2507 with markdown
 ```
 
@@ -385,7 +385,7 @@ GET /audit/integrity/verify
 # Client configs are stored as files in the repo, not generated over HTTP
 clients/claude/
 clients/vscode/
-clients/raycast/
+clients/lm-studio/
 ```
 
 ### Error Handling
