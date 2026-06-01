@@ -1,7 +1,7 @@
 # ADR-008: Task-Specific Models & Orchestrator Agent
 
 ## Status
-Accepted (updated 2026-05-25)
+Accepted (updated 2026-06-01)
 
 > NOTE: ADR-008 is the canonical source for current model assignments. The
 > rewrite verification pass flagged model tokens across the docs — ADR-008
@@ -9,13 +9,34 @@ Accepted (updated 2026-05-25)
 > avoid accidental drift.
 
 Canonical mapping (editor quick-reference):
-- Enhancement (default for clients without `model_profile`) → `qwen3-4b-instruct-2507`
+- Enhancement (default for clients without `model_profile`) → `Qwopus3.5-4B-v3-GGUF` (distilled-Opus 4B)
 - Orchestrator (thinking) → `qwen3-4b-thinking-2507`
-- Per-client opt-in models → resolved via `model_profile` (see *Update 2026-05-25* below)
+- Fallback (`model_profile: "instruct"`) → `qwen3-4b-instruct-2507`
+- Per-client opt-in models → resolved via `model_profile` (see *Update 2026-06-01* below)
 
 When editing other documents, prefer adding parenthetical mappings such as
 `llama3.2 (now qwen3-4b-instruct-2507)` instead of wholesale replacement to
 preserve historical context.
+
+## Update 2026-06-01 — Distilled Daemon + Instruct Fallback
+
+The PR-#33 opt-in phase has converged. The distilled-Opus 4B model has been used in parallel with vanilla `qwen3-4b-instruct-2507` long enough to validate it for the always-on daemon role, so the canonical mapping now flips:
+
+- **`default.model` and `model_profiles.daemon`** in `enhancement-rules.json` both move from `qwen3-4b-instruct-2507` → `Qwopus3.5-4B-v3-GGUF`. Clients without a `model_profile` (or with `model_profile: "daemon"`) now resolve to the distilled-Opus 4B.
+- **New `model_profiles.instruct`** entry points at the vanilla `qwen3-4b-instruct-2507`. This is the named fallback profile — used either via explicit per-client opt-in (`model_profile: "instruct"`) or by the `fallback_chain` when the distilled daemon is unavailable.
+- **`MODEL_CONTEXT_TOKENS`** in `context_window.py` gains `Qwopus3.5-4B-v3-GGUF: 262_144` so daemon-routed clients get accurate token-budget math.
+- **`settings.py` `llm_model` default** stays at `qwen3-4b-instruct-2507`. It's the code-level safety net (env-var fallback when nothing else is configured); keeping it pointed at the vanilla model mirrors the "Instruct as fallback" intent at the lowest layer.
+
+### Why this flip now
+
+Three things converged: (a) the distilled set has been the script's `daemon` profile since PR #34, so it's been the downloaded model for weeks of dev-loop use; (b) PR #46 added safetensors `instruct` as an explicit fallback in the download tool — so "Instruct as fallback" is concrete, not aspirational; (c) the `model_profile` mechanism shipped in PR #33 has been stable enough that flipping the named profile's target is a one-line risk, not a structural change.
+
+### Forward direction
+
+Two threads tracked separately:
+
+- **vLLM for the daemon serving layer** — distilled 4B's concurrent-request workload is exactly what vLLM is for. The safetensors path that PR #46 added makes this a switch of inference backend, not a re-download. See [`docs/notes/plans/idea-llmpm-vllm-migration.md`](../notes/plans/idea-llmpm-vllm-migration.md).
+- **Per-client `model:` field cleanup** — most clients in `enhancement-rules.json` still have an explicit `model: "qwen3-4b-instruct-2507"` line that overrides the new default. That's not wrong (it pins them to vanilla on purpose, opt-out from the new daemon), but it means the daemon flip only affects clients with no explicit `model`. Worth a separate audit later: should those per-client pins migrate to `model_profile: "instruct"` (named opt-out) or be removed entirely (so they pick up the new daemon)?
 
 ## Update 2026-05-25 — Per-Client Model Profiles (Opt-In)
 

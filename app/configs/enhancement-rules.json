@@ -1,7 +1,7 @@
 {
   "default": {
     "enabled": true,
-    "model": "qwen3-4b-instruct-2507",
+    "model": "Qwopus3.5-4B-v3-GGUF",
     "system_prompt": "You are a prompt engineer. Rewrite the user's prompt to be clearer, more specific, and more actionable. Keep the same intent and tone. Return only the rewritten prompt — no explanation, no preamble, no quotes.",
     "temperature": 0.3,
     "max_tokens": 500,
@@ -9,13 +9,16 @@
   },
   "model_profiles": {
     "daemon": {
-      "model": "qwen3-4b-instruct-2507"
+      "model": "Qwopus3.5-4B-v3-GGUF"
     },
     "coder": {
       "model": "Qwopus3.5-9B-Coder-GGUF"
     },
     "claude_feel": {
       "model": "Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF"
+    },
+    "instruct": {
+      "model": "qwen3-4b-instruct-2507"
     }
   },
   "clients": {
