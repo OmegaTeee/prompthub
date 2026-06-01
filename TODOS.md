@@ -60,6 +60,11 @@
 > **Status (2026-05-31):** Vision-stage idea. Full thinking in [`docs/notes/plans/idea-clients-folder-sunset.md`](docs/notes/plans/idea-clients-folder-sunset.md).
 > **Vision:** After PRs #31–#41 made per-client behavior server-side (`tool_profile` + `model_profile` in `enhancement-rules.json`), every client's MCP config block converges to a near-identical bridge entry. That uniformity is what generic MCP-sync tools assume — [agentsync](https://github.com/dallay/agentsync) (symlinks, 32+ client coverage) or [mcp-sync](https://github.com/ztripez/mcp-sync) (smart-merge hierarchy) could replace the bespoke `clients/<name>/setup.sh` plumbing. **Recommended next step (not committed):** audit the `clients/<name>/` folders for content that's actually unique (LM Studio presets, `llm.txt` knowledge files) vs. boilerplate the sync tool would replace, then pick a pilot client.
 
+### Model layer: llmpm + vLLM daemon migration
+
+> **Status (2026-06-01):** Vision-stage idea. Full thinking in [`docs/notes/plans/idea-llmpm-vllm-migration.md`](docs/notes/plans/idea-llmpm-vllm-migration.md).
+> **Vision:** Replace `scripts/models/download-qwen-distilled.sh` with [llmpm](https://www.llmpm.co) (CLI package manager — handles both GGUF and safetensors, manifest model like `package.json`), and move the daemon model from LM Studio to [vLLM](https://docs.vllm.ai) for proper concurrent-request serving (batching, KV-cache reuse). The `instruct` profile shipped today (`Qwen/Qwen3-4B-Instruct-2507` safetensors) is forward-compatible with both — it loads in LM Studio now as the daemon fallback, and is vLLM-ready when the daemon migration lands. **Triggers to revisit:** daemon serving more than ~1 concurrent request on average, model set grows past 5 profiles, or wanting CLI-driven model swaps without going through LM Studio's GUI.
+
 ### Refactor and standardize `scripts/` folder
 
 - [ ] Audit `scripts/` for dead, redundant, or misplaced scripts.

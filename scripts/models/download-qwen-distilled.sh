@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Download the "coder-first" distilled Qwen model set from Hugging Face.
+# Download the "coder-first" distilled Qwen model set from Hugging Face,
+# plus a vanilla Qwen3-Instruct fallback for when the distilled daemon
+# misbehaves or fails to load.
 #
 # Wraps `huggingface-cli download` with a small profile system so the same
 # script handles every model the router can opt into via `model_profile`
@@ -8,11 +10,20 @@
 # env-var driven and can be overridden via --config — that file is the
 # single swap point when models change at deployment time.
 #
+# Glob patterns are whitespace-separated and translated into multiple
+# `--include` flags on the huggingface-cli call. Use `*.gguf` for GGUF
+# repos and `*.safetensors *.json *.txt` (or similar) for safetensors
+# repos that also need the tokenizer/config alongside the weights.
+#
 # Output layout:
 #   $PH_MODELS_OUT_DIR/
 #     claude_feel/   <- gguf shards for the "Claude-feel" planner
 #     coder/         <- gguf shards for the primary coding worker
-#     daemon/        <- gguf shards for the router daemon model
+#     daemon/        <- gguf shards for the distilled router daemon
+#     instruct/      <- safetensors + tokenizer for the vanilla Qwen3-4B
+#                      Instruct fallback (also vLLM-ready for the planned
+#                      daemon migration; see
+#                      docs/notes/plans/idea-llmpm-vllm-migration.md)
 # =============================================================================
 set -euo pipefail
 
@@ -22,16 +33,17 @@ Usage:
   scripts/models/download-qwen-distilled.sh [--config PATH] [--out DIR] [--profile NAME] [--dry-run]
 
 Profiles (matching enhancement-rules.json model_profiles):
-  daemon        Router daemon / always-on model
-  coder         Primary coding + tools worker
-  claude_feel   "Claude-feel" planning model
+  daemon        Router daemon / always-on model (distilled, GGUF)
+  coder         Primary coding + tools worker (distilled, GGUF)
+  claude_feel   "Claude-feel" planning model (distilled, GGUF)
+  instruct      Vanilla Qwen3-4B-Instruct fallback (safetensors, vLLM-ready)
   all           Download every profile (default)
 
 Options:
   --config PATH    .env-style file overriding the repo/glob env vars
   --out DIR        Output root directory (default: $PH_MODELS_OUT_DIR
                    or ~/.prompthub/models if unset)
-  --profile NAME   One of daemon|coder|claude_feel|all (default: all)
+  --profile NAME   One of daemon|coder|claude_feel|instruct|all (default: all)
   --dry-run        Print the huggingface-cli invocations without running them.
                    Never passes --token in this mode.
   -h, --help       Show this help and exit.
@@ -125,6 +137,19 @@ download_repo() {
     mkdir -p "$dest"
   fi
 
+  # Support whitespace-separated glob patterns by emitting one
+  # --include flag per pattern. huggingface-cli OR's them — files
+  # matching any pattern are downloaded. `set -f` disables local
+  # pathname expansion so e.g. `*.txt` stays literal and isn't
+  # silently rewritten to match files in the current directory.
+  local -a include_flags=()
+  set -f
+  # shellcheck disable=SC2086  # intentional word-splitting on $include_glob
+  for pattern in $include_glob; do
+    include_flags+=(--include "$pattern")
+  done
+  set +f
+
   # --local-dir-use-symlinks False keeps the downloaded shards in $dest
   # rather than symlinking from the global HF cache. Critical for LM
   # Studio's import flow and prevents cache-poisoning via symlinks.
@@ -132,7 +157,7 @@ download_repo() {
     huggingface-cli download "$repo"
     --local-dir "$dest"
     --local-dir-use-symlinks False
-    --include "$include_glob"
+    "${include_flags[@]}"
   )
   # Only pass the token for real downloads. Dry-run never echoes it.
   if [[ -n "$HF_TOKEN_EFFECTIVE" && "$DRY_RUN" != "true" ]]; then
@@ -149,7 +174,7 @@ download_repo() {
 require_cmd huggingface-cli
 
 case "$PROFILE" in
-  claude_feel|coder|daemon|all) ;;
+  claude_feel|coder|daemon|instruct|all) ;;
   *) echo "Invalid --profile: $PROFILE" >&2; usage; exit 2 ;;
 esac
 
@@ -163,6 +188,13 @@ PH_MODEL_CODER_GLOB="${PH_MODEL_CODER_GLOB:-*.gguf}"
 
 PH_MODEL_DAEMON_REPO="${PH_MODEL_DAEMON_REPO:-JackRong/Qwopus3.5-4B-v3-GGUF}"
 PH_MODEL_DAEMON_GLOB="${PH_MODEL_DAEMON_GLOB:-*.gguf}"
+
+# Instruct fallback: vanilla Qwen3-4B-Instruct in safetensors format.
+# Loads in LM Studio today and is vLLM-ready for the planned daemon
+# migration. Glob pulls weights + tokenizer + config; skip arbitrary
+# extras like preview images or evaluation scripts.
+PH_MODEL_INSTRUCT_REPO="${PH_MODEL_INSTRUCT_REPO:-Qwen/Qwen3-4B-Instruct-2507}"
+PH_MODEL_INSTRUCT_GLOB="${PH_MODEL_INSTRUCT_GLOB:-*.safetensors *.json *.txt}"
 
 if [[ -z "$HF_TOKEN_EFFECTIVE" && "$DRY_RUN" != "true" ]]; then
   echo "[models] Note: no HF token provided (PH_HF_TOKEN/HF_TOKEN/HUGGINGFACE_API_KEY)." >&2
@@ -178,7 +210,11 @@ fi
 if [[ "$PROFILE" == "daemon" || "$PROFILE" == "all" ]]; then
   download_repo "daemon" "$PH_MODEL_DAEMON_REPO" "$PH_MODEL_DAEMON_GLOB" "$PH_MODELS_OUT_DIR/daemon"
 fi
+if [[ "$PROFILE" == "instruct" || "$PROFILE" == "all" ]]; then
+  download_repo "instruct" "$PH_MODEL_INSTRUCT_REPO" "$PH_MODEL_INSTRUCT_GLOB" "$PH_MODELS_OUT_DIR/instruct"
+fi
 
-echo "[models] Done. Import the downloaded GGUF files into LM Studio, then"
-echo "[models] ensure PromptHub is pointed at the intended model IDs (see"
-echo "[models] app/configs/enhancement-rules.json -> model_profiles)."
+echo "[models] Done. Import the downloaded files into LM Studio (GGUF for"
+echo "[models] daemon/coder/claude_feel, safetensors directory for instruct),"
+echo "[models] then ensure PromptHub is pointed at the intended model IDs"
+echo "[models] (see app/configs/enhancement-rules.json -> model_profiles)."
