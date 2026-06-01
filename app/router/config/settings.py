@@ -34,36 +34,26 @@ class Settings(BaseSettings):
         "env_file": ".env",
         "env_prefix": "",
         "case_sensitive": False,
-        "extra": "ignore",  # tolerate legacy env vars (e.g. OLLAMA_API_MODE)
+        "extra": "ignore",  # silently drop unknown env vars rather than 500
     }
 
     # Server
     host: str = "0.0.0.0"
     port: int = 9090
 
-    # Local LLM server (LM Studio, Ollama, or any OpenAI-compatible server)
-    llm_host: str = Field(
-        default="localhost",
-        validation_alias=AliasChoices("LLM_HOST", "OLLAMA_HOST"),
-    )
-    llm_port: int = Field(
-        default=1234,
-        validation_alias=AliasChoices("LLM_PORT", "OLLAMA_PORT"),
-    )
-    llm_model: str = Field(
-        default="qwen3-4b-instruct-2507",
-        validation_alias=AliasChoices("LLM_MODEL", "OLLAMA_MODEL"),
-    )
-    llm_timeout: int = Field(
-        default=120,
-        validation_alias=AliasChoices("LLM_TIMEOUT", "OLLAMA_TIMEOUT"),
-    )
-    llm_orchestrator_model: str = Field(
-        default="qwen3-4b-thinking-2507",
-        validation_alias=AliasChoices("LLM_ORCHESTRATOR_MODEL"),
-    )
+    # Local LLM server (LM Studio, Ollama, or any OpenAI-compatible server).
+    # The LLM_* prefix is backend-agnostic — works for either Ollama or
+    # LM Studio. Older OLLAMA_* aliases were retired on 2026-06-01.
+    llm_host: str = "localhost"
+    llm_port: int = 1234
+    llm_model: str = "qwen3-4b-instruct-2507"
+    llm_timeout: int = 120
+    llm_orchestrator_model: str = "qwen3-4b-thinking-2507"
     llm_api_key: str | None = Field(
         default=None,
+        # LM_API_TOKEN is LM Studio's official env-var name (not legacy);
+        # kept as an alias so users can set either LLM_API_KEY or the
+        # vendor-native name.
         validation_alias=AliasChoices("LLM_API_KEY", "LM_API_TOKEN"),
     )
 
