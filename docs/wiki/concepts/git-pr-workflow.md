@@ -15,11 +15,11 @@ This repo squash-merges PRs (commits land on `main` as a single `… (#N)` commi
 
 ### `gh pr merge --delete-branch` can orphan unpushed local commits
 
-If you stacked extra commits on the *local* PR branch beyond what was pushed (e.g. a follow-up commit, or a `merge main` commit), `--delete-branch` deletes the branch and those commits become **dangling**. They are *not lost*: `git reflog` still references them (objects survive ~90 days), and `git branch <name> <sha>` re-anchors them instantly. Always verify the content reached `main` before assuming loss — in practice the work is usually already in the squash.
+If you stacked extra commits on the *local* PR branch beyond what was pushed (e.g. a follow-up commit, or a `merge main` commit), `--delete-branch` deletes the branch and those commits become **dangling**. They are *not lost*: as long as `git reflog` still references them, `git branch <name> <sha>` re-anchors them instantly. Treat this as a **best-effort recovery window, not a guarantee** — unreachable objects are pruned by `git gc` on a configurable schedule (the `gc.reflogExpireUnreachable` default is ~30 days, but it's tunable and gc can run sooner), so recover promptly rather than relying on a fixed retention period. Always verify the content reached `main` before assuming loss — in practice the work is usually already in the squash.
 
-### Untracked / branch-local files "vanish" on checkout — expected
+### Files tracked on one branch but not another "vanish" on checkout — expected
 
-A freshly-created file (a new config, a new wiki page) committed to branch A **disappears from the working tree** when you `git checkout main`, because it isn't tracked on `main`. This is correct git behavior, not data loss — the file lives on branch A. The same is why `api-keys.json` and `schemathesis.toml` reverted to their `main` state during branch hops in earlier sessions.
+A file you create and then **commit on branch A** disappears from the working tree when you `git checkout main`, because it's tracked on A but doesn't exist on `main`. (Genuinely *untracked* files behave the opposite way — they persist across switches, since git only adds/removes files it's tracking; they'd only be touched if a checkout would overwrite them.) So the "vanish" surprise is specifically about files **committed on one branch and absent from another** — correct git behavior, not data loss; the file lives on branch A. The same is why `api-keys.json` and `schemathesis.toml` reverted to their `main` state during branch hops in earlier sessions.
 
 ### Stash-with-zero-overlap: work a different PR with a dirty tree
 
@@ -38,7 +38,19 @@ Safe **only** when your edits don't overlap any stashed file — then the pop ne
 
 ### `gh` non-interactive prompts
 
-The repo has `gh config prefer_editor_prompt = enabled`, which makes `gh pr create` / `gh pr merge` try to open an editor and **fail in a non-tty context** ("not supported in non-tty mode"). Work around it per-operation: `gh config set prefer_editor_prompt disabled`, run the command with `--body-file` / `--title` (or `--subject`), then restore `enabled`. Reply to review comments with `gh api …/pulls/{n}/comments/{id}/replies`; resolve threads with the GraphQL `resolveReviewThread` mutation (map comment `databaseId` → thread node id first).
+The repo has `gh config prefer_editor_prompt = enabled`, which makes `gh pr create` / `gh pr merge` try to open an editor and **fail in a non-tty context** ("not supported in non-tty mode"). Work around it per-operation: `gh config set prefer_editor_prompt disabled`, run the command with explicit message flags, then restore `enabled`. The flags differ by command:
+
+- `gh pr create` — `--title "<t>"` and `--body-file <path>` (or `--body "<text>"`)
+- `gh pr merge --squash` — `--subject "<t>"` and `--body "<text>"`
+
+Reply to a review comment and resolve its thread:
+
+```sh
+# Reply (REST route includes the PR number):
+gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies -f body="…"
+# Resolve (GraphQL — map the comment's databaseId → thread node id first):
+gh api graphql -f query='mutation { resolveReviewThread(input:{threadId:"<id>"}) { thread { isResolved } } }'
+```
 
 ## Related
 
