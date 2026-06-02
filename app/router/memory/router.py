@@ -112,7 +112,11 @@ def create_memory_router(
         )
 
     # GET /sessions/{id} — Get session details
-    @router.get("/{session_id}", response_model=SessionResponse)
+    @router.get(
+        "/{session_id}",
+        response_model=SessionResponse,
+        responses={404: {"description": "Session not found"}},
+    )
     async def get_session(session_id: str) -> SessionResponse:
         """Get session details including fact count."""
         storage = get_storage()
@@ -163,7 +167,10 @@ def create_memory_router(
         return FactResponse(**result)
 
     # GET /sessions/{id}/facts — List facts
-    @router.get("/{session_id}/facts")
+    @router.get(
+        "/{session_id}/facts",
+        responses={404: {"description": "Session not found"}},
+    )
     async def get_facts(
         session_id: str, tags: str | None = None, limit: int = 50
     ) -> list[FactResponse]:
@@ -218,7 +225,11 @@ def create_memory_router(
         return MemoryBlockResponse(**result)
 
     # GET /sessions/{id}/memory/{key} — Get memory block
-    @router.get("/{session_id}/memory/{key}", response_model=MemoryBlockResponse)
+    @router.get(
+        "/{session_id}/memory/{key}",
+        response_model=MemoryBlockResponse,
+        responses={404: {"description": "Session or memory block not found"}},
+    )
     async def get_memory_block(session_id: str, key: str) -> MemoryBlockResponse:
         """Get a memory block by key."""
         storage = get_storage()
@@ -252,7 +263,11 @@ def create_memory_router(
         return {"deleted": True, "key": key}
 
     # GET /sessions/{id}/context — Full context (session + facts + blocks + MCP)
-    @router.get("/{session_id}/context", response_model=SessionContextResponse)
+    @router.get(
+        "/{session_id}/context",
+        response_model=SessionContextResponse,
+        responses={404: {"description": "Session not found"}},
+    )
     async def get_session_context(session_id: str) -> SessionContextResponse:
         """Get complete session context including facts, blocks, and MCP graph."""
         storage = get_storage()

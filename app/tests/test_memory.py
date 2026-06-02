@@ -81,6 +81,26 @@ async def test_session_list_and_filter(storage):
 
 
 @pytest.mark.asyncio
+async def test_session_list_oversized_pagination(storage):
+    """Pagination params beyond SQLite's int64 bind range must not 500.
+
+    A fuzzed `offset`/`limit` larger than 2**63-1 otherwise raises
+    OverflowError ("Python int too large to convert to SQLite INTEGER")
+    when bound to LIMIT/OFFSET. The storage layer clamps instead.
+    """
+    await storage.create_session(session_id="s1", client_id="client-1")
+
+    big = 270164148743501611008  # > 2**63-1, from the schemathesis repro
+    sessions, total = await storage.list_sessions(limit=10, offset=big)
+    assert total == 1  # count is unaffected by pagination
+    assert sessions == []  # offset past the end → empty page, not an error
+
+    # Oversized limit is likewise clamped rather than overflowing.
+    sessions, total = await storage.list_sessions(limit=big, offset=0)
+    assert len(sessions) == 1
+
+
+@pytest.mark.asyncio
 async def test_session_close(storage):
     """Test closing a session."""
     await storage.create_session(session_id="test-session", client_id="test-client")
@@ -121,6 +141,40 @@ async def test_fact_add_and_list(storage):
 
     # Verify tags are parsed back as lists
     assert all(isinstance(f["tags"], list) for f in facts)
+
+
+@pytest.mark.asyncio
+async def test_fact_filter_by_tags(storage):
+    """Filtering facts by tag returns only facts carrying a requested tag."""
+    await storage.create_session(session_id="s1", client_id="client-1")
+
+    await storage.add_fact(session_id="s1", fact="Likes Python", tags=["lang", "py"])
+    await storage.add_fact(session_id="s1", fact="Likes Rust", tags=["lang", "rs"])
+    await storage.add_fact(session_id="s1", fact="Lives in SF", tags=["geo"])
+
+    # Single tag — exact match, not substring
+    py_facts = await storage.get_facts("s1", tags=["py"])
+    assert {f["fact"] for f in py_facts} == {"Likes Python"}
+
+    # Multiple tags — OR semantics (match any)
+    lang_or_geo = await storage.get_facts("s1", tags=["rs", "geo"])
+    assert {f["fact"] for f in lang_or_geo} == {"Likes Rust", "Lives in SF"}
+
+    # Unknown tag (e.g. the literal "null" from a fuzzed `tags=null`) —
+    # graceful empty result, never an OperationalError / 500.
+    assert await storage.get_facts("s1", tags=["null"]) == []
+    assert await storage.get_facts("s1", tags=["nope"]) == []
+
+
+@pytest.mark.asyncio
+async def test_fact_oversized_limit(storage):
+    """A `limit` beyond SQLite's int64 bind range must not 500."""
+    await storage.create_session(session_id="s1", client_id="client-1")
+    await storage.add_fact(session_id="s1", fact="only fact")
+
+    big = 270164148743501611008  # > 2**63-1
+    facts = await storage.get_facts("s1", limit=big)
+    assert len(facts) == 1
 
 
 @pytest.mark.asyncio
