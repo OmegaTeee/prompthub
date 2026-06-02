@@ -12,6 +12,7 @@ Format: bulleted list. Each entry is a wikilink (double-bracket slug) followed b
 
 <!-- Distilled ideas. Agent-written after research. One idea per page. -->
 
+- [[git-pr-workflow]] — Squash-merge + `gh` non-interactive gotchas (branch `-d` vs `-D`, `--delete-branch` orphaning local commits, stash-with-zero-overlap, verifying merged content over commit identity).
 - [[llm-wiki-setup]] — Why and how PromptHub maintains a wiki at `docs/wiki/`, replacing the legacy `docs/notes/` directory with a structured 4-section layout.
 - [[router-auth-tokens]] — The two distinct bearer tokens (router `PH_API_TOKEN` vs LM Studio `LM_API_TOKEN`) and the `/v1`-only auth boundary that trips up local setup.
 - [[sqlite-query-param-guards]] — Why two GET-route 500s both traced to unvalidated request values hitting SQLite, and the validate/clamp-at-the-boundary pattern that fixes them.
