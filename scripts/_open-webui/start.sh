@@ -29,7 +29,7 @@ if [[ -f "$CONFIG_FILE" ]]; then
     CONFIG_KEY=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('open_webui', {}).get('api_key', ''))" 2>/dev/null || true)
 fi
 OWUI_PORT="${OWUI_PORT:-${CONFIG_PORT:-3000}}"
-OWUI_API_KEY="${OWUI_API_KEY:-${CONFIG_KEY:-sk-prompthub-openwebui-001}}"
+OWUI_API_KEY="${OWUI_API_KEY:-${CONFIG_KEY:-sk-prompthub-open-webui-001}}"
 
 echo "=== Open WebUI Startup ==="
 echo "  Port:         $OWUI_PORT"

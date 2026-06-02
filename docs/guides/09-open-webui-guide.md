@@ -38,7 +38,7 @@ Open WebUI is installed using `uv`, a Python package runner. It is not a standal
 | Open WebUI binary  | Managed by `uvx` (cached in `~/.cache/uv/`)                |
 | Database and uploads | `~/.open-webui/`                                           |
 | Secret key         | `~/.webui_secret_key`                                      |
-| PromptHub API key  | `app/configs/api-keys.json` (`sk-prompthub-openwebui-001`) |
+| PromptHub API key  | `app/configs/api-keys.json` (`sk-prompthub-open-webui-001`) |
 | PromptHub config   | `clients/_open-webui/example.toml` (reference only)        |
 | Launch scripts     | `scripts/open-webui/start.sh`, `stop.sh`               |
 | LaunchAgent        | `scripts/launch-agents/com.prompthub.openwebui.plist`  |
@@ -79,7 +79,7 @@ Run this in your terminal:
 cd ~ && DATA_DIR=~/.open-webui \
   ENABLE_OPENAI_API=true \
   OPENAI_API_BASE_URL=http://127.0.0.1:9090/v1 \
-  OPENAI_API_KEY=sk-prompthub-openwebui-001 \
+  OPENAI_API_KEY=sk-prompthub-open-webui-001 \
   uvx --python 3.11 "open-webui>=0.8,<0.8.10" serve --port 3000
 ```
 
@@ -92,7 +92,7 @@ Then open http://localhost:3000 in your browser.
 | `DATA_DIR` | `~/.open-webui` | Where Open WebUI stores its data |
 | `ENABLE_OPENAI_API` | `true` | Turns on the OpenAI-compatible backend |
 | `OPENAI_API_BASE_URL` | `http://localhost:9090/v1` | Points to PromptHub (not to LM Studio directly) |
-| `OPENAI_API_KEY` | `sk-prompthub-openwebui-001` | Bearer token (security code like a password) registered in PromptHub |
+| `OPENAI_API_KEY` | `sk-prompthub-open-webui-001` | Bearer token (security code like a password) registered in PromptHub |
 
 ### Stopping Open WebUI
 
@@ -199,7 +199,7 @@ After logging in, your LM Studio models should appear in the model selector drop
 2. Go to **Settings** then **Connections**.
 3. Under **OpenAI API**, verify these values:
    - **API Base URL:** `http://localhost:9090/v1`
-   - **API Key:** `sk-prompthub-openwebui-001`
+   - **API Key:** `sk-prompthub-open-webui-001`
 4. Click **Save**.
 
 ### 3. Choose a Model
@@ -347,7 +347,7 @@ Open WebUI has automatic prompt enhancement enabled by default. When you send a 
 | --------------- | ------------------------------ |
 | Model           | `qwen3-4b-instruct-2507`          |
 | Privacy level   | `local_only` (never leaves your Mac) |
-| API key         | `sk-prompthub-openwebui-001`   |
+| API key         | `sk-prompthub-open-webui-001`   |
 | Enhancement     | Enabled (`"enhance": true`)    |
 
 Enhancement is configured in two places:
@@ -357,7 +357,7 @@ Enhancement is configured in two places:
 
 ### Disabling Enhancement
 
-To turn off enhancement, set `"enhance": false` for the `sk-prompthub-openwebui-001` key in `configs/api-keys.json` and restart the router.
+To turn off enhancement, set `"enhance": false` for the `sk-prompthub-open-webui-001` key in `configs/api-keys.json` and restart the router.
 
 **Key points:**
 - Enhancement is on by default for Open WebUI.
@@ -410,7 +410,7 @@ Open WebUI setup is file-based. Check the repo-managed client assets under
    ```
 2. Verify the API key works:
    ```bash
-   curl -H "Authorization: Bearer sk-prompthub-openwebui-001" \
+   curl -H "Authorization: Bearer sk-prompthub-open-webui-001" \
      http://localhost:9090/v1/models
    ```
 3. If the key returns 401, reload the keys:
