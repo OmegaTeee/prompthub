@@ -52,7 +52,11 @@ def create_tool_registry_router(
         return ToolRegistryStats(**stats)
 
     # GET /tools/{server} — Get cached tools for a server (full snapshot)
-    @router.get("/{server}", response_model=ToolSnapshot)
+    @router.get(
+        "/{server}",
+        response_model=ToolSnapshot,
+        responses={404: {"description": "No cached tools for server"}},
+    )
     async def get_server_tools(server: str) -> ToolSnapshot:
         """Get full cached tool snapshot for a server (raw, pre-minification)."""
         reg = get_registry()

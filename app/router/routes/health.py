@@ -46,7 +46,10 @@ def create_health_router(
             "servers": server_summary,
         }
 
-    @router.get("/health/{server}")
+    @router.get(
+        "/health/{server}",
+        responses={404: {"description": "Server not found"}},
+    )
     async def server_health(server: str):
         """Health check for a specific MCP server."""
         reg = get_registry()

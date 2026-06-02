@@ -53,7 +53,10 @@ def create_servers_router(
             ]
         }
 
-    @router.get("/servers/{name}")
+    @router.get(
+        "/servers/{name}",
+        responses={404: {"description": "Server not found"}},
+    )
     async def get_server(name: str):
         """Get detailed information about a specific server."""
         reg = get_registry()

@@ -19,6 +19,20 @@ from router.middleware.audit_context import get_audit_context
 
 logger = logging.getLogger(__name__)
 
+# SQLite binds integers as signed 64-bit; values outside this range raise
+# OverflowError when used in LIMIT/OFFSET. Clamp pagination params so fuzzed
+# or oversized inputs degrade to an empty page instead of an unhandled 500.
+_SQLITE_MAX_INT = 2**63 - 1
+
+
+def _clamp_pagination(value: Any, default: int) -> int:
+    """Coerce to a non-negative int within SQLite's signed-64-bit bind range."""
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(0, min(value, _SQLITE_MAX_INT))
+
 
 class SessionStorage:
     """
@@ -286,6 +300,9 @@ class SessionStorage:
         if not self._initialized:
             await self.initialize()
 
+        limit = _clamp_pagination(limit, 50)
+        offset = _clamp_pagination(offset, 0)
+
         # Build query
         where_clauses = []
         params = []
@@ -411,15 +428,22 @@ class SessionStorage:
         if not self._initialized:
             await self.initialize()
 
+        limit = _clamp_pagination(limit, 50)
+
         async with aiosqlite.connect(str(self.db_path)) as db:
             db.row_factory = aiosqlite.Row
 
             if tags:
-                # Filter by tags (JSON array contains)
+                # Filter by tags: keep facts whose JSON `tags` array contains
+                # any requested tag. json_each expands the array into rows so
+                # we can match exact values via IN. (json_extract's path
+                # grammar has no `$[*]` array wildcard, so it cannot do this.)
+                placeholders = ", ".join("?" for _ in tags)
                 query = f"""
                     SELECT * FROM session_facts
-                    WHERE session_id = ? AND (
-                        {" OR ".join(["json_extract(tags, '$[*]') LIKE ?" for _ in tags])}
+                    WHERE session_id = ? AND EXISTS (
+                        SELECT 1 FROM json_each(session_facts.tags)
+                        WHERE json_each.value IN ({placeholders})
                     )
                     ORDER BY relevance_score DESC, created_at DESC
                     LIMIT ?
