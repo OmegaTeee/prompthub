@@ -1,0 +1,13 @@
+# Schemathesis config for property-based fuzzing of the PromptHub router's
+# OpenAPI schema. NOTE: --config-file is a GLOBAL option — it goes BEFORE `run`.
+# Quick, SAFE check (GET only avoids triggering server starts / LLM calls):
+#   cd app && schemathesis --config-file schemathesis.toml run \
+#       --include-method GET http://127.0.0.1:9090/openapi.json
+# Drop --include-method GET to fuzz every operation (will exercise POST routes).
+# Router must be running on :9090.
+#
+# Bearer for the /v1/* OpenAI-compat endpoints — the only routes that check
+# auth (validated against configs/api-keys.json). /health, /servers, /tools,
+# and /mcp/* ignore this header. sk-prompthub-default-001 is the dedicated
+# test key from api-keys.json ("default" client, enhance=true).
+headers = { Authorization = "Bearer sk-prompthub-default-001" }
