@@ -10,7 +10,7 @@
         <string>/bin/bash</string>
         <string>-l</string>
         <string>-c</string>
-        <string>/Users/visualval/.local/share/prompthub/scripts/open-webui/start.sh</string>
+        <string>/Users/visualval/.local/share/prompthub/scripts/_open-webui/start.sh</string>
     </array>
 
     <key>WorkingDirectory</key>
