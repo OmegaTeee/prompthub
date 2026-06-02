@@ -1,7 +1,14 @@
-[
-  {
-    "client_name": "open-webui",
-    "api_key": "sk-prompthub-openwebui-test",
-    "enhance": true
+{
+  "keys": {
+    "sk-prompthub-open-webui-001": {
+      "client_name": "open-webui",
+      "description": "Open WebUI",
+      "enhance": false
+    },
+    "sk-prompthub-default-001": {
+      "client_name": "default",
+      "description": "Default key for testing and enhancement",
+      "enhance": true
+    }
   }
-]
+}

@@ -15,9 +15,12 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from router.openai_compat.auth import ApiKeyManager
-from router.openai_compat.models import ApiKeyConfig, ApiKeysRegistry, ChatCompletionRequest, ResponsesRequest
 from router.enhancement.llm_client import LLMConnectionError, LLMError
+from router.openai_compat.auth import ApiKeyManager
+from router.openai_compat.models import (
+    ChatCompletionRequest,
+    ResponsesRequest,
+)
 from router.openai_compat.router import (
     _build_responses_response,
     _find_last_user_message,
@@ -26,7 +29,6 @@ from router.openai_compat.router import (
     _translate_responses_to_messages,
     create_openai_compat_router,
 )
-
 
 # =============================================================================
 # Fixtures
@@ -166,6 +168,65 @@ class TestApiKeyManager:
         mgr = ApiKeyManager(config_path=None)
         mgr.load()
         assert mgr.key_count == 0
+
+
+# =============================================================================
+# Shipped Config Artifact Tests
+# =============================================================================
+
+# Resolve app/configs/ relative to this test file (app/tests/).
+_CONFIGS_DIR = Path(__file__).resolve().parents[1] / "configs"
+
+
+class TestShippedConfigArtifacts:
+    """Guard the real config files against drifting from the loader.
+
+    The loader (ApiKeyManager.load) is fail-closed: a malformed config logs an
+    error and leaves zero keys, silently rejecting all /v1/ requests. Unit tests
+    that build their own temp config never catch a broken *shipped* file, so
+    these tests load the actual artifacts through the production code path and
+    assert they yield a non-empty, well-formed registry.
+
+    Both files must use the map shape {"keys": {<token>: {...}}} — NOT a bare
+    array. An array loads as zero keys, which is the exact regression these
+    tests exist to prevent.
+    """
+
+    def test_shipped_api_keys_loads(self):
+        """app/configs/api-keys.json loads into a non-empty registry."""
+        path = _CONFIGS_DIR / "api-keys.json"
+        if not path.exists():
+            pytest.skip("api-keys.json not present in this checkout")
+        mgr = ApiKeyManager(config_path=path)
+        mgr.load()
+        assert mgr.key_count > 0, (
+            "api-keys.json loaded zero keys — likely wrong shape "
+            "(must be {'keys': {<token>: {...}}}, not a bare array)"
+        )
+
+    def test_example_api_keys_loads(self):
+        """api-keys.json.example must match the loader's expected shape.
+
+        A .example is copy-paste onboarding material; if it drifts from the
+        model, users reproduce the fail-closed bug by following it.
+        """
+        path = _CONFIGS_DIR / "api-keys.json.example"
+        if not path.exists():
+            pytest.skip("api-keys.json.example not present in this checkout")
+        mgr = ApiKeyManager(config_path=path)
+        mgr.load()
+        assert mgr.key_count > 0, (
+            "api-keys.json.example loaded zero keys — it has drifted from "
+            "ApiKeysRegistry; regenerate it as a token-keyed map"
+        )
+        # Enumerate tokens from the file, then verify each resolves through the
+        # public validate_token() API (rather than reaching into the registry).
+        tokens = json.loads(path.read_text())["keys"]
+        for token in tokens:
+            assert token.startswith("sk-"), f"example token {token!r} lacks sk- prefix"
+            cfg = mgr.validate_token(token)
+            assert cfg is not None, f"example token {token!r} did not load"
+            assert cfg.client_name, f"example entry {token!r} missing client_name"
 
 
 # =============================================================================

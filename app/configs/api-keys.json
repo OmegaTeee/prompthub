@@ -1,54 +1,54 @@
 {
-  "keys": [
-    {
+  "keys": {
+    "sk-prompthub-claude-code-001": {
       "client_name": "claude-code",
       "description": "Claude Code CLI",
       "enhance": false
     },
-    {
+    "sk-prompthub-claude-desktop-001": {
       "client_name": "claude-desktop",
       "description": "Claude.ai Desktop App",
       "enhance": false
     },
-    {
+    "sk-prompthub-codex-001": {
       "client_name": "codex",
       "description": "Codex CLI",
       "enhance": false
     },
-    {
+    "sk-prompthub-vscode-001": {
       "client_name": "vscode",
       "description": "VSCode IDE",
       "enhance": false
     },
-    {
+    "sk-prompthub-open-webui-001": {
       "client_name": "open-webui",
       "description": "Open WebUI",
       "enhance": false
     },
-    {
+    "sk-prompthub-perplexity-001": {
       "client_name": "perplexity",
       "description": "Comet Web Research",
       "enhance": true
     },
-    {
-      "client_name": "raycast",
-      "description": "Raycast Commands",
-      "enhance": false
-    },
-    {
+    "sk-prompthub-lm-studio-001": {
       "client_name": "lm-studio",
       "description": "LM Studio",
       "enhance": true
     },
-    {
-      "client_name": "opencode",
-      "description": "OpenCode",
+    "sk-prompthub-comfyui-001": {
+      "client_name": "comfyui",
+      "description": "ComfyUI",
+      "enhance": true
+    },
+    "sk-prompthub-cherry-studio-001": {
+      "client_name": "cherry-studio",
+      "description": "Cherry Studio",
       "enhance": false
     },
-    {
+    "sk-prompthub-default-001": {
       "client_name": "default",
       "description": "Default key for testing and enhancement",
       "enhance": true
     }
-  ]
+  }
 }
