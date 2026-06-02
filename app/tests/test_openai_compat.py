@@ -219,9 +219,13 @@ class TestShippedConfigArtifacts:
             "api-keys.json.example loaded zero keys — it has drifted from "
             "ApiKeysRegistry; regenerate it as a token-keyed map"
         )
-        # Every entry must validate as a full ApiKeyConfig (token -> config).
-        for token, cfg in mgr._registry.keys.items():
+        # Enumerate tokens from the file, then verify each resolves through the
+        # public validate_token() API (rather than reaching into the registry).
+        tokens = json.loads(path.read_text())["keys"]
+        for token in tokens:
             assert token.startswith("sk-"), f"example token {token!r} lacks sk- prefix"
+            cfg = mgr.validate_token(token)
+            assert cfg is not None, f"example token {token!r} did not load"
             assert cfg.client_name, f"example entry {token!r} missing client_name"
 
 

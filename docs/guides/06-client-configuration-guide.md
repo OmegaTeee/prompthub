@@ -304,7 +304,7 @@ Needs two connections -- chat and tools:
 
 1. **Chat** in Admin > Connections:
    - URL: `http://127.0.0.1:9090/v1`
-   - API Key: `sk-prompthub-openwebui-001`
+   - API Key: `sk-prompthub-open-webui-001`
 
 2. **MCP tools** in Admin > Settings > Tools > MCP Servers:
    - URL: `http://127.0.0.1:9090/mcp-direct/mcp`
