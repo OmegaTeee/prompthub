@@ -108,6 +108,7 @@ opencode.json
 # Local parking lot for archived/abandoned client folders.
 # Kept on disk so historical exploration stays accessible; never tracked.
 clients/_ignore/
+*.zip
 
 # Temporary files
 *.tmp

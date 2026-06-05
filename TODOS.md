@@ -2,6 +2,13 @@
 
 ## Now
 
+### Apply merged config-path fixes after restart (PR #53)
+
+> **Context:** PR #53 corrected two service paths in the repo, but the *running* LaunchAgents/router hold the old values in memory until reloaded. A full reboot re-registers both plists from `~/Library/LaunchAgents/`, so resume here after the planned computer/app update + restart. Verify, don't assume.
+
+- [ ] Confirm `obsidian-mcp-tools` actually launches now — its `command` points at `~/Vault/Scratch/.obsidian/plugins/mcp-tools/bin/mcp-server` (was the missing `~/Vault` parent). After reboot the router auto-starts (`RunAtLoad=true`); check it's `running`, not circuit-broken: `curl -s http://127.0.0.1:9090/servers` (or the dashboard). If the daemon was already up pre-reboot, force a reload: `launchctl kickstart -k gui/$(id -u)/com.prompthub.router`.
+- [ ] If using Open WebUI: its LaunchAgent (`com.prompthub.openwebui`, `RunAtLoad=false`) now wraps `scripts/_open-webui/start.sh` (renamed from `scripts/open-webui/`). Re-register so launchd picks up the new ProgramArguments path: `launchctl bootout gui/$(id -u)/com.prompthub.openwebui 2>/dev/null; launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.prompthub.openwebui.plist`, then start it (dashboard or `launchctl kickstart gui/$(id -u)/com.prompthub.openwebui`).
+
 ### Progressive Tool Disclosure (priority: high)
 
 > **Plan:** [`docs/notes/plans/progressive-tool-disclosure.md`](docs/notes/plans/progressive-tool-disclosure.md)

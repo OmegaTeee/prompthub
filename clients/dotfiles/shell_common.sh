@@ -41,18 +41,26 @@ path_append() {
 
 export MAGICK_HOME="/opt/homebrew"
 export AUTOTRACE="/opt/homebrew/bin/autotrace"
-export MCP_SERVER_FETCH="${HOME}/.local/pipx/venvs/mcp-server-fetch/bin/"
+export MPC_SERVER_FETCH="${HOME}/.local/pipx/venvs/mcp-server-fetch/bin/"
+export MCP_OBSIDIAN_TOOLS="${HOME}/.local/bin/mcp-obsidian-tools"
+export MPC_BRIDGE="${HOME}/.local/share/prompthub/mcps/prompthub-bridge.js"
+
 
 # Active PATH additions
-path_prepend "${HOME}/.lmstudio/bin"
-path_prepend "${HOME}/.lmstudio/llmster/current"
+path_append "${MCP_BRIDGE}"
+path_append "${HOME}/.lmstudio/bin"
+path_append "${HOME}/.lmstudio/llmster/current"
+
+# Comet Browser (Perplexity/Comet)
+path_prepend "/Applications/Comet.app/Contents/MacOS"
+path_prepend "${HOME}/Applications/Comet.app/Contents/MacOS"
 
 # Optional PATH additions
 # Uncomment only when the tool is installed and you want it available globally.
 # path_prepend "${HOME}/.cargo/bin"
 # path_prepend "${HOME}/.claude/bin"
 # path_prepend "${HOME}/.dotnet/tools"
-# path_prepend "/opt/homebrew/opt/python@3/bin"
+path_prepend "/opt/homebrew/opt/python@3/bin"
 
 # -----------------------------------------------------------------------------
 # Package manager homes and caches
@@ -62,8 +70,8 @@ export UV_TOOL_DIR="${HOME}/uv-tools"
 export UV_CACHE_DIR="${HOME}/uv-cache"
 
 # Optional PNPM setup
-# export PNPM_HOME="${HOME}/Library/pnpm"
-# path_prepend "${PNPM_HOME}"
+export PNPM_HOME="${HOME}/Library/pnpm"
+path_prepend "${PNPM_HOME}"
 
 
 # -----------------------------------------------------------------------------
@@ -103,69 +111,63 @@ start_colima_if_needed
 # Secrets from Keychain + Local API endpoints and ports
 # -----------------------------------------------------------------------------
 
-export CLAUDE_CODE_SSE_PORT="55260"
-
-export LM_API_TOKEN="$(keychain_secret LM_API_TOKEN)"
-export LM_KEY_TOKEN="$(keychain_secret LM_KEY_TOKEN)"
-export LM_STUDIO_API_BASE="http://127.0.0.1:1234/v1"
-export LM_STUDIO_API_KEY="$(keychain_secret LMSTUDIO_API_KEY)"
-
-export OPENAI_API_KEY="$(keychain_secret OPENAI_API_KEY)"
-export OPENAI_BASE_URL="http://127.0.0.1:1234/v1"
-export OPENAI_MODEL="qwen3-4b-instruct-2507"
-
-export OPENROUTER_KEY="$(keychain_secret OPENROUTER_KEY)"
-export OPENROUTER_API_KEY="$(keychain_secret OPENROUTER_KEY)"
-
-# export OPENCLAW_GATEWAY_PORT="18790"
-# export OPENCLAW_GATEWAY_URL="http://127.0.0.1:${OPENCLAW_GATEWAY_PORT}"
-# export OPENCLAW_GATEWAY_TOKEN="$(keychain_secret OPENCLAW_GATEWAY_TOKEN)"
-
-export CLOUDFLARE_AUTHTOKEN="$(keychain_secret CLOUDFLARE_AUTHTOKEN)"
-export CLOUDINARY_API_SECRET="$(keychain_secret CLOUDINARY_API_SECRET)"
-
-export FIGMA_API_KEY="$(keychain_secret FIGMA_API_KEY)"
-export GEMINI_API_KEY="$(keychain_secret GEMINI_API_KEY)"
 export GITHUB_API_KEY="$(keychain_secret GITHUB_API_KEY)"
-# export GITHUB_PAT="$(keychain_secret GITHUB_PAT)"
-export GROQ_API_KEY="$(keychain_secret GROQ_API_KEY)"
+export GITHUB_PAT="$(keychain_secret GITHUB_PAT)"
 
-export HUGGINGFACE_API_KEY="$(keychain_secret HUGGINGFACE_API_KEY)"
-export NETLIFY_AUTH_TOKEN="$(keychain_secret NETLIFY_AUTH_TOKEN)"
-export NGROK_AUTHTOKEN="$(keychain_secret NGROK_AUTHTOKEN)"
-export OLLAMA_API_KEY="$(keychain_secret OLLAMA_API_KEY)"
-export PUBLIC_CLOUDINARY_API_KEY="$(keychain_secret PUBLIC_CLOUDINARY_API_KEY)"
+# PromptHub (PH) Project: Reverse Proxy Router, Local MPC Server, and Tools Management Bridge
+export LM_API_TOKEN="$(keychain_secret LM_API_TOKEN)" # <-- Inactive LM Studio Token
+export PH_API_TOKEN="$(keychain_secret PH_API_TOKEN)" # <-- Active PromptHub-Router Token
+export PH_HF_TOKEN="$(keychain_secret HUGGINGFACE_API_KEY)"
+export PH_ROUTER_URL="http://127.0.0.1:9090"
+export PH_DAEMON_MODEL="qwen3-4b-instruct-2507" # <-- always-on runs from the router (TBD: switch to Qwopus3.5 v3)
 
+# Hugging Face --> Used for fetching models and calling Hugging Face APIs directly (e.g. for embeddings)
+export HUGGINGFACE_API_KEY="${PH_HF_TOKEN}"
+export HF_TOKEN="${PH_HF_TOKEN}"
 
-# -----------------------------------------------------------------------------
-# SuperCoder Agent Settings
-# -----------------------------------------------------------------------------
+# OpenAI-compatible Endpoints --> PH Router to LM Studio (or other providers)
+export OPENAI_API_KEY="${PH_API_TOKEN}"
+export OPENAI_BASE_URL="http://127.0.0.1:9090/v1"
+export OPENAI_MODEL="${PH_DAEMON_MODEL}"
 
-# Default model for everyday coding.
-export SUPERCODER_API_KEY="${LM_STUDIO_API_KEY}"
-export SUPERCODER_BASE_URL="${LM_STUDIO_API_BASE}"
-export SUPERCODER_MODEL="qwen2.5-coder-7b-instruct"
+# OpenRouter --> PH cloud fallback testing
+export OPENROUTER_API_KEY="$(keychain_secret OPENROUTER_KEY)"
+export OPENROUTER_BASE_URL="https://openrouter.ai/api/v1"
+export OPENROUTER_MODEL="openrouter/free"
 
-# Quick model presets.
-alias supercoder-min='SUPERCODER_MODEL=qwen2.5-coder-3b-instruct supercoder'
-alias supercoder-mid='SUPERCODER_MODEL=qwen2.5-coder-7b-instruct supercoder'
-alias supercoder-max='SUPERCODER_MODEL=qwen2.5-coder-14b-instruct supercoder'
+# LM Studio --> Direct Local Connection to LLM Host Provider (bypassing the router; used for testing and fallback)
+export LM_STUDIO_API_KEY="$(keychain_secret LMSTUDIO_API_KEY)"
+export LM_STUDIO_API_URL="http://127.0.0.1:1234/v1"
+export LM_STUDIO_MODEL="${PH_DAEMON_MODEL}"
 
-
-# -----------------------------------------------------------------------------
-# Optional Ollama environment
-# -----------------------------------------------------------------------------
-
+# Ollama MacOS App --> Alternative Local LLM Host Provider
 # export OLLAMA_HOST="http://127.0.0.1:11434"
 # export OLLAMA_MODELS="${HOME}/.ollama/models"
 # export OLLAMA_TMPDIR="${HOME}/.ollama/cache"
-export OLLAMA_ORIGINS="app://obsidian.md*,chrome-extension://*,*"
-export OLLAMA_KV_CACHE_TYPE="q8_0"
-export OLLAMA_KEEP_ALIVE=600
+export OLLAMA_API_KEY="$(keychain_secret OLLAMA_API_KEY)"
+export OLLAMA_ORIGINS="chrome-extension://*,app://*,https://*"
 export OLLAMA_INVOCATION="${OLLAMA_INVOCATION:-stdin}"
-export OLLAMA_FLASH_ATTENTION="1"
 export OLLAMA_ENABLE_STREAM="${OLLAMA_ENABLE_STREAM:-true}"
-export OLLAMA_DEBUG=1
+export OLLAMA_FLASH_ATTENTION="1"
+export OLLAMA_KV_CACHE_TYPE="q8_0"
+export OLLAMA_KEEP_ALIVE="1800"
+export OLLAMA_NUM_PARALLEL="1" # Raise to 2 for 7B–14B models
+export OLLAMA_MAX_LOADED_MODELS="1"
+export OLLAMA_DEBUG="0"
+
+# Alternative AI Providers
+export GEMINI_API_KEY="$(keychain_secret GEMINI_API_KEY)"
+# export GROQ_API_KEY="$(keychain_secret GROQ_API_KEY)"
+
+# Other Hosting service tokens (only set these if you use them in your projects)
+export CLOUDFLARE_AUTHTOKEN="$(keychain_secret CLOUDFLARE_AUTHTOKEN)"
+# export PUBLIC_CLOUDINARY_API_KEY="$(keychain_secret PUBLIC_CLOUDINARY_API_KEY)"
+# export CLOUDINARY_API_SECRET="$(keychain_secret CLOUDINARY_API_SECRET)"
+# export NETLIFY_AUTH_TOKEN="$(keychain_secret NETLIFY_AUTH_TOKEN)"
+# export NGROK_AUTHTOKEN="$(keychain_secret NGROK_AUTHTOKEN)"
+
+# Optional API keys for tools (uncomment if you use them in your workflows)
+# export FIGMA_API_KEY="$(keychain_secret FIGMA_API_KEY)"
 
 
 # -----------------------------------------------------------------------------
@@ -173,8 +175,8 @@ export OLLAMA_DEBUG=1
 # -----------------------------------------------------------------------------
 
 # Shortcuts
-alias zsh='source ~/.shell_common.sh && source ~/.zshrc'
-alias bash='source ~/.shell_common.sh && source ~/.bashrc'
+alias load-zsh='source ~/.shell_common.sh && source ~/.zshrc'
+alias load-bash='source ~/.shell_common.sh && source ~/.bashrc'
 
 # Local image generation helper
 alias imagine='python ~/comfyui/user/scripts/ollama_drawthings_generate.py'
