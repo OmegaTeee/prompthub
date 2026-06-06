@@ -145,8 +145,8 @@
     "applescript-mcp": {
       "package": "@peakmojo/applescript-mcp",
       "transport": "stdio",
-      "command": "/opt/homebrew/bin/applescript-mcp",
-      "args": [],
+      "command": "node",
+      "args": ["./mcps/node_modules/@peakmojo/applescript-mcp/server.js"],
       "env": {},
       "auto_start": false,
       "restart_on_failure": true,
