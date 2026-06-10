@@ -77,3 +77,6 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME/bin:$PATH" ;;
 esac
 # pnpm end
+
+# OpenClaw Completion
+[ -f "/Users/visualval/.openclaw/completions/openclaw.zsh" ] && source "/Users/visualval/.openclaw/completions/openclaw.zsh"

@@ -26,11 +26,6 @@
 - [ ] Support `response_format` passthrough; add `response_format` to `ChatCompletionRequest`, preserve and forward it in `app/router/openai_compat/router.py`, extend `LLMClient.chat_completion()` in `app/router/enhancement/llm_client.py` to accept passthrough options, add tests for `json_object` and `json_schema`, and document backend compatibility and fallback behavior.
 - [ ] Audit dropped OpenAI-compatible fields; review whether `frequency_penalty`, `presence_penalty`, `user`, and Responses API structured-output fields should also pass through consistently.
 
-### Review MCPs folder and README
-
-- [ ] Add [algonius-browser](https://github.com/algonius/algonius-browser) server as a lightweight CDP bridge to replace `@browsermcp/mcp` (`stdio`, `auto_start=true`).
-- [ ] Uninstall `@browsermcp/mcp` and remove it from `mcp-servers.json` and bridge configs.
-- [ ] Set the default auto-start servers to: `memory`, `context7`, `sequential-thinking`, `desktop-commander`, `perplexity-comet`, `algonius-browser`.
 
 ## Next
 

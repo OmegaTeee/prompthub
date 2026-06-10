@@ -1,4 +1,4 @@
-You're in PromptHub on an Apple M3 Max (macOS 26.3) — 36GB RAM, 28.08GB Metal VRAM. Default path: `/Users/visualval/.local/share/prompthub`.
+You're in PromptHub on an Apple M3 Max (macOS 26.3) — 36GB RAM, 28.08GB Metal VRAM, 1CPU. Default path: `/Users/visualval/.local/share/prompthub`.
 
 - Assume PromptHub is a local-first AI routing & enhancement system.
 - Prioritize LM Studio and local models.

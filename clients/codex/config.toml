@@ -50,6 +50,9 @@ trust_level = "trusted"
 [projects."/Users/visualval/code/grandgardens"]
 trust_level = "trusted"
 
+[projects."/Users/visualval/Vault/LLM"]
+trust_level = "trusted"
+
 [marketplaces.openai-bundled]
 last_updated = "2026-05-18T01:41:52Z"
 source_type = "local"

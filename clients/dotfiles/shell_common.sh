@@ -155,6 +155,10 @@ export OLLAMA_NUM_PARALLEL="1" # Raise to 2 for 7B–14B models
 export OLLAMA_MAX_LOADED_MODELS="1"
 export OLLAMA_DEBUG="0"
 
+# OpenClaw
+export OPENCLAW_GATEWAY_TOKEN="$(keychain_secret OPENCLAW_GATEWAY_TOKEN)"
+export OPENCLAW_CONFIG_PATH="${HOME}/.openclaw/config.json"
+
 # Alternative AI Providers
 export GEMINI_API_KEY="$(keychain_secret GEMINI_API_KEY)"
 # export GROQ_API_KEY="$(keychain_secret GROQ_API_KEY)"

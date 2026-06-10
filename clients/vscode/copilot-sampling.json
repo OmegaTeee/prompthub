@@ -2,8 +2,26 @@
   "github-copilot-global-sampling-config": {
     "alwaysAllow": true,
     "allowedModels": [
-      "auto"
-    ]
+      "gpt-5-mini",
+      "raptor-mini"
+    ],
+    "defaults": {
+      "maxSuggestionTokens": 128,
+      "maxCommitMessageTokens": 60,
+      "temperature": 0.25
+    },
+    "perModel": {
+      "gpt-5-mini": {
+        "maxSuggestionTokens": 120,
+        "maxCommitMessageTokens": 48,
+        "temperature": 0.2
+      },
+      "raptor-mini": {
+        "maxSuggestionTokens": 80,
+        "maxCommitMessageTokens": 32,
+        "temperature": 0.2
+      }
+    }
   },
   "fetch": {
     "alwaysAllow": true

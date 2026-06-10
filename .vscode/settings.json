@@ -2,7 +2,7 @@
   // ── Python environment ──────────────────────────────────
   // The project lives in app/ with its own venv
   "python.defaultInterpreterPath": "${workspaceFolder}/app/.venv/bin/python",
-  "python.envFile": "${workspaceFolder}/app/.env",
+  "python.envFile": "${workspaceFolder}/app",
   "python-envs.pythonProjects": [
     {
       "path": "${workspaceFolder}/app/",
@@ -31,6 +31,12 @@
     "-q"
   ],
   // ── Formatting & linting (ruff) ─────────────────────────
+  "djlint.pythonPath": "app/.venv/bin/python",
+  "djlint.configuration": "app/.djlintrc",
+  "[jinja-html]": {
+    "editor.defaultFormatter": "monosans.djlint"
+  },
+  "pylint.cwd": "${workspaceFolder}/app/",
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
@@ -44,7 +50,11 @@
   "terminal.integrated.cwd": "${workspaceFolder}/app",
   "terminal.integrated.inheritEnv": true,
   "terminal.integrated.enablePersistentSessions": true,
-  "terminal.integrated.commands": ["claude", "--continue", "--fork-session"],
+  "terminal.integrated.commands": [
+    "claude",
+    "--continue",
+    "--fork-session"
+  ],
   "terminal.integrated.env.osx": {
     "PATH": "${workspaceFolder}/app/.venv/bin:${env:PATH}",
     "USERHOME": "/Users/visualval"

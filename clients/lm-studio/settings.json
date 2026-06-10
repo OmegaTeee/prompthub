@@ -98,13 +98,14 @@
   "dismissedModals": [
     "LM Link Sidebar Button Popover",
     "Trash Deletion Onboarding",
-    "mcp.json Warning"
+    "mcp.json Warning",
+    "Mobile Onboarding"
   ],
   "dismissedConversationSnackbars": [],
   "pre030ChatsMigrated": 3,
   "appPostUpdateNotificationPending": false,
   "promptWhenCommittingUnsavedChangesWithNewFields": true,
-  "enableLocalService": true,
+  "enableLocalService": false,
   "enableEngineProtocolRuntime": true,
   "cliInstalled": false,
   "useHFProxy": true,
@@ -112,7 +113,7 @@
   "hfDownloadToken": "",
   "defaultContextLength": {
     "type": "custom",
-    "value": 4096
+    "value": 8192
   },
   "appIntroAcceptedForBuild": null
 }
