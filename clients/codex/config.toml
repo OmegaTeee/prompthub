@@ -56,6 +56,9 @@ trust_level = "trusted"
 [projects."/Users/visualval/fontforge"]
 trust_level = "trusted"
 
+[projects."/Users/visualval/Vault/Scratch"]
+trust_level = "trusted"
+
 [marketplaces.openai-bundled]
 last_updated = "2026-05-18T01:41:52Z"
 source_type = "local"
@@ -68,3 +71,16 @@ source = "/Users/visualval/.cache/codex-runtimes/codex-primary-runtime/plugins/o
 
 [features]
 memories = true
+
+[model_providers.prompthub-local]
+name = "PromptHub local"
+base_url = "http://127.0.0.1:9090/v1"
+env_key = "PROMPTHUB_VAULT_KEY"
+wire_api = "responses"
+
+# vault-writer profile lives in ~/.codex/vault-writer.config.toml
+# (codex >=0.134 requires per-profile config files; [profiles.X] tables in the
+#  base config are rejected). Source of truth: clients/codex/vault-writer.config.toml
+# model = "qwen3-coder-30b-a3b-instruct"
+# model_provider = "prompthub-local"
+# model_reasoning_effort = "low"

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# vault-codex — run codex (vault-writer profile) in a vault (default: Scratch sandbox)
+set -euo pipefail
+VAULT="${1:-$HOME/Vault/Scratch}"
+[ "$VAULT" = "--llm" ] && VAULT="$HOME/Vault/LLM"
+export PROMPTHUB_VAULT_KEY=sk-prompthub-vault-writer-001
+cd "$VAULT"
+exec codex --profile vault-writer
