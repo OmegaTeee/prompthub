@@ -31,7 +31,6 @@
     "-q"
   ],
   // ── Formatting & linting (ruff) ─────────────────────────
-  "djlint.pythonPath": "app/.venv/bin/python",
   "djlint.configuration": "app/.djlintrc",
   "[jinja-html]": {
     "editor.defaultFormatter": "monosans.djlint"
