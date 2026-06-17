@@ -198,3 +198,8 @@ alias prompthub-logs='tail -f ~/prompthub/logs/router-stderr.log'
 prompthub-keys() {
   (cd "${HOME}/prompthub/app" && source .venv/bin/activate && python scripts/manage-keys.py "$@")
 }
+
+# --- vault-writer: local-model OKF doc agents (default vault: ~/Vault/Scratch; pass --llm for ~/Vault/LLM) ---
+alias vault-goose="${HOME}/prompthub/clients/vault-writer/vault-goose"
+alias vault-aider="${HOME}/prompthub/clients/vault-writer/vault-aider"
+alias vault-codex="${HOME}/prompthub/clients/vault-writer/vault-codex"
