@@ -1,0 +1,36 @@
+# clients/goose/config.yaml
+GOOSE_PROVIDER: openai
+GOOSE_MODEL: qwen3-coder-30b-a3b-instruct
+# Route model calls through PromptHub /v1 (audit + privacy), enhance disabled via the key below
+OPENAI_HOST: http://127.0.0.1:9090
+OPENAI_BASE_PATH: v1/chat/completions
+OPENAI_TIMEOUT: '600'
+
+extensions:
+  developer:
+    enabled: true
+    type: platform
+    name: developer
+    bundled: true
+    available_tools: []
+  todo:
+    enabled: true
+    type: platform
+    name: todo
+    bundled: true
+    available_tools: []
+  prompthub-bridge:
+    enabled: true
+    type: stdio
+    name: prompthub-bridge
+    cmd: node
+    args:
+      - /Users/visualval/prompthub/mcps/prompthub-bridge.js
+    timeout: 300
+    envs:
+      AUTHORIZATION: Bearer sk-prompthub-vault-writer-001
+      CLIENT_NAME: vault-writer
+      PROMPTHUB_URL: http://127.0.0.1:9090
+      SERVERS: memory,sequential-thinking,desktop-commander,context7
+    bundled: false
+    available_tools: []
