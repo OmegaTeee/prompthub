@@ -21,6 +21,7 @@ from router.openai_compat.models import (
     ChatCompletionRequest,
     ResponsesRequest,
 )
+from router.openai_compat import router as router_module
 from router.openai_compat.router import (
     _build_responses_response,
     _find_last_user_message,
@@ -1160,6 +1161,90 @@ class TestResponsesEndpoint:
         assert fc_outputs, "function_call missing from completed output"
         assert fc_outputs[0]["call_id"] == "call_abc"
         assert fc_outputs[0]["name"] == "write_file"
+
+    def test_responses_stream_emits_created_before_model_awaited(self, client):
+        """The first SSE chunk (response.created) is emitted BEFORE the model
+        completion is awaited.
+
+        This is the latency-bug regression test. Previously the handler awaited
+        the full completion before the streaming generator emitted any byte, so
+        time-to-first-byte == total time and slow backends timed out clients.
+
+        Asserts via call-order instrumentation: a shared `order` list records
+        when `response.created` is built (`sse:response.created`) and when the
+        upstream `chat_completion` is awaited (`chat_completion`). The created
+        event must be recorded first.
+        """
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        order: list[str] = []
+
+        async def _record_chat(*args, **kwargs):
+            order.append("chat_completion")
+            return ChatCompletionResponse(
+                id="chatcmpl-order",
+                object="chat.completion",
+                created=1700000000,
+                model="gemma-3-4b",
+                choices=[
+                    ChatCompletionChoice(
+                        index=0,
+                        message=ChatMessage(role="assistant", content="hi"),
+                        finish_reason="stop",
+                    )
+                ],
+                usage={
+                    "prompt_tokens": 1,
+                    "completion_tokens": 1,
+                    "total_tokens": 2,
+                },
+            )
+
+        real_sse_event = router_module._sse_event
+
+        def _record_sse(event_type, data):
+            order.append(f"sse:{event_type}")
+            return real_sse_event(event_type, data)
+
+        with (
+            patch(
+                "router.openai_compat.router.LLMClient.chat_completion",
+                new=_record_chat,
+            ),
+            patch(
+                "router.openai_compat.router._sse_event",
+                new=_record_sse,
+            ),
+        ):
+            response = client.post(
+                "/v1/responses",
+                json={"model": "gemma-3-4b", "input": "Hi", "stream": True},
+                headers={
+                    "Authorization": "Bearer sk-prompthub-passthrough-def456"
+                },
+            )
+
+        assert response.status_code == 200, response.text
+
+        # response.created must be recorded BEFORE the model is awaited.
+        assert "sse:response.created" in order, order
+        assert "chat_completion" in order, order
+        created_idx = order.index("sse:response.created")
+        awaited_idx = order.index("chat_completion")
+        assert created_idx < awaited_idx, (
+            f"response.created (idx {created_idx}) was not emitted before "
+            f"chat_completion was awaited (idx {awaited_idx}): {order}"
+        )
+
+        # And the stream is well-formed: exactly one response.created event,
+        # ending with [DONE].
+        body = response.text
+        assert body.count("event: response.created\n") == 1, body
+        assert body.rstrip().endswith("data: [DONE]")
 
     @patch("router.openai_compat.router.LLMClient.chat_completion")
     def test_responses_forwards_tools(self, mock_chat, client):

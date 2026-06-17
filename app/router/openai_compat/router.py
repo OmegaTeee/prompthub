@@ -412,15 +412,91 @@ def create_openai_compat_router(
         messages = _translate_responses_to_messages(body.input, body.instructions)
         messages = await _maybe_enhance(messages, request, api_key)
 
-        # Forward to LLM server
+        model = body.model
+        temperature = (
+            body.temperature if body.temperature is not None else 0.7
+        )
+        max_tokens = body.max_output_tokens
+        chat_tools = _responses_tools_to_chat(body.tools)
+        chat_tool_choice = _responses_tool_choice_to_chat(body.tool_choice)
+
+        # --- Streaming response ---
+        # Emit `response.created` IMMEDIATELY (before awaiting the model) so the
+        # client sees the stream is live and won't time out / reconnect on slow
+        # backends. The model is awaited inside the generator, after the first
+        # byte has gone out.
+        if body.stream:
+            resp_id = f"resp_{uuid.uuid4().hex[:24]}"
+
+            async def _stream_responses_live():
+                # 1. First byte: response.created (model not yet awaited).
+                yield _response_created_event(resp_id, model)
+
+                # 2. Await the completion. Errors here can't raise out of the
+                #    generator (the response has already started) — emit a
+                #    terminal SSE error event instead.
+                try:
+                    completion = await _llm_client.chat_completion(
+                        model=model,
+                        messages=messages,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                        tools=chat_tools,
+                        tool_choice=chat_tool_choice,
+                    )
+                    if breaker:
+                        breaker.record_success()
+                    audit_event(
+                        event_type="openai_proxy",
+                        action="responses",
+                        resource_type="llm",
+                        resource_name=model,
+                        status="success",
+                        stream=True,
+                    )
+                except (LLMConnectionError, LLMError, httpx.HTTPError) as e:
+                    if breaker:
+                        breaker.record_failure(e)
+                    logger.error(
+                        "Streaming /responses error for model=%s: %s", model, e
+                    )
+                    audit_event(
+                        event_type="openai_proxy",
+                        action="responses",
+                        resource_type="llm",
+                        resource_name=model,
+                        status="failed",
+                        error=str(e),
+                    )
+                    yield _sse_event("error", {"error": {"message": str(e)}})
+                    yield "data: [DONE]\n\n"
+                    return
+
+                # 3. Remaining events (created already emitted above).
+                resp_dict = completion.model_dump()
+                async for chunk in _stream_responses(
+                    resp_dict, model, emit_created=False, resp_id=resp_id
+                ):
+                    yield chunk
+
+            return StreamingResponse(
+                _stream_responses_live(),
+                media_type="text/event-stream",
+                headers={
+                    "Cache-Control": "no-cache",
+                    "X-Accel-Buffering": "no",
+                },
+            )
+
+        # --- Non-streaming response ---
         try:
             response = await _llm_client.chat_completion(
-                model=body.model,
+                model=model,
                 messages=messages,
-                temperature=body.temperature if body.temperature is not None else 0.7,
-                max_tokens=body.max_output_tokens,
-                tools=_responses_tools_to_chat(body.tools),
-                tool_choice=_responses_tool_choice_to_chat(body.tool_choice),
+                temperature=temperature,
+                max_tokens=max_tokens,
+                tools=chat_tools,
+                tool_choice=chat_tool_choice,
             )
             if breaker:
                 breaker.record_success()
@@ -429,24 +505,12 @@ def create_openai_compat_router(
                 event_type="openai_proxy",
                 action="responses",
                 resource_type="llm",
-                resource_name=body.model,
+                resource_name=model,
                 status="success",
-                stream=body.stream,
+                stream=False,
             )
 
-            resp_dict = response.model_dump()
-
-            if body.stream:
-                return StreamingResponse(
-                    _stream_responses(resp_dict, body.model),
-                    media_type="text/event-stream",
-                    headers={
-                        "Cache-Control": "no-cache",
-                        "X-Accel-Buffering": "no",
-                    },
-                )
-
-            return _build_responses_response(resp_dict)
+            return _build_responses_response(response.model_dump())
 
         except (LLMConnectionError, LLMError, httpx.HTTPError) as e:
             _handle_llm_error(e, breaker, "responses", body.model)
@@ -462,22 +526,13 @@ def _sse_event(event_type: str, data: dict) -> str:
     return f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
 
 
-async def _stream_responses(resp: dict, model: str):
-    """Yield an OpenAI Responses API SSE event sequence from a completed chat.
+def _response_created_event(resp_id: str, model: str) -> str:
+    """Build the `response.created` SSE event (status in_progress, empty output).
 
-    `resp` is the dict from LLMClient.chat_completion(...).model_dump(). Emits a
-    buffered (non-incremental) event stream: text content is delivered as a
-    single delta, and any tool_calls become function_call items.
+    Emitted immediately when a stream opens — before the model is awaited — so
+    streaming clients see the connection is live and don't time out / reconnect.
     """
-    choices = resp.get("choices") or []
-    message = choices[0].get("message", {}) if choices else {}
-    text = message.get("content") or ""
-    tool_calls = message.get("tool_calls") or []
-
-    resp_id = f"resp_{uuid.uuid4().hex[:24]}"
-
-    # response.created
-    yield _sse_event(
+    return _sse_event(
         "response.created",
         {
             "type": "response.created",
@@ -490,6 +545,37 @@ async def _stream_responses(resp: dict, model: str):
             },
         },
     )
+
+
+async def _stream_responses(
+    resp: dict,
+    model: str,
+    *,
+    emit_created: bool = True,
+    resp_id: str | None = None,
+):
+    """Yield an OpenAI Responses API SSE event sequence from a completed chat.
+
+    `resp` is the dict from LLMClient.chat_completion(...).model_dump(). Emits a
+    buffered (non-incremental) event stream: text content is delivered as a
+    single delta, and any tool_calls become function_call items.
+
+    When `emit_created` is False the leading `response.created` event is skipped
+    (the live streaming path emits it up front, before awaiting the model, and
+    passes its pre-generated `resp_id` so the id stays consistent across
+    `response.created` and `response.completed`).
+    """
+    choices = resp.get("choices") or []
+    message = choices[0].get("message", {}) if choices else {}
+    text = message.get("content") or ""
+    tool_calls = message.get("tool_calls") or []
+
+    if resp_id is None:
+        resp_id = f"resp_{uuid.uuid4().hex[:24]}"
+
+    # response.created
+    if emit_created:
+        yield _response_created_event(resp_id, model)
 
     output_index = 0
 
@@ -621,12 +707,15 @@ async def _stream_responses(resp: dict, model: str):
         )
         output_index += 1
 
-    # response.completed
+    # response.completed — reuse the same resp_id as response.created so the
+    # client sees one consistent response id across the stream.
+    completed = _build_responses_response(resp)
+    completed["id"] = resp_id
     yield _sse_event(
         "response.completed",
         {
             "type": "response.completed",
-            "response": _build_responses_response(resp),
+            "response": completed,
         },
     )
     yield "data: [DONE]\n\n"
