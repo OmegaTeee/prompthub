@@ -1325,3 +1325,247 @@ class TestBuildResponsesEdgeCases:
             "model": "m",
         })
         assert result["usage"] is None
+
+
+# =============================================================================
+# Per-Model Circuit Breaker Isolation Tests
+# =============================================================================
+
+
+class TestPerModelCircuitBreakerIsolation:
+    """The OpenAI-compat proxy must isolate the circuit breaker per model.
+
+    Regression: a single shared "llm-proxy" breaker meant that repeated
+    upstream failures for one (e.g. nonexistent) model would OPEN the breaker
+    and 503 every other client/model. Each model must get its own breaker keyed
+    as "llm-proxy:<model>" so one bad model can't DoS the others.
+    """
+
+    AUTH = {"Authorization": "Bearer sk-prompthub-passthrough-def456"}
+
+    def _real_breaker_app(self, api_key_manager, mock_enhancement_service):
+        """Build a test app backed by a REAL CircuitBreakerRegistry."""
+        from router.resilience.circuit_breaker import CircuitBreakerRegistry
+
+        registry = CircuitBreakerRegistry()
+        app = FastAPI()
+        router = create_openai_compat_router(
+            enhancement_service=lambda: mock_enhancement_service,
+            circuit_breakers=lambda: registry,
+            api_key_manager=api_key_manager,
+            llm_base_url="http://localhost:1234/v1",
+            llm_timeout=30.0,
+        )
+        app.include_router(router)
+        return app, registry
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_bad_model_does_not_open_breaker_for_good_model(
+        self, mock_chat, api_key_manager, mock_enhancement_service
+    ):
+        """Failures on model A must not trip the breaker for model B."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+            LLMError,
+        )
+
+        app, registry = self._real_breaker_app(
+            api_key_manager, mock_enhancement_service
+        )
+        test_client = TestClient(app)
+
+        # Drive enough upstream failures for model A to OPEN its breaker.
+        # Each upstream failure yields 502; once the failure threshold is
+        # crossed the breaker opens and subsequent requests fail fast with 503.
+        mock_chat.side_effect = LLMError("upstream 400: no such model")
+        for _ in range(5):
+            resp = test_client.post(
+                "/v1/chat/completions",
+                json={
+                    "model": "gpt-5.4-mini",
+                    "messages": [{"role": "user", "content": "hi"}],
+                },
+                headers=self.AUTH,
+            )
+            assert resp.status_code in (502, 503), resp.text
+
+        # Model A's breaker is now OPEN; a further request fails fast with 503.
+        resp_a = test_client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "gpt-5.4-mini",
+                "messages": [{"role": "user", "content": "hi"}],
+            },
+            headers=self.AUTH,
+        )
+        assert resp_a.status_code == 503, resp_a.text
+
+        # Model B must be unaffected — it reaches the mocked client (200), not 503.
+        mock_chat.side_effect = None
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-ok",
+            object="chat.completion",
+            created=1700000000,
+            model="qwen3-4b-instruct-2507",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="hi"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+        )
+        resp_b = test_client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "qwen3-4b-instruct-2507",
+                "messages": [{"role": "user", "content": "hi"}],
+            },
+            headers=self.AUTH,
+        )
+        assert resp_b.status_code == 200, resp_b.text
+
+    def test_breaker_name_is_model_scoped_on_chat(
+        self, api_key_manager, mock_enhancement_service
+    ):
+        """The breaker name requested is 'llm-proxy:<model>' on /chat/completions."""
+        registry = MagicMock()
+        breaker = MagicMock()
+        breaker.check.return_value = None
+        registry.get.return_value = breaker
+
+        app = FastAPI()
+        router = create_openai_compat_router(
+            enhancement_service=lambda: mock_enhancement_service,
+            circuit_breakers=lambda: registry,
+            api_key_manager=api_key_manager,
+            llm_base_url="http://localhost:1234/v1",
+            llm_timeout=30.0,
+        )
+        app.include_router(router)
+        test_client = TestClient(app)
+
+        with patch("router.openai_compat.router.LLMClient.chat_completion") as mc:
+            from router.enhancement.llm_client import (
+                ChatCompletionChoice,
+                ChatCompletionResponse,
+                ChatMessage,
+            )
+
+            mc.return_value = ChatCompletionResponse(
+                id="x",
+                object="chat.completion",
+                created=1,
+                model="model-a",
+                choices=[
+                    ChatCompletionChoice(
+                        index=0,
+                        message=ChatMessage(role="assistant", content="hi"),
+                        finish_reason="stop",
+                    )
+                ],
+                usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+            )
+            test_client.post(
+                "/v1/chat/completions",
+                json={
+                    "model": "model-a",
+                    "messages": [{"role": "user", "content": "hi"}],
+                },
+                headers=self.AUTH,
+            )
+            test_client.post(
+                "/v1/chat/completions",
+                json={
+                    "model": "model-b",
+                    "messages": [{"role": "user", "content": "hi"}],
+                },
+                headers=self.AUTH,
+            )
+
+        names = [c.args[0] for c in registry.get.call_args_list]
+        assert "llm-proxy:model-a" in names
+        assert "llm-proxy:model-b" in names
+
+    def test_breaker_name_is_model_scoped_on_responses(
+        self, api_key_manager, mock_enhancement_service
+    ):
+        """The breaker name requested is 'llm-proxy:<model>' on /responses."""
+        registry = MagicMock()
+        breaker = MagicMock()
+        breaker.check.return_value = None
+        registry.get.return_value = breaker
+
+        app = FastAPI()
+        router = create_openai_compat_router(
+            enhancement_service=lambda: mock_enhancement_service,
+            circuit_breakers=lambda: registry,
+            api_key_manager=api_key_manager,
+            llm_base_url="http://localhost:1234/v1",
+            llm_timeout=30.0,
+        )
+        app.include_router(router)
+        test_client = TestClient(app)
+
+        with patch("router.openai_compat.router.LLMClient.chat_completion") as mc:
+            from router.enhancement.llm_client import (
+                ChatCompletionChoice,
+                ChatCompletionResponse,
+                ChatMessage,
+            )
+
+            mc.return_value = ChatCompletionResponse(
+                id="x",
+                object="chat.completion",
+                created=1,
+                model="resp-model",
+                choices=[
+                    ChatCompletionChoice(
+                        index=0,
+                        message=ChatMessage(role="assistant", content="hi"),
+                        finish_reason="stop",
+                    )
+                ],
+                usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+            )
+            test_client.post(
+                "/v1/responses",
+                json={"model": "resp-model", "input": "Hello"},
+                headers=self.AUTH,
+            )
+
+        names = [c.args[0] for c in registry.get.call_args_list]
+        assert "llm-proxy:resp-model" in names
+
+
+# =============================================================================
+# /v1/models Response Shape Tests
+# =============================================================================
+
+
+class TestListModelsResponseShape:
+    """GET /v1/models must expose both `data` and `models` keys.
+
+    Regression: codex-cli's model manager fails to decode the response with
+    "missing field `models`". We add a top-level `models` field mirroring
+    `data` (keeping `data` for backward compatibility).
+    """
+
+    @patch("router.openai_compat.router.LLMClient.list_models")
+    def test_models_response_has_both_data_and_models(self, mock_list, client):
+        """Response contains `data` and `models`, both equal to the model list."""
+        known = [
+            {"id": "qwen3-4b-instruct-2507", "object": "model"},
+            {"id": "gemma-3-4b", "object": "model"},
+        ]
+        mock_list.return_value = known
+
+        response = client.get("/v1/models")
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["object"] == "list"
+        assert body["data"] == known
+        assert body["models"] == known

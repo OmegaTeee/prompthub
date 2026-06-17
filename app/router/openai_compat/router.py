@@ -213,9 +213,10 @@ def create_openai_compat_router(
                 },
             )
 
-        # Circuit breaker check
+        # Circuit breaker check (isolated per model so one bad model name
+        # can't trip the breaker for every other model/client).
         cb_registry = circuit_breakers()
-        breaker = cb_registry.get("llm-proxy") if cb_registry else None
+        breaker = cb_registry.get(f"llm-proxy:{body.model}") if cb_registry else None
         if breaker:
             try:
                 breaker.check()
@@ -307,7 +308,7 @@ def create_openai_compat_router(
         """
         try:
             models = await _llm_client.list_models()
-            return {"object": "list", "data": models}
+            return {"object": "list", "data": models, "models": models}
         except Exception as e:
             raise HTTPException(
                 status_code=502,
@@ -381,9 +382,10 @@ def create_openai_compat_router(
                 },
             )
 
-        # Circuit breaker check
+        # Circuit breaker check (isolated per model so one bad model name
+        # can't trip the breaker for every other model/client).
         cb_registry = circuit_breakers()
-        breaker = cb_registry.get("llm-proxy") if cb_registry else None
+        breaker = cb_registry.get(f"llm-proxy:{body.model}") if cb_registry else None
         if breaker:
             try:
                 breaker.check()
