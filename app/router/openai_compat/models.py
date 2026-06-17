@@ -13,7 +13,7 @@ class ChatCompletionRequest(BaseModel):
     """
 
     model: str
-    messages: list[dict[str, str]]
+    messages: list[dict[str, Any]]
     temperature: float = 0.7
     max_tokens: int | None = None
     stream: bool = False
@@ -22,6 +22,8 @@ class ChatCompletionRequest(BaseModel):
     presence_penalty: float | None = None
     stop: str | list[str] | None = None
     user: str | None = None
+    tools: list[dict[str, Any]] | None = None
+    tool_choice: str | dict[str, Any] | None = None
 
 
 class ApiKeyConfig(BaseModel):

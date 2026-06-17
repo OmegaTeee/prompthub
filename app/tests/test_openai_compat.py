@@ -275,6 +275,159 @@ class TestChatCompletionRequest:
 
 
 # =============================================================================
+# Function-Calling / Tool Forwarding Tests
+# =============================================================================
+
+
+class TestToolForwarding:
+    """Function-calling params must survive the /v1/chat/completions proxy.
+
+    Regression: the proxy dropped `tools`/`tool_choice` on both the streaming
+    and non-streaming paths, so the upstream model never saw tool definitions
+    and narrated instead of emitting `tool_calls`. It also typed `messages`
+    too narrowly to accept multi-turn tool conversations.
+    """
+
+    AUTH = {"Authorization": "Bearer sk-prompthub-passthrough-def456"}
+
+    SAMPLE_TOOLS = [
+        {
+            "type": "function",
+            "function": {
+                "name": "get_weather",
+                "description": "Get the weather",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"city": {"type": "string"}},
+                    "required": ["city"],
+                },
+            },
+        }
+    ]
+
+    @patch("router.openai_compat.router._stream_with_breaker")
+    def test_streaming_forwards_tools(self, mock_stream, client):
+        """A streaming request forwards tools + tool_choice in the payload."""
+
+        async def _fake_stream(*args, **kwargs):
+            yield "data: [DONE]\n\n"
+
+        mock_stream.side_effect = _fake_stream
+
+        response = client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "qwen3-4b-instruct-2507",
+                "messages": [{"role": "user", "content": "weather in Paris?"}],
+                "stream": True,
+                "tools": self.SAMPLE_TOOLS,
+                "tool_choice": "auto",
+            },
+            headers=self.AUTH,
+        )
+        assert response.status_code == 200, response.text
+
+        # First positional arg to _stream_with_breaker is the payload dict.
+        payload = mock_stream.call_args.args[0]
+        assert payload["tools"] == self.SAMPLE_TOOLS
+        assert payload["tool_choice"] == "auto"
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_non_streaming_forwards_tools_and_relays_tool_calls(
+        self, mock_chat, client
+    ):
+        """Non-streaming path passes tools upstream and relays tool_calls back."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        tool_calls = [
+            {
+                "id": "call_abc",
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "arguments": '{"city": "Paris"}',
+                },
+            }
+        ]
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-test",
+            object="chat.completion",
+            created=1700000000,
+            model="qwen3-4b-instruct-2507",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(
+                        role="assistant", content=None, tool_calls=tool_calls
+                    ),
+                    finish_reason="tool_calls",
+                )
+            ],
+            usage={"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+        )
+
+        response = client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "qwen3-4b-instruct-2507",
+                "messages": [{"role": "user", "content": "weather in Paris?"}],
+                "tools": self.SAMPLE_TOOLS,
+                "tool_choice": "auto",
+            },
+            headers=self.AUTH,
+        )
+        assert response.status_code == 200, response.text
+
+        # Upstream client received the tools.
+        kwargs = mock_chat.call_args.kwargs
+        assert kwargs["tools"] == self.SAMPLE_TOOLS
+        assert kwargs["tool_choice"] == "auto"
+
+        # Response relays tool_calls and does not choke on null content.
+        body = response.json()
+        msg = body["choices"][0]["message"]
+        assert msg["content"] is None
+        assert msg["tool_calls"] == tool_calls
+
+    def test_multi_turn_tool_messages_accepted(self):
+        """Assistant tool_calls + tool-role messages validate (no 422)."""
+        req = ChatCompletionRequest(
+            model="qwen3-4b-instruct-2507",
+            messages=[
+                {"role": "user", "content": "weather in Paris?"},
+                {
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": [
+                        {
+                            "id": "call_abc",
+                            "type": "function",
+                            "function": {
+                                "name": "get_weather",
+                                "arguments": '{"city": "Paris"}',
+                            },
+                        }
+                    ],
+                },
+                {
+                    "role": "tool",
+                    "tool_call_id": "call_abc",
+                    "content": "sunny, 20C",
+                },
+            ],
+            tools=self.SAMPLE_TOOLS,
+            tool_choice="auto",
+        )
+        assert len(req.messages) == 3
+        assert req.messages[1]["tool_calls"][0]["id"] == "call_abc"
+        assert req.tools == self.SAMPLE_TOOLS
+
+
+# =============================================================================
 # Helper Function Tests
 # =============================================================================
 

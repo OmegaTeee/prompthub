@@ -33,7 +33,8 @@ class ChatMessage(BaseModel):
     """Chat message in OpenAI format."""
 
     role: str  # "system", "user", or "assistant"
-    content: str
+    content: str | None = None
+    tool_calls: list[dict[str, Any]] | None = None
 
 
 class ChatCompletionChoice(BaseModel):
@@ -178,9 +179,11 @@ class LLMClient:
     async def chat_completion(
         self,
         model: str,
-        messages: list[dict[str, str]],
+        messages: list[dict[str, Any]],
         temperature: float = 0.7,
         max_tokens: int | None = None,
+        tools: list[dict[str, Any]] | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         stream: bool = False,
     ) -> ChatCompletionResponse:
         """
@@ -214,6 +217,11 @@ class LLMClient:
         if max_tokens:
             payload["max_tokens"] = max_tokens
 
+        if tools is not None:
+            payload["tools"] = tools
+        if tool_choice is not None:
+            payload["tool_choice"] = tool_choice
+
         last_error: Exception | None = None
 
         for attempt in range(self.config.max_retries + 1):
@@ -244,7 +252,8 @@ class LLMClient:
                             index=choice.get("index", 0),
                             message=ChatMessage(
                                 role=choice.get("message", {}).get("role", "assistant"),
-                                content=choice.get("message", {}).get("content", ""),
+                                content=choice.get("message", {}).get("content"),
+                                tool_calls=choice.get("message", {}).get("tool_calls"),
                             ),
                             finish_reason=choice.get("finish_reason"),
                         )
@@ -315,7 +324,7 @@ class LLMClient:
         )
 
         if response.choices:
-            return response.choices[0].message.content
+            return response.choices[0].message.content or ""
         return ""
 
     async def __aenter__(self) -> "LLMClient":

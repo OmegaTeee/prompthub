@@ -255,6 +255,10 @@ def create_openai_compat_router(
             payload["top_p"] = body.top_p
         if body.stop is not None:
             payload["stop"] = body.stop
+        if body.tools is not None:
+            payload["tools"] = body.tools
+        if body.tool_choice is not None:
+            payload["tool_choice"] = body.tool_choice
 
         # --- Streaming response ---
         if body.stream:
@@ -275,6 +279,8 @@ def create_openai_compat_router(
                 messages=messages,
                 temperature=body.temperature,
                 max_tokens=body.max_tokens,
+                tools=body.tools,
+                tool_choice=body.tool_choice,
             )
             if breaker:
                 breaker.record_success()
