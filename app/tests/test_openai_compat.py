@@ -937,6 +937,92 @@ class TestResponsesEndpoint:
         assert response.status_code != 422, response.json()
 
     @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_stream_emits_function_call_items(self, mock_chat, client):
+        """stream=True with tool_calls emits function_call item events."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        tool_calls = [
+            {
+                "id": "call_abc",
+                "type": "function",
+                "function": {
+                    "name": "write_file",
+                    "arguments": '{"path": "a.txt", "content": "hi"}',
+                },
+            }
+        ]
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-fc",
+            object="chat.completion",
+            created=1700000000,
+            model="gemma-3-4b",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(
+                        role="assistant", content=None, tool_calls=tool_calls
+                    ),
+                    finish_reason="tool_calls",
+                )
+            ],
+            usage={"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
+        )
+
+        response = client.post(
+            "/v1/responses",
+            json={"model": "gemma-3-4b", "input": "write a file", "stream": True},
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 200, response.text
+
+        body = response.text
+        events = [
+            json.loads(line[len("data: "):])
+            for line in body.splitlines()
+            if line.startswith("data: ") and line != "data: [DONE]"
+        ]
+        by_type = {}
+        for e in events:
+            by_type.setdefault(e.get("type"), []).append(e)
+
+        # function_call item added
+        added = [
+            e
+            for e in by_type.get("response.output_item.added", [])
+            if e["item"].get("type") == "function_call"
+        ]
+        assert added, "no function_call output_item.added"
+        item = added[0]["item"]
+        assert item["call_id"] == "call_abc"
+        assert item["name"] == "write_file"
+        assert item["arguments"] == '{"path": "a.txt", "content": "hi"}'
+
+        # arguments delta + done
+        delta = by_type.get("response.function_call_arguments.delta", [])
+        assert delta and delta[0]["delta"] == '{"path": "a.txt", "content": "hi"}'
+        assert by_type.get("response.function_call_arguments.done")
+
+        # output_item.done for the function_call
+        done_fc = [
+            e
+            for e in by_type.get("response.output_item.done", [])
+            if e["item"].get("type") == "function_call"
+        ]
+        assert done_fc, "no function_call output_item.done"
+
+        # response.completed includes the function_call item in output
+        completed = by_type["response.completed"][0]
+        outputs = completed["response"]["output"]
+        fc_outputs = [o for o in outputs if o.get("type") == "function_call"]
+        assert fc_outputs, "function_call missing from completed output"
+        assert fc_outputs[0]["call_id"] == "call_abc"
+        assert fc_outputs[0]["name"] == "write_file"
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
     def test_responses_forwards_tools(self, mock_chat, client):
         """A non-stream /responses request forwards tools into chat_completion."""
         from router.enhancement.llm_client import (

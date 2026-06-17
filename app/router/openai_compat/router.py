@@ -753,14 +753,41 @@ def _build_responses_response(chat_response: dict) -> dict:
         }
 
     message = choices[0].get("message", {})
-    text = message.get("content", "")
+    text = message.get("content") or ""
+    tool_calls = message.get("tool_calls") or []
     # LM Studio uses "reasoning" (v0.3.23+), others use "reasoning_content"
     reasoning = message.get("reasoning") or message.get("reasoning_content")
 
-    content_blocks = []
-    if reasoning:
-        content_blocks.append({"type": "thinking", "thinking": reasoning})
-    content_blocks.append({"type": "output_text", "text": text})
+    output: list[dict] = []
+
+    # Emit a message item when there is text or reasoning to report. When the
+    # model only returns tool_calls (content None), skip the empty message so
+    # the output is purely function_call items.
+    if text or reasoning or not tool_calls:
+        content_blocks = []
+        if reasoning:
+            content_blocks.append({"type": "thinking", "thinking": reasoning})
+        content_blocks.append({"type": "output_text", "text": text})
+        output.append(
+            {
+                "type": "message",
+                "role": "assistant",
+                "content": content_blocks,
+            }
+        )
+
+    # Append function_call items for any tool_calls.
+    for i, call in enumerate(tool_calls):
+        fn = call.get("function", {}) if isinstance(call, dict) else {}
+        output.append(
+            {
+                "type": "function_call",
+                "id": f"fc_{i}",
+                "call_id": call.get("id", f"call_{i}"),
+                "name": fn.get("name", ""),
+                "arguments": fn.get("arguments", "") or "",
+            }
+        )
 
     # Map usage field names: prompt_tokens → input_tokens
     raw_usage = chat_response.get("usage")
@@ -777,13 +804,7 @@ def _build_responses_response(chat_response: dict) -> dict:
         "object": "response",
         "created_at": chat_response.get("created", 0),
         "model": chat_response.get("model", ""),
-        "output": [
-            {
-                "type": "message",
-                "role": "assistant",
-                "content": content_blocks,
-            }
-        ],
+        "output": output,
         "output_text": text,
         "usage": usage,
     }
