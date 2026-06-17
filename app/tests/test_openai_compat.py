@@ -26,6 +26,8 @@ from router.openai_compat.router import (
     _find_last_user_message,
     _flatten_content,
     _handle_llm_error,
+    _responses_tool_choice_to_chat,
+    _responses_tools_to_chat,
     _translate_responses_to_messages,
     create_openai_compat_router,
 )
@@ -708,6 +710,143 @@ class TestTranslateResponsesToMessages:
         assert len(messages) == 2
         assert messages[0] == {"role": "system", "content": "You are helpful"}
         assert messages[1] == {"role": "user", "content": "Hello"}
+
+
+# =============================================================================
+# Responses → Chat Completions Tool/Input Translation Tests
+# =============================================================================
+
+
+class TestResponsesToolTranslation:
+    """codex sends Responses-format (flat) tools and function_call input items.
+
+    Forwarding them unchanged to LM Studio's /v1/chat/completions produces a
+    400. These tests cover the translation helpers and their wire-up on
+    /v1/responses.
+    """
+
+    AUTH = {"Authorization": "Bearer sk-prompthub-passthrough-def456"}
+
+    FLAT_TOOL = {
+        "type": "function",
+        "name": "get_weather",
+        "description": "Get the weather",
+        "parameters": {
+            "type": "object",
+            "properties": {"city": {"type": "string"}},
+            "required": ["city"],
+        },
+        "strict": False,
+    }
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_responses_translates_flat_tools_to_nested(self, mock_chat, client):
+        """A FLAT Responses tool is forwarded in NESTED Chat-Completions shape."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-test",
+            object="chat.completion",
+            created=1700000000,
+            model="gemma-3-4b",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="ok"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+        )
+
+        response = client.post(
+            "/v1/responses",
+            json={
+                "model": "gemma-3-4b",
+                "input": "weather in Paris?",
+                "tools": [self.FLAT_TOOL],
+            },
+            headers=self.AUTH,
+        )
+        assert response.status_code == 200, response.text
+
+        tools = mock_chat.call_args.kwargs["tools"]
+        assert tools[0]["type"] == "function"
+        assert "name" not in tools[0]  # no top-level name in nested shape
+        assert tools[0]["function"]["name"] == "get_weather"
+        assert tools[0]["function"]["description"] == "Get the weather"
+        assert tools[0]["function"]["parameters"] == self.FLAT_TOOL["parameters"]
+
+    def test_responses_tools_to_chat_passthrough_and_none(self):
+        """Nested tools pass through unchanged; None returns None."""
+        assert _responses_tools_to_chat(None) is None
+
+        nested = [
+            {
+                "type": "function",
+                "function": {"name": "x", "parameters": {"type": "object"}},
+            }
+        ]
+        assert _responses_tools_to_chat(nested) == nested
+
+        out = _responses_tools_to_chat([self.FLAT_TOOL])
+        assert out[0]["function"]["name"] == "get_weather"
+        assert "name" not in out[0]
+
+    def test_responses_translates_flat_tool_choice(self):
+        """Flat tool_choice nests; strings pass through."""
+        assert _responses_tool_choice_to_chat("auto") == "auto"
+        assert _responses_tool_choice_to_chat("none") == "none"
+        assert _responses_tool_choice_to_chat("required") == "required"
+        assert _responses_tool_choice_to_chat(None) is None
+
+        flat = {"type": "function", "name": "x"}
+        assert _responses_tool_choice_to_chat(flat) == {
+            "type": "function",
+            "function": {"name": "x"},
+        }
+
+        # Already-nested tool_choice passes through.
+        nested = {"type": "function", "function": {"name": "x"}}
+        assert _responses_tool_choice_to_chat(nested) == nested
+
+    def test_responses_input_function_call_and_output_translation(self):
+        """function_call / function_call_output input items become tool messages."""
+        input_data = [
+            {"role": "user", "content": "write a file"},
+            {
+                "type": "function_call",
+                "call_id": "c1",
+                "name": "write_file",
+                "arguments": '{"path": "a.txt"}',
+            },
+            {
+                "type": "function_call_output",
+                "call_id": "c1",
+                "output": "wrote a.txt",
+            },
+        ]
+        messages = _translate_responses_to_messages(input_data, instructions=None)
+
+        assert messages[0] == {"role": "user", "content": "write a file"}
+
+        assistant = messages[1]
+        assert assistant["role"] == "assistant"
+        assert assistant["content"] is None
+        tc = assistant["tool_calls"][0]
+        assert tc["id"] == "c1"
+        assert tc["type"] == "function"
+        assert tc["function"]["name"] == "write_file"
+        assert tc["function"]["arguments"] == '{"path": "a.txt"}'
+
+        tool_msg = messages[2]
+        assert tool_msg["role"] == "tool"
+        assert tool_msg["tool_call_id"] == "c1"
+        assert tool_msg["content"] == "wrote a.txt"
 
 
 # =============================================================================

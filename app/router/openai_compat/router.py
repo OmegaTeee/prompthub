@@ -419,8 +419,8 @@ def create_openai_compat_router(
                 messages=messages,
                 temperature=body.temperature if body.temperature is not None else 0.7,
                 max_tokens=body.max_output_tokens,
-                tools=body.tools,
-                tool_choice=body.tool_choice,
+                tools=_responses_tools_to_chat(body.tools),
+                tool_choice=_responses_tool_choice_to_chat(body.tool_choice),
             )
             if breaker:
                 breaker.record_success()
@@ -696,21 +696,74 @@ def _flatten_content(content: str | list[dict]) -> str:
     return str(content)
 
 
+def _responses_tools_to_chat(
+    tools: list[dict] | None,
+) -> list[dict] | None:
+    """Translate Responses-format tools to Chat Completions shape.
+
+    Responses (codex) sends flat tools:
+        {"type": "function", "name": "X", "description": "...",
+         "parameters": {...}, "strict": false}
+    Chat Completions (LM Studio) wants them nested under "function":
+        {"type": "function", "function": {"name": "X", ...}}
+
+    Flat function tools are wrapped; tools that already carry a nested
+    "function" key pass through unchanged. Returns None if input is None.
+    """
+    if tools is None:
+        return None
+
+    translated: list[dict] = []
+    for tool in tools:
+        if (
+            isinstance(tool, dict)
+            and tool.get("type") == "function"
+            and "name" in tool
+            and "function" not in tool
+        ):
+            fn: dict[str, Any] = {"name": tool["name"]}
+            if "description" in tool:
+                fn["description"] = tool["description"]
+            if "parameters" in tool:
+                fn["parameters"] = tool["parameters"]
+            translated.append({"type": "function", "function": fn})
+        else:
+            translated.append(tool)
+    return translated
+
+
+def _responses_tool_choice_to_chat(tc: Any) -> Any:
+    """Translate a Responses-format tool_choice to Chat Completions shape.
+
+    Strings ("auto"/"none"/"required") pass through. A flat dict with a
+    top-level "name" ({"type": "function", "name": "X"}) is nested into
+    {"type": "function", "function": {"name": "X"}}. Anything else (None,
+    already-nested dicts) passes through unchanged.
+    """
+    if isinstance(tc, dict) and "name" in tc and "function" not in tc:
+        return {"type": "function", "function": {"name": tc["name"]}}
+    return tc
+
+
 def _translate_responses_to_messages(
     input_data: str | list[dict],
     instructions: str | None,
-) -> list[dict[str, str]]:
+) -> list[dict[str, Any]]:
     """Convert Responses API input + instructions to Chat Completions messages.
 
     Args:
-        input_data: String (single user message) or array of message dicts.
-            Message content may be a string or array of content blocks.
+        input_data: String (single user message) or array of input items.
+            Message items carry a string or array of content blocks. codex's
+            multi-turn loops also send `function_call` and
+            `function_call_output` items, which become assistant tool_calls and
+            tool-role messages respectively.
         instructions: Optional system prompt to prepend.
 
     Returns:
-        List of message dicts for Chat Completions API (content always string).
+        List of message dicts for Chat Completions API. Tool messages hold
+        non-str values (content None, tool_calls lists), hence dict[str, Any].
     """
-    messages: list[dict[str, str]] = []
+    messages: list[dict[str, Any]] = []
 
     if instructions:
         messages.append({"role": "system", "content": instructions})
@@ -718,11 +771,36 @@ def _translate_responses_to_messages(
     if isinstance(input_data, str):
         messages.append({"role": "user", "content": input_data})
     else:
-        for msg in input_data:
-            messages.append({
-                "role": msg.get("role", "user"),
-                "content": _flatten_content(msg.get("content", "")),
-            })
+        for item in input_data:
+            item_type = item.get("type")
+            if item_type == "function_call":
+                messages.append({
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": [
+                        {
+                            "id": item.get("call_id", ""),
+                            "type": "function",
+                            "function": {
+                                "name": item.get("name", ""),
+                                "arguments": item.get("arguments", "") or "",
+                            },
+                        }
+                    ],
+                })
+            elif item_type == "function_call_output":
+                output = item.get("output", "")
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": item.get("call_id", ""),
+                    "content": output if isinstance(output, str) else str(output),
+                })
+            else:
+                # message item (type absent or "message")
+                messages.append({
+                    "role": item.get("role", "user"),
+                    "content": _flatten_content(item.get("content", "")),
+                })
 
     return messages
 
