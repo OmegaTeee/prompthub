@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# vault-goose — run Goose as the OKF doc-writer in a vault (default: Scratch sandbox)
+set -euo pipefail
+VAULT="${1:-$HOME/Vault/Scratch}"
+[ "$VAULT" = "--llm" ] && VAULT="$HOME/Vault/LLM"
+export OPENAI_API_KEY=sk-prompthub-vault-writer-001
+export GOOSE_PROVIDER=openai
+export GOOSE_MODEL=qwen3-coder-30b-a3b-instruct
+cd "$VAULT"
+exec goose session
