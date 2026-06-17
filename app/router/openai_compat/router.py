@@ -429,6 +429,8 @@ def create_openai_compat_router(
                 messages=messages,
                 temperature=body.temperature if body.temperature is not None else 0.7,
                 max_tokens=body.max_output_tokens,
+                tools=body.tools,
+                tool_choice=body.tool_choice,
             )
             if breaker:
                 breaker.record_success()

@@ -886,6 +886,61 @@ class TestResponsesEndpoint:
         assert response.status_code != 422, response.json()
 
     @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_responses_forwards_tools(self, mock_chat, client):
+        """A non-stream /responses request forwards tools into chat_completion."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        sample_tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "description": "Get the weather",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {"city": {"type": "string"}},
+                        "required": ["city"],
+                    },
+                },
+            }
+        ]
+
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-test",
+            object="chat.completion",
+            created=1700000000,
+            model="gemma-3-4b",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="ok"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+        )
+
+        response = client.post(
+            "/v1/responses",
+            json={
+                "model": "gemma-3-4b",
+                "input": "weather in Paris?",
+                "tools": sample_tools,
+                "tool_choice": "auto",
+            },
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 200, response.text
+
+        kwargs = mock_chat.call_args.kwargs
+        assert kwargs["tools"] == sample_tools
+        assert kwargs["tool_choice"] == "auto"
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
     def test_string_input_success(self, mock_chat, client):
         """String input returns valid Responses API format."""
         from router.enhancement.llm_client import (
