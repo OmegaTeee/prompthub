@@ -20,29 +20,10 @@
 				"X-Client-Name": "vscode"
 			}
 		},
-		"skills_mcp": {
-			"name": "Skills MCP",
-			"type": "stdio",
-			"command": "npx",
-			"args": [
-				"-y",
-				"skills-mcp",
-				"-s",
-				"/Users/visualval/.claude/skills"
-			]
-		},
 		"fetch_mcp": {
 			"name": "Fetch MCP",
 			"type": "stdio",
 			"command": "mcp-server-fetch"
-		},
-		"markitdown_mcp": {
-			"name": "Markitdown MCP",
-			"type": "stdio",
-			"command": "uvx",
-			"args": [
-				"markitdown-mcp"
-			]
 		}
 	},
 	"inputs": []
