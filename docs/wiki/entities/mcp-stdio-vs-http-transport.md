@@ -9,20 +9,23 @@ This entity explains the two prevailing transport mechanisms used by
 MCP tools within PromptHub.
 
 ## Stdio
-A direct Unix domain socket or TCP connection to the Go binary.  The
-client reads from stdout/stderr and writes to stdin.  This is fast
-and has low overhead but requires a tightly coupled binary.
+The MCP server runs as a child process; JSON‑RPC messages are exchanged
+over its stdin/stdout (stderr carries logs).  No socket or network port
+is involved.  This is fast and low‑overhead but couples the server to the
+host that spawns it.
 
 ## HTTP
-A REST‑style HTTP endpoint that forwards JSON RPC calls to the Go
-binary.  It’s more flexible for remote operation and can be used
-with webhooks or cross‑process bridge libraries like
-`mcp-remote`.  The HTTP variant is chosen for long‑lived
-services and when the binary must run on a different host.
+A streamable HTTP endpoint that carries JSON‑RPC over the network.  It’s
+more flexible for remote operation and cross‑process access, and can be
+fronted by bridge libraries like `mcp-remote`.  The HTTP variant suits
+long‑lived services or when the server must run on a different host.
 
 ## Decision
-Prompthub has migrated from stdio to HTTP for most user‑facing
-services, keeping stdio only for legacy tooling.
+PromptHub runs its MCP servers over **stdio** — every entry in
+`app/configs/mcp-servers.json` uses `"transport": "stdio"`, spawned and
+supervised by the Node.js bridge (`mcps/prompthub-bridge.js`).  HTTP is
+reserved for the streamable gateway (`/mcp-direct/mcp`) and remote cases,
+not the default for user‑facing servers.
 
 ## Related
 - [[mcp-remote]] – HTTP bridge for the stdio binary.

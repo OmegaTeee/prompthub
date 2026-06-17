@@ -48,6 +48,11 @@ def main() -> None:
 
     # Move the original archive file to a staging folder instead of deleting it.
     staging_dir = args.archive_file.parent / ".to-delete"
+    if staging_dir.exists() and not staging_dir.is_dir():
+        raise SystemExit(
+            f"Error: staging path {staging_dir} exists but is not a directory. "
+            "Remove or rename it (it must be a directory containing a placeholder)."
+        )
     staging_dir.mkdir(parents=True, exist_ok=True)
     shutil.move(str(args.archive_file), str(staging_dir / args.archive_file.name))
 

@@ -41,13 +41,15 @@ path_append() {
 
 export MAGICK_HOME="/opt/homebrew"
 export AUTOTRACE="/opt/homebrew/bin/autotrace"
-export MPC_SERVER_FETCH="${HOME}/.local/pipx/venvs/mcp-server-fetch/bin/"
+export MCP_SERVER_FETCH="${HOME}/.local/pipx/venvs/mcp-server-fetch/bin/"
 export MCP_OBSIDIAN_TOOLS="${HOME}/.local/bin/mcp-obsidian-tools"
-export MPC_BRIDGE="${HOME}/.local/share/prompthub/mcps/prompthub-bridge.js"
+export MCP_BRIDGE="${HOME}/.local/share/prompthub/mcps/prompthub-bridge.js"
 
 
 # Active PATH additions
-path_append "${MCP_BRIDGE}"
+# MCP_SERVER_FETCH is a bin directory (belongs on PATH per mcps/README).
+# MCP_BRIDGE is a .js file referenced by full path in client configs — not on PATH.
+path_append "${MCP_SERVER_FETCH}"
 path_append "${HOME}/.lmstudio/bin"
 path_append "${HOME}/.lmstudio/llmster/current"
 

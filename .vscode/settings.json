@@ -2,7 +2,7 @@
   // ── Python environment ──────────────────────────────────
   // The project lives in app/ with its own venv
   "python.defaultInterpreterPath": "${workspaceFolder}/app/.venv/bin/python",
-  "python.envFile": "${workspaceFolder}/app",
+  "python.envFile": "${workspaceFolder}/app/.env",
   "python-envs.pythonProjects": [
     {
       "path": "${workspaceFolder}/app/",
