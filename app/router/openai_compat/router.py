@@ -363,18 +363,6 @@ def create_openai_compat_router(
             client_name=client_name,
         )
 
-        # Reject streaming — not supported
-        if body.stream:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": {
-                        "message": "Streaming not supported for /v1/responses. Disable streaming in your client.",
-                        "type": "invalid_request_error",
-                    }
-                },
-            )
-
         # Guard: reject OpenAPI swagger placeholder model names. Spaces are NOT
         # rejected — see notes on the matching guard in chat_completions.
         if not body.model or body.model.strip() in ("", "string", "model"):
@@ -441,9 +429,22 @@ def create_openai_compat_router(
                 resource_type="llm",
                 resource_name=body.model,
                 status="success",
+                stream=body.stream,
             )
 
-            return _build_responses_response(response.model_dump())
+            resp_dict = response.model_dump()
+
+            if body.stream:
+                return StreamingResponse(
+                    _stream_responses(resp_dict, body.model),
+                    media_type="text/event-stream",
+                    headers={
+                        "Cache-Control": "no-cache",
+                        "X-Accel-Buffering": "no",
+                    },
+                )
+
+            return _build_responses_response(resp_dict)
 
         except (LLMConnectionError, LLMError, httpx.HTTPError) as e:
             _handle_llm_error(e, breaker, "responses", body.model)
@@ -452,6 +453,181 @@ def create_openai_compat_router(
 
 
 # --- Helper functions ---
+
+
+def _sse_event(event_type: str, data: dict) -> str:
+    """Format a single SSE event with an `event:`/`data:` pair."""
+    return f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
+
+
+async def _stream_responses(resp: dict, model: str):
+    """Yield an OpenAI Responses API SSE event sequence from a completed chat.
+
+    `resp` is the dict from LLMClient.chat_completion(...).model_dump(). Emits a
+    buffered (non-incremental) event stream: text content is delivered as a
+    single delta, and any tool_calls become function_call items.
+    """
+    choices = resp.get("choices") or []
+    message = choices[0].get("message", {}) if choices else {}
+    text = message.get("content") or ""
+    tool_calls = message.get("tool_calls") or []
+
+    resp_id = f"resp_{uuid.uuid4().hex[:24]}"
+
+    # response.created
+    yield _sse_event(
+        "response.created",
+        {
+            "type": "response.created",
+            "response": {
+                "id": resp_id,
+                "object": "response",
+                "status": "in_progress",
+                "model": model,
+                "output": [],
+            },
+        },
+    )
+
+    output_index = 0
+
+    # --- Text message item ---
+    if text:
+        item_id = "msg_0"
+        yield _sse_event(
+            "response.output_item.added",
+            {
+                "type": "response.output_item.added",
+                "output_index": output_index,
+                "item": {
+                    "type": "message",
+                    "id": item_id,
+                    "status": "in_progress",
+                    "role": "assistant",
+                    "content": [],
+                },
+            },
+        )
+        yield _sse_event(
+            "response.content_part.added",
+            {
+                "type": "response.content_part.added",
+                "item_id": item_id,
+                "output_index": output_index,
+                "content_index": 0,
+                "part": {"type": "output_text", "text": "", "annotations": []},
+            },
+        )
+        yield _sse_event(
+            "response.output_text.delta",
+            {
+                "type": "response.output_text.delta",
+                "item_id": item_id,
+                "output_index": output_index,
+                "content_index": 0,
+                "delta": text,
+            },
+        )
+        yield _sse_event(
+            "response.output_text.done",
+            {
+                "type": "response.output_text.done",
+                "item_id": item_id,
+                "output_index": output_index,
+                "content_index": 0,
+                "text": text,
+            },
+        )
+        yield _sse_event(
+            "response.content_part.done",
+            {
+                "type": "response.content_part.done",
+                "item_id": item_id,
+                "output_index": output_index,
+                "content_index": 0,
+                "part": {"type": "output_text", "text": text, "annotations": []},
+            },
+        )
+        yield _sse_event(
+            "response.output_item.done",
+            {
+                "type": "response.output_item.done",
+                "output_index": output_index,
+                "item": {
+                    "type": "message",
+                    "id": item_id,
+                    "status": "completed",
+                    "role": "assistant",
+                    "content": [
+                        {"type": "output_text", "text": text, "annotations": []}
+                    ],
+                },
+            },
+        )
+        output_index += 1
+
+    # --- Function call items ---
+    for i, call in enumerate(tool_calls):
+        fn = call.get("function", {}) if isinstance(call, dict) else {}
+        call_id = call.get("id", f"call_{i}")
+        name = fn.get("name", "")
+        arguments = fn.get("arguments", "") or ""
+        item_id = f"fc_{i}"
+
+        item = {
+            "type": "function_call",
+            "id": item_id,
+            "call_id": call_id,
+            "name": name,
+            "arguments": arguments,
+        }
+        yield _sse_event(
+            "response.output_item.added",
+            {
+                "type": "response.output_item.added",
+                "output_index": output_index,
+                "item": {**item, "status": "in_progress"},
+            },
+        )
+        yield _sse_event(
+            "response.function_call_arguments.delta",
+            {
+                "type": "response.function_call_arguments.delta",
+                "item_id": item_id,
+                "output_index": output_index,
+                "call_id": call_id,
+                "delta": arguments,
+            },
+        )
+        yield _sse_event(
+            "response.function_call_arguments.done",
+            {
+                "type": "response.function_call_arguments.done",
+                "item_id": item_id,
+                "output_index": output_index,
+                "call_id": call_id,
+                "arguments": arguments,
+            },
+        )
+        yield _sse_event(
+            "response.output_item.done",
+            {
+                "type": "response.output_item.done",
+                "output_index": output_index,
+                "item": {**item, "status": "completed"},
+            },
+        )
+        output_index += 1
+
+    # response.completed
+    yield _sse_event(
+        "response.completed",
+        {
+            "type": "response.completed",
+            "response": _build_responses_response(resp),
+        },
+    )
+    yield "data: [DONE]\n\n"
 
 
 def _handle_llm_error(

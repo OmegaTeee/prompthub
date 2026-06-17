@@ -831,15 +831,66 @@ class TestResponsesEndpoint:
         )
         assert response.status_code == 401
 
-    def test_stream_true_returns_400(self, client):
-        """Streaming is not supported — returns 400."""
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_stream_true_emits_text_event_sequence(self, mock_chat, client):
+        """stream=True returns SSE with an ordered text event sequence."""
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        mock_chat.return_value = ChatCompletionResponse(
+            id="chatcmpl-stream",
+            object="chat.completion",
+            created=1700000000,
+            model="gemma-3-4b",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content="Hello there!"),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
+        )
+
         response = client.post(
             "/v1/responses",
-            json={"model": "gemma-3-4b", "input": "Hello", "stream": True},
+            json={"model": "gemma-3-4b", "input": "Hi", "stream": True},
             headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
         )
-        assert response.status_code == 400
-        assert "streaming" in response.json()["detail"]["error"]["message"].lower()
+        assert response.status_code == 200, response.text
+        assert response.headers["content-type"].startswith("text/event-stream")
+
+        body = response.text
+        # Event types appear in the expected order.
+        types_in_order = [
+            "response.created",
+            "response.output_item.added",
+            "response.output_text.delta",
+            "response.completed",
+        ]
+        last = -1
+        for t in types_in_order:
+            idx = body.find(f"event: {t}\n")
+            assert idx != -1, f"missing event {t}\n{body}"
+            assert idx > last, f"event {t} out of order\n{body}"
+            last = idx
+
+        # The text delta carries the full assistant content.
+        delta_events = [
+            json.loads(line[len("data: "):])
+            for line in body.splitlines()
+            if line.startswith("data: ") and line != "data: [DONE]"
+        ]
+        deltas = [
+            e for e in delta_events if e.get("type") == "response.output_text.delta"
+        ]
+        assert deltas, "no output_text.delta event"
+        assert deltas[0]["delta"] == "Hello there!"
+
+        assert body.rstrip().endswith("data: [DONE]")
 
     def test_invalid_model_returns_422(self, client):
         """Placeholder model name returns 422 with OpenAI-shaped error body."""
