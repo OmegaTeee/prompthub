@@ -14,7 +14,7 @@
     "alwaysShowPromptTemplate": true,
     "useShiftEnterToSendMessage": false,
     "useKeychordToRegenerate": false,
-    "unloadPreviousModelOnSelect": true,
+    "unloadPreviousModelOnSelect": false,
     "highlightChatMessageOnHover": true,
     "doubleClickMessageToEdit": false,
     "doubleClickChatCellRenames": false,
@@ -43,7 +43,7 @@
     "showSpringboardWhenClosingAllTabsInSplit": false,
     "imageInputs": {
       "userMaxImageDimensionPixelsEnabled": true,
-      "userMaxImageDimensionPixels": 2048,
+      "userMaxImageDimensionPixels": 1024,
       "ignoreModelPreferredMaxImageDimension": false
     }
   },
@@ -105,7 +105,7 @@
   "pre030ChatsMigrated": 3,
   "appPostUpdateNotificationPending": false,
   "promptWhenCommittingUnsavedChangesWithNewFields": true,
-  "enableLocalService": false,
+  "enableLocalService": true,
   "enableEngineProtocolRuntime": true,
   "cliInstalled": false,
   "useHFProxy": true,
@@ -113,7 +113,7 @@
   "hfDownloadToken": "",
   "defaultContextLength": {
     "type": "custom",
-    "value": 8192
+    "value": 4096
   },
   "appIntroAcceptedForBuild": null
 }

@@ -1,40 +1,42 @@
-# Wiki Index
+# PromptHub Wiki
 
-Master page registry for the PromptHub LLM-Wiki. Add a one-line entry for every new page under the appropriate section. Sort alphabetically within each section.
-
-Format: bulleted list. Each entry is a wikilink (double-bracket slug) followed by an em-dash and a one-sentence summary. The example below shows the shape; the angle-bracket placeholders aren't literal syntax — replace with the real slug + summary.
+Central knowledge base for architecture decisions, patterns, entities, and sources.
 
 ```
-- [[some-slug]] — Some one-sentence summary.
+[[some-slug]] — One-sentence summary.
 ```
 
 ## Concepts
 
-<!-- Distilled ideas. Agent-written after research. One idea per page. -->
+Distilled ideas. One per page.
 
-- [[git-pr-workflow]] — Squash-merge + `gh` non-interactive gotchas (branch `-d` vs `-D`, `--delete-branch` orphaning local commits, stash-with-zero-overlap, verifying merged content over commit identity).
-- [[llm-wiki-setup]] — Why and how PromptHub maintains a wiki at `docs/wiki/`, replacing the legacy `docs/notes/` directory with a structured 4-section layout.
-- [[router-auth-tokens]] — The two distinct bearer tokens (router `PH_API_TOKEN` vs LM Studio `LM_API_TOKEN`) and the `/v1`-only auth boundary that trips up local setup.
-- [[sqlite-query-param-guards]] — Why two GET-route 500s both traced to unvalidated request values hitting SQLite, and the validate/clamp-at-the-boundary pattern that fixes them.
+- [[concepts/git-pr-workflow]] — Squash-merge workflow via `gh` CLI and non-interactive gotchas.
+- [[concepts/llm-wiki-setup]] — Why and how PromptHub maintains a wiki at `docs/wiki/`.
+- [[concepts/router-auth-tokens]] — Two distinct bearer tokens (`PH_API_TOKEN` vs `LM_API_TOKEN`).
+- [[concepts/sqlite-query-param-guards]] — Why unvalidated GET params cause 500s in SQLite.
+- [[concepts/three-track-documentation]] — Tour/Product/Setup file pattern for feature docs.
 
 ## Sources
 
-<!-- Summarized external material (articles, docs, papers). One source per page. -->
+Summarized external material.
 
-_(empty — first source lands here.)_
+- _(empty — first source lands here.)_
 
 ## Entities
 
-<!-- Named things: tools, services, platforms, people. One entity per page. -->
+Named things: tools, services, platforms, people.
 
-- [[llm-wiki-ops-portable]] — Claude Code skill implementing the Karpathy LLM Wiki pattern in any workspace; the engine behind this wiki.
-- [[obsidian-local-rest-api]] — Obsidian community plugin exposing the vault on `127.0.0.1:27124`; as of v4.x hosts an in-process MCP server at `/mcp/`.
-- [[ph-docs-hygiene-profile]] — Hygiene-skill profile auditing the wiki for orphan pages, broken wikilinks, log rotation, and `docs/notes/` coverage.
-- [[schemathesis]] — Property-based OpenAPI fuzzer; quick smoke check of the router's `/openapi.json` surface via `app/schemathesis.toml`.
-- [[session-memory-storage]] — `SessionStorage` SQLite layer (`app/router/memory/storage.py`): sessions/facts/blocks tables, FTS5 search, and the storage-boundary input guards.
+- [[entities/llm-wiki-ops-portable]] — Claude Code skill implementing Karpathy LLM Wiki pattern.
+- [[entities/obsidian-local-rest-api]] — Obsidian plugin exposing vault on `127.0.0.1:27124`.
+- [[entities/ph-docs-hygiene-profile]] — Profile for auditing wiki hygiene and structure.
+- [[entities/schemathesis]] — Property-based OpenAPI fuzzer via `app/schemathesis.toml`.
+- [[entities/session-memory-storage]] — `SessionStorage` SQLite layer with FTS5 search.
 
 ## Syntheses
 
-<!-- Cross-cutting analysis combining multiple concepts/sources. -->
+Cross-cutting analysis combining concepts/sources.
 
-_(empty — first synthesis lands here.)_
+- [[syntheses/middleware-architecture]] — ASGI middleware patterns distilled from enhancement review.
+
+---
+*Updated: 2026-06-10*

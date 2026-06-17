@@ -21,7 +21,10 @@ fi
 # Let Homebrew manage its own PATH-related environment.
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-# Source shared shell settings
+# Shared login-style env
+# [ -f "${HOME}/.profile" ] && source "${HOME}/.profile"
+
+# Shared shell settings (aliases, PNPM, Qwen, functions, etc.)
 [ -f "${HOME}/.shell_common.sh" ] && source "${HOME}/.shell_common.sh"
 
 # Keep PATH and FPATH unique in interactive Zsh sessions.
@@ -39,6 +42,7 @@ eval "$(direnv hook zsh)"
 # -----------------------------------------------------------------------------
 
 [ -f "${HOME}/.iterm2_shell_integration.zsh" ] && source "${HOME}/.iterm2_shell_integration.zsh"
+
 
 source "$(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme"
 [ -f "${HOME}/.p10k.zsh" ] && source "${HOME}/.p10k.zsh"
@@ -70,6 +74,10 @@ compinit
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+
+# OpenClaw Completion
+[ -f "/Users/visualval/.openclaw/completions/openclaw.zsh" ] && source "/Users/visualval/.openclaw/completions/openclaw.zsh"
+
 # pnpm
 export PNPM_HOME="/Users/visualval/Library/pnpm"
 case ":$PATH:" in
@@ -77,6 +85,3 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME/bin:$PATH" ;;
 esac
 # pnpm end
-
-# OpenClaw Completion
-[ -f "/Users/visualval/.openclaw/completions/openclaw.zsh" ] && source "/Users/visualval/.openclaw/completions/openclaw.zsh"

@@ -7,7 +7,7 @@ persistence layer for PromptHub's session memory system. It owns three tables �
 sessions, facts, and memory blocks — plus FTS5 full-text indexes, and exposes
 async CRUD used by the `/sessions/*` routes. It is the storage boundary where
 request-derived values (tags, pagination, search queries) meet SQL, which makes
-it the layer responsible for [[sqlite-query-param-guards]].
+it the layer responsible for [[../concepts/sqlite-query-param-guards]].
 
 ## Details
 
@@ -38,7 +38,7 @@ init when stale. They power BM25-ranked cross-session `search()`.
 ### Storage-boundary hardening
 
 Two patterns guard the SQL surface against arbitrary request input (see
-[[sqlite-query-param-guards]] for the full reasoning):
+[[../concepts/sqlite-query-param-guards]] for the full reasoning):
 
 - **Tag filtering** uses `json_each(tags)` + `EXISTS (... WHERE value IN (...))`
   to test array membership. (`json_extract`'s path grammar has no `$[*]`
@@ -52,7 +52,7 @@ Two patterns guard the SQL surface against arbitrary request input (see
 
 ## Related
 
-- [[sqlite-query-param-guards]] — the cross-cutting pattern this layer
+- [[../concepts/sqlite-query-param-guards]] — the cross-cutting pattern this layer
   implements: validate/clamp request values before they reach a SQLite bind.
 - [[schemathesis]] — the OpenAPI fuzzer that surfaced two unguarded-input 500s
   in this layer (`get_facts` tag filter, `list_sessions` pagination).

@@ -9,9 +9,9 @@ bind (correct SQL, clamped integers), not to catch the exception after the fact.
 
 ## Details
 
-Both bugs were found by the GET-only [[schemathesis]] fuzz against
+Both bugs were found by the GET-only [[../entities/schemathesis]] fuzz against
 `/openapi.json` and both returned an unhandled `500` where the schema promised
-`200`/`422`. Both live in [[session-memory-storage]].
+`200`/`422`. Both live in [[../entities/session-memory-storage]].
 
 ### 1. Invalid `json_extract` path wildcard
 
@@ -56,9 +56,9 @@ After both fixes, the GET-only schemathesis Server-error count dropped from 1 to
 
 ## Related
 
-- [[session-memory-storage]] — the SQLite layer where both bugs lived and where
+- [[../entities/session-memory-storage]] — the SQLite layer where both bugs lived and where
   the guards now sit.
-- [[schemathesis]] — the property-based OpenAPI fuzzer that surfaced both 500s
+- [[../entities/schemathesis]] — the property-based OpenAPI fuzzer that surfaced both 500s
   and the 404 schema gaps.
 
 ## Sources

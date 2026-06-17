@@ -69,9 +69,9 @@ path_prepend "/opt/homebrew/opt/python@3/bin"
 export UV_TOOL_DIR="${HOME}/uv-tools"
 export UV_CACHE_DIR="${HOME}/uv-cache"
 
-# Optional PNPM setup
+# PNPM setup (shared across shells)
 export PNPM_HOME="${HOME}/Library/pnpm"
-path_prepend "${PNPM_HOME}"
+path_prepend "${PNPM_HOME}/bin"
 
 
 # -----------------------------------------------------------------------------
@@ -113,6 +113,7 @@ start_colima_if_needed
 
 export GITHUB_API_KEY="$(keychain_secret GITHUB_API_KEY)"
 export GITHUB_PAT="$(keychain_secret GITHUB_PAT)"
+export GITHUB_PERSONAL_ACCESS_TOKEN="${GITHUB_PAT}" # <-- Claude Code expect this specific variable name
 
 # PromptHub (PH) Project: Reverse Proxy Router, Local MPC Server, and Tools Management Bridge
 export LM_API_TOKEN="$(keychain_secret LM_API_TOKEN)" # <-- Inactive LM Studio Token
@@ -160,14 +161,15 @@ export OPENCLAW_GATEWAY_TOKEN="$(keychain_secret OPENCLAW_GATEWAY_TOKEN)"
 export OPENCLAW_CONFIG_PATH="${HOME}/.openclaw/config.json"
 
 # Alternative AI Providers
+export MISTRAL_API_KEY="$(keychain_secret MISTRAL_API_KEY)"
 export GEMINI_API_KEY="$(keychain_secret GEMINI_API_KEY)"
 # export GROQ_API_KEY="$(keychain_secret GROQ_API_KEY)"
 
 # Other Hosting service tokens (only set these if you use them in your projects)
 export CLOUDFLARE_AUTHTOKEN="$(keychain_secret CLOUDFLARE_AUTHTOKEN)"
-# export PUBLIC_CLOUDINARY_API_KEY="$(keychain_secret PUBLIC_CLOUDINARY_API_KEY)"
-# export CLOUDINARY_API_SECRET="$(keychain_secret CLOUDINARY_API_SECRET)"
-# export NETLIFY_AUTH_TOKEN="$(keychain_secret NETLIFY_AUTH_TOKEN)"
+export PUBLIC_CLOUDINARY_API_KEY="$(keychain_secret PUBLIC_CLOUDINARY_API_KEY)"
+export CLOUDINARY_API_SECRET="$(keychain_secret CLOUDINARY_API_SECRET)"
+export NETLIFY_AUTH_TOKEN="$(keychain_secret NETLIFY_AUTH_TOKEN)"
 # export NGROK_AUTHTOKEN="$(keychain_secret NGROK_AUTHTOKEN)"
 
 # Optional API keys for tools (uncomment if you use them in your workflows)

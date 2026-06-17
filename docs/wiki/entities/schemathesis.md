@@ -8,7 +8,7 @@
 
 ### Config and invocation
 
-Config lives at `app/schemathesis.toml` and sets the bearer header for `/v1/*` (see [[router-auth-tokens]]):
+Config lives at `app/schemathesis.toml` and sets the bearer header for `/v1/*` (see [[../concepts/router-auth-tokens]]):
 
 ```toml
 headers = { Authorization = "Bearer sk-prompthub-default-001" }
@@ -34,7 +34,7 @@ Schemathesis exercises the whole schema, which includes the `/v1/*` OpenAI-compa
 
 516 cases → 13 unique failures:
 
-- **1 server error (500):** `GET /sessions/{id}/facts?tags=null` returned `Internal Server Error` rather than handling the bad `tags` value. A deeper pass also surfaced a second 500 on `GET /sessions` from an oversized `offset`. Both were unguarded request values reaching SQLite — see [[sqlite-query-param-guards]].
+- **1 server error (500):** `GET /sessions/{id}/facts?tags=null` returned `Internal Server Error` rather than handling the bad `tags` value. A deeper pass also surfaced a second 500 on `GET /sessions` from an oversized `offset`. Both were unguarded request values reaching SQLite — see [[../concepts/sqlite-query-param-guards]].
 - **~9 undocumented status codes:** routes like `GET /tools/{server}` correctly return 404 for an unknown resource, but the OpenAPI schema only declared 200/422. Schema-completeness gaps — fixed by adding the 404 to each route's `responses=`.
 - A couple of schema-compliant-request rejections and one unsupported-method finding.
 
@@ -45,12 +45,12 @@ The split is instructive: schemathesis surfaces both real server faults (the 500
 Both 500s and the seven GET-route 404 gaps were fixed in PR #51. Re-running the
 same GET-only pass dropped the Server-error count from 1 to 0 and undocumented
 statuses from 10 to 2 (the remaining two are `400` input-rejections, a separate
-class). The fix patterns are written up in [[sqlite-query-param-guards]]; the
+class). The fix patterns are written up in [[../concepts/sqlite-query-param-guards]]; the
 storage layer they live in is [[session-memory-storage]].
 
 ## Related
 
-- [[router-auth-tokens]] — explains the `/v1`-only auth boundary and why the `default` key is the right bearer for this config.
+- [[../concepts/router-auth-tokens]] — explains the `/v1`-only auth boundary and why the `default` key is the right bearer for this config.
 - [[obsidian-local-rest-api]] — another local HTTP service with an OpenAPI-style surface and bearer auth that the same schema-testing approach could target.
 
 ## Sources
