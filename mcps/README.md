@@ -218,6 +218,31 @@ curl localhost:9090/servers     # list servers and status
 curl localhost:9090/tools/stats # tool registry cache stats
 ```
 
+## Goose skills-mcp extension (lazy skill loading)
+
+Goose loads the curated skill long-tail on demand via `skills-mcp` (configured in
+[`clients/goose/config.yaml`](../clients/goose/config.yaml)) instead of eagerly injecting
+the ~56K-token catalog that overflows local context. It exposes `list_skills` / `get_skill`
+over two scopes: `~/.local/share/prompthub/skills-curated/` (56 skills) and `~/.claude/skills`.
+
+Add a scope by appending another `-s <dir>` pair to the extension's `args`.
+
+**Validated** (2026-06-17): the full chain works on Goose — `list_skills → get_skill → obey`
+(an agent discovers a skill by purpose, loads only its body, and acts on it). The discover→load
+directive lives in the global hint [`clients/goose/.goosehints`](../clients/goose/.goosehints)
+(symlinked to `~/.config/goose/.goosehints`), so no per-prompt instruction is needed.
+
+**Reliability caveat:** skill-routing depends on the model.
+- Use an **instruct** model (`qwen3-4b-instruct-2507`) — it emits clean `tool_calls`. The
+  **coder** model (`qwen3-coder-30b`) emits malformed `<function=…>` text and does **not** work.
+- Load the model with **≥32K context** (the 96-skill `list_skills` result is large; 16K overflows).
+- On a 4B model the hands-off chain is **flaky** (non-deterministic stalls at load). For reliable
+  routing, add an explicit in-prompt directive, retry, or use a more capable model
+  (`qwen3-8b` / a 27B distill). See `wiki/schema/qwen-local-writing-setup.md` in the LLM vault.
+
+Deferred (separate work order): promoting `skills-mcp` into `prompthub-bridge.js` as a tier-1
+meta-tool for cross-client serving (fills Cherry's empty Resources tab).
+
 ## References
 
 - [Model Context Protocol](https://modelcontextprotocol.io) — official spec
