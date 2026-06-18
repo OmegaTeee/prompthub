@@ -27,9 +27,9 @@ def normalize_target(raw: str) -> str | None:
     """Normalize a wikilink target to a bare slug, or None if it should be ignored.
 
     Handles aliases (``[[slug|label]]``), anchors (``[[slug#section]]``), and
-    section-qualified or relative targets (``[[concepts/foo]]``, ``[[../concepts/foo]]``)
-    by returning the final path component. Targets containing ``..`` segments are
-    rejected (return None) so unsafe paths can't escape the wiki tree.
+    section-qualified targets (``[[concepts/foo]]``) by returning the final path
+    component. Targets containing ``..`` segments are rejected (return None) so
+    unsafe relative paths can't escape the wiki tree.
     """
     target = raw.split("|", 1)[0].split("#", 1)[0].strip()
     if not target:

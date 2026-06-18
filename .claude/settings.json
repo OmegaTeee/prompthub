@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(/Users/visualval/.local/share/prompthub/ *)",
+      "Bash(/Users/visualval/.local/share/prompthub/*)",
       "Bash(awk *)",
       "Bash(bash *)",
       "Bash(cp *)",

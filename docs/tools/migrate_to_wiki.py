@@ -38,7 +38,7 @@ def main() -> None:
         f"slug: {args.slug}\n"
         f"section: {args.section}\n"
         "status: archived-to-wiki\n"
-        f"original_file: ../archive/{args.archive_file.name}\n"
+        f"original_file: ../../archive/{args.archive_file.name}\n"
         "---\n\n"
         f"# {args.title}\n\n"
     )

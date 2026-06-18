@@ -810,11 +810,9 @@ def _responses_tools_to_chat(
             and "name" in tool
             and "function" not in tool
         ):
-            fn: dict[str, Any] = {"name": tool["name"]}
-            if "description" in tool:
-                fn["description"] = tool["description"]
-            if "parameters" in tool:
-                fn["parameters"] = tool["parameters"]
+            # Preserve every field except the wrapper "type" — keeps name,
+            # description, parameters, strict, and any future Responses-tool metadata.
+            fn: dict[str, Any] = {k: v for k, v in tool.items() if k != "type"}
             translated.append({"type": "function", "function": fn})
         else:
             translated.append(tool)
