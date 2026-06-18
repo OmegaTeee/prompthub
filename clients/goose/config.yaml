@@ -34,3 +34,18 @@ extensions:
       SERVERS: memory,sequential-thinking,desktop-commander,context7
     bundled: false
     available_tools: []
+  skills-mcp:
+    enabled: true
+    type: stdio
+    name: skills-mcp
+    cmd: npx
+    args:
+      - -y
+      - skills-mcp
+      - -s
+      - /Users/visualval/.local/share/prompthub/skills-curated
+      - -s
+      - /Users/visualval/.claude/skills
+    timeout: 300
+    bundled: false
+    available_tools: []
