@@ -1,0 +1,10 @@
+# Goose hints (global)
+
+## Applying skills / how-tos / playbooks
+When asked to apply a how-to, playbook, run a named proof, or "use a skill" — even if the
+exact tool names aren't given — do this:
+1. Call `list_skills` (skills-mcp) to see available skills.
+2. Pick the skill whose description matches the task.
+3. Call `get_skill` to load that skill's full body.
+4. DO what the body instructs, using your tools (write files, run commands) — don't just print it.
+Complete every step; don't stop after discovery.

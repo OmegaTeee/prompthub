@@ -1,6 +1,8 @@
 # clients/goose/config.yaml
 GOOSE_PROVIDER: openai
-GOOSE_MODEL: qwen3-coder-30b-a3b-instruct
+# 4b-instruct: clean tool_calls format + validated for autonomous tool chains (skills routing).
+# vault-goose wrapper overrides GOOSE_MODEL=qwen3-coder-30b-a3b-instruct for prose/doc edits.
+GOOSE_MODEL: qwen3-4b-instruct-2507
 # Route model calls through PromptHub /v1 (audit + privacy), enhance disabled via the key below
 OPENAI_HOST: http://127.0.0.1:9090
 OPENAI_BASE_PATH: v1/chat/completions
