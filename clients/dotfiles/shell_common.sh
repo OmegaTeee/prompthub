@@ -115,7 +115,8 @@ start_colima_if_needed
 
 export GITHUB_API_KEY="$(keychain_secret GITHUB_API_KEY)"
 export GITHUB_PAT="$(keychain_secret GITHUB_PAT)"
-export GITHUB_PERSONAL_ACCESS_TOKEN="${GITHUB_PAT}" # <-- Claude Code expect this specific variable name
+export GITHUB_PERSONAL_ACCESS_TOKEN="${GITHUB_PAT}" # <-- Claude Code expects this
+export GITHUB_PAT_TOKEN="${GITHUB_PAT}" # <-- Codex MCP tools expect this
 
 # PromptHub (PH) Project: Reverse Proxy Router, Local MPC Server, and Tools Management Bridge
 export LM_API_TOKEN="$(keychain_secret LM_API_TOKEN)" # <-- Inactive LM Studio Token

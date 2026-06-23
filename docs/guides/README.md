@@ -35,6 +35,7 @@ PromptHub uses **local API secrets and model paths** (e.g., LM Studio model loca
 2. **[Session Memory Guide](03-session-memory-guide.md)** — Remember information across conversations (10 min read)
 3. **[OpenAI API Guide](04-openai-api-guide.md)** — Use PromptHub like an OpenAI-compatible server (10 min read)
 4. **[Progressive Tool Disclosure Guide](11-progressive-tool-disclosure.md)** — Cut tool context ~80% by loading MCP tools on demand (12 min read)
+5. **[Launchctl Token Environment Guide](12-launchctl-token-env-guide.md)** — Sync token env vars for GUI-launched apps (5 min read)
 
 ---
 
@@ -119,6 +120,7 @@ Topics:
 
 ### Configuration & Customization
 - Environment variables: [Advanced Manual — Environment Variables](08-advanced-power-user-manual.md#environment-variables)
+- GUI app token environment: [Launchctl Token Environment Guide](12-launchctl-token-env-guide.md)
 - Enhancement rules: [Advanced Manual — Enhancement Rules](08-advanced-power-user-manual.md#custom-enhancement-rules)
 - Performance tuning: [Advanced Manual — Performance Tuning](08-advanced-power-user-manual.md#performance-tuning)
 
