@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and seman
 - **`applescript-mcp` now bundled in `prompthub-providers`**: Moved `@peakmojo/applescript-mcp` from an external global install (referenced by an absolute `command` path, `/opt/homebrew/bin/applescript-mcp`) to a pinned `0.1.3` dependency in `mcps/package.json`, launched as `node ./mcps/node_modules/@peakmojo/applescript-mcp/server.js` — the same bundled pattern as every other npm-package MCP server. Removes the lone server's coupling to a global toolchain (it was the only entry not reconstructable from the repo) and makes it reproducible via `npm install` in `mcps/`. Verified: router healthy, server starts and reaches `running`.
 
 ### Removed
+- **Stale GitHub Actions workflows**: Removed the redundant `tests.yml` workflow, the inactive OpenCode comment workflow, and the dead Docker build job that referenced a missing `app/Dockerfile`; CI now runs one current Python matrix plus bridge checks.
 - **`homebrew` MCP server dropped**: Removed the `brew mcp-server` entry (registered in PR #18, `auto_start: false`) from `app/configs/mcp-servers.json`. Running Homebrew operations is already covered by `desktop-commander` shelling out to `brew`, so the dedicated server was redundant; nothing else referenced it (grep across configs/docs/bridge confirmed). No package to uninstall — `mcp-server` ships inside Homebrew. Server count: 11 → 10.
 
 ### Docs
