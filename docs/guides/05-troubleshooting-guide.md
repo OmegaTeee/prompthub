@@ -218,6 +218,29 @@ Open http://localhost:9090 in your browser. Look at the **Status** section. Gree
 
 ---
 
+### "Tool has an output schema but did not return structured content"
+
+**Problem:** A strict MCP client rejected a tool result because the tool advertises an `outputSchema`, but the response did not include `structuredContent`. This has been seen with `sequential-thinking` through bridge clients such as ChatWise.
+
+**Fix -- work through these steps in order:**
+
+1. Update PromptHub to a version that preserves structured tool results in `mcps/prompthub-bridge.js`.
+
+2. Restart the bridge client so it reloads the updated bridge:
+   ```bash
+   ./scripts/prompthub-kill.zsh
+   ./scripts/prompthub-start.zsh
+   ```
+
+3. Ask the client to call the tool again. If the error remains, inspect whether the backend tool itself returned `structuredContent`:
+   ```bash
+   tail -n 100 ~/prompthub/logs/router-stderr.log | grep structured
+   ```
+
+4. If only one chat client fails and others work, check that client's MCP support level. Some clients validate MCP output schemas more strictly than others.
+
+---
+
 ### "Database is locked" or SQLite Errors
 
 **Problem:** The database file is being accessed by more than one process at once. Think of it like two people trying to write in the same notebook at the same time.
