@@ -1,8 +1,9 @@
 personality = "pragmatic"
-model = "gpt-5.2"
+model = "gpt-5.5"
 model_reasoning_effort = "medium"
 
 notify = ["/Users/visualval/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+service_tier = "default"
 
 [mcp_servers.prompthub-bridge]
 args = ["/Users/visualval/prompthub/mcps/prompthub-bridge.js"]
@@ -15,6 +16,25 @@ AUTHORIZATION = "Bearer sk-prompthub-codex-001"
 CLIENT_NAME = "codex"
 PROMPTHUB_URL = "http://127.0.0.1:9090"
 SERVERS = "memory,sequential-thinking,desktop-commander,perplexity-comet,context7"
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node_repl"
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/Codex.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/visualval/.codex"
+CODEX_HOME = "/Users/visualval/.codex"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "2c20141b13bec5a64cd2874d8e2df011430d5b1a70e4f5425aa10d01743311a8"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.616.51431"
+CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
 
 [[skills.config]]
 path = "/Users/visualval/.codex/skills/doc/SKILL.md"
@@ -41,6 +61,9 @@ enabled = true
 [plugins."browser@openai-bundled"]
 enabled = true
 
+[plugins."sites@openai-bundled"]
+enabled = true
+
 # [plugins."hugging-face@openai-curated"]
 # enabled = true
 
@@ -60,7 +83,7 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [marketplaces.openai-bundled]
-last_updated = "2026-05-18T01:41:52Z"
+last_updated = "2026-06-23T22:25:23Z"
 source_type = "local"
 source = "/Users/visualval/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
@@ -77,6 +100,10 @@ name = "PromptHub local"
 base_url = "http://127.0.0.1:9090/v1"
 env_key = "PROMPTHUB_VAULT_KEY"
 wire_api = "responses"
+
+[desktop]
+show-context-window-usage = true
+conversationDetailMode = "STEPS_COMMANDS"
 
 # vault-writer profile lives in ~/.codex/vault-writer.config.toml
 # (codex >=0.134 requires per-profile config files; [profiles.X] tables in the
