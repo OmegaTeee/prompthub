@@ -15,6 +15,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import { formatToolCallResult } from './bridge-result.js';
 
 // Explicit IPv4 to avoid DNS resolution, IPv6 issues, and ensure consistency
 // across different platforms (especially Windows and containerized environments)
@@ -783,14 +784,7 @@ async function main() {
         ? await handleMetaTool(name, args || {}, server)
         : await callTool(name, args || {});
 
-      return {
-        content: [
-          {
-            type: 'text',
-            text: typeof result === 'string' ? result : JSON.stringify(result, null, 2)
-          }
-        ]
-      };
+      return formatToolCallResult(result);
     } catch (error) {
       return {
         content: [
