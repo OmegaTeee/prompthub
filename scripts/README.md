@@ -102,3 +102,12 @@ To auto-start the router on login:
 cp scripts/launch-agents/com.prompthub.router.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/com.prompthub.router.plist
 ```
+
+To auto-start Headroom on login:
+
+```bash
+cp scripts/launch-agents/com.prompthub.headroom.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.prompthub.headroom.plist
+```
+
+Headroom uses the repo-local `headroom/launch.sh` script as its startup entrypoint and writes logs to `logs/headroom-stdout.log` and `logs/headroom-stderr.log`.

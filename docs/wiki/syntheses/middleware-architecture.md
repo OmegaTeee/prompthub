@@ -15,8 +15,8 @@ Middleware is added to the PromptHub FastAPI router.
    to avoid blocking the event loop.
 2. **Graceful Degradation** – Middleware can return a short‑circuit
    response or re‑raise with proper status code.
-3. **Open‑Source Compliance** – No custom exception classes; rely on
-   FastAPI’s `HTTPException`.
+3. **HTTP‑Layer Exception Handling** – For middleware HTTP responses, rely on
+   FastAPI's `HTTPException` rather than custom exception classes.
 4. **Instrumented Logging** – Every entry/exit path is logged with the
    running request id for traceability.
 5. **Reversible Configuration** – Middleware can be enabled/disabled via

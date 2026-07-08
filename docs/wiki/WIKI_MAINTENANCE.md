@@ -58,10 +58,10 @@ This document defines the ongoing maintenance cadence for the PromptHub LLM Wiki
      slug: <slug>
      section: <section>
      status: archived-to-wiki
-     original_file: ../archive/<archive-name>.md
+     original_file: ../../archive/<archive-name>.md
      ---
      # Human Title
-     
+
      <original content>
      ```
    - Moves the original archive file to `docs/archive/.to-delete/<archive-name>.md` (staging).

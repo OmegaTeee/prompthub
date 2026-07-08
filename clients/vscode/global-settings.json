@@ -21,8 +21,26 @@
 	"[css]": {
 		"editor.defaultFormatter": "vscode.css-language-features"
 	},
+	"[django-html]": {
+		"editor.defaultFormatter": "monosans.djlint",
+		"editor.detectIndentation": false,
+		"editor.formatOnSave": true,
+		"editor.tabSize": 2
+	},
 	"[html]": {
 		"editor.defaultFormatter": "vscode.html-language-features"
+	},
+	"[jinja-html]": {
+		"editor.defaultFormatter": "monosans.djlint",
+		"editor.detectIndentation": false,
+		"editor.formatOnSave": true,
+		"editor.tabSize": 2
+	},
+	"[jinja]": {
+		"editor.defaultFormatter": "monosans.djlint",
+		"editor.detectIndentation": false,
+		"editor.formatOnSave": true,
+		"editor.tabSize": 2
 	},
 	"[json]": {
 		"editor.defaultFormatter": "vscode.json-language-features"
@@ -64,8 +82,8 @@
 	"chat.agent.enabled": true,
 	"chat.agent.maxRequests": 75,
 	"chat.agent.networkFilter": true,
-	"chat.agent.sandbox.autoApproveUnsandboxedCommands": true,
-	"chat.agent.sandbox.enabled": "allowNetwork",
+	"chat.agent.sandbox.autoApproveUnsandboxedCommands": false,
+	"chat.agent.sandbox.enabled": "on",
 	"chat.agent.thinking.terminalTools": true,
 	"chat.agentsControl.enabled": "badge",
 	"chat.agentSessionProjection.enabled": true,
@@ -76,7 +94,7 @@
 	"chat.customAgentInSubagent.enabled": true,
 	"chat.detectParticipant.enabled": true,
 	"chat.editing.autoAcceptDelay": 50,
-	"chat.editor.fontFamily": "'Google Sans Code', 'GoogleSansCode-Regular', 'Lilex Nerd Font Mono', 'Lilex Nerd Font Propo', 'Lilex', 'Liga DM Mono', 'LigaDMMono-Regular', monospace",
+	"chat.editor.fontFamily": "'Liga DM Mono', LigaDMMono-Regular, 'Google Sans Code', 'GoogleSansCode-Regular', 'Lilex Nerd Font Mono', 'Lilex Nerd Font Propo', 'Lilex', monospace",
 	"chat.editor.wordWrap": "off",
 	"chat.extensionTools.enabled": true,
 	"chat.fontFamily": "'Google Sans 17pt', 'GoogleSans17pt-Regular', 'Google Sans', 'GoogleSans-Regular', 'DM Sans', 'TT Text', sans-serif",
@@ -88,7 +106,6 @@
 	"chat.mcp.gallery.enabled": true,
 	"chat.permissions.default": "autopilot",
 	"chat.restoreLastPanelSession": true,
-	"chat.tips.enabled": true,
 	"chat.tools.confirmationCarousel.enabled": true,
 	"chat.tools.eligibleForAutoApproval": {
 		"runInTerminal": true
@@ -185,7 +202,6 @@
 	},
 	"chat.useAgentSkills": true,
 	"chat.viewProgressBadge.enabled": true,
-	"chat.viewSessions.orientation": "stacked",
 	"chatgpt.followUpQueueMode": "queue",
 	"chatgpt.reviewDelivery": "inline",
 	"claudeCode.preferredLocation": "sidebar",
@@ -202,7 +218,6 @@
 	"color-picker-universal.preferLegacy": false,
 	"containers.commands.attach": "${containerCommand} exec -it ${containerId} ${shellCommand}",
 	"containers.containerClient": "com.microsoft.visualstudio.containers.docker",
-	"containers.images.groupBy": "RepositoryName",
 	"containers.orchestratorClient": "com.microsoft.visualstudio.orchestrators.dockercompose",
 	"copilot.vision.model": "gpt-4o",
 	"copilot.vision.provider": "OpenAI",
@@ -275,7 +290,7 @@
 	"editor.cursorBlinking": "solid",
 	"editor.cursorWidth": 3,
 	"editor.foldingStrategy": "auto",
-	"editor.fontFamily": "'Lilex Nerd Font Mono', 'Lilex Nerd Font Propo', 'Lilex', 'Google Sans Code', 'GoogleSansCode-Regular', 'Liga DM Mono', 'LigaDMMono-Regular', monospace",
+	"editor.fontFamily": "Anaheim, Anaheim-Regular, 'Lilex Nerd Font Mono', 'Lilex Nerd Font Propo', Lilex, Lilex-Regular, 'Google Sans Code', 'IBM Plex Mono', 'GoogleSansCode-Regular', 'Liga DM Mono', 'LigaDMMono-Regular', monospace",
 	"editor.fontLigatures": "'ss01' 0, 'ss02' 1, 'ss04' 1, 'cv03' 1, 'cv05' 1,  'cv06' 1,  'cv10' 1, 'calt' 1, 'case' 1, 'opsz' 14, 'zero' 1",
 	"editor.fontVariations": true,
 	"editor.fontWeight": "500",
@@ -370,7 +385,7 @@
 	},
 	"explorer.incrementalNaming": "smart",
 	"explorer.openEditors.sortOrder": "alphabetical",
-	"extensions.autoUpdate": false,
+	"extensions.autoUpdate": "off",
 	"files.associations": {
 		"*.aaa": "logfile",
 		"*.agent.md": "chatagent",
@@ -394,13 +409,17 @@
 		"*.hosts": "shellformat",
 		"*.htm": "html",
 		"*.html": "html",
+		//"*.j2": "jinja",
+		"*.html.j2": "jinja-html",
 		"*.html5": "html",
 		"*.htmx": "html",
 		"*.ignore": "shellformat",
 		"*.instructions.md": "instructions",
-		"*.j2": "jinja",
-		"*.jinja": "jinja",
-		"*.jinja2": "jinja",
+		//"*.jinja2": "jinja",
+		"*.j2": "jinja-html",
+		"*.jinja": "jinja-html",
+		//"*.jinja": "jinja",
+		"*.jinja2": "jinja-html",
 		"*.json": "jsonc",
 		"*.jsonc": "jsonc",
 		"*.jsonl": "json",
@@ -419,6 +438,7 @@
 		"*.shellscript": "shellformat",
 		"*.styl": "css",
 		"*.tmp": "logfile",
+		"*.toml": "toml",
 		"*.ts": "typescript",
 		"*.tsx": "typescript",
 		"*.txt": "markdown",
@@ -433,8 +453,7 @@
 		"*.zprofile": "shellscript",
 		"*.zsh": "shellscript",
 		"*.zshen": "shellscript",
-		"*.zshrc": "shellscript",
-		"*.toml": "toml"
+		"*.zshrc": "shellscript"
 	},
 	"files.autoSaveWhenNoErrors": true,
 	"files.exclude": {
@@ -487,48 +506,21 @@
 	"github.copilot.chat.agent.autoFix": true,
 	"github.copilot.chat.agent.largeToolResultsToDisk.enabled": true,
 	"github.copilot.chat.agentDebugLog.fileLogging.enabled": true,
-	"github.copilot.chat.alternateGeminiModelFPrompt.enabled": false,
-	"github.copilot.chat.alternateGptPrompt.enabled": false,
 	"github.copilot.chat.anthropic.tools.websearch.allowedDomains": [
 		"duckduckgo.com",
 		"github.com",
 		"google.com",
 		"perplexity.ai"
 	],
-	"github.copilot.chat.anthropic.tools.websearch.enabled": true,
-	"github.copilot.chat.anthropic.tools.websearch.maxUses": 10,
 	"github.copilot.chat.anthropic.toolSearchTool.enabled": true,
-	"github.copilot.chat.anthropic.useMessagesApi": true,
 	"github.copilot.chat.backgroundCompaction": true,
-	"github.copilot.chat.cli.branchSupport.enabled": true,
 	"github.copilot.chat.cli.mcp.enabled": true,
-	"github.copilot.chat.cli.planExitMode.enabled": true,
-	"github.copilot.chat.cli.sessionController.enabled": true,
 	"github.copilot.chat.codesearch.enabled": true,
 	"github.copilot.chat.copilotMemory.enabled": true,
-	"github.copilot.chat.customInstructionsInSystemMessage": false,
-	"github.copilot.chat.localeOverride": "en",
-	"github.copilot.chat.otel.captureContent": true,
-	"github.copilot.chat.otel.enabled": true,
-	"github.copilot.chat.otel.exporterType": "console",
-	"github.copilot.chat.otel.outfile": "${userHome}/.copilot/otel",
-	"github.copilot.chat.reviewAgent.enabled": true,
-	"github.copilot.chat.scopeSelection": true,
-	"github.copilot.chat.searchSubagent.useAgenticProxy": true,
+	"github.copilot.chat.modelCapabilityOverrides": {},
+	"github.copilot.chat.rateLimitAutoSwitchToAuto": true,
 	"github.copilot.chat.tools.memory.enabled": true,
-	"github.copilot.enable": {
-		"*": true,
-		"css": true,
-		"jsonc": true,
-		"markdown": true,
-		"plaintext": true,
-		"scminput": false,
-		"txt": true
-	},
-	"github.copilot.nextEditSuggestions.allowWhitespaceOnlyChanges": false,
 	"github.copilot.nextEditSuggestions.eagerness": "auto",
-	"github.copilot.nextEditSuggestions.enabled": true,
-	"github.copilot.nextEditSuggestions.extendedRange": true,
 	"githubIssues.createIssueTriggers": [
 		"TODO",
 		"FIXME",
@@ -562,7 +554,7 @@
 		"https://www.schemastore.org/": true
 	},
 	"languageTool.enabled": true,
-	"lmstudio-copilot.apiKey": "${LM_STUDIO_API_KEY}",
+	"lmstudio-copilot.apiKey": "${PH_API_TOKEN}",
 	"lmstudio-copilot.imageGenEndpointUrl": "http://localhost:7860",
 	"lmstudio-copilot.maxTools": 43,
 	"lmstudio-copilot.reasoningEffort": "medium",
@@ -574,9 +566,6 @@
 	"markdown.preview.scrollEditorWithPreview": true,
 	"markdown.preview.scrollPreviewWithEditor": true,
 	"markdown.preview.securityLevel": "allowScriptsAndAllContent",
-	"markdown.styles": [
-		".vscode/markdown.css",
-	],
 	"markdown.trace.server": "verbose",
 	"markdown.updateLinksOnFileMove.enabled": "always",
 	"markdownExtended.disabledPlugins": "abbr, container, emoji, kbd, table-of-contents, toc",
@@ -589,8 +578,8 @@
 			"name": "ROOT"
 		}
 	],
-	"python.defaultInterpreterPath": "${PYTHON}",
-	"python.experiments.optOutFrom": ["pythonTerminalEnvVarActivation"],
+	// "python.defaultInterpreterPath": "${command:python.interpreterPath}",
+	// "python.experiments.optOutFrom": ["pythonTerminalEnvVarActivation"],
 	"qwen-code.apiKey": "${PH_API_TOKEN}",
 	"qwen-code.codingPlanRegion": "china",
 	"qwen-code.provider": "api-key",
@@ -603,16 +592,6 @@
 	// 		"packageManager": "ms-python.python:pip"
 	// 	}
 	// ],
-	// "python.analysis.autoImportCompletions": true,
-	// "python.analysis.completeFunctionParens": true,
-	// "python.analysis.enableTroubleshootMissingImports": true,
-	// "python.analysis.inlayHints.functionReturnTypes": true,
-	// "python.analysis.inlayHints.variableTypes": true,
-	// "python.analysis.typeCheckingMode": "standard",
-	// "python.createEnvironment.contentButton": "show",
-	// "python.pythonPath": "${command:python.interpreterPath}",
-	// "python.terminal.focusAfterLaunch": true,
-	// "pythonTestExplorer.outputs.showOutputsOnRun": true,
 	"search.collapseResults": "alwaysCollapse",
 	"search.defaultViewMode": "list",
 	"security.promptForLocalFileProtocolHandling": false,
@@ -649,10 +628,10 @@
 	"terminal.integrated.drawBoldTextInBrightColors": true,
 	"terminal.integrated.env.osx": {
 		"LM_API_TOKEN": "${env:LM_API_TOKEN}",
-		"PYTHON": "/usr/bin/python3",
+		"PYTHON": "${command:python.interpreterPath}",
 		"USERHOME": "/Users/visualval"
 	},
-	"terminal.integrated.fontFamily": "'Lilex Nerd Font Mono', 'Lilex Nerd Font Propo', 'Lilex', 'Google Sans Code', 'GoogleSansCode-Regular', 'Liga DM Mono', 'LigaDMMono-Regular', monospace",
+	"terminal.integrated.fontFamily": "'IBM Plex Mono', 'Lilex Nerd Font Mono', 'Lilex Nerd Font Propo', 'Lilex', 'Google Sans Code', 'GoogleSansCode-Regular', 'Liga DM Mono', 'LigaDMMono-Regular', monospace",
 	"terminal.integrated.fontLigatures.enabled": true,
 	"terminal.integrated.fontLigatures.featureSettings": "'zero' 1, 'ss01' 0, 'ss02' 1, 'ss04' 1, 'cv03' 1, 'cv05' 1, 'cv06' 1, 'cv10' 1, 'opsz' 14, 'case' 1",
 	"terminal.integrated.gpuAcceleration": "on",
@@ -682,18 +661,17 @@
 		".eds",
 		".aaa"
 	],
-	"vscode-openai.apiKey": "${LM_API_TOKEN}",
+	"vscode-openai.apiKey": "${PH_API_TOKEN}",
 	"vscode-openai.authenticationMethod": "api-key",
 	"vscode-openai.azureApiVersion": "2024-06-01",
-	"vscode-openai.baseUrl": "http://127.0.0.1:1234/v1",
+	"vscode-openai.baseUrl": "http://localhost:1234/v1",
 	"vscode-openai.conversation-configuration.api-headers": [
 		{
-			"Authorization": "Bearer ${LM_API_TOKEN}",
+			"Authorization": "Bearer ${PH_API_TOKEN}",
 			"Content-Type": "application/json",
 			"X-Client-Name": "vscode"
 		}
 	],
-	"vscode-openai.conversation-configuration.assistant-rules": false,
 	"vscode-openai.conversation-configuration.colors": {
 		"darkAssistantBackground": "#442233",
 		"darkAssistantColor": "#FF9966",
@@ -706,9 +684,9 @@
 	"vscode-openai.conversation-configuration.temperature": 0.4,
 	"vscode-openai.conversation-configuration.top-p": 0.9,
 	"vscode-openai.defaultModel": "qwen3-4b-instruct-2507",
-	"vscode-openai.embeddingModel": "setup-required",
-	"vscode-openai.embeddingsDeployment": "setup-required",
-	"vscode-openai.scmDeployment": "setup-required",
+	"vscode-openai.embeddingModel": "text-embedding-nomic-embed-text-v1.5",
+	"vscode-openai.embeddingsDeployment": "text-embedding-nomic-embed-text-v1.5",
+	"vscode-openai.scmDeployment": "qwen3-4b-instruct-2507",
 	"vscode-openai.scmModel": "qwen3-4b-instruct-2507",
 	"vscode-openai.serviceProvider": "Custom-OpenAI",
 	"window.zoomLevel": 0,
@@ -717,18 +695,23 @@
 	"workbench.browser.openLocalhostLinks": true,
 	"workbench.browser.showInTitleBar": true,
 	"workbench.colorCustomizations": {
-		"editor.background": "#16181F",
+		"editor.background": "#17191F",
 		"editor.lineHighlightBackground": "#FF88FF22",
 		"editor.lineHighlightBorder": "#FFFFFF00",
 		"editor.selectionHighlightBackground": "#EE66ff44",
 		"editor.selectionHighlightBorder": "#FFFFFF00",
 		"editor.wordHighlightBackground": "#CC33ff44",
-		"editor.wordHighlightBorder": "#FFFFFF11",
-		"editor.wordHighlightStrongBackground": "#AA00ff44",
+		"editor.wordHighlightBorder": "#FFEEDD11",
+		"editor.wordHighlightStrongBackground": "#AA00FF44",
 		"editor.wordHighlightStrongBorder": "#00000011",
+		"editorBracketHighlight.foreground": "#FF66BBDD",
+		"editorBracketMatch.background": "#FF88FF33",
+		"editorBracketMatch.border": "#00000011",
+		"editorCursor.foreground": "#1177FFEE",
+		"editor.foreground": "#DDDFFEEE",
 		"textPreformat.background": "#99667733",
 		"textPreformat.border": "#99667733",
-		"textPreformat.foreground": "#FF9966"
+		"textPreformat.foreground": "#FF8866"
 	},
 	"workbench.commandPalette.experimental.suggestCommands": true,
 	"workbench.commandPalette.showAskInChat": true,
@@ -739,11 +722,12 @@
 	},
 	"workbench.editor.highlightModifiedTabs": true,
 	"workbench.editor.tabSizing": "fit",
+	"workbench.editor.useModal": "some",
 	"workbench.editorAssociations": {
 		"*.copilotmd": "vscode.markdown.preview.editor",
 		"*.css": "default",
-		"*.xlsx": "default",
-		"*.json": "default"
+		"*.json": "default",
+		"*.xlsx": "default"
 	},
 	"workbench.iconTheme": "vs-nomo-dark",
 	"workbench.reduceMotion": "on",
@@ -769,5 +753,98 @@
 	"yaml.schemas": {
 		"./.schemas/collection.schema.json": "*.collection.yml",
 		"./.schemas/tools.schema.json": "website/data/tools.yml"
-	}
+	},
+	"github.copilot.enable": {
+		"*": true,
+		"plaintext": false,
+		"markdown": false,
+		"scminput": false,
+		"jsonc": true
+	},
+	"vscode-openai.azureDeployment": "setup-required",
+	"chat.agent.sandbox.allowNetwork": true,
+	"editor.fontSize": 13,
+	"terminal.integrated.fontSize": 13,
+	"acp.agents": {
+		"GitHub Copilot": {
+			"command": "npx",
+			"args": [
+				"@github/copilot-language-server@latest",
+				"--acp"
+			],
+			"env": {}
+		},
+		"Claude Code": {
+			"command": "npx",
+			"args": [
+				"@agentclientprotocol/claude-agent-acp@latest"
+			],
+			"env": {}
+		},
+		"Gemini CLI": {
+			"command": "gemini",
+			"args": [
+				"--experimental-acp"
+			],
+			"env": {}
+		},
+		"Qwen Code": {
+			"command": "qwen",
+			"args": [
+				"--acp"
+			],
+			"env": {}
+		},
+		"Qoder CLI": {
+			"command": "npx",
+			"args": [
+				"@qoder-ai/qodercli@latest",
+				"--acp"
+			],
+			"env": {}
+		},
+		"Codex CLI": {
+			"command": "npx",
+			"args": [
+				"@zed-industries/codex-acp@latest"
+			],
+			"env": {}
+		},
+		"OpenCode": {
+			"command": "opecode",
+			"args": [
+				"acp"
+			],
+			"env": {}
+		},
+		"OpenClaw": {
+			"command": "npx",
+			"args": [
+				"openclaw",
+				"acp"
+			],
+			"env": {}
+		},
+		"Kiro CLI": {
+			"command": "kiro-cli",
+			"args": [
+				"acp"
+			],
+			"env": {}
+		},
+		"Hermes Agent": {
+			"command": "hermes",
+			"args": [
+				"acp"
+			],
+			"env": {}
+		},
+		"pi-acp": {
+			"command": "pi",
+			"args": [
+				"--acp"
+			]
+		}
+	},
+	"chat.viewSessions.orientation": "stacked"
 }

@@ -192,7 +192,7 @@ async function fetchToolProfileFromRouter() {
 // Two responsibilities:
 //   1. Server discovery and on-demand start
 //      (prompthub_list_available_servers, prompthub_start_server) —
-//      surfaces servers like obsidian / chrome-devtools-mcp / browsermcp
+//      surfaces on-demand servers like chrome-devtools-mcp
 //      whose tools are invisible until the server is running.
 //   2. Cross-session memory search (prompthub_memory_search) —
 //      lets chat models consult prior facts/blocks before reaching for
@@ -221,13 +221,13 @@ const META_TOOLS = [
   {
     name: 'prompthub_start_server',
     description:
-      'Start a configured but stopped MCP server (auto_start=false servers like obsidian, chrome-devtools-mcp, browsermcp). Waits until the server reaches "running" status, then signals tools/list_changed so the client refreshes its tool list. Use prompthub_list_available_servers first to see which servers exist.',
+      'Start a configured but stopped MCP server (currently chrome-devtools-mcp). Waits until the server reaches "running" status, then signals tools/list_changed so the client refreshes its tool list. Use prompthub_list_available_servers first to see which servers exist.',
     inputSchema: {
       type: 'object',
       properties: {
         name: {
           type: 'string',
-          description: 'Server name as listed by prompthub_list_available_servers (e.g., "obsidian", "browsermcp").',
+          description: 'Server name as listed by prompthub_list_available_servers (for example, "chrome-devtools-mcp").',
         },
       },
       required: ['name'],

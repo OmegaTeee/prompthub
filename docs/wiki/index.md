@@ -20,7 +20,8 @@ Distilled ideas. One per page.
 
 Summarized external material.
 
-- _(empty — first source lands here.)_
+- [[sources/secrets-management-patterns]] — Keychain/keyring patterns for storing external API keys.
+- [[sources/task-tracking-conventions]] — TODO consolidation and task-tracking conventions.
 
 ## Entities
 
@@ -30,6 +31,9 @@ Named things: tools, services, platforms, people.
 - [[entities/obsidian-local-rest-api]] — Obsidian plugin exposing vault on `127.0.0.1:27124`.
 - [[entities/ph-docs-hygiene-profile]] — Profile for auditing wiki hygiene and structure.
 - [[entities/schemathesis]] — Property-based OpenAPI fuzzer via `app/schemathesis.toml`.
+- [[entities/keyring-integration-complete]] — Platform-native secure credential store integration.
+- [[entities/mcp-remote]] — Lightweight shim for talking to a local MCP over remote transport.
+- [[entities/mcp-stdio-vs-http-transport]] — Stdio vs HTTP MCP transport trade-offs.
 - [[entities/session-memory-storage]] — `SessionStorage` SQLite layer with FTS5 search.
 
 ## Syntheses
@@ -39,4 +43,4 @@ Cross-cutting analysis combining concepts/sources.
 - [[syntheses/middleware-architecture]] — ASGI middleware patterns distilled from enhancement review.
 
 ---
-*Updated: 2026-06-10*
+*Updated: 2026-07-06*

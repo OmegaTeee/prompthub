@@ -44,6 +44,7 @@
 ### Revise Project README
 
 - [ ] Update `README.md` to reflect the current architecture, active clients, and primary documentation entry points; remove the project status table if it cannot be kept current.
+- [ ] Add MCP prompts/resources in the next Headroom/PromptHub pass; use the new `hdiff`, `hloc`, and `hsg` helpers as the lightweight CLI side of that workflow.
 
 ## Later
 

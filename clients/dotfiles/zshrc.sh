@@ -65,23 +65,9 @@ compinit
 # Tool integrations
 # -----------------------------------------------------------------------------
 
-# if command -v ngrok &>/dev/null; then
-#   eval "$(ngrok completion)"
-# fi
 
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code -- --locate-shell-integration-path zsh)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-
-# OpenClaw Completion
-[ -f "/Users/visualval/.openclaw/completions/openclaw.zsh" ] && source "/Users/visualval/.openclaw/completions/openclaw.zsh"
-
-# pnpm
-export PNPM_HOME="/Users/visualval/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-esac
-# pnpm end

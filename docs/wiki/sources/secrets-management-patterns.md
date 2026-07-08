@@ -20,7 +20,7 @@ python router/main.py \
     "$(security find-generic-password -s MCP_SERVER_PASSWORD)"
 ```
 
-**Problems**: 
+**Problems**:
 - Non-deterministic timing (OSX security policy changes)
 - Race conditions on concurrent spawns
 - Error messages leak to stdout/stderr
@@ -29,14 +29,18 @@ python router/main.py \
 ### After: Keyring Integration
 
 ```python
-# router/supervisor.py
+# router/credential_resolver.py
 def resolve_server_env(name: str) -> ServerConfig:
     """Resolve credentials using keyring with fallback chain."""
-    return (
-        get_from_keyring(name),  # System keychain
-        or get_from_dotenv(name + "_KEY"),  # Dev override
-        or raise_cannot_resolve(name)  # Fail fast
-    )
+    keyring_secret = get_from_keyring(name)  # System keychain
+    if keyring_secret:
+        return keyring_secret
+
+    env_secret = get_from_dotenv(name + "_KEY")  # Dev override
+    if env_secret:
+        return env_secret
+
+    raise_cannot_resolve(name)  # Fail fast
 ```
 
 ## Best Practices Implemented

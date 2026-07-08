@@ -83,20 +83,6 @@
   "chat.tools.terminal.autoApprove": {
     "${workspaceFolder}/app/.venv/bin/python": true
   },
-  "explorer.excludeGitIgnore": false,
-  "explorer.autoReveal": false,
-  "vscode-openai.azureApiVersion": "2024-06-01",
-  "vscode-openai.azureDeployment": "setup-required",
-  "vscode-openai.baseUrl": "http://127.0.0.1:9090/v1",
-  "vscode-openai.conversation-configuration.api-headers": [
-    {
-      "Authorization": "Bearer sk-prompthub-vscode-001",
-      "Content-Type": "application/json"
-    }
-  ],
-  "vscode-openai.apiKey": "sk-prompthub-vscode-001",
-  "vscode-openai.defaultModel": "qwen3-4b-instruct-2507",
-  "vscode-openai.scmModel": "qwen3-4b-instruct-2507",
   "markdown.styles": [
     ".vscode/markdown.css"
   ]

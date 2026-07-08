@@ -74,13 +74,18 @@
   "ui": {
     "missionControlFullscreen": false,
     "showModelFileNameInMyModels": false,
-    "configureLoadParamsBeforeLoad": false,
+    "configureLoadParamsBeforeLoad": true,
     "alwaysOpenModelLoaderFromPicker": false,
     "contextDisplayMode": "percentage",
     "appNavigationBarPosition": "left",
     "showTabStripScrollBar": true,
     "tabStripFullStripStyle": false,
     "openDownloadsPaneOnStartNewModelDownload": false
+  },
+  "cloudInference": {
+    "billingContext": {
+      "type": "personal"
+    }
   },
   "configPresetInclusiveness": {
     "speculativeDecoding": false
@@ -106,14 +111,14 @@
   "appPostUpdateNotificationPending": false,
   "promptWhenCommittingUnsavedChangesWithNewFields": true,
   "enableLocalService": true,
-  "enableEngineProtocolRuntime": true,
+  "useLlamaCppEngineProtocolRuntime2": false,
   "cliInstalled": false,
   "useHFProxy": true,
   "hfSearchToken": "",
   "hfDownloadToken": "",
   "defaultContextLength": {
     "type": "custom",
-    "value": 4096
+    "value": 2048
   },
   "appIntroAcceptedForBuild": null
 }
