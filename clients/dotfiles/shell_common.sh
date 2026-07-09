@@ -293,27 +293,6 @@ alias prompthub-router-stop='launchctl bootout gui/$(id -u)/com.prompthub.router
 alias prompthub-health='curl http://localhost:9090/health'
 alias prompthub-logs='tail -f ~/prompthub/logs/router-stderr.log'
 
-# Ornith claude-cli
-# ornith-claude-agent-acp() {
-#     export ANTHROPIC_BASE_URL="http://localhost:11434/v1"
-#     export ANTHROPIC_API_KEY=$PH_API_TOKEN
-#     export ANTHROPIC_MODEL="rafw007/ornith-claude-coder"
-#     # Launch Claude Code
-#     claude --bare --model "$ANTHROPIC_MODEL" "$@"
-#     # Clean up variables
-#     unset ANTHROPIC_BASE_URL ANTHROPIC_API_KEY ANTHROPIC_MODEL
-# }
-# claude-ornith() {
-#     ANTHROPIC_BASE_URL="http://localhost:11434/v1" \
-#     ANTHROPIC_API_KEY="local-bypass" \
-#
-#      # Launch Claude Code
-#     claude --bare --model "rafw007/ornith-claude-coder" "$@"
-#
-#     # Clean up variables
-#     unset ANTHROPIC_BASE_URL ANTHROPIC_API_KEY ANTHROPIC_MODEL
-# }
-
 # Keyring CLI (app/scripts/manage-keys.py with venv auto-activated; subshell so the venv doesn't leak)
 prompthub_keys() {
   (cd "${HOME}/prompthub/app" && . .venv/bin/activate && python scripts/manage-keys.py "$@")
@@ -323,3 +302,7 @@ prompthub_keys() {
 alias vault-goose='${HOME}/prompthub/clients/vault-writer/vault-goose'
 alias vault-aider='${HOME}/prompthub/clients/vault-writer/vault-aider'
 alias vault-codex='${HOME}/prompthub/clients/vault-writer/vault-codex'
+alias goose-lmstudio='${HOME}/prompthub/clients/goose/goose-lmstudio'
+alias goose-codex-acp='${HOME}/prompthub/clients/goose/goose-codex-acp'
+alias goose-pi-acp='${HOME}/prompthub/clients/goose/goose-pi-acp'
+alias goose-claude-acp='${HOME}/prompthub/clients/goose/goose-claude-acp'
