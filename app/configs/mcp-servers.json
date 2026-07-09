@@ -128,31 +128,24 @@
       "proxy_timeout": 180,
       "description": "Perplexity research via Comet browser CDP bridge"
     },
-    "browsermcp": {
-      "package": "@browsermcp/mcp",
+    "knowledge-to-action": {
+      "package": "@tac0de/knowledge-to-action-mcp",
       "transport": "stdio",
       "command": "node",
       "args": [
-        "./mcps/node_modules/@browsermcp/mcp/dist/index.js"
+        "./mcps/node_modules/@tac0de/knowledge-to-action-mcp/dist/index.js"
       ],
-      "env": {},
-      "auto_start": false,
-      "restart_on_failure": false,
-      "max_restarts": 3,
-      "health_check_interval": 30,
-      "description": "Browser automation via Chrome extension WebSocket bridge"
-    },
-    "applescript-mcp": {
-      "package": "@peakmojo/applescript-mcp",
-      "transport": "stdio",
-      "command": "node",
-      "args": ["./mcps/node_modules/@peakmojo/applescript-mcp/server.js"],
-      "env": {},
-      "auto_start": false,
+      "env": {
+        "OBSIDIAN_VAULT_ROOT": "/Users/visualval/Lab",
+        "EMBEDDINGS_ENABLED": "true",
+        "PLANNING_ENABLED": "true",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+      },
+      "auto_start": true,
       "restart_on_failure": true,
       "max_restarts": 3,
       "health_check_interval": 30,
-      "description": "macOS automation via AppleScript"
+      "description": "Knowledge to Action MCP server"
     }
   }
 }

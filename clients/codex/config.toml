@@ -91,8 +91,8 @@ source_type = "local"
 source = "/Users/visualval/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
 [marketplaces.ponytail]
-last_updated = "2026-07-07T10:17:12Z"
-last_revision = "1b2760d384c44e573a9d8c7a729fac616e5c3a76"
+last_updated = "2026-07-08T23:53:13Z"
+last_revision = "6c08d364470ef3d40fc232b3c8eab608d2f3f018"
 source_type = "git"
 source = "https://github.com/DietrichGebert/ponytail.git"
 
@@ -176,13 +176,13 @@ last_updated = "2026-06-29T23:07:25Z"
 source_type = "local"
 source = "/Users/visualval/.codex/plugins/cache/sisyphuslabs"
 [plugins."omo@sisyphuslabs"]
-enabled = true
+enabled = false
 
 [plugins."omo@sisyphuslabs".mcp_servers.context7]
-enabled = true
+enabled = false
 
 [plugins."omo@sisyphuslabs".mcp_servers.codegraph]
-enabled = true
+enabled = false
 
 [plugins."omo@sisyphuslabs".mcp_servers.git_bash]
 enabled = false

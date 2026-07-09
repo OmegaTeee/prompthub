@@ -1,7 +1,7 @@
 {
   "default": {
     "enabled": true,
-    "model": "Qwopus3.5-4B-v3-GGUF",
+    "model": "qwen3-4b-instruct-2507",
     "system_prompt": "You are a prompt engineer. Rewrite the user's prompt to be clearer, more specific, and more actionable. Keep the same intent and tone. Return only the rewritten prompt — no explanation, no preamble, no quotes.",
     "temperature": 0.3,
     "max_tokens": 500,
@@ -9,20 +9,18 @@
   },
   "model_profiles": {
     "daemon": {
-      "model": "Qwopus3.5-4B-v3-GGUF"
+      "model": "qwen3-4b-instruct-2507"
     },
     "coder": {
-      "model": "Qwopus3.5-9B-Coder-GGUF"
-    },
-    "claude_feel": {
-      "model": "Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF"
+      "model": "ornith-1.0-9b-coder"
     },
     "instruct": {
-      "model": "qwen3-4b-instruct-2507"
+      "model": "qwen3-8b"
     }
   },
   "clients": {
     "claude-desktop": {
+      "enabled": false,
       "model": "qwen3-4b-instruct-2507",
       "tool_profile": {
         "disclosure": "progressive",
@@ -34,6 +32,7 @@
       "privacy_level": "local_only"
     },
     "claude-code": {
+      "enabled": false,
       "model": "qwen3-4b-instruct-2507",
       "model_profile": "coder",
       "tool_profile": {
@@ -45,8 +44,22 @@
       "max_tokens": 600,
       "privacy_level": "local_only"
     },
+    "codex": {
+      "enabled": false,
+      "model": "qwen3-4b-instruct-2507",
+      "model_profile": "coder",
+      "tool_profile": {
+        "disclosure": "progressive",
+        "tier1_servers": ["desktop-commander", "context7", "memory"]
+      },
+      "system_prompt": "You are a prompt engineer for coding tasks. Rewrite user's prompt be more precise actionable for a code-generation AI. Include relevant context like language, framework, file paths if implied. Return only rewritten prompt — no explanation.",
+      "temperature": 0.2,
+      "max_tokens": 600,
+      "privacy_level": "local_only"
+    },
     "vscode": {
-      "model": "qwen3-1.7b",
+      "enabled": false,
+      "model": "qwen3-4b-instruct-2507",
       "model_profile": "coder",
       "tool_profile": {
         "disclosure": "progressive",
@@ -58,6 +71,7 @@
       "privacy_level": "local_only"
     },
     "raycast": {
+      "enabled": false,
       "model": "qwen3-4b-instruct-2507",
       "system_prompt": "You are a prompt engineer for quick tasks. Rewrite the user's prompt to be action-oriented and specific. Prefer CLI-style commands where relevant. Keep it under 150 words. Return only the rewritten prompt — no explanation.",
       "temperature": 0.3,
@@ -65,6 +79,7 @@
       "privacy_level": "free_ok"
     },
     "perplexity": {
+      "enabled": false,
       "model": "qwen3-4b-instruct-2507",
       "system_prompt": "Rewrite the user's prompt as a complete-sentence question that Comet's search box can parse cleanly. When a URL is implied — like a phrase referencing a domain or a 'this page' deictic — name the URL directly in the rewrite. When the user signals depth, preserve that signal in plain wording so Comet picks the right mode. Keep the rewrite as plain prose. Return only the rewritten prompt — no explanation, no preamble, no quotes.",
       "temperature": 0.3,
@@ -72,6 +87,7 @@
       "privacy_level": "free_ok"
     },
     "cursor": {
+      "enabled": false,
       "model": "qwen3-4b-instruct-2507",
       "system_prompt": "You are a prompt engineer for coding tasks. Rewrite the user's prompt to be precise and file-path-aware. Be concise. Return only the rewritten prompt — no explanation, no preamble.",
       "temperature": 0.2,
@@ -79,6 +95,7 @@
       "privacy_level": "local_only"
     },
     "comfyui": {
+      "enabled": false,
       "model": "qwen3-4b-instruct-2507",
       "system_prompt": "You are a prompt engineer for AI image generation. Expand the user's prompt into a rich, detailed image generation prompt. Include: subject, composition, art style, lighting, color palette, mood, and quality tags like 'highly detailed, 8k, professional photography'. Return only the enhanced prompt — no explanation.",
       "temperature": 0.5,
@@ -86,6 +103,7 @@
       "privacy_level": "local_only"
     },
     "open-webui": {
+      "enabled": false,
       "model": "qwen3-4b-instruct-2507",
       "tool_profile": {
         "disclosure": "progressive",
@@ -97,6 +115,7 @@
       "privacy_level": "local_only"
     },
     "lm-studio": {
+      "enabled": false,
       "model": "qwen3-4b-instruct-2507",
       "system_prompt": "Rewrite the user's prompt to be clearer, more specific, and action-oriented for a tool-capable chat model. When the prompt implies web research, name the URL directly. When it implies file operations, name the file path directly. When it implies library docs, name the library directly. Do not list these as templates or examples in the output — fill them in. Do not name specific tool names. Preserve conversational tone. Return only the rewritten prompt — no explanation, no preamble.",
       "temperature": 0.3,
@@ -104,6 +123,7 @@
       "privacy_level": "local_only"
     },
     "opencode": {
+      "enabled": false,
       "model": "qwen3-4b-instruct-2507",
       "system_prompt": "You are a prompt engineer for terminal-based coding tasks. Rewrite the user's prompt to be precise and actionable for a code-generation AI with Git integration. Include relevant context like language, framework, file paths, or Git operations if implied. Return only the rewritten prompt — no explanation.",
       "temperature": 0.2,
@@ -113,7 +133,7 @@
   },
   "fallback_chain": [
     "qwen3-4b-instruct-2507",
-    "qwen3-1.7b",
+    "qwen3-8b",
     null
   ]
 }
