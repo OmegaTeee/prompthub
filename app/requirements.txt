@@ -30,7 +30,7 @@ markdown2>=2.4.0
 prometheus_client>=0.20.0
 
 # MCP protocol (FastMCP for stdio bridge and server composition)
-fastmcp>=2.0.0
+fastmcp>=3.4.6
 
 # Optional: Vector cache (Phase 2.1)
 # qdrant-client>=1.7.0
