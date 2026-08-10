@@ -116,6 +116,38 @@ extensions:
     description: 'Analyze code structure with tree-sitter: directory overviews, file details, symbol call graphs'
     display_name: Analyze
     bundled: true
+  computercontroller:
+    enabled: false
+    type: builtin
+    name: computercontroller
+    description: General computer control tools that don't require you to be a developer or engineer.
+    display_name: Computer Controller
+    timeout: 300
+    bundled: true
+  autovisualiser:
+    enabled: false
+    type: builtin
+    name: autovisualiser
+    description: Data visualization and UI generation tools
+    display_name: Auto Visualiser
+    timeout: 300
+    bundled: true
+  memory:
+    enabled: false
+    type: builtin
+    name: memory
+    description: Teach goose your preferences as you go.
+    display_name: Memory
+    timeout: 300
+    bundled: true
+  tutorial:
+    enabled: false
+    type: builtin
+    name: tutorial
+    description: Access interactive tutorials and guides
+    display_name: Tutorial
+    timeout: 300
+    bundled: true
 providers:
   openai:
     enabled: true
@@ -135,14 +167,10 @@ providers:
     configured: true
   claude-acp:
     enabled: true
-    model: default
+    model: current
     configured: true
-active_provider: lmstudio
 GOOSE_MOIM_MESSAGE_FILE: /Users/visualval/.local/share/prompthub/clients/goose/tools-policy.md
 GOOSE_TELEMETRY_ENABLED: true
-codex-acp_configured: true
-pi-acp_configured: true
-claude-acp_configured: true
 CLAUDE_CODE_COMMAND: claude
 PI_ACP_ENABLE_EMBEDDED_CONTEXT: true
 LMSTUDIO_HOST: http://localhost:1234

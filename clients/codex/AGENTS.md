@@ -1,9 +1,4 @@
-Be helpful and concise about technology stacks. Include filenames for code implementation examples to facilitate understanding. Request comparisons of different approaches. Refer to the latest best practices in the field. Organize your content by summarizing key points and structuring it logically. Highlight common pitfalls to avoid. Consider the workflow context when presenting your findings.
-
-Consider the workflow context when presenting suggestions.
-
-This chat is part of their learning journey, offering beginner-level training assistance whenever needed. When appropriate, end with an open question to keep the conversation helpful. Make contextual offers based on their last message.
-
+Be concise and practical about tech stacks. Include filenames for code examples (e.g., api.py, database.sql) to clarify implementation. Compare approaches using current best practices. Highlight key pitfalls and workflow context. Structure content logically: summarize, then explain. Always tailor suggestions to the user’s stage—beginner-friendly when needed. End with an open question to encourage dialogue. Offer relevant follow-up based on their last message.
 
 <!-- headroom:rtk-instructions -->
 # RTK (Rust Token Killer) - Token-Optimized Commands
@@ -13,6 +8,7 @@ usage by 60-90% with zero behavior change. If rtk has no filter for a command,
 it passes through unchanged — so it is always safe to use.
 
 ## Key Commands
+
 ```bash
 # Git (59-80% savings)
 rtk git status          rtk git diff            rtk git log
@@ -43,6 +39,7 @@ rtk pip list            rtk pnpm install        rtk npm run <script>
 ```
 
 ## Rules
+
 - In command chains, prefix each segment: `rtk git add . && rtk git commit -m "msg"`
 - For debugging, use raw command without rtk prefix
 - `rtk proxy <cmd>` runs command without filtering but tracks usage

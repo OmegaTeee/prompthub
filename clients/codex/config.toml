@@ -4,7 +4,7 @@ openai_base_url = "http://127.0.0.1:8787/v1"
 # --- end Headroom ---
 
 personality = "pragmatic"
-model = "gpt-5.4"
+model = "gpt-5.6-luna"
 model_reasoning_effort = "medium"
 
 notify = ["/Users/visualval/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
@@ -47,9 +47,6 @@ enabled = true
 [plugins."browser@openai-bundled"]
 enabled = true
 
-[plugins."sites@openai-bundled"]
-enabled = true
-
 [plugins."chrome@openai-bundled"]
 enabled = true
 
@@ -68,31 +65,35 @@ enabled = true
 [projects."/Users/visualval/.local/share/prompthub"]
 trust_level = "trusted"
 
-[projects."/Users/visualval/code/grandgardens"]
-trust_level = "trusted"
-
-[projects."/Users/visualval/Vault/LLM"]
-trust_level = "trusted"
 
 [projects."/Users/visualval/fontforge"]
 trust_level = "trusted"
 
-[projects."/Users/visualval/Vault/Scratch"]
+[projects."/Users/visualval/Vault"]
+trust_level = "trusted"
+
+[projects."/Users/visualval/code/dotfiles"]
+trust_level = "trusted"
+
+[projects."/Users/visualval/code/notebooks"]
+trust_level = "trusted"
+
+[projects."/Users/visualval/code/oh-my-cli"]
 trust_level = "trusted"
 
 [marketplaces.openai-bundled]
-last_updated = "2026-06-25T03:10:00Z"
+last_updated = "2026-08-09T20:54:51Z"
 source_type = "local"
 source = "/Users/visualval/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-06-25T03:07:27Z"
+last_updated = "2026-08-06T06:09:21Z"
 source_type = "local"
 source = "/Users/visualval/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
 [marketplaces.ponytail]
-last_updated = "2026-07-08T23:53:13Z"
-last_revision = "6c08d364470ef3d40fc232b3c8eab608d2f3f018"
+last_updated = "2026-08-09T20:12:46Z"
+last_revision = "2ed6c52c9d7e5e56942508591085fd45dea277d3"
 source_type = "git"
 source = "https://github.com/DietrichGebert/ponytail.git"
 
@@ -118,6 +119,14 @@ show-context-window-usage = true
 hotkey-window-projectless-default-enabled = true
 git-show-sidebar-pr-icons = true
 conversationDetailMode = "STEPS_COMMANDS"
+followUpQueueMode = "steer"
+dock-icon-preference = "codex-system"
+git-pull-request-merge-method = "squash"
+selected-avatar-id = "codex"
+enabled-reasoning-efforts = ["low", "medium", "high", "xhigh"]
+show-ultra-in-model-picker-slider = false
+dictationDictionary = ["ASD-STE100 Simplified Technical English"]
+open-link-in-target-preference = "in-app-browser"
 
 [tui.model_availability_nux]
 "gpt-5.4-mini" = 1
@@ -137,22 +146,30 @@ args = ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-s
 
 [mcp_servers.node_repl]
 args = []
-command = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node_repl"
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
 startup_timeout_sec = 120
 
 [mcp_servers.node_repl.env]
 NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
-NODE_REPL_NODE_MODULE_DIRS = "/Applications/Codex.app/Contents/Resources/cua_node/lib/node_modules"
-NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/visualval/.codex"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/visualval/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 CODEX_HOME = "/Users/visualval/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "5504c0782b5c86b7dd08314045b9843e973a230e1be8f7e2e0ba3716fc63c55e"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "091a81603ff202a16ed56557709bf42d97caf8f0dd2e07ae9e26d7c014d71035"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.616.81150"
-CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
+BROWSER_USE_CODEX_APP_VERSION = "26.730.61639"
+SKY_CUA_SERVICE_PATH = "/Users/visualval/.codex/computer-use/Codex Computer Use.app"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
+enabled = false
 # --- end Headroom MCP server: serena ---
 
 # --- Headroom proxy (auto-injected by headroom wrap codex) ---
@@ -170,11 +187,6 @@ max_concurrent_threads_per_session = 10000
 [notice]
 hide_world_writable_warning = true
 hide_full_access_warning = true
-
-[marketplaces.sisyphuslabs]
-last_updated = "2026-06-29T23:07:25Z"
-source_type = "local"
-source = "/Users/visualval/.codex/plugins/cache/sisyphuslabs"
 [plugins."omo@sisyphuslabs"]
 enabled = false
 
@@ -186,6 +198,12 @@ enabled = false
 
 [plugins."omo@sisyphuslabs".mcp_servers.git_bash]
 enabled = false
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."sites@openai-bundled"]
+enabled = true
 
 [hooks.state."omo@sisyphuslabs:hooks/session-start-loading-project-rules.json:session_start:0:0"]
 trusted_hash = "sha256:7110bdc6b474f491ba130385898460a217f517315c8a159e4a26c1861597e4b9"
@@ -279,3 +297,17 @@ config_file = "./agents/momus.toml"
 
 [agents.plan]
 config_file = "./agents/plan.toml"
+
+[apps.connector_69312da8e4dc81919370cb86fd172b6c]
+enabled = false
+
+[apps.asdk_app_699d522f170c81919c824678c7c03732]
+enabled = false
+
+[apps.connector_6938a7d323f48191aeabaf579802bf45]
+enabled = false
+
+[shell_environment_policy.set]
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "091a81603ff202a16ed56557709bf42d97caf8f0dd2e07ae9e26d7c014d71035"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/visualval/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"

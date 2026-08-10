@@ -114,3 +114,4 @@ clients/_ignore/
 *.tmp
 *.temp
 /tmp/
+*.zwc

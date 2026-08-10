@@ -13,7 +13,6 @@
   "python.terminal.useEnvFile": true,
   "python.terminal.activateEnvInCurrentTerminal": true,
   "python.terminal.activateEnvironment": true,
-  "python-envs.terminal.autoActivationType": "all",
   // ── Static analysis (Pylance) ───────────────────────────
   "python.analysis.typeCheckingMode": "standard",
   "python.analysis.autoSearchPaths": true,
@@ -45,15 +44,45 @@
   },
   "ruff.configuration": "${workspaceFolder}/app/pyproject.toml",
   "ruff.cwd": "${workspaceFolder}/app",
+  // ── Biome (JS/TS/JSON) ─────────────────────────────────
+  "biome.enabled": true,
+  "biome.requireConfiguration": true,
+  "biome.configurationPath": "${workspaceFolder}/clients/vscode/biome.json",
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.organizeImports.biome": "explicit"
+    }
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.organizeImports.biome": "explicit"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
   // ── Editor preferences ──────────────────────────────────
   "terminal.integrated.cwd": "${workspaceFolder}/app",
-  "terminal.integrated.inheritEnv": true,
   "terminal.integrated.enablePersistentSessions": true,
-  "terminal.integrated.commands": [
-    "claude",
-    "--continue",
-    "--fork-session"
-  ],
   "terminal.integrated.env.osx": {
     "PATH": "${workspaceFolder}/app/.venv/bin:${env:PATH}",
     "USERHOME": "/Users/visualval"

@@ -55,8 +55,9 @@
     "showResourceConsumptionWidget": true,
     "backendDownloadChannel": "stable",
     "appUpdateChannel": "stable",
+    "runtimeLogVerbosityLevel": 3,
     "allowDevelopmentPlugins": true,
-    "unloadPreviousJITModelOnLoad": true,
+    "unloadPreviousJITModelOnLoad": false,
     "jitModelTTL": {
       "enabled": true,
       "ttlSeconds": 3600
@@ -111,7 +112,7 @@
   "appPostUpdateNotificationPending": false,
   "promptWhenCommittingUnsavedChangesWithNewFields": true,
   "enableLocalService": true,
-  "useLlamaCppEngineProtocolRuntime2": false,
+  "useLlamaCppEngineProtocolRuntime3": true,
   "cliInstalled": false,
   "useHFProxy": true,
   "hfSearchToken": "",

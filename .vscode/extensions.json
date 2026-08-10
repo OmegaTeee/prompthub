@@ -1,33 +1,36 @@
 {
   "recommendations": [
     "ms-python.python",
-    "ms-python.debugpy",
-    "ms-python.pylint",
     "ms-python.vscode-pylance",
-    "ms-python.mypy-type-checker",
+    "ms-python.debugpy",
     "ms-python.vscode-python-envs",
+    "charliermarsh.ruff",
+    "biomejs.biome",
+    "ms-toolsai.jupyter",
+    "tamasfe.even-better-toml",
+    "redhat.vscode-yaml",
+    "monosans.djlint",
+    "davidanson.vscode-markdownlint",
+    "bradlc.vscode-tailwindcss",
+    "github.copilot-chat",
+    "github.vscode-pull-request-github",
+    "github.vscode-github-actions",
+    "ms-azuretools.vscode-docker"
+  ],
+  "unwantedRecommendations": [
+    "ms-python.mypy-type-checker",
+    "ms-pyright.pyright",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "magicstack.magicpython",
+    "openai.chatgpt",
+    "dbaeumer.vscode-eslint",
+    "ms-python.pylint",
     "ms-vscode.test-adapter-converter",
     "ms-vscode.vscode-copilot-vision",
     "ms-vscode.vscode-speech",
-    "magicstack.chromodynamics",
-    "magicstack.magicpython",
-    "charliermarsh.ruff",
-    "github.copilot-chat",
-    "github.vscode-pull-request-github",
-    "anthropic.claude-code",
-    "openai.chatgpt",
-    "tamasfe.even-better-toml",
-    "redhat.vscode-yaml",
-    "adamvoss.vscode-languagetool-en",
     "adamvoss.vscode-languagetool",
-    "be5invis.vscode-icontheme-nomo-dark",
-    "ibm.output-colorizer",
-    "davidmwhynot.markdown-highlightjs",
-    "ms-vscode.vscode-chat-customizations-evaluations"
-  ],
-  "unwantedRecommendations": [
-    "ms-pyright.pyright",
-    "ms-python.black-formatter",
-    "ms-python.isort"
+    "adamvoss.vscode-languagetool-en",
+    "ibm.output-colorizer"
   ]
 }

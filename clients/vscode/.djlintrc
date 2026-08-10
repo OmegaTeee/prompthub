@@ -1,0 +1,43 @@
+{
+  "profile": "django",
+  "indent": 2,
+  "indent_size": 2,
+  "max_line_length": 100,
+  "max_attribute_length": 80,
+  "max_blank_lines": 1,
+  "preserve_blank_lines": true,
+  "extension": [
+    ".html",
+    ".htm",
+    ".j2",
+    ".jinja",
+    ".jinja2"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    ".git",
+    ".venv",
+    "venv"
+  ],
+  "ignore": [
+    "H006",
+    "H017",
+    "H020",
+    "H025",
+    "T027"
+  ],
+  "include": [
+    "H001",
+    "H002",
+    "H030"
+  ],
+  "format_attribute_template_tags": true,
+  "format_html": true,
+  "format_js": false,
+  "format_css": false,
+  "preserve_leading_space": true,
+  "preserve_newlines": true,
+  "use_gitignore": true
+}
