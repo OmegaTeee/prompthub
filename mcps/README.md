@@ -16,7 +16,7 @@ mcps/
 └── README.md                     This file
 ```
 
-## Server Roster (11 servers)
+## Server Roster (8 servers)
 
 ### Auto-start (7 servers)
 
@@ -29,44 +29,16 @@ Started automatically when the router boots. Restarted on failure up to 3 times.
 | sequential-thinking | `@modelcontextprotocol/server-sequential-thinking` | stdio | Step-by-step reasoning and planning |
 | memory | `@modelcontextprotocol/server-memory` | stdio | Cross-session context persistence |
 | duckduckgo | `ddg-mcp-search` | stdio | DuckDuckGo web search with SafeSearch and region support |
-| obsidian-mcp-tools | `obsidian-mcp-tools` (binary `mcp-obsidian-vault`) | stdio | Obsidian vault operations via the MCP Tools plugin |
 | perplexity-comet | `perplexity-comet-mcp` | stdio | Perplexity research via Comet browser CDP bridge |
 
-### On-demand (4 servers)
+### On-demand (1 server)
 
 Started manually via `POST /servers/{name}/start` or dashboard. Set `auto_start: false`.
 
 | Server | Package | Transport | Description |
 | --- | --- | --- | --- |
 | chrome-devtools-mcp | `chrome-devtools-mcp` | stdio | Chrome DevTools Protocol debugging and browser automation |
-| browsermcp | `@browsermcp/mcp` | stdio | Browser automation via Chrome extension WebSocket bridge |
-| applescript-mcp | `@peakmojo/applescript-mcp` (global) | stdio | macOS automation via AppleScript |
-| homebrew | (built-in: `brew mcp-server`) | stdio | Homebrew package management |
 
-### Standalone binaries (not npm-managed)
-
-| Binary | Location | Installed via |
-| --- | --- | --- |
-| `mcp-server-fetch` | `~/.local/bin/mcp-server-fetch` | pipx (`mcp-server-fetch`) |
-| `mcp-obsidian-vault` | `~/.local/bin/mcp-obsidian-vault` | Obsidian plugin |
-
-
-  **MCP_OBSIDIAN_VAULT** is a PATH symlink to Obsidian's MCP Tools plugin's standalone binary. This is the version used by the router since it has direct vault access for features like periodic notes and recent changes. Plugin must run from within Obsidian to access vault files. Used for Obsidian-specific operations like periodic notes and recent changes.
-  - $MCP_OBSIDIAN_VAULT →
-    - SYMLINK="~/.local/bin/mcp-obsidian-vault"
-      - TARGET="~/Vault/.obsidian/plugins/mcp-tools/bin/mcp-server"
-
-  <!--
-  - `mcp-obsidian-pipx` → (~/.local/bin/mcp-obsidian-pipx) -> `~/.local/pipx/venvs/mcp-obsidian/bin/mcp-obsidian`
-    - Separate build outside of plugins for testing. Used for testing and development of Obsidian MCP server without needing to run the full Obsidian app. Lacks vault access, so some features are limited.
-  /-->
-
-  **MCP_SERVER_FETCH** is a $PATH symlink to Standalone Python MCP server for fetching URLs with `requests`. Used for tools that need to fetch web content without CORS issues, like Claude's `fetch_url` tool. Not managed by the router since it's a standalone binary, but referenced directly in client bridge configs.
-  - $PATH="mcp-server-fetch" →
-    - SYMLINK="~/.local/bin/mcp-server-fetch"
-      - TARGET="~/.local/pipx/venvs/mcp-server-fetch/bin/mcp-server-fetch"
-
-Currently `mcp-server-fetch` is referenced directly in client bridge configs (`.mcp.json`, `clients/*/mcp.json`) but is not in the router's `mcp-servers.json` — it runs independently alongside the bridge.
 
 ## Bridge (`prompthub-bridge.js`)
 
@@ -217,6 +189,31 @@ npm update <package>    # update one
 curl localhost:9090/servers     # list servers and status
 curl localhost:9090/tools/stats # tool registry cache stats
 ```
+
+## Goose skills-mcp extension (lazy skill loading)
+
+Goose loads the curated skill long-tail on demand via `skills-mcp` (configured in
+[`clients/goose/config.yaml`](../clients/goose/config.yaml)) instead of eagerly injecting
+the ~56K-token catalog that overflows local context. It exposes `list_skills` / `get_skill`
+over two scopes: `~/.local/share/prompthub/skills-curated/` (56 skills) and `~/.claude/skills`.
+
+Add a scope by appending another `-s <dir>` pair to the extension's `args`.
+
+**Validated** (2026-06-17): the full chain works on Goose — `list_skills → get_skill → obey`
+(an agent discovers a skill by purpose, loads only its body, and acts on it). The discover→load
+directive lives in the global hint [`clients/goose/.goosehints`](../clients/goose/.goosehints)
+(symlinked to `~/.config/goose/.goosehints`), so no per-prompt instruction is needed.
+
+**Reliability caveat:** skill-routing depends on the model.
+- Use an **instruct** model (`qwen3-4b-instruct-2507`) — it emits clean `tool_calls`. The
+  **coder** model (`qwen3-coder-30b`) emits malformed `<function=…>` text and does **not** work.
+- Load the model with **≥32K context** (the 96-skill `list_skills` result is large; 16K overflows).
+- On a 4B model the hands-off chain is **flaky** (non-deterministic stalls at load). For reliable
+  routing, add an explicit in-prompt directive, retry, or use a more capable model
+  (`qwen3-8b` / a 27B distill). See `wiki/schema/qwen-local-writing-setup.md` in the LLM vault.
+
+Deferred (separate work order): promoting `skills-mcp` into `prompthub-bridge.js` as a tier-1
+meta-tool for cross-client serving (fills Cherry's empty Resources tab).
 
 ## References
 

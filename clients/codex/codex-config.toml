@@ -1,9 +1,9 @@
 personality = "pragmatic"
 
 [mcp_servers.prompthub-bridge]
-args = ["/Users/visualval/prompthub/mcps/prompthub-bridge.js"]
+args = ["/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"]
 command = "node"
-cwd = "~/prompthub"
+cwd = "/Users/visualval/.local/share/prompthub"
 enabled = true
 
 [mcp_servers.prompthub-bridge.env]

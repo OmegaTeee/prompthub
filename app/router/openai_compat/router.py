@@ -213,9 +213,10 @@ def create_openai_compat_router(
                 },
             )
 
-        # Circuit breaker check
+        # Circuit breaker check (isolated per model so one bad model name
+        # can't trip the breaker for every other model/client).
         cb_registry = circuit_breakers()
-        breaker = cb_registry.get("llm-proxy") if cb_registry else None
+        breaker = cb_registry.get(f"llm-proxy:{body.model}") if cb_registry else None
         if breaker:
             try:
                 breaker.check()
@@ -255,6 +256,10 @@ def create_openai_compat_router(
             payload["top_p"] = body.top_p
         if body.stop is not None:
             payload["stop"] = body.stop
+        if body.tools is not None:
+            payload["tools"] = body.tools
+        if body.tool_choice is not None:
+            payload["tool_choice"] = body.tool_choice
 
         # --- Streaming response ---
         if body.stream:
@@ -275,6 +280,8 @@ def create_openai_compat_router(
                 messages=messages,
                 temperature=body.temperature,
                 max_tokens=body.max_tokens,
+                tools=body.tools,
+                tool_choice=body.tool_choice,
             )
             if breaker:
                 breaker.record_success()
@@ -301,7 +308,7 @@ def create_openai_compat_router(
         """
         try:
             models = await _llm_client.list_models()
-            return {"object": "list", "data": models}
+            return {"object": "list", "data": models, "models": models}
         except Exception as e:
             raise HTTPException(
                 status_code=502,
@@ -357,18 +364,6 @@ def create_openai_compat_router(
             client_name=client_name,
         )
 
-        # Reject streaming — not supported
-        if body.stream:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": {
-                        "message": "Streaming not supported for /v1/responses. Disable streaming in your client.",
-                        "type": "invalid_request_error",
-                    }
-                },
-            )
-
         # Guard: reject OpenAPI swagger placeholder model names. Spaces are NOT
         # rejected — see notes on the matching guard in chat_completions.
         if not body.model or body.model.strip() in ("", "string", "model"):
@@ -387,9 +382,10 @@ def create_openai_compat_router(
                 },
             )
 
-        # Circuit breaker check
+        # Circuit breaker check (isolated per model so one bad model name
+        # can't trip the breaker for every other model/client).
         cb_registry = circuit_breakers()
-        breaker = cb_registry.get("llm-proxy") if cb_registry else None
+        breaker = cb_registry.get(f"llm-proxy:{body.model}") if cb_registry else None
         if breaker:
             try:
                 breaker.check()
@@ -416,13 +412,91 @@ def create_openai_compat_router(
         messages = _translate_responses_to_messages(body.input, body.instructions)
         messages = await _maybe_enhance(messages, request, api_key)
 
-        # Forward to LLM server
+        model = body.model
+        temperature = (
+            body.temperature if body.temperature is not None else 0.7
+        )
+        max_tokens = body.max_output_tokens
+        chat_tools = _responses_tools_to_chat(body.tools)
+        chat_tool_choice = _responses_tool_choice_to_chat(body.tool_choice)
+
+        # --- Streaming response ---
+        # Emit `response.created` IMMEDIATELY (before awaiting the model) so the
+        # client sees the stream is live and won't time out / reconnect on slow
+        # backends. The model is awaited inside the generator, after the first
+        # byte has gone out.
+        if body.stream:
+            resp_id = f"resp_{uuid.uuid4().hex[:24]}"
+
+            async def _stream_responses_live():
+                # 1. First byte: response.created (model not yet awaited).
+                yield _response_created_event(resp_id, model)
+
+                # 2. Await the completion. Errors here can't raise out of the
+                #    generator (the response has already started) — emit a
+                #    terminal SSE error event instead.
+                try:
+                    completion = await _llm_client.chat_completion(
+                        model=model,
+                        messages=messages,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                        tools=chat_tools,
+                        tool_choice=chat_tool_choice,
+                    )
+                    if breaker:
+                        breaker.record_success()
+                    audit_event(
+                        event_type="openai_proxy",
+                        action="responses",
+                        resource_type="llm",
+                        resource_name=model,
+                        status="success",
+                        stream=True,
+                    )
+                except (LLMConnectionError, LLMError, httpx.HTTPError) as e:
+                    if breaker:
+                        breaker.record_failure(e)
+                    logger.error(
+                        "Streaming /responses error for model=%s: %s", model, e
+                    )
+                    audit_event(
+                        event_type="openai_proxy",
+                        action="responses",
+                        resource_type="llm",
+                        resource_name=model,
+                        status="failed",
+                        error=str(e),
+                    )
+                    yield _sse_event("error", {"error": {"message": str(e)}})
+                    yield "data: [DONE]\n\n"
+                    return
+
+                # 3. Remaining events (created already emitted above).
+                resp_dict = completion.model_dump()
+                async for chunk in _stream_responses(
+                    resp_dict, model, emit_created=False, resp_id=resp_id
+                ):
+                    yield chunk
+
+            return StreamingResponse(
+                _stream_responses_live(),
+                media_type="text/event-stream",
+                headers={
+                    "Cache-Control": "no-cache",
+                    "X-Accel-Buffering": "no",
+                },
+            )
+
+        # --- Non-streaming response ---
         try:
             response = await _llm_client.chat_completion(
-                model=body.model,
+                model=model,
                 messages=messages,
-                temperature=body.temperature if body.temperature is not None else 0.7,
-                max_tokens=body.max_output_tokens,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                tools=chat_tools,
+                tool_choice=chat_tool_choice,
             )
             if breaker:
                 breaker.record_success()
@@ -431,8 +505,9 @@ def create_openai_compat_router(
                 event_type="openai_proxy",
                 action="responses",
                 resource_type="llm",
-                resource_name=body.model,
+                resource_name=model,
                 status="success",
+                stream=False,
             )
 
             return _build_responses_response(response.model_dump())
@@ -444,6 +519,206 @@ def create_openai_compat_router(
 
 
 # --- Helper functions ---
+
+
+def _sse_event(event_type: str, data: dict) -> str:
+    """Format a single SSE event with an `event:`/`data:` pair."""
+    return f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
+
+
+def _response_created_event(resp_id: str, model: str) -> str:
+    """Build the `response.created` SSE event (status in_progress, empty output).
+
+    Emitted immediately when a stream opens — before the model is awaited — so
+    streaming clients see the connection is live and don't time out / reconnect.
+    """
+    return _sse_event(
+        "response.created",
+        {
+            "type": "response.created",
+            "response": {
+                "id": resp_id,
+                "object": "response",
+                "status": "in_progress",
+                "model": model,
+                "output": [],
+            },
+        },
+    )
+
+
+async def _stream_responses(
+    resp: dict,
+    model: str,
+    *,
+    emit_created: bool = True,
+    resp_id: str | None = None,
+):
+    """Yield an OpenAI Responses API SSE event sequence from a completed chat.
+
+    `resp` is the dict from LLMClient.chat_completion(...).model_dump(). Emits a
+    buffered (non-incremental) event stream: text content is delivered as a
+    single delta, and any tool_calls become function_call items.
+
+    When `emit_created` is False the leading `response.created` event is skipped
+    (the live streaming path emits it up front, before awaiting the model, and
+    passes its pre-generated `resp_id` so the id stays consistent across
+    `response.created` and `response.completed`).
+    """
+    choices = resp.get("choices") or []
+    message = choices[0].get("message", {}) if choices else {}
+    text = message.get("content") or ""
+    tool_calls = message.get("tool_calls") or []
+
+    if resp_id is None:
+        resp_id = f"resp_{uuid.uuid4().hex[:24]}"
+
+    # response.created
+    if emit_created:
+        yield _response_created_event(resp_id, model)
+
+    output_index = 0
+
+    # --- Text message item ---
+    if text:
+        item_id = "msg_0"
+        yield _sse_event(
+            "response.output_item.added",
+            {
+                "type": "response.output_item.added",
+                "output_index": output_index,
+                "item": {
+                    "type": "message",
+                    "id": item_id,
+                    "status": "in_progress",
+                    "role": "assistant",
+                    "content": [],
+                },
+            },
+        )
+        yield _sse_event(
+            "response.content_part.added",
+            {
+                "type": "response.content_part.added",
+                "item_id": item_id,
+                "output_index": output_index,
+                "content_index": 0,
+                "part": {"type": "output_text", "text": "", "annotations": []},
+            },
+        )
+        yield _sse_event(
+            "response.output_text.delta",
+            {
+                "type": "response.output_text.delta",
+                "item_id": item_id,
+                "output_index": output_index,
+                "content_index": 0,
+                "delta": text,
+            },
+        )
+        yield _sse_event(
+            "response.output_text.done",
+            {
+                "type": "response.output_text.done",
+                "item_id": item_id,
+                "output_index": output_index,
+                "content_index": 0,
+                "text": text,
+            },
+        )
+        yield _sse_event(
+            "response.content_part.done",
+            {
+                "type": "response.content_part.done",
+                "item_id": item_id,
+                "output_index": output_index,
+                "content_index": 0,
+                "part": {"type": "output_text", "text": text, "annotations": []},
+            },
+        )
+        yield _sse_event(
+            "response.output_item.done",
+            {
+                "type": "response.output_item.done",
+                "output_index": output_index,
+                "item": {
+                    "type": "message",
+                    "id": item_id,
+                    "status": "completed",
+                    "role": "assistant",
+                    "content": [
+                        {"type": "output_text", "text": text, "annotations": []}
+                    ],
+                },
+            },
+        )
+        output_index += 1
+
+    # --- Function call items ---
+    for i, call in enumerate(tool_calls):
+        fn = call.get("function", {}) if isinstance(call, dict) else {}
+        call_id = call.get("id", f"call_{i}")
+        name = fn.get("name", "")
+        arguments = fn.get("arguments", "") or ""
+        item_id = f"fc_{i}"
+
+        item = {
+            "type": "function_call",
+            "id": item_id,
+            "call_id": call_id,
+            "name": name,
+            "arguments": arguments,
+        }
+        yield _sse_event(
+            "response.output_item.added",
+            {
+                "type": "response.output_item.added",
+                "output_index": output_index,
+                "item": {**item, "status": "in_progress"},
+            },
+        )
+        yield _sse_event(
+            "response.function_call_arguments.delta",
+            {
+                "type": "response.function_call_arguments.delta",
+                "item_id": item_id,
+                "output_index": output_index,
+                "call_id": call_id,
+                "delta": arguments,
+            },
+        )
+        yield _sse_event(
+            "response.function_call_arguments.done",
+            {
+                "type": "response.function_call_arguments.done",
+                "item_id": item_id,
+                "output_index": output_index,
+                "call_id": call_id,
+                "arguments": arguments,
+            },
+        )
+        yield _sse_event(
+            "response.output_item.done",
+            {
+                "type": "response.output_item.done",
+                "output_index": output_index,
+                "item": {**item, "status": "completed"},
+            },
+        )
+        output_index += 1
+
+    # response.completed — reuse the same resp_id as response.created so the
+    # client sees one consistent response id across the stream.
+    completed = _build_responses_response(resp)
+    completed["id"] = resp_id
+    yield _sse_event(
+        "response.completed",
+        {
+            "type": "response.completed",
+            "response": completed,
+        },
+    )
+    yield "data: [DONE]\n\n"
 
 
 def _handle_llm_error(
@@ -510,21 +785,72 @@ def _flatten_content(content: str | list[dict]) -> str:
     return str(content)
 
 
+def _responses_tools_to_chat(
+    tools: list[dict] | None,
+) -> list[dict] | None:
+    """Translate Responses-format tools to Chat Completions shape.
+
+    Responses (codex) sends flat tools:
+        {"type": "function", "name": "X", "description": "...",
+         "parameters": {...}, "strict": false}
+    Chat Completions (LM Studio) wants them nested under "function":
+        {"type": "function", "function": {"name": "X", ...}}
+
+    Flat function tools are wrapped; tools that already carry a nested
+    "function" key pass through unchanged. Returns None if input is None.
+    """
+    if tools is None:
+        return None
+
+    translated: list[dict] = []
+    for tool in tools:
+        if (
+            isinstance(tool, dict)
+            and tool.get("type") == "function"
+            and "name" in tool
+            and "function" not in tool
+        ):
+            # Preserve every field except the wrapper "type" — keeps name,
+            # description, parameters, strict, and any future Responses-tool metadata.
+            fn: dict[str, Any] = {k: v for k, v in tool.items() if k != "type"}
+            translated.append({"type": "function", "function": fn})
+        else:
+            translated.append(tool)
+    return translated
+
+
+def _responses_tool_choice_to_chat(tc: Any) -> Any:
+    """Translate a Responses-format tool_choice to Chat Completions shape.
+
+    Strings ("auto"/"none"/"required") pass through. A flat dict with a
+    top-level "name" ({"type": "function", "name": "X"}) is nested into
+    {"type": "function", "function": {"name": "X"}}. Anything else (None,
+    already-nested dicts) passes through unchanged.
+    """
+    if isinstance(tc, dict) and "name" in tc and "function" not in tc:
+        return {"type": "function", "function": {"name": tc["name"]}}
+    return tc
+
+
 def _translate_responses_to_messages(
     input_data: str | list[dict],
     instructions: str | None,
-) -> list[dict[str, str]]:
+) -> list[dict[str, Any]]:
     """Convert Responses API input + instructions to Chat Completions messages.
 
     Args:
-        input_data: String (single user message) or array of message dicts.
-            Message content may be a string or array of content blocks.
+        input_data: String (single user message) or array of input items.
+            Message items carry a string or array of content blocks. codex's
+            multi-turn loops also send `function_call` and
+            `function_call_output` items, which become assistant tool_calls and
+            tool-role messages respectively.
         instructions: Optional system prompt to prepend.
 
     Returns:
-        List of message dicts for Chat Completions API (content always string).
+        List of message dicts for Chat Completions API. Tool messages hold
+        non-str values (content None, tool_calls lists), hence dict[str, Any].
     """
-    messages: list[dict[str, str]] = []
+    messages: list[dict[str, Any]] = []
 
     if instructions:
         messages.append({"role": "system", "content": instructions})
@@ -532,11 +858,36 @@ def _translate_responses_to_messages(
     if isinstance(input_data, str):
         messages.append({"role": "user", "content": input_data})
     else:
-        for msg in input_data:
-            messages.append({
-                "role": msg.get("role", "user"),
-                "content": _flatten_content(msg.get("content", "")),
-            })
+        for item in input_data:
+            item_type = item.get("type")
+            if item_type == "function_call":
+                messages.append({
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": [
+                        {
+                            "id": item.get("call_id", ""),
+                            "type": "function",
+                            "function": {
+                                "name": item.get("name", ""),
+                                "arguments": item.get("arguments", "") or "",
+                            },
+                        }
+                    ],
+                })
+            elif item_type == "function_call_output":
+                output = item.get("output", "")
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": item.get("call_id", ""),
+                    "content": output if isinstance(output, str) else str(output),
+                })
+            else:
+                # message item (type absent or "message")
+                messages.append({
+                    "role": item.get("role", "user"),
+                    "content": _flatten_content(item.get("content", "")),
+                })
 
     return messages
 
@@ -569,14 +920,41 @@ def _build_responses_response(chat_response: dict) -> dict:
         }
 
     message = choices[0].get("message", {})
-    text = message.get("content", "")
+    text = message.get("content") or ""
+    tool_calls = message.get("tool_calls") or []
     # LM Studio uses "reasoning" (v0.3.23+), others use "reasoning_content"
     reasoning = message.get("reasoning") or message.get("reasoning_content")
 
-    content_blocks = []
-    if reasoning:
-        content_blocks.append({"type": "thinking", "thinking": reasoning})
-    content_blocks.append({"type": "output_text", "text": text})
+    output: list[dict] = []
+
+    # Emit a message item when there is text or reasoning to report. When the
+    # model only returns tool_calls (content None), skip the empty message so
+    # the output is purely function_call items.
+    if text or reasoning or not tool_calls:
+        content_blocks = []
+        if reasoning:
+            content_blocks.append({"type": "thinking", "thinking": reasoning})
+        content_blocks.append({"type": "output_text", "text": text})
+        output.append(
+            {
+                "type": "message",
+                "role": "assistant",
+                "content": content_blocks,
+            }
+        )
+
+    # Append function_call items for any tool_calls.
+    for i, call in enumerate(tool_calls):
+        fn = call.get("function", {}) if isinstance(call, dict) else {}
+        output.append(
+            {
+                "type": "function_call",
+                "id": f"fc_{i}",
+                "call_id": call.get("id", f"call_{i}"),
+                "name": fn.get("name", ""),
+                "arguments": fn.get("arguments", "") or "",
+            }
+        )
 
     # Map usage field names: prompt_tokens → input_tokens
     raw_usage = chat_response.get("usage")
@@ -593,13 +971,7 @@ def _build_responses_response(chat_response: dict) -> dict:
         "object": "response",
         "created_at": chat_response.get("created", 0),
         "model": chat_response.get("model", ""),
-        "output": [
-            {
-                "type": "message",
-                "role": "assistant",
-                "content": content_blocks,
-            }
-        ],
+        "output": output,
         "output_text": text,
         "usage": usage,
     }

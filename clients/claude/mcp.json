@@ -26,6 +26,14 @@
     "fetch": {
       "type": "stdio",
       "command": "/Users/visualval/.local/bin/mcp-server-fetch"
+    },
+    "headroom": {
+      "command": "headroom",
+      "args": [
+        "mcp",
+        "serve"
+      ],
+      "active": true
     }
   }
 }

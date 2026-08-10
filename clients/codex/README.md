@@ -17,7 +17,7 @@ Edit the config file manually. Reference config:
 [mcp_servers.prompthub]
 command = "node"
 args = ["/Users/<you>/prompthub/mcps/prompthub-bridge.js"]
-cwd = "~/"
+cwd = "/Users/<you>/prompthub"
 enabled = true
 
 [mcp_servers.prompthub.env]

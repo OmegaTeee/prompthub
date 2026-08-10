@@ -5,7 +5,7 @@
 			"type": "stdio",
 			"command": "node",
 			"args": [
-				"mcp-bridge"
+				"/Users/visualval/prompthub/mcps/prompthub-bridge.js"
 			],
 			"env": {
 				"CONTENT_TYPE": "application/json",
@@ -20,29 +20,33 @@
 				"X-Client-Name": "vscode"
 			}
 		},
-		"skills_mcp": {
-			"name": "Skills MCP",
+		"oraios/serena": {
 			"type": "stdio",
-			"command": "npx",
+			"command": "uvx",
 			"args": [
-				"-y",
-				"skills-mcp",
-				"-s",
-				"/Users/visualval/.claude/skills"
-			]
+				"--from",
+				"git+https://github.com/oraios/serena",
+				"serena",
+				"start-mcp-server",
+				"serena@latest",
+				"--context",
+				"ide-assistant"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"headroom": {
+			"command": "headroom",
+			"args": [
+				"mcp",
+				"serve"
+			],
+			"active": true
 		},
 		"fetch_mcp": {
 			"name": "Fetch MCP",
 			"type": "stdio",
 			"command": "mcp-server-fetch"
-		},
-		"markitdown_mcp": {
-			"name": "Markitdown MCP",
-			"type": "stdio",
-			"command": "uvx",
-			"args": [
-				"markitdown-mcp"
-			]
 		}
 	},
 	"inputs": []

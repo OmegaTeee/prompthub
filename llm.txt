@@ -34,8 +34,7 @@ localhost:9090 and provides:
 | Model ID | Params | Role |
 |---|---|---|
 | `qwen3-4b-instruct-2507` | 4B | Enhancement — prompt rewriting for all clients |
-| `qwen3-4b-thinking-2507` | 4B | Orchestrator — intent classification with CoT |
-| `deepseek/deepseek-r1-0528-qwen3-8b` | 8B | General use in Cherry Studio (not in PromptHub pipelines) |
+| `qwen3-4b-instruct-2507` | 4B | Orchestrator — intent classification with CoT |
 | `text-embedding-nomic-embed-text-v1.5` | 137M | Embedding (not currently wired into pipelines) |
 
 Both 4B models stay loaded (~5 GB total). DeepSeek loads on demand.

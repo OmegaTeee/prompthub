@@ -21,7 +21,10 @@ fi
 # Let Homebrew manage its own PATH-related environment.
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-# Source shared shell settings
+# Shared login-style env
+# [ -f "${HOME}/.profile" ] && source "${HOME}/.profile"
+
+# Shared shell settings (aliases, PNPM, Qwen, functions, etc.)
 [ -f "${HOME}/.shell_common.sh" ] && source "${HOME}/.shell_common.sh"
 
 # Keep PATH and FPATH unique in interactive Zsh sessions.
@@ -39,6 +42,7 @@ eval "$(direnv hook zsh)"
 # -----------------------------------------------------------------------------
 
 [ -f "${HOME}/.iterm2_shell_integration.zsh" ] && source "${HOME}/.iterm2_shell_integration.zsh"
+
 
 source "$(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme"
 [ -f "${HOME}/.p10k.zsh" ] && source "${HOME}/.p10k.zsh"
@@ -61,11 +65,9 @@ compinit
 # Tool integrations
 # -----------------------------------------------------------------------------
 
-# if command -v ngrok &>/dev/null; then
-#   eval "$(ngrok completion)"
-# fi
 
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code -- --locate-shell-integration-path zsh)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+

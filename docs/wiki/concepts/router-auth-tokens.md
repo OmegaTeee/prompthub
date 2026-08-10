@@ -43,12 +43,12 @@ Use `127.0.0.1` in client URLs. macOS resolves `localhost` to IPv6 (`::1`), whic
 
 ### The "default" test key
 
-`sk-prompthub-default-001` (client `default`, `enhance=true`) exists specifically for testing and ad-hoc enhancement calls. Tooling that needs to exercise `/v1` without impersonating a real client — e.g. [[schemathesis]] — should use it.
+`sk-prompthub-default-001` (client `default`, `enhance=true`) exists specifically for testing and ad-hoc enhancement calls. Tooling that needs to exercise `/v1` without impersonating a real client — e.g. [[../entities/schemathesis]] — should use it.
 
 ## Related
 
-- [[schemathesis]] — fuzzes the router's OpenAPI schema and authenticates with the `default` test key, exercising exactly the `/v1/*` boundary described here.
-- [[obsidian-local-rest-api]] — a parallel case: another local HTTP service with its own bearer (stored under a separate keychain entry), reinforcing why "which token for which service" must be tracked deliberately.
+- [[../entities/schemathesis]] — fuzzes the router's OpenAPI schema and authenticates with the `default` test key, exercising exactly the `/v1/*` boundary described here.
+- [[../entities/obsidian-local-rest-api]] — a parallel case: another local HTTP service with its own bearer (stored under a separate keychain entry), reinforcing why "which token for which service" must be tracked deliberately.
 
 ## Sources
 

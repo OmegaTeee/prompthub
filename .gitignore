@@ -59,6 +59,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 package-lock.json
+!mcps/package-lock.json
 
 # Testing
 .pytest_cache/
@@ -108,8 +109,10 @@ opencode.json
 # Local parking lot for archived/abandoned client folders.
 # Kept on disk so historical exploration stays accessible; never tracked.
 clients/_ignore/
+*.zip
 
 # Temporary files
 *.tmp
 *.temp
 /tmp/
+*.zwc

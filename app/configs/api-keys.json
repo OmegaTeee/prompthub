@@ -15,6 +15,11 @@
       "description": "Codex CLI",
       "enhance": false
     },
+    "sk-prompthub-vault-writer-001": {
+      "client_name": "vault-writer",
+      "description": "Local-model CLI doc-writer (Goose/aider/codex → OKF)",
+      "enhance": false
+    },
     "sk-prompthub-vscode-001": {
       "client_name": "vscode",
       "description": "VSCode IDE",
@@ -28,21 +33,16 @@
     "sk-prompthub-perplexity-001": {
       "client_name": "perplexity",
       "description": "Comet Web Research",
-      "enhance": true
+      "enhance": false
     },
     "sk-prompthub-lm-studio-001": {
       "client_name": "lm-studio",
       "description": "LM Studio",
-      "enhance": true
+      "enhance": false
     },
     "sk-prompthub-comfyui-001": {
       "client_name": "comfyui",
       "description": "ComfyUI",
-      "enhance": true
-    },
-    "sk-prompthub-cherry-studio-001": {
-      "client_name": "cherry-studio",
-      "description": "Cherry Studio",
       "enhance": false
     },
     "sk-prompthub-default-001": {

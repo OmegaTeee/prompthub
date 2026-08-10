@@ -109,12 +109,12 @@ See **[docs/](docs/)** for technical documentation:
 
 Prompts pass through a local LM Studio model before reaching the AI service. Each client gets a tailored system prompt, privacy policy, and enhancement settings:
 
-| Client | Default model | Tuning |
-|--------|---------------|--------|
-| Claude Desktop | qwen3-4b-instruct-2507 | Structured reasoning, Markdown |
-| VS Code / Claude Code | qwen3-4b-instruct-2507 | Code-first, file paths, minimal prose |
-| Raycast | qwen3-4b-instruct-2507 | Action-oriented, CLI commands, under 200 words |
-| Obsidian | qwen3-4b-instruct-2507 | Markdown with `[[wikilinks]]` and `#tags` |
+| Client                | Default model          | Tuning                                         |
+|-----------------------|------------------------|------------------------------------------------|
+| Claude Desktop        | qwen3-4b-instruct-2507 | Structured reasoning, Markdown                 |
+| VS Code / Claude Code | qwen3-4b-instruct-2507 | Code-first, file paths, minimal prose          |
+| Raycast               | qwen3-4b-instruct-2507 | Action-oriented, CLI commands, under 200 words |
+| Obsidian              | qwen3-4b-instruct-2507 | Markdown with `[[wikilinks]]` and `#tags`      |
 
 Enhancement is optional per-client and fails gracefully — if LM Studio is unreachable, the original prompt passes through unchanged. Configure models and system prompts in `app/configs/enhancement-rules.json`.
 

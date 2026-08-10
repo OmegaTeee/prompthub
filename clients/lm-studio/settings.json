@@ -14,7 +14,7 @@
     "alwaysShowPromptTemplate": true,
     "useShiftEnterToSendMessage": false,
     "useKeychordToRegenerate": false,
-    "unloadPreviousModelOnSelect": true,
+    "unloadPreviousModelOnSelect": false,
     "highlightChatMessageOnHover": true,
     "doubleClickMessageToEdit": false,
     "doubleClickChatCellRenames": false,
@@ -43,7 +43,7 @@
     "showSpringboardWhenClosingAllTabsInSplit": false,
     "imageInputs": {
       "userMaxImageDimensionPixelsEnabled": true,
-      "userMaxImageDimensionPixels": 2048,
+      "userMaxImageDimensionPixels": 1024,
       "ignoreModelPreferredMaxImageDimension": false
     }
   },
@@ -55,8 +55,9 @@
     "showResourceConsumptionWidget": true,
     "backendDownloadChannel": "stable",
     "appUpdateChannel": "stable",
+    "runtimeLogVerbosityLevel": 3,
     "allowDevelopmentPlugins": true,
-    "unloadPreviousJITModelOnLoad": true,
+    "unloadPreviousJITModelOnLoad": false,
     "jitModelTTL": {
       "enabled": true,
       "ttlSeconds": 3600
@@ -74,13 +75,18 @@
   "ui": {
     "missionControlFullscreen": false,
     "showModelFileNameInMyModels": false,
-    "configureLoadParamsBeforeLoad": false,
+    "configureLoadParamsBeforeLoad": true,
     "alwaysOpenModelLoaderFromPicker": false,
     "contextDisplayMode": "percentage",
     "appNavigationBarPosition": "left",
     "showTabStripScrollBar": true,
     "tabStripFullStripStyle": false,
     "openDownloadsPaneOnStartNewModelDownload": false
+  },
+  "cloudInference": {
+    "billingContext": {
+      "type": "personal"
+    }
   },
   "configPresetInclusiveness": {
     "speculativeDecoding": false
@@ -98,21 +104,22 @@
   "dismissedModals": [
     "LM Link Sidebar Button Popover",
     "Trash Deletion Onboarding",
-    "mcp.json Warning"
+    "mcp.json Warning",
+    "Mobile Onboarding"
   ],
   "dismissedConversationSnackbars": [],
   "pre030ChatsMigrated": 3,
   "appPostUpdateNotificationPending": false,
   "promptWhenCommittingUnsavedChangesWithNewFields": true,
   "enableLocalService": true,
-  "enableEngineProtocolRuntime": true,
+  "useLlamaCppEngineProtocolRuntime3": true,
   "cliInstalled": false,
   "useHFProxy": true,
   "hfSearchToken": "",
   "hfDownloadToken": "",
   "defaultContextLength": {
     "type": "custom",
-    "value": 4096
+    "value": 2048
   },
   "appIntroAcceptedForBuild": null
 }

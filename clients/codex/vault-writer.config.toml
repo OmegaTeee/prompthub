@@ -1,0 +1,6 @@
+# codex vault-writer profile (codex >=0.134 per-profile config file).
+# Symlink/copy to ~/.codex/vault-writer.config.toml. Uses the prompthub-local
+# model_provider defined in the base config.toml; PROMPTHUB_VAULT_KEY supplies the bearer.
+model = "qwen3-coder-30b-a3b-instruct"
+model_provider = "prompthub-local"
+model_reasoning_effort = "low"

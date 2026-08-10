@@ -54,7 +54,7 @@ gh api graphql -f query='mutation { resolveReviewThread(input:{threadId:"<id>"})
 
 ## Related
 
-- [[schemathesis]] — the PR whose squash bundled an unpushed local fix; the `--delete-branch` orphaned-commit scare originated here.
+- [[../entities/schemathesis]] — the PR whose squash bundled an unpushed local fix; the `--delete-branch` orphaned-commit scare originated here.
 - [[router-auth-tokens]] — landed via the api-keys PR that exercised the squash `-d`-vs-`-D` and config-reverts-on-checkout behaviors.
 
 ## Sources

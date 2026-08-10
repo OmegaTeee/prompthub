@@ -30,3 +30,7 @@ Wrote up the resolution of the two GET-route 500s schemathesis found (PR #51). N
 ## [2026-06-02T10:00:00] create | git-pr-workflow concept | concepts/git-pr-workflow.md, index.md
 
 Distilled the git/PR workflow lessons from the three-PR session (#49/#50/#51) into a concept page. Covers: squash-merge meaning feature commits never become ancestors of `main` (so `git branch -d` refuses → use `-D`; `git log -- <file>` won't show the merged commit → verify with `git diff main <branch> -- <files>`); `gh pr merge --delete-branch` orphaning unpushed commits stacked on the local branch (recoverable via reflog); untracked/branch-local files "vanishing" on checkout being expected, not data loss; the stash-with-zero-overlap technique for touching another PR with a dirty tree; and the `gh config prefer_editor_prompt` non-tty blocker. Links to `schemathesis` and `router-auth-tokens` (the PRs where these surfaced).
+
+## [2026-07-06T00:00:00] index | link 5 orphan pages | index.md
+
+Hygiene audit (ph-docs Doc1) found 5 on-disk pages unreachable from the index spine. Added them: sources `secrets-management-patterns` + `task-tracking-conventions`; entities `keyring-integration-complete`, `mcp-remote`, `mcp-stdio-vs-http-transport`. Sources section is no longer empty. (Doc4 isolated-page wikilink gaps left for a later pass.)

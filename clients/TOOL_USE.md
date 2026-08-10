@@ -37,7 +37,7 @@ relevant.
 | `obsidian-mcp-tools_*`  | Vault ops (requires Obsidian running)                             | `obsidian-mcp-tools` (18 tools)    |
 | `fetch` *(client-side)* | Plain HTTP GET — no JS, no rendering                              | `mcp-server-fetch` in client mcp.json |
 
-On-demand (not auto-started): `chrome-devtools-mcp`, `browsermcp`, `mcp-obsidian`.
+On-demand (not auto-started): `chrome-devtools-mcp`.
 Start with `curl -X POST http://localhost:9090/servers/{name}/start` first.
 
 ---

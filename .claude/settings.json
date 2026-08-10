@@ -1,5 +1,35 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(/Users/visualval/.local/share/prompthub/*)",
+      "Bash(awk *)",
+      "Bash(bash *)",
+      "Bash(cp *)",
+      "Bash(git *)",
+      "Bash(grep *)",
+      "Bash(ln *)",
+      "Bash(mv *)",
+      "Bash(node --check mcps/prompthub-bridge.js)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "Bash(sed *)",
+      "Bash(set *)",
+      "Bash(shellcheck *)",
+      "WebFetch(domain: *)"
+    ]
+  },
   "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
-  }
+    "superpowers@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "hookify@claude-plugins-official": true,
+    "claude-api@anthropic-agent-skills": true
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "prompthub-bridge"
+  ],
+  "prefersReducedMotion": true
 }

@@ -2,6 +2,13 @@
 
 ## Now
 
+### Apply merged config-path fixes after restart (PR #53)
+
+> **Context:** PR #53 corrected two service paths in the repo, but the *running* LaunchAgents/router hold the old values in memory until reloaded. A full reboot re-registers both plists from `~/Library/LaunchAgents/`, so resume here after the planned computer/app update + restart. Verify, don't assume.
+
+- [ ] Confirm `obsidian-mcp-tools` actually launches now — its `command` points at `~/Vault/Scratch/.obsidian/plugins/mcp-tools/bin/mcp-server` (was the missing `~/Vault` parent). After reboot the router auto-starts (`RunAtLoad=true`); check it's `running`, not circuit-broken: `curl -s http://127.0.0.1:9090/servers` (or the dashboard). If the daemon was already up pre-reboot, force a reload: `launchctl kickstart -k gui/$(id -u)/com.prompthub.router`.
+- [ ] If using Open WebUI: its LaunchAgent (`com.prompthub.openwebui`, `RunAtLoad=false`) now wraps `scripts/_open-webui/start.sh` (renamed from `scripts/open-webui/`). Re-register so launchd picks up the new ProgramArguments path: `launchctl bootout gui/$(id -u)/com.prompthub.openwebui 2>/dev/null; launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.prompthub.openwebui.plist`, then start it (dashboard or `launchctl kickstart gui/$(id -u)/com.prompthub.openwebui`).
+
 ### Progressive Tool Disclosure (priority: high)
 
 > **Plan:** [`docs/notes/plans/progressive-tool-disclosure.md`](docs/notes/plans/progressive-tool-disclosure.md)
@@ -19,11 +26,6 @@
 - [ ] Support `response_format` passthrough; add `response_format` to `ChatCompletionRequest`, preserve and forward it in `app/router/openai_compat/router.py`, extend `LLMClient.chat_completion()` in `app/router/enhancement/llm_client.py` to accept passthrough options, add tests for `json_object` and `json_schema`, and document backend compatibility and fallback behavior.
 - [ ] Audit dropped OpenAI-compatible fields; review whether `frequency_penalty`, `presence_penalty`, `user`, and Responses API structured-output fields should also pass through consistently.
 
-### Review MCPs folder and README
-
-- [ ] Add [algonius-browser](https://github.com/algonius/algonius-browser) server as a lightweight CDP bridge to replace `@browsermcp/mcp` (`stdio`, `auto_start=true`).
-- [ ] Uninstall `@browsermcp/mcp` and remove it from `mcp-servers.json` and bridge configs.
-- [ ] Set the default auto-start servers to: `memory`, `context7`, `sequential-thinking`, `desktop-commander`, `perplexity-comet`, `algonius-browser`.
 
 ## Next
 
@@ -42,6 +44,7 @@
 ### Revise Project README
 
 - [ ] Update `README.md` to reflect the current architecture, active clients, and primary documentation entry points; remove the project status table if it cannot be kept current.
+- [ ] Add MCP prompts/resources in the next Headroom/PromptHub pass; use the new `hdiff`, `hloc`, and `hsg` helpers as the lightweight CLI side of that workflow.
 
 ## Later
 

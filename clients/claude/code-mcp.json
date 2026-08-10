@@ -18,6 +18,14 @@
         "X-Client-Name": "claude-code",
         "X-API-KEY": "sk-prompthub-claude-code-001"
       }
+    },
+    "headroom": {
+      "command": "headroom",
+      "args": [
+        "mcp",
+        "serve"
+      ],
+      "active": true
     }
   }
 }

@@ -4,6 +4,8 @@ Integration tests for MCP proxy functionality.
 Tests that JSON-RPC requests are correctly proxied to MCP servers.
 """
 
+import asyncio
+
 import httpx
 import pytest
 
@@ -18,11 +20,7 @@ class TestMCPProxyRouting:
             response = await client.post(
                 "/mcp/context7/tools/call",
                 headers={"X-Client-Name": "test"},
-                json={
-                    "jsonrpc": "2.0",
-                    "method": "tools/list",
-                    "id": 1
-                }
+                json={"jsonrpc": "2.0", "method": "tools/list", "id": 1},
             )
 
             assert response.status_code == 200
@@ -55,7 +53,7 @@ class TestMCPProxyRouting:
             "desktop-commander",
             "sequential-thinking",
             "memory",
-            "duckduckgo"
+            "duckduckgo",
         ]
 
         async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
@@ -63,15 +61,12 @@ class TestMCPProxyRouting:
                 response = await client.post(
                     f"/mcp/{server_name}/tools/call",
                     headers={"X-Client-Name": "test"},
-                    json={
-                        "jsonrpc": "2.0",
-                        "method": "tools/list",
-                        "id": 1
-                    }
+                    json={"jsonrpc": "2.0", "method": "tools/list", "id": 1},
                 )
 
-                assert response.status_code in [200, 503], \
+                assert response.status_code in [200, 503], (
                     f"Server {server_name} returned unexpected status: {response.status_code}"
+                )
 
                 # 503 is OK if circuit breaker is OPEN
                 # 200 means success
@@ -86,11 +81,7 @@ class TestMCPProxyRouting:
             response = await client.post(
                 "/mcp/nonexistent-server/tools/call",
                 headers={"X-Client-Name": "test"},
-                json={
-                    "jsonrpc": "2.0",
-                    "method": "tools/list",
-                    "id": 1
-                }
+                json={"jsonrpc": "2.0", "method": "tools/list", "id": 1},
             )
 
             assert response.status_code == 404
@@ -106,7 +97,7 @@ class TestMCPProxyRouting:
                 json={
                     "method": "tools/list"
                     # Missing jsonrpc and id
-                }
+                },
             )
 
             # Should still return 200 (HTTP) but with JSON-RPC error
@@ -122,11 +113,7 @@ class TestMCPProxyRouting:
                 response = await client.post(
                     "/mcp/context7/tools/call",
                     headers={"X-Client-Name": client_name},
-                    json={
-                        "jsonrpc": "2.0",
-                        "method": "tools/list",
-                        "id": 1
-                    }
+                    json={"jsonrpc": "2.0", "method": "tools/list", "id": 1},
                 )
 
                 assert response.status_code == 200
@@ -139,20 +126,17 @@ class TestMCPProxyPerformance:
     @pytest.mark.asyncio
     async def test_concurrent_requests(self):
         """Test handling multiple concurrent requests."""
-        import asyncio
 
-        async def make_request(client: AsyncClient, request_id: int):
+        async def make_request(client: httpx.AsyncClient, request_id: int):
             return await client.post(
                 "/mcp/context7/tools/call",
                 headers={"X-Client-Name": "test"},
-                json={
-                    "jsonrpc": "2.0",
-                    "method": "tools/list",
-                    "id": request_id
-                }
+                json={"jsonrpc": "2.0", "method": "tools/list", "id": request_id},
             )
 
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=30.0) as client:
+        async with httpx.AsyncClient(
+            base_url="http://localhost:9090", timeout=30.0
+        ) as client:
             # Send 10 concurrent requests
             tasks = [make_request(client, i) for i in range(10)]
             try:
@@ -167,9 +151,9 @@ class TestMCPProxyPerformance:
     @pytest.mark.asyncio
     async def test_timeout_handling(self):
         """Test that long-running requests don't hang forever."""
-        import asyncio
-
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=5.0) as client:
+        async with httpx.AsyncClient(
+            base_url="http://localhost:9090", timeout=5.0
+        ) as client:
             try:
                 # Make request with short timeout
                 response = await client.post(
@@ -183,11 +167,11 @@ class TestMCPProxyPerformance:
                             "arguments": {
                                 "thought": "Long complex reasoning task",
                                 "thoughtNumber": 1,
-                                "totalThoughts": 100
-                            }
+                                "totalThoughts": 100,
+                            },
                         },
-                        "id": 1
-                    }
+                        "id": 1,
+                    },
                 )
 
                 # Either completes or times out gracefully
@@ -218,11 +202,7 @@ class TestMCPProxyResilience:
                 response = await client.post(
                     f"/mcp/{server_name}/tools/call",
                     headers={"X-Client-Name": "test"},
-                    json={
-                        "jsonrpc": "2.0",
-                        "method": "tools/list",
-                        "id": i + 1
-                    }
+                    json={"jsonrpc": "2.0", "method": "tools/list", "id": i + 1},
                 )
 
                 # Should return 503 (service unavailable) once circuit opens
@@ -242,16 +222,17 @@ class TestMCPProxyResilience:
                 breakers = breakers_response.json()
                 if server_name in breakers:
                     state = breakers[server_name]["state"]
-                    assert state in ["OPEN", "HALF_OPEN", "closed", "CLOSED"], \
+                    assert state in ["OPEN", "HALF_OPEN", "closed", "CLOSED"], (
                         f"Unexpected circuit breaker state: {state}"
+                    )
 
             # Step 5: Restart server
             start_response = await client.post(f"/servers/{server_name}/start")
-            assert start_response.status_code in [200, 201], \
+            assert start_response.status_code in [200, 201], (
                 f"Failed to restart server: {start_response.status_code}"
+            )
 
             # Step 6: Wait briefly for server to initialize (async is fast!)
-            import asyncio
             await asyncio.sleep(2)
 
             # Step 7: Make a request - should eventually succeed or circuit should heal
@@ -264,8 +245,8 @@ class TestMCPProxyResilience:
                     json={
                         "jsonrpc": "2.0",
                         "method": "tools/list",
-                        "id": 100 + attempt
-                    }
+                        "id": 100 + attempt,
+                    },
                 )
 
                 if response.status_code == 200:
@@ -299,10 +280,13 @@ class TestMCPProxyResilience:
             if initial_info.get("status") != "running":
                 # Start it first
                 start_response = await client.post(f"/servers/{server_name}/start")
-                assert start_response.status_code in [200, 201, 400]  # 400 if already running
+                assert start_response.status_code in [
+                    200,
+                    201,
+                    400,
+                ]  # 400 if already running
 
                 # Wait for startup
-                import asyncio
                 await asyncio.sleep(2)
 
                 # Get updated info
@@ -318,7 +302,6 @@ class TestMCPProxyResilience:
             # Server should stop successfully
 
             # Step 3: Wait for supervisor to detect and restart (if restart_on_failure is true)
-            import asyncio
             await asyncio.sleep(3)
 
             # Step 4: Check if server restarted
@@ -330,8 +313,9 @@ class TestMCPProxyResilience:
             # If not, it will remain stopped - both behaviors are valid depending on config
             # We'll check the configuration to know what to expect
             if initial_info.get("restart_on_failure"):
-                assert current_info.get("status") == "running", \
+                assert current_info.get("status") == "running", (
                     f"Server with restart_on_failure should auto-restart, got status: {current_info.get('status')}"
+                )
 
                 # Verify it's a new process (different PID)
                 current_pid = current_info.get("pid")
@@ -356,11 +340,7 @@ class TestMCPProxyAudit:
             response = await client.post(
                 "/mcp/context7/tools/call",
                 headers={"X-Client-Name": "test-audit"},
-                json={
-                    "jsonrpc": "2.0",
-                    "method": "tools/list",
-                    "id": 999
-                }
+                json={"jsonrpc": "2.0", "method": "tools/list", "id": 999},
             )
 
             assert response.status_code == 200
@@ -382,18 +362,16 @@ class TestMCPProxyAudit:
                 "/mcp/context7/tools/call",
                 headers={
                     "X-Client-Name": "test",
-                    "Authorization": "Bearer secret-token-123"
+                    "Authorization": "Bearer secret-token-123",
                 },
                 json={
                     "jsonrpc": "2.0",
                     "method": "tools/call",
-                    "params": {
-                        "api_key": "sk-12345",
-                        "password": "super-secret"
-                    },
-                    "id": 1
-                }
+                    "params": {"api_key": "sk-12345", "password": "super-secret"},
+                    "id": 1,
+                },
             )
 
             # Audit logs should redact sensitive fields
+            # (This would require checking audit database)
             # (This would require checking audit database)

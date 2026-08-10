@@ -79,7 +79,6 @@ tags: [relevant, topic, tags]
 | `mcp-duckduckgo.md` | final | Yes | Web search (no API key needed) |
 | `mcp-obsidian-mcp-tools.md` | final | Yes | Obsidian vault operations (keyring auth) |
 | `mcp-chrome-devtools.md` | final | No | CDP debugging, profiling (30+ tools) |
-| `mcp-browsermcp.md` | final | No | Chrome extension browser automation |
 
 ### research/ — Evaluations & Inventories
 

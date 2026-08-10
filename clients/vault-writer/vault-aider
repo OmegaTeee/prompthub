@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# vault-aider — run aider as the OKF doc-writer in a vault (default: Scratch sandbox)
+set -euo pipefail
+VAULT="${1:-$HOME/Vault/Scratch}"
+[ "$VAULT" = "--llm" ] && VAULT="$HOME/Vault/LLM"
+CONV="$HOME/prompthub/clients/vault-writer/OKF-CONVENTIONS.md"
+cd "$VAULT"
+exec aider \
+  --no-git \
+  --edit-format whole \
+  --openai-api-base http://127.0.0.1:9090/v1 \
+  --openai-api-key sk-prompthub-vault-writer-001 \
+  --model openai/qwen3-coder-30b-a3b-instruct \
+  --read "$CONV" \
+  --yes-always

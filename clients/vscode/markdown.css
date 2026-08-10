@@ -1,7 +1,7 @@
 :root {
   /*--- Font families */
-  --font-mono: SFMono, SFMono-Regular, ui-monospace, monospace;
-  --font-sans: -apple-system, BlinkMacSystemFont, ui-sans-serif, sans-serif;
+  --font-mono: LigaSFMonoNerdFont-Regular,'Liga SFMono Nerd Font',SFMono-Regular,'SF Mono',ui-monospace,monospace;
+  --font-sans: SFProText-Medium,'SF Pro Text',-apple-system, BlinkMacSystemFont, ui-sans-serif, sans-serif;
 
   --font-dm-mono: 'Liga DM Mono', 'LigaDMMono-Regular', 'DM Mono';
   --font-dm-sans: 'DM Sans 9pt', 'DMSans-9ptRegular', 'DM Sans', 'DMSans-Regular';

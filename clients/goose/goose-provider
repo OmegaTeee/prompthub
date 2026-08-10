@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$#" -lt 1 ]; then
+  echo "Usage: $(basename "$0") <provider> [goose args...]" >&2
+  exit 2
+fi
+
+provider="$1"
+shift || true
+
+export GOOSE_PROVIDER="$provider"
+
+if [ "$#" -eq 0 ]; then
+  exec goose session
+fi
+
+exec goose "$@"
