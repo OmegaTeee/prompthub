@@ -21,7 +21,7 @@ keyring>=24.0.0
 structlog>=25.0.0
 
 # Async SQLite for persistent activity log
-aiosqlite>=0.22.0
+aiosqlite>=0.22.1
 
 # Markdown rendering for dashboard guides
 markdown2>=2.4.0
