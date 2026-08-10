@@ -8,7 +8,7 @@
     "@modelcontextprotocol/server-memory": "2026.1.26",
     "@modelcontextprotocol/server-sequential-thinking": "2025.12.18",
     "@tac0de/knowledge-to-action-mcp": "^2.1.1",
-    "@upstash/context7-mcp": "2.1.1",
+    "@upstash/context7-mcp": "4.0.0",
     "@wonderwhy-er/desktop-commander": "0.2.35",
     "chrome-devtools-mcp": "^0.20.3",
     "ddg-mcp-search": "1.1.0",
