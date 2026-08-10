@@ -59,6 +59,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 package-lock.json
+!mcps/package-lock.json
 
 # Testing
 .pytest_cache/
