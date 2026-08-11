@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Test script to trigger security alerts.
 
@@ -12,12 +11,12 @@ from pathlib import Path
 # Add app/ to path so `from router.*` resolves
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "app"))
 
+from router.audit import audit_admin_action, audit_credential_access
 from router.middleware.audit_context import (
-    request_id_ctx,
     client_id_ctx,
     client_ip_ctx,
+    request_id_ctx,
 )
-from router.audit import audit_admin_action, audit_credential_access
 from router.security_alerts import get_alert_manager
 
 
@@ -39,7 +38,7 @@ def test_repeated_failures():
             action="start",
             server_name="restricted-server",
             status="failed",
-            error="Permission denied"
+            error="Permission denied",
         )
         time.sleep(0.5)
 
@@ -69,9 +68,7 @@ def test_excessive_credential_access():
     for i in range(1, 6):
         print(f"\n[Access {i}] Accessing API key...")
         audit_credential_access(
-            action="get",
-            credential_key="production_api_key",
-            status="success"
+            action="get", credential_key="production_api_key", status="success"
         )
         time.sleep(0.2)
 
@@ -104,7 +101,7 @@ def test_credential_probing():
         action="get",
         credential_key="unknown_secret_key",
         status="failed",
-        error="Credential not found"
+        error="Credential not found",
     )
 
     # Check alerts
@@ -148,11 +145,11 @@ def main():
     print("ALERT STATISTICS")
     print("=" * 60)
     print(f"Total Alerts: {stats['total_alerts']}")
-    print(f"By Severity:")
-    for severity, count in stats['by_severity'].items():
+    print("By Severity:")
+    for severity, count in stats["by_severity"].items():
         print(f"  - {severity}: {count}")
-    print(f"By Type:")
-    for alert_type, count in stats['by_type'].items():
+    print("By Type:")
+    for alert_type, count in stats["by_type"].items():
         print(f"  - {alert_type}: {count}")
 
     print("\n" + "=" * 60)
