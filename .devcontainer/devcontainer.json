@@ -1,14 +1,12 @@
 {
   "name": "PromptHub Devcontainer",
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.12",
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "20"
-    }
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
   },
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
-  "postCreateCommand": "python -m pip install --upgrade pip && pip install -r app/requirements.txt",
+  "postCreateCommand": "bash -lc 'python -m venv .venv && source .venv/bin/activate && python -m pip install --upgrade pip setuptools wheel && \n+if [ -f package.json ] && grep -q '\"pnpm@' package.json; then \n+  corepack enable && corepack prepare pnpm@10.27.0 --activate && pnpm install --frozen-lockfile; \n+elif [ -f pnpm-lock.yaml ]; then \n+  corepack enable && corepack prepare pnpm@10.27.0 --activate && pnpm install --frozen-lockfile; \n+elif [ -f package-lock.json ]; then \n+  npm ci; \n+fi && \n+pip install -r app/requirements.txt'",
   "forwardPorts": [9090],
   "remoteUser": "vscode",
   "customizations": {

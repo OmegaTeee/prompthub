@@ -92,6 +92,7 @@ tags: [relevant, topic, tags]
 
 | File | Status | Description |
 |---|---|---|
+| `plan-development-operations-mcp-requirements.md` | review | MVP requirements for the constrained developer-operations capability and policy server |
 | `plan-rag-improvement.md` | draft | 4-phase RAG improvement roadmap (session context, PGVector, RAG enhancement, n8n) |
 | `idea-dashboard-refactor-review.md` | draft | Scoping review for dashboard redesign |
 | `idea-dashboard-refactor-tech-overview.md` | draft | Tech stack evaluation — Grafana, Prometheus, OpenTelemetry |
