@@ -1,0 +1,22 @@
+{
+  "name": "PromptHub Devcontainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "postCreateCommand": "bash -lc 'python -m venv .venv && source .venv/bin/activate && python -m pip install --upgrade pip setuptools wheel && \n+if [ -f package.json ] && grep -q '\"pnpm@' package.json; then \n+  corepack enable && corepack prepare pnpm@10.27.0 --activate && pnpm install --frozen-lockfile; \n+elif [ -f pnpm-lock.yaml ]; then \n+  corepack enable && corepack prepare pnpm@10.27.0 --activate && pnpm install --frozen-lockfile; \n+elif [ -f package-lock.json ]; then \n+  npm ci; \n+fi && \n+pip install -r app/requirements.txt'",
+  "forwardPorts": [9090],
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "batisteo.vscode-django",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}

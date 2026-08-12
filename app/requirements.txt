@@ -3,15 +3,15 @@ fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 httpx>=0.26.0
 pydantic>=2.5.0
-pydantic-settings>=2.1.0
+pydantic-settings>=2.15.0
 jinja2>=3.1.0
 python-multipart>=0.0.6
 
 # Development tools
 pytest>=7.4.0
-pytest-asyncio>=0.23.0
+pytest-asyncio>=1.4.0
 pytest-cov>=4.1.0
-ruff>=0.1.0
+ruff>=0.16.2
 mypy>=1.8.0
 
 # Keychain integration (for secure MCP credential management)
@@ -21,7 +21,7 @@ keyring>=24.0.0
 structlog>=25.0.0
 
 # Async SQLite for persistent activity log
-aiosqlite>=0.22.0
+aiosqlite>=0.22.1
 
 # Markdown rendering for dashboard guides
 markdown2>=2.4.0
@@ -30,7 +30,7 @@ markdown2>=2.4.0
 prometheus_client>=0.20.0
 
 # MCP protocol (FastMCP for stdio bridge and server composition)
-fastmcp>=2.0.0
+fastmcp>=3.4.6
 
 # Optional: Vector cache (Phase 2.1)
 # qdrant-client>=1.7.0

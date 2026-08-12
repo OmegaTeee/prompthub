@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Migrate an archive markdown file into the PromptHub wiki.
 
 Usage:
@@ -11,14 +10,22 @@ Example:
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Move an archive file into the LLM Wiki.")
-    parser.add_argument("archive_file", type=Path, help="Path to the archive markdown file")
-    parser.add_argument("section", choices=["concepts", "entities", "sources", "syntheses"], help="Target wiki section")
+    parser = argparse.ArgumentParser(
+        description="Move an archive file into the LLM Wiki."
+    )
+    parser.add_argument(
+        "archive_file", type=Path, help="Path to the archive markdown file"
+    )
+    parser.add_argument(
+        "section",
+        choices=["concepts", "entities", "sources", "syntheses"],
+        help="Target wiki section",
+    )
     parser.add_argument("slug", help="Wiki slug for the new file")
     parser.add_argument("title", help="Human-readable title")
     args = parser.parse_args()
@@ -56,7 +63,9 @@ def main() -> None:
     staging_dir.mkdir(parents=True, exist_ok=True)
     shutil.move(str(args.archive_file), str(staging_dir / args.archive_file.name))
 
-    print(f"Migrated: {args.archive_file.name} -> docs/wiki/{args.section}/{args.slug}.md")
+    print(
+        f"Migrated: {args.archive_file.name} -> docs/wiki/{args.section}/{args.slug}.md"
+    )
     print(f"Original moved to: docs/archive/.to-delete/{args.archive_file.name}")
 
 

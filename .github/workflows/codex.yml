@@ -1,0 +1,42 @@
+name: Codex Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  codex:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@codex')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@codex')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@codex')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@codex') || contains(github.event.issue.title, '@codex')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Run Codex integration (placeholder)
+        id: codex
+        run: |
+          echo "Codex tooling placeholder — replace with your Codex action or CLI call."
+          echo "Event: $GITHUB_EVENT_NAME"
+          # Example (uncomment and configure if you have an integration):
+          # gh api repos/${{ github.repository }}/actions/workflows/codex-action/dispatches -f ref=${{ github.ref }}
+
+      - name: Finished
+        run: echo "Codex workflow executed (placeholder)"

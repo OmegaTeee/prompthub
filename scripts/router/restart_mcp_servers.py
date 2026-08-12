@@ -11,17 +11,22 @@ Usage:
     python scripts/router/restart_mcp_servers.py obsidian  # Restart specific server
 """
 
-import subprocess
-import time
 import json
+import subprocess
 import sys
+import time
 
 ROUTER_URL = "http://localhost:9090"
 
 
 def run_command(cmd):
     """Run a shell command and return the result."""
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    # Explicitly set `check=False` so callers can inspect return codes
+    # without subprocess raising CalledProcessError. This makes intent
+    # explicit and satisfies linters that require an explicit `check`.
+    result = subprocess.run(
+        cmd, shell=True, capture_output=True, text=True, check=False
+    )
     return result.returncode, result.stdout, result.stderr
 
 

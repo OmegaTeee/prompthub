@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Check wiki markdown files for broken internal links and generate a health report.
 
 The script scans all markdown files under docs/wiki/{concepts,entities,sources,syntheses},
