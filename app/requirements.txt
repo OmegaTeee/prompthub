@@ -15,7 +15,7 @@ ruff>=0.16.2
 mypy>=1.8.0
 
 # Keychain integration (for secure MCP credential management)
-keyring>=24.0.0
+keyring>=25.7.0
 
 # Structured logging for audit trails
 structlog>=25.0.0
