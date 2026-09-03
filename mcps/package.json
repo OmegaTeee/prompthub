@@ -15,7 +15,7 @@
     "perplexity-comet-mcp": "^2.6.2"
   },
   "devDependencies": {
-    "@types/node": "^25.3.2"
+    "@types/node": "^26.4.0"
   },
   "engines": {
     "node": ">=20.19.0"
