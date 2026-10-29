@@ -100,7 +100,19 @@
   "files.exclude": {
     "**/__pycache__": true,
     "**/.pytest_cache": true,
-    "**/.mypy_cache": true
+    "**/.mypy_cache": true,
+    "**/clients": true,
+    "**/clients/**": true,
+    "**/scripts/launch-agents": true,
+    "**/scripts/launch-agents/**": true
+  },
+  "search.exclude": {
+    "**/clients/**": true,
+    "**/scripts/launch-agents/**": true
+  },
+  "files.watcherExclude": {
+    "**/clients/**": true,
+    "**/scripts/launch-agents/**": true
   },
   "chat.mcp.serverSampling": {
     "prompthub-bridge": {
@@ -114,5 +126,9 @@
   },
   "markdown.styles": [
     ".vscode/markdown.css"
-  ]
+  ],
+  // --- Headroom Copilot proxy --- (comma-added)
+	"github.copilot.advanced.debug.overrideProxyUrl": "http://127.0.0.1:8790/p/visualval",
+	"github.copilot.advanced.debug.overrideCapiUrl": "http://127.0.0.1:8790/p/visualval"
+	// --- end Headroom Copilot proxy ---
 }

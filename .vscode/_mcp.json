@@ -1,1 +1,53 @@
-/Users/visualval/.local/share/prompthub/clients/vscode/mcp.json
+{
+	"servers": {
+		"prompthub_bridge": {
+			"name": "PromptHub Bridge",
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"/Users/visualval/prompthub/mcps/prompthub-bridge.js"
+			],
+			"env": {
+				"CONTENT_TYPE": "application/json",
+				"PROMPTHUB_URL": "http://127.0.0.1:9090",
+				"AUTHORIZATION": "Bearer sk-prompthub-vscode-001",
+				"CLIENT_NAME": "vscode",
+				"SERVERS": "desktop-commander,context7,memory,sequential-thinking,duckduckgo"
+			},
+			"headers": {
+				"Authorization": "Bearer sk-prompthub-vscode-001",
+				"Content-Type": "application/json",
+				"X-Client-Name": "vscode"
+			}
+		},
+		"oraios/serena": {
+			"type": "stdio",
+			"command": "uvx",
+			"args": [
+				"--from",
+				"git+https://github.com/oraios/serena",
+				"serena",
+				"start-mcp-server",
+				"serena@latest",
+				"--context",
+				"ide-assistant"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"headroom": {
+			"command": "headroom",
+			"args": [
+				"mcp",
+				"serve"
+			],
+			"active": true
+		},
+		"fetch_mcp": {
+			"name": "Fetch MCP",
+			"type": "stdio",
+			"command": "mcp-server-fetch"
+		}
+	},
+	"inputs": []
+}
