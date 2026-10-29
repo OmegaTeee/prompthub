@@ -1,34 +1,31 @@
 # Notes
 
-Working notes, research, model evaluations, and improvement plans that aren't yet formal guides or architecture docs. This is a low-ceremony space for capturing ideas and analysis.
+This folder holds current working notes that are still useful to the active codebase.
 
-## Folder Structure
+Historical plans, dashboard ideas, and long-dead TODO trackers have been moved to
+[docs/archive/README.md](../archive/README.md) so the live docs stop acting like an active roadmap.
 
-```
-docs/notes/
-├── models/       LLM model cards and local model inventories
-├── servers/      MCP server cards (one per registered server)
-├── research/     Comparisons, evaluations, stack inventories
-├── plans/        Roadmaps and phased improvement proposals
-├── dashboard/    Dashboard refactor and observability ideas
-└── README.md     This file
-```
+## Current scope
 
-## Naming Convention
+Keep notes here only when they still help explain the current product or runtime:
 
-Use a **category prefix** followed by a descriptive topic:
+- model cards and local model inventories
+- MCP server cards
+- active research and evaluation notes
+- operational references that are still current
 
-| Prefix | Use for | Location | Examples |
-|---|---|---|---|
-| `llm-` | Model cards, evaluations | `models/`, `research/` | `llm-qwen3-14b-model-card.md` |
-| `mcp-` | MCP server cards | `servers/` | `mcp-context7.md` |
-| `plan-` | Roadmaps, phased proposals | `plans/` | `plan-rag-improvement.md` |
-| `idea-` | Brainstorming, feature ideation | `dashboard/` or root | `idea-dashboard-improvements.md` |
-| `eval-` | Benchmarks, integration tests | `research/` | `eval-mcp-bridge-latency.md` |
+## Naming
+
+Use a category prefix followed by a descriptive topic:
+
+- `llm-` for model cards and evaluations
+- `mcp-` for MCP server cards
+- `eval-` for benchmarks and comparisons
+- `plan-` only for active, near-term work that is still actionable
 
 ## Frontmatter
 
-Every note must include YAML frontmatter:
+Use YAML frontmatter for every note:
 
 ```yaml
 ---
@@ -40,69 +37,7 @@ tags: [relevant, topic, tags]
 ---
 ```
 
-**Status lifecycle:**
-- **draft** — Work in progress, incomplete, may contain placeholders
-- **review** — Content is complete, needs validation or peer review
-- **final** — Validated and ready to reference; consider promoting to `docs/guides/` or `docs/architecture/` if broadly useful
+## Active content
 
-## What belongs here vs. elsewhere
-
-| Content type | Location |
-|---|---|
-| Setup & integration guides | `docs/guides/` |
-| Architecture decisions (ADRs) | `docs/architecture/` |
-| API specs | `docs/api/` |
-| Module documentation | `docs/modules/` |
-| Historical/completed docs | `docs/archive/` |
-| Everything else (research, plans, model cards, ideas) | `docs/notes/` |
-
-## Current notes
-
-### models/ — LLM Model Cards
-
-| File | Status | Model | PromptHub Role |
-|---|---|---|---|
-| `qwen3-4b-instruct-2507.md` | final | qwen3-4b-instruct-2507 | Enhancement model |
-| `qwen3-4b-thinking-2507.md` | final | qwen3-4b-thinking-2507 | Orchestrator model |
-| `text-embedding-nomic-embed-text-v1.5.md` | final | text-embedding-nomic-embed-text-v1.5 | Embeddings (standby / future RAG) |
-| `deepseek-r1-0528-qwen3-8b.md` | final | deepseek-r1-0528-qwen3-8b | Research / optional reasoning model |
-| `lm-studio-models.json` | final | LM Studio inventory | Local model catalog snapshot |
-
-### servers/ — MCP Server Cards
-
-| File | Status | Auto-start | Key Role |
-|---|---|---|---|
-| `mcp-context7.md` | final | Yes | Library documentation fetching |
-| `mcp-desktop-commander.md` | final | Yes | File operations, terminal, editing (26 tools) |
-| `mcp-sequential-thinking.md` | final | Yes | Step-by-step reasoning and planning |
-| `mcp-memory.md` | final | Yes | Knowledge graph persistence |
-| `mcp-duckduckgo.md` | final | Yes | Web search (no API key needed) |
-| `mcp-obsidian-mcp-tools.md` | final | Yes | Obsidian vault operations (keyring auth) |
-| `mcp-chrome-devtools.md` | final | No | CDP debugging, profiling (30+ tools) |
-
-### research/ — Evaluations & Inventories
-
-| File | Status | Description |
-|---|---|---|
-| `eval-docs-alignment-audit-2026-04-09.md` | final | Summary of the April 2026 docs alignment and historical-labeling pass |
-| `llm-stack.md` | review | Full stack inventory, per-client assignments, experimentation log |
-| `llm-mcp-guide.md` | review | Historical model comparison for MCP and desktop client workflows |
-
-### plans/ — Roadmaps
-
-| File | Status | Description |
-|---|---|---|
-| `plan-development-operations-mcp-requirements.md` | review | MVP requirements for the constrained developer-operations capability and policy server |
-| `plan-rag-improvement.md` | draft | 4-phase RAG improvement roadmap (session context, PGVector, RAG enhancement, n8n) |
-| `idea-dashboard-refactor-review.md` | draft | Scoping review for dashboard redesign |
-| `idea-dashboard-refactor-tech-overview.md` | draft | Tech stack evaluation — Grafana, Prometheus, OpenTelemetry |
-
-### dashboard/ — Dashboard & Observability Ideas
-
-| File | Status | Description |
-|---|---|---|
-| `idea-dashboard-update.md` | draft | Server control buttons, auto-start changes |
-| `idea-dashboard-improvements.md` | draft | UX improvements — loading indicators, toast notifications |
-| `idea-dashboard-refactor-recommendations.md` | draft | Refactor suggestions from enhancement middleware work |
-| `idea-grafana-readme.md` | draft | Grafana dashboard import/setup instructions |
-| `idea-grafana-dashboard.json` | — | Grafana dashboard JSON definition (import-ready) |
+The live notes set should stay narrow. If a note is only historical context, a dead plan,
+or a superseded design idea, archive it instead of leaving it visible as active work.
