@@ -106,9 +106,11 @@ qdrant_data/
 # OpenCode project config (contains LM Studio API key)
 opencode.json
 
-# Local parking lot for archived/abandoned client folders.
-# Kept on disk so historical exploration stays accessible; never tracked.
+# Local client configs stay on disk for local use but are never tracked.
+clients/
 clients/_ignore/
+# Local macOS LaunchAgent definitions stay in the user dotfiles bundle, not in repo source.
+scripts/launch-agents/
 *.zip
 
 # Temporary files
