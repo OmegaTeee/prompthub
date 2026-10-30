@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "prompthub-bridge": {
+    "prompthub/bridge": {
       "type": "stdio",
       "command": "node",
       "args": ["/Users/visualval/prompthub/mcps/prompthub-bridge.js"],
@@ -11,21 +11,22 @@
         "CLIENT_NAME": "claude-code",
         "API_KEY": "sk-prompthub-claude-code-001",
         "CONTENT_TYPE": "application/json"
-      },
-      "headers": {
-        "Authorization": "Bearer sk-prompthub-claude-code-001",
-        "Content-Type": "application/json",
-        "X-Client-Name": "claude-code",
-        "X-API-KEY": "sk-prompthub-claude-code-001"
       }
+    },
+    "oraios/serena": {
+      "type": "stdio",
+      "command": "serena",
+      "args": ["start-mcp-server", "--context=vscode", "--project", "${workspaceFolder}"]
     },
     "headroom": {
       "command": "headroom",
-      "args": [
-        "mcp",
-        "serve"
-      ],
+      "args": ["mcp", "serve"],
       "active": true
+    },
+    "fetch_mcp": {
+      "type": "stdio",
+      "command": "mcp-server-fetch"
     }
-  }
+  },
+  "inputs": []
 }

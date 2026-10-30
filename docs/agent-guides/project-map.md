@@ -33,7 +33,7 @@ configuration files, and shared enhancement logic.
 - Agent guide root: `~/prompthub/docs/agent-guides`
 - Scripts root: `~/prompthub/scripts`
 - Shared enhancement rules: `~/prompthub/app/configs/enhancement-rules.json`
-- Local app  `~/.local/share/prompthub/`
+- Local app `~/.local/share/prompthub/`
 
 ## Working assumptions
 
@@ -57,11 +57,10 @@ Read these first when relevant:
 
 ## Change strategy
 
-- For config-related work, inspect both `app/configs/` and the relevant
-  `clients/<name>/` directory before editing.
-- For client onboarding or placeholder activation, check `clients/README.md`
-  first. If you are using Claude, also check
-  `.claude/skills/client-setup/SKILL.md`.
+- For config-related work, inspect `app/configs/` first and treat repo config
+  as the source of truth.
+- For client onboarding, use the current user-facing guide and runtime config
+  docs instead of repository-local client setup skills.
 - For router or transport changes, inspect architecture ADRs before modifying behavior.
 - For documentation changes, update both user-facing docs and agent-facing docs when conventions change.
 - For workflow or operational command changes, update both the script docs and the related agent guides.

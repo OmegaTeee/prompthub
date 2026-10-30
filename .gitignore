@@ -77,6 +77,8 @@ logs/**/*.log
 
 # Local configs (keep examples, ignore actual)
 app/configs/*.local.json
+.mcp.local.json
+.vscode/mcp.local.json
 
 # Secrets & API keys
 *.pem
