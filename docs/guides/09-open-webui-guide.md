@@ -21,6 +21,7 @@ Open WebUI (localhost:3000)
 - All requests logged in the PromptHub dashboard at `localhost:9090/dashboard`.
 
 **Key points:**
+
 - Open WebUI is a local chat interface that runs in your browser.
 - All data stays on your Mac. Nothing leaves your network.
 - PromptHub sits between Open WebUI and LM Studio, adding enhancement and tool access.
@@ -33,16 +34,16 @@ Open WebUI is installed using `uv`, a Python package runner. It is not a standal
 
 ### Where Things Live
 
-| Component          | Location                                                   |
-| ------------------ | ---------------------------------------------------------- |
-| Open WebUI binary  | Managed by `uvx` (cached in `~/.cache/uv/`)                |
-| Database and uploads | `~/.open-webui/`                                           |
-| Secret key         | `~/.webui_secret_key`                                      |
-| PromptHub API key  | `app/configs/api-keys.json` (`sk-prompthub-open-webui-001`) |
-| PromptHub config   | `clients/_open-webui/example.toml` (reference only)        |
-| Launch scripts     | `scripts/open-webui/start.sh`, `stop.sh`               |
-| LaunchAgent        | `scripts/launch-agents/com.prompthub.openwebui.plist`  |
-| Logs               | `logs/openwebui.log`                                       |
+| Component            | Location                                                    |
+| -------------------- | ----------------------------------------------------------- |
+| Open WebUI binary    | Managed by `uvx` (cached in `~/.cache/uv/`)                 |
+| Database and uploads | `~/.open-webui/`                                            |
+| Secret key           | `~/.webui_secret_key`                                       |
+| PromptHub API key    | `app/configs/api-keys.json` (`sk-prompthub-open-webui-001`) |
+| PromptHub config     | `clients/_open-webui/example.toml` (reference only)         |
+| Launch scripts       | `scripts/open-webui/start.sh`, `stop.sh`                    |
+| LaunchAgent          | `scripts/launch-agents/com.prompthub.openwebui.plist`       |
+| Logs                 | `logs/openwebui.log`                                        |
 
 ### Data Directory Contents
 
@@ -55,6 +56,7 @@ Open WebUI is installed using `uv`, a Python package runner. It is not a standal
 ```
 
 **Key points:**
+
 - Open WebUI stores all its data in `~/.open-webui/`.
 - Open WebUI setup is currently manual and documented in this guide.
 - You need `uv` installed to run Open WebUI.
@@ -87,12 +89,12 @@ Then open http://localhost:3000 in your browser.
 
 ### What the Environment Variables Do
 
-| Variable | Value | Purpose |
-|----------|-------|---------|
-| `DATA_DIR` | `~/.open-webui` | Where Open WebUI stores its data |
-| `ENABLE_OPENAI_API` | `true` | Turns on the OpenAI-compatible backend |
-| `OPENAI_API_BASE_URL` | `http://localhost:9090/v1` | Points to PromptHub (not to LM Studio directly) |
-| `OPENAI_API_KEY` | `sk-prompthub-open-webui-001` | Bearer token (security code like a password) registered in PromptHub |
+| Variable              | Value                         | Purpose                                                              |
+| --------------------- | ----------------------------- | -------------------------------------------------------------------- |
+| `DATA_DIR`            | `~/.open-webui`               | Where Open WebUI stores its data                                     |
+| `ENABLE_OPENAI_API`   | `true`                        | Turns on the OpenAI-compatible backend                               |
+| `OPENAI_API_BASE_URL` | `http://localhost:9090/v1`    | Points to PromptHub (not to LM Studio directly)                      |
+| `OPENAI_API_KEY`      | `sk-prompthub-open-webui-001` | Bearer token (security code like a password) registered in PromptHub |
 
 ### Stopping Open WebUI
 
@@ -159,6 +161,7 @@ rm ~/Library/LaunchAgents/com.prompthub.openwebui.plist
 ```
 
 **Key points:**
+
 - Use the start script (`start.sh`) for the easiest launch experience.
 - The LaunchAgent lets Open WebUI start automatically on login.
 - Press `Ctrl+C` or run `stop.sh` to shut it down.
@@ -179,6 +182,7 @@ commands:
 This runs health checks against LM Studio, PromptHub, and all configured clients.
 
 **Key points:**
+
 - Open WebUI is configured manually through environment variables and the app UI.
 - Always use `127.0.0.1` instead of `localhost` to avoid IPv6 problems.
 - Run `diagnose` to check the health of your entire stack at once.
@@ -204,14 +208,15 @@ After logging in, your LM Studio models should appear in the model selector drop
 
 ### 3. Choose a Model
 
-| Model | Best For | Speed |
-|-------|----------|-------|
-| `qwen3-4b-instruct-2507` | General use, chat, code | Fast |
-| `qwen3-4b-thinking-2507` | Reasoning, analysis | Medium |
+| Model                    | Best For                | Speed  |
+| ------------------------ | ----------------------- | ------ |
+| `qwen3-4b-instruct-2507` | General use, chat, code | Fast   |
+| `qwen3-4b-thinking-2507` | Reasoning, analysis     | Medium |
 
 Pick a model from the dropdown at the top of the chat page. `qwen3-4b-instruct-2507` is the recommended default.
 
 **Key points:**
+
 - The first user to register becomes the admin.
 - Check **Settings > Connections** if models do not appear.
 - Start with `qwen3-4b-instruct-2507` for fast, capable responses.
@@ -306,6 +311,7 @@ class Tools:
 ```
 
 **Key points:**
+
 - Option A (native MCP) is the easier and recommended approach.
 - Option B (custom tool functions) gives you fine-grained control over which tools are exposed.
 - All tools are namespaced by server name to avoid conflicts.
@@ -331,6 +337,7 @@ Open WebUI can search your documents when answering questions. RAG stands for Re
 4. Ask your question. The model retrieves relevant document chunks before generating its answer.
 
 **Key points:**
+
 - Upload your documents once and Open WebUI indexes them automatically.
 - Select a knowledge collection in chat to give the AI access to those documents.
 - RAG improves answer accuracy by grounding responses in your own content.
@@ -343,12 +350,12 @@ Open WebUI has automatic prompt enhancement enabled by default. When you send a 
 
 ### Configuration Details
 
-| Setting         | Value                          |
-| --------------- | ------------------------------ |
-| Model           | `qwen3-4b-instruct-2507`          |
-| Privacy level   | `local_only` (never leaves your Mac) |
-| API key         | `sk-prompthub-open-webui-001`   |
-| Enhancement     | Enabled (`"enhance": true`)    |
+| Setting       | Value                                |
+| ------------- | ------------------------------------ |
+| Model         | `qwen3-4b-instruct-2507`             |
+| Privacy level | `local_only` (never leaves your Mac) |
+| API key       | `sk-prompthub-open-webui-001`        |
+| Enhancement   | Enabled (`"enhance": true`)          |
 
 Enhancement is configured in two places:
 
@@ -360,6 +367,7 @@ Enhancement is configured in two places:
 To turn off enhancement, set `"enhance": false` for the `sk-prompthub-open-webui-001` key in `configs/api-keys.json` and restart the router.
 
 **Key points:**
+
 - Enhancement is on by default for Open WebUI.
 - All enhancement happens locally on your Mac (privacy level: `local_only`).
 - Change the `enhance` flag in `configs/api-keys.json` to toggle it.
@@ -390,13 +398,13 @@ The panel auto-refreshes every 15 seconds.
 
 ### Configuration Files
 
-Open WebUI setup is file-based. Check the repo-managed client assets under
-`clients/` and verify the running settings directly inside Open WebUI.
+Open WebUI setup is file-based. Check the local app config and verify the running settings directly inside Open WebUI.
 
 **Key points:**
+
 - The dashboard at `localhost:9090/dashboard` gives you a live view of Open WebUI activity.
 - Use the activity log API to query request history for the `openwebui` client.
-- Use the files in `clients/` plus the Open WebUI settings screen to verify configuration.
+- Use the local app config plus the Open WebUI settings screen to verify configuration.
 
 ---
 
@@ -421,9 +429,9 @@ Open WebUI setup is file-based. Check the repo-managed client assets under
 ### Chat returns errors
 
 1. Check if LM Studio is running:
-    ```bash
-    curl http://localhost:11434/api/tags
-    ```
+   ```bash
+   curl http://localhost:11434/api/tags
+   ```
 2. Check PromptHub circuit breakers on the dashboard:
    ```bash
    open http://localhost:9090/dashboard

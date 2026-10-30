@@ -2,11 +2,7 @@
 
 Per-client directories containing MCP bridge configs, provider configs, setup scripts, and knowledge files. See [docs/glossary.md](../docs/glossary.md) for definitions of bridge, proxy, client, and llm.txt.
 
-Active clients are unprefixed. Placeholder/draft clients use a `_` prefix.
-This folder is still evolving. For Claude agents, use
-`.claude/skills/client-setup/SKILL.md` as the setup/update workflow when
-activating or repairing a client. Other agents should follow the same pattern
-manually from this README plus `clients/default/`.
+This directory is local-only state and intentionally excluded from the repo. It exists on disk for machine-specific client setup and debugging, not as the source of truth for the project.
 
 For local-model tool-routing guidance (which PromptHub tool handles which
 kind of input), see [TOOL_USE.md](TOOL_USE.md) — the "Rules block" at the
@@ -26,26 +22,26 @@ clients/
 
 ## Active Clients
 
-| Directory | Transport | Strategy | Config Path |
-|-----------|-----------|----------|-------------|
-| `claude/` | bridge | symlink + copy | Desktop: `~/Library/.../Claude/claude_desktop_config.json`, Code: project root `mcp.json` |
-| `codex/` | bridge | symlink | `~/.codex/config.toml` |
-| `lm-studio/` | bridge | symlink | `~/.lmstudio/mcp.json` |
-| `perplexity-desktop/` | bridge | symlink | — |
-| `raycast/` | bridge | symlink | `~/.config/raycast/mcp.json` |
-| `vscode/` | bridge | merge | `~/Library/.../Code/.../mcp_settings.json` (includes Copilot configs) |
-| `default/` | bridge | template | Template scripts for new clients |
+| Directory             | Transport | Strategy       | Config Path                                                                               |
+| --------------------- | --------- | -------------- | ----------------------------------------------------------------------------------------- |
+| `claude/`             | bridge    | symlink + copy | Desktop: `~/Library/.../Claude/claude_desktop_config.json`, Code: project root `mcp.json` |
+| `codex/`              | bridge    | symlink        | `~/.codex/config.toml`                                                                    |
+| `lm-studio/`          | bridge    | symlink        | `~/.lmstudio/mcp.json`                                                                    |
+| `perplexity-desktop/` | bridge    | symlink        | —                                                                                         |
+| `raycast/`            | bridge    | symlink        | `~/.config/raycast/mcp.json`                                                              |
+| `vscode/`             | bridge    | merge          | `~/Library/.../Code/.../mcp_settings.json` (includes Copilot configs)                     |
+| `default/`            | bridge    | template       | Template scripts for new clients                                                          |
 
 Backward-compat symlinks: `claude-code` → `claude/`, `claude-desktop` → `claude/`
 
 ## Placeholder Clients (`_` prefix)
 
-| Directory | Transport | Notes |
-|-----------|-----------|-------|
-| `_cherry-studio/` | bridge + http | `cherry-studio` placeholder docs; Electron dialog, no standalone config file |
-| `_jetbrains/` | bridge | No enhancement rule yet |
-| `_open-webui/` | http (OpenAI proxy) | No MCP bridge — connects via `/v1/` |
-| `_zed/` | bridge | Manual paste (JSONC shared settings) |
+| Directory         | Transport           | Notes                                                                        |
+| ----------------- | ------------------- | ---------------------------------------------------------------------------- |
+| `_cherry-studio/` | bridge + http       | `cherry-studio` placeholder docs; Electron dialog, no standalone config file |
+| `_jetbrains/`     | bridge              | No enhancement rule yet                                                      |
+| `_open-webui/`    | http (OpenAI proxy) | No MCP bridge — connects via `/v1/`                                          |
+| `_zed/`           | bridge              | Manual paste (JSONC shared settings)                                         |
 
 ## Setup
 
@@ -62,13 +58,7 @@ Backward-compat symlinks: `claude-code` → `claude/`, `claude-desktop` → `cla
 
 ## Adding a New Client
 
-If you are using Claude, start with `.claude/skills/client-setup/SKILL.md`.
-Otherwise, copy from `clients/default/` and follow the same workflow manually:
-
-```bash
-cp -r clients/default clients/<name>
-# Edit setup.sh and uninstall.sh — customize CLIENT_NAME, CONFIG_FILE, APP_CONFIG
-```
+Create the local client directory for your machine, then follow the app's own setup flow and store any generated or user-owned config outside the repo.
 
 ## Symlink Convention
 

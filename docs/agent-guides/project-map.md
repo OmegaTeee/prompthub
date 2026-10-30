@@ -4,17 +4,13 @@ This guide helps coding agents understand the structure of the PromptHub reposit
 
 ## Repository purpose
 
-PromptHub is the local MCP router project for sharing MCP servers and
-centralizing client configurations across multiple AI clients. The repo should
-preserve a single source of truth for routing behavior, repo-managed client
-configuration files, and shared enhancement logic.
+PromptHub is the local MCP router project for sharing MCP servers and centralizing the router-side behavior that powers local AI integrations. The repository is the source of truth for routing logic, router configuration, enhancement rules, and runtime behavior; per-app client settings remain local to each machine and are not tracked here.
 
 ## High-level structure
 
 - `app/` — main application code and internal implementation details.
 - `app/configs/` — shared router configuration and rule files.
 - `app/configs/enhancement-rules.json` — important shared enhancement/config rules file.
-- `clients/` — repo-managed client config files, setup scripts, and per-client notes.
 - `docs/` — human and agent-facing documentation.
 - `docs/api/` — API reference and integration details.
 - `docs/architecture/` — ADRs and architecture notes; read before major refactors.
@@ -33,12 +29,13 @@ configuration files, and shared enhancement logic.
 - Agent guide root: `~/prompthub/docs/agent-guides`
 - Scripts root: `~/prompthub/scripts`
 - Shared enhancement rules: `~/prompthub/app/configs/enhancement-rules.json`
-- Local app  `~/.local/share/prompthub/`
+- Local app `~/.local/share/prompthub/`
 
 ## Working assumptions
 
-- Prefer editing source files and repo-managed client assets instead of patching installed app configs directly.
-- Treat PromptHub as the source of truth for MCP server sharing and centralized client configuration.
+- Prefer editing source files in the repo rather than patching installed app configs directly.
+- Treat PromptHub as the source of truth for routing, server sharing, and runtime behavior.
+- Keep local client settings outside the repo unless the task explicitly requires a machine-local override.
 - Preserve supported client compatibility unless the task explicitly allows a breaking change.
 - Keep Claude-primary and OpenCode/LM Studio-backup workflows aligned wherever practical.
 - Prefer repo wrapper commands in `scripts/` when they exist and accurately represent the intended workflow.
@@ -51,17 +48,13 @@ Read these first when relevant:
 - `docs/architecture/ADR-004-modular-monolith.md`
 - `docs/architecture/ADR-009-orchestrator-agent.md`
 - `docs/guides/06-client-configuration-guide.md`
-- `clients/README.md`
 - `docs/modules/servers.md`
 - `scripts/README.md`
 
 ## Change strategy
 
-- For config-related work, inspect both `app/configs/` and the relevant
-  `clients/<name>/` directory before editing.
-- For client onboarding or placeholder activation, check `clients/README.md`
-  first. If you are using Claude, also check
-  `.claude/skills/client-setup/SKILL.md`.
+- For config-related work, inspect the router config in `app/configs/` before editing local app settings.
+- For client onboarding, check the app's local configuration paths and the machine-local setup rather than a repo-managed client directory.
 - For router or transport changes, inspect architecture ADRs before modifying behavior.
 - For documentation changes, update both user-facing docs and agent-facing docs when conventions change.
 - For workflow or operational command changes, update both the script docs and the related agent guides.

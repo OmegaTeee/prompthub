@@ -11,32 +11,17 @@ Prefer improving shared abstractions over adding one-off client-specific hacks.
 
 ## Agent roles
 
-| Agent | Role | Typical use |
-| --- | --- | --- |
-| **Claude Code** | Primary high-trust implementer | Architecture, structural changes, nuanced refactors, documentation, broad repo work |
-| **OpenCode** | Backup local coding agent | Local-first implementation, terminal workflows, second-pass execution, fallback when Claude is unavailable |
-| **Copilot / IDE assist** | Inline helper | Autocomplete, snippets, small local edits, quick chat inside the editor |
+| Agent                    | Role                           | Typical use                                                                                                |
+| ------------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| **Claude Code**          | Primary high-trust implementer | Architecture, structural changes, nuanced refactors, documentation, broad repo work                        |
+| **OpenCode**             | Backup local coding agent      | Local-first implementation, terminal workflows, second-pass execution, fallback when Claude is unavailable |
+| **Copilot / IDE assist** | Inline helper                  | Autocomplete, snippets, small local edits, quick chat inside the editor                                    |
 
 All agents follow the same repo conventions unless a task explicitly requires client-specific behavior.
 
 ## Supported clients
 
-Per-client directories under `clients/`. Active clients are unprefixed; placeholder/draft clients use a `_` prefix.
-
-| Client | Directory | Strategy | Status |
-|---|---|---|---|
-| Claude Code | `clients/claude-code/` | symlink | Active |
-| Claude Desktop | `clients/claude-desktop/` | symlink | Active |
-| Codex | `clients/codex/` | symlink | Active |
-| LM Studio | `clients/lm-studio/` | symlink | Active |
-| Perplexity Desktop | `clients/perplexity-desktop/` | symlink | Active |
-| VS Code + Copilot | `clients/vscode/` | merge | Active |
-| Default | `clients/default/` | template | Template |
-| Cherry Studio | `clients/_cherry-studio/` | manual | Placeholder |
-| JetBrains | `clients/_jetbrains/` | symlink | Placeholder |
-| Open WebUI | `clients/_open-webui/` | symlink | Placeholder |
-| Raycast | `clients/raycast/` | symlink | Active |
-| Zed | `clients/_zed/` | manual | Placeholder |
+Machine-local client settings live outside the repository. PromptHub does not keep a tracked per-client `clients/` tree as the project source of truth.
 
 When editing shared config logic, think in terms of cross-client consistency first and per-client customization second.
 
@@ -53,7 +38,7 @@ When editing shared config logic, think in terms of cross-client consistency fir
 - Repo root: `~/prompthub`
 - Docs root: `~/prompthub/docs`
 - Agent docs: `~/prompthub/docs/agent-guides`
-- Client configs: `~/prompthub/clients/`
+- Local client configs: machine-local app directories outside the repo
 - Shared enhancement rules: `~/prompthub/app/configs/enhancement-rules.json`
 
 Read these before large or cross-cutting changes:
@@ -68,11 +53,11 @@ Read these before large or cross-cutting changes:
 
 `.claude/steering/` contains three documents loaded into agent context:
 
-| File | Answers | Updated when |
-|------|---------|-------------|
-| `product.md` | Why does this exist? What does it do? | Features or scope change |
-| `tech.md` | How is it built? What patterns to follow? | Stack or conventions change |
-| `structure.md` | Where does code live? What owns what? | Files or modules are added/moved |
+| File           | Answers                                   | Updated when                     |
+| -------------- | ----------------------------------------- | -------------------------------- |
+| `product.md`   | Why does this exist? What does it do?     | Features or scope change         |
+| `tech.md`      | How is it built? What patterns to follow? | Stack or conventions change      |
+| `structure.md` | Where does code live? What owns what?     | Files or modules are added/moved |
 
 Keep these concise. Do not add transient content (task lists, session notes, review checklists).
 
@@ -155,6 +140,7 @@ Add a line under `## [Unreleased]` in the appropriate category (Added / Changed 
 **Step 2 — Update code documentation** (when code was added or modified)
 
 Run the `code-docs` agent on all new or modified files. Scope:
+
 - Docstrings for new/changed functions, classes, and modules
 - Type hints on new signatures
 - Clarifying comments on non-obvious logic
@@ -164,6 +150,7 @@ Do not touch unchanged code. Match the existing style (concise docstrings, 88-ch
 **Step 3 — Add or update user guide** (when a user-facing feature was added or changed)
 
 Run the `user-manual` agent to create or update a guide in `docs/guides/`. Scope:
+
 - New feature → new guide file (follow the `NN-name-guide.md` numbering convention)
 - Changed feature → update the existing guide in-place (add sections, don't remove working content)
 - Include: overview, setup/prerequisites, usage with copy-pasteable examples, troubleshooting
@@ -172,13 +159,13 @@ Skip this step for internal-only changes (refactors, test-only changes, CI tweak
 
 ### When to run
 
-| Change type | Step 1 (changelog) | Step 2 (code docs) | Step 3 (user guide) |
-|---|---|---|---|
-| New feature | Yes | Yes | Yes |
-| Bug fix | Yes | If code changed | If user-facing |
-| Refactor | If notable | Yes | No |
-| Config change | Yes | No | If user-facing |
-| Test-only | No | No | No |
+| Change type   | Step 1 (changelog) | Step 2 (code docs) | Step 3 (user guide) |
+| ------------- | ------------------ | ------------------ | ------------------- |
+| New feature   | Yes                | Yes                | Yes                 |
+| Bug fix       | Yes                | If code changed    | If user-facing      |
+| Refactor      | If notable         | Yes                | No                  |
+| Config change | Yes                | No                 | If user-facing      |
+| Test-only     | No                 | No                 | No                  |
 
 ### Quick reference
 

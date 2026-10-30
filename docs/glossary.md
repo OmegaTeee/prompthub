@@ -18,6 +18,7 @@ The core FastAPI application (`app/router/`). Receives requests, applies cross-c
 The Node.js stdio process (`mcps/prompthub-bridge.js`) that aggregates all MCP servers behind a single stdio interface. Translates between the MCP stdio transport (what clients speak) and PromptHub's HTTP endpoints (what the router exposes). Named `prompthub-bridge` in client MCP configs.
 
 Use **bridge** when referring to:
+
 - The MCP connection a client uses to reach PromptHub's tools
 - The stdio process itself
 - Client-side `mcp.json` entries
@@ -27,6 +28,7 @@ Use **bridge** when referring to:
 The OpenAI-compatible `/v1/` endpoint that intercepts, enhances, and forwards LLM requests to the backend model server (LM Studio). Named `prompthub-proxy` in client provider configs. Not a transparent pass-through — it mutates requests via the enhancement pipeline.
 
 Use **proxy** when referring to:
+
 - The `/v1/chat/completions` and `/v1/responses` endpoints
 - Client-side provider/model configs pointing at `localhost:9090/v1`
 - The auth + enhance + forward pipeline for LLM requests
@@ -60,18 +62,18 @@ EnhancementService resolves the name to the profile's `model` at rule-load
 time, overriding any explicit `model` field on the rule. Unknown profile
 names fall back to the rule's `model` and surface as `source:
 profile_missing` from `GET /clients/{name}/model-profile`. The daemon
-default stays `qwen3-4b-instruct-2507` regardless of which profiles exist —
+default stays `qwen3-4b` regardless of which profiles exist —
 profiles are opt-in, not a global flip.
 
 ### Privacy level
 
 The `PrivacyLevel` enum (`local_only`, `free_ok`, `any`) controlling whether a prompt may leave localhost. Set per-client in enhancement rules and overridable per-request via `X-Privacy-Level` header.
 
-| Level | Meaning |
-|---|---|
-| `local_only` | Never leaves localhost. No cloud fallback. |
-| `free_ok` | May use free-tier cloud (OpenRouter) as fallback. |
-| `any` | May use any cloud provider. |
+| Level        | Meaning                                           |
+| ------------ | ------------------------------------------------- |
+| `local_only` | Never leaves localhost. No cloud fallback.        |
+| `free_ok`    | May use free-tier cloud (OpenRouter) as fallback. |
+| `any`        | May use any cloud provider.                       |
 
 ### Cloud fallback
 
@@ -138,10 +140,10 @@ the default.
 
 State machine protecting against cascading failures. Three states:
 
-| State | Behavior |
-|---|---|
-| **CLOSED** | Requests pass through normally. |
-| **OPEN** | Requests rejected immediately (503). Entered after 3 consecutive failures. |
+| State         | Behavior                                                                        |
+| ------------- | ------------------------------------------------------------------------------- |
+| **CLOSED**    | Requests pass through normally.                                                 |
+| **OPEN**      | Requests rejected immediately (503). Entered after 3 consecutive failures.      |
 | **HALF_OPEN** | One probe request allowed after 30s cooldown. Success → CLOSED, failure → OPEN. |
 
 ### L1 / L2 cache

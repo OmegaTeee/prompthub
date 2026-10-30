@@ -5,6 +5,7 @@ Lightweight local-first service orchestration layer for macOS — central router
 ## Overview
 
 Service provides a single local router (`localhost:9090`) that:
+
 - Manages MCP servers centrally (configure once, use everywhere)
 - Enhances prompts via LM Studio before forwarding to AI services
 - Provides circuit breakers for graceful degradation
@@ -14,19 +15,10 @@ Service provides a single local router (`localhost:9090`) that:
 
 **Local Provider**: LM Studio, MCP server bridge
 
-## Project Status
-
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Phase 2 | **Complete** | Core router, caching, circuit breakers, LM Studio enhancement |
-| Phase 2.5 | **Complete** | MCP server management, stdio bridges |
-| Phase 3 | **Complete** | Desktop integration, repo-managed client configs, documentation pipeline |
-| Phase 4 | **Complete** | HTMX dashboard with real-time monitoring |
-| Phase 5 | **Complete** | OpenAI-compatible API proxy for desktop apps |
-
 ## Quick Start
 
 ### Prerequisites
+
 - Python 3.11+
 - Node.js 20+ (for MCP servers)
 - Docker Desktop or Colima
@@ -85,22 +77,23 @@ prompthub/
 ## Documentation
 
 ### User Guides
+
 User-facing guides live in [`docs/guides/`](docs/guides/):
+
 - [Quick Start](docs/guides/01-quick-start-guide.md)
 - [Prompt Enhancement](docs/guides/02-prompt-enhancement-user-guide.md)
 - [Session Memory](docs/guides/03-session-memory-guide.md)
 - [OpenAI-Compatible API](docs/guides/04-openai-api-guide.md)
 - [Client Configuration](docs/guides/06-client-configuration-guide.md)
 
-### Client Setup
-Client setup now lives under [`clients/`](clients/):
-- [Claude](clients/claude/) - Claude app configs and setup helpers
-- [VS Code](clients/vscode/) - MCP and editor integration files
-- [LM Studio](clients/lm-studio/) - local model presets and setup notes
-- [Codex](clients/codex/) - Codex CLI configuration
+### Local Client Configuration
+
+Client-specific configuration is kept local to each app install and is intentionally excluded from Git and editor indexing. The repository does not maintain a tracked client config tree as a source of truth; setup is handled per user, per app, and per machine.
 
 ### Developer Documentation
+
 See **[docs/](docs/)** for technical documentation:
+
 - [Audit System](docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md) - Production audit infrastructure (Security Score: 9.0/10)
 
 ## Key Features
@@ -110,7 +103,7 @@ See **[docs/](docs/)** for technical documentation:
 Prompts pass through a local LM Studio model before reaching the AI service. Each client gets a tailored system prompt, privacy policy, and enhancement settings:
 
 | Client                | Default model          | Tuning                                         |
-|-----------------------|------------------------|------------------------------------------------|
+| --------------------- | ---------------------- | ---------------------------------------------- |
 | Claude Desktop        | qwen3-4b-instruct-2507 | Structured reasoning, Markdown                 |
 | VS Code / Claude Code | qwen3-4b-instruct-2507 | Code-first, file paths, minimal prose          |
 | Raycast               | qwen3-4b-instruct-2507 | Action-oriented, CLI commands, under 200 words |
@@ -142,14 +135,14 @@ HTMX-powered monitoring UI at `localhost:9090/dashboard` with auto-refreshing pa
 
 PromptHub manages 6 MCP servers:
 
-| Server | Package | Auto-Start | Description |
-|--------|---------|------------|-------------|
-| context7 | @upstash/context7-mcp | Yes | Documentation fetching |
-| desktop-commander | @wonderwhy-er/desktop-commander | Yes | File operations |
-| sequential-thinking | @modelcontextprotocol/server-sequential-thinking | Yes | Step-by-step reasoning |
-| obsidian | obsidian-mcp-tools | Yes | Semantic search, templates for Obsidian vault |
-| memory | @modelcontextprotocol/server-memory | No | Cross-session persistence |
-| fetch | mcp-fetch | No | HTTP fetch, GraphQL |
+| Server              | Package                                          | Auto-Start | Description                                   |
+| ------------------- | ------------------------------------------------ | ---------- | --------------------------------------------- |
+| context7            | @upstash/context7-mcp                            | Yes        | Documentation fetching                        |
+| desktop-commander   | @wonderwhy-er/desktop-commander                  | Yes        | File operations                               |
+| sequential-thinking | @modelcontextprotocol/server-sequential-thinking | Yes        | Step-by-step reasoning                        |
+| obsidian            | obsidian-mcp-tools                               | Yes        | Semantic search, templates for Obsidian vault |
+| memory              | @modelcontextprotocol/server-memory              | No         | Cross-session persistence                     |
+| fetch               | mcp-fetch                                        | No         | HTTP fetch, GraphQL                           |
 
 > See [`app/configs/mcp-servers.json`](./app/configs/mcp-servers.json) for the
 > active registry and [`mcps/README.md`](./mcps/README.md) for server-specific
@@ -211,6 +204,7 @@ security add-generic-password -a $USER -s obsidian_api_key -w YOUR_API_KEY
 ## Configuration
 
 ### Environment Variables
+
 Copy `app/.env.example` to `app/.env` and configure:
 
 ```bash
@@ -220,9 +214,11 @@ ROUTER_PORT=9090
 ```
 
 ### MCP Servers
+
 Edit `app/configs/mcp-servers.json` to add/remove MCP servers.
 
 ### Enhancement Rules
+
 Edit `app/configs/enhancement-rules.json` to customize per-client behavior.
 
 ## API Reference
@@ -257,7 +253,7 @@ GET /health/{server}
   "services": {
     "router": "up",
     "lm_studio": "up",
-    "cache": {"status": "up", "hit_rate": 0.82, "size": 145}
+    "cache": { "status": "up", "hit_rate": 0.82, "size": 145 }
   },
   "servers": {
     "running": 5,
@@ -382,10 +378,8 @@ GET /audit/integrity/verify
 #### Client Configuration Sources
 
 ```bash
-# Client configs are stored as files in the repo, not generated over HTTP
-clients/claude/
-clients/vscode/
-clients/lm-studio/
+# Client configs are kept local to each app install and machine
+# Use the app's own local config files or setup flow instead of a repo-managed tree
 ```
 
 ### Error Handling
@@ -398,13 +392,14 @@ All endpoints follow JSON-RPC error format:
   "error": {
     "code": -32603,
     "message": "Server fetch circuit breaker open",
-    "data": {"retry_after": 30}
+    "data": { "retry_after": 30 }
   },
   "id": null
 }
 ```
 
 **Common Error Codes:**
+
 - `404` - Server/resource not found
 - `400` - Invalid request (server already running, etc.)
 - `503` - Service unavailable (circuit breaker open, service not initialized)
@@ -419,6 +414,7 @@ All endpoints follow JSON-RPC error format:
 ### Authentication
 
 Currently no authentication required (local-only deployment). For production:
+
 - Use API keys via `X-API-Key` header
 - Configure in `.env`: `API_KEY_REQUIRED=true`
 - See Obsidian vault: `~/Vault/PromptHub/Core Setup/Keychain.md`
@@ -432,6 +428,7 @@ Currently no authentication required (local-only deployment). For production:
 5. Submit PRs against `main`
 
 ### Code Style Guidelines
+
 - Python 3.11+ with type hints (required)
 - 88-char line limit (Black/ruff)
 - Use `logging`, not `print()`

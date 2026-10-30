@@ -9,20 +9,21 @@ tags: [llm, lm-studio, models, hardware, quantization, setup]
 PromptHub connects to any OpenAI-compatible local LLM server. This guide helps you pick the right models for your hardware and workflow.
 
 > All models should be run in GGUF format with **Q5_K** or **Q4_K** quantization to ensure compatibility with M3 Max hardware and optimal performance. Use Qwen3 **_8B_** or **_14B_** for most practical workflows, balancing speed, capability, and resource usage.
+
 ## Roles
 
 Every recommendation in this guide maps to one of these roles:
 
-| Role | Description | PromptHub Example |
-|------|-------------|-------------------|
-| **Fast Chat** | Quick responses, prompt rewriting, lightweight tasks | Enhancement model |
-| **Reasoning** | Chain-of-thought, planning, intent classification | Orchestrator model |
-| **Coding** | Code generation, completion, refactoring | IDE copilot, Claude Code |
-| **Assistant** | General-purpose, instruction following | Open WebUI, Claude Desktop |
-| **Agent** | Agentic workflows, tool calling, multi-step tasks | MCP tool orchestration |
-| **Inline** | Fast completions, tab-complete, fill-in-the-middle | VS Code, Cursor, Zed |
-| **Research** | Web search augmentation, summarization | Perplexity, Raycast |
-| **Embedding** | Vector search, RAG, semantic similarity | Future RAG pipeline |
+| Role          | Description                                          | PromptHub Example          |
+| ------------- | ---------------------------------------------------- | -------------------------- |
+| **Fast Chat** | Quick responses, prompt rewriting, lightweight tasks | Enhancement model          |
+| **Reasoning** | Chain-of-thought, planning, intent classification    | Orchestrator model         |
+| **Coding**    | Code generation, completion, refactoring             | IDE copilot, Claude Code   |
+| **Assistant** | General-purpose, instruction following               | Open WebUI, Claude Desktop |
+| **Agent**     | Agentic workflows, tool calling, multi-step tasks    | MCP tool orchestration     |
+| **Inline**    | Fast completions, tab-complete, fill-in-the-middle   | VS Code, Cursor, Zed       |
+| **Research**  | Web search augmentation, summarization               | Perplexity, Raycast        |
+| **Embedding** | Vector search, RAG, semantic similarity              | Future RAG pipeline        |
 
 ---
 
@@ -30,12 +31,12 @@ Every recommendation in this guide maps to one of these roles:
 
 If you just want an answer, use this table. Find your RAM tier and the role you need.
 
-| RAM | Fast Chat | Reasoning | Coding | Assistant | Agent | Inline | Embedding |
-|-----|-----------|-----------|--------|-----------|-------|--------|-----------|
-| **8 GB** | Qwen3 4B Q4 | Qwen3 4B Thinking Q4 | Qwen3 4B Q4 | Gemma 3 4B Q4 | Qwen3 4B Q4 | Phi-4 Mini 3.8B Q4 | Nomic Embed v1.5 |
-| **16 GB** | Qwen3 8B Q4 | Phi-4 14B Q4 | Devstral Small 24B Q3 | Qwen3 8B Q4 | Qwen3 8B Q4 | Qwen3 4B Q6 | Nomic Embed v1.5 |
-| **32 GB** | Qwen3 14B Q4 | Qwen3 14B Q4 | Devstral Small 24B Q5 | Qwen3 14B Q4 | Qwen3 14B Q4 | Qwen3 4B Q6 | Qwen3 Embedding 0.6B |
-| **64 GB+** | Qwen3 30B Q4 | DeepSeek R1 32B Q6 | Qwen3 Coder 30B Q4 | Llama 3.3 70B Q4 | GPT-OSS 20B Q5 | Qwen3 4B Q8 | Qwen3 Embedding 0.6B |
+| RAM        | Fast Chat    | Reasoning            | Coding                | Assistant        | Agent          | Inline             | Embedding            |
+| ---------- | ------------ | -------------------- | --------------------- | ---------------- | -------------- | ------------------ | -------------------- |
+| **8 GB**   | Qwen3 4B Q4  | Qwen3 4B Thinking Q4 | Qwen3 4B Q4           | Gemma 3 4B Q4    | Qwen3 4B Q4    | Phi-4 Mini 3.8B Q4 | Nomic Embed v1.5     |
+| **16 GB**  | Qwen3 8B Q4  | Phi-4 14B Q4         | Devstral Small 24B Q3 | Qwen3 8B Q4      | Qwen3 8B Q4    | Qwen3 4B Q6        | Nomic Embed v1.5     |
+| **32 GB**  | Qwen3 14B Q4 | Qwen3 14B Q4         | Devstral Small 24B Q5 | Qwen3 14B Q4     | Qwen3 14B Q4   | Qwen3 4B Q6        | Qwen3 Embedding 0.6B |
+| **64 GB+** | Qwen3 30B Q4 | DeepSeek R1 32B Q6   | Qwen3 Coder 30B Q4    | Llama 3.3 70B Q4 | GPT-OSS 20B Q5 | Qwen3 4B Q8        | Qwen3 Embedding 0.6B |
 
 > All models assume LM Studio with GGUF quantization. Apple Silicon users should prefer the MLX engine.
 
@@ -45,9 +46,9 @@ If you just want an answer, use this table. Find your RAM tier and the role you 
 
 A brief overview of the major families available in LM Studio as of mid-2026.
 
-### Qwen3 / Qwen3.5 (Alibaba)
+### Qwen3 (Alibaba)
 
-The best all-rounder family right now. Dense models from 0.6B to 235B, plus MoE variants (e.g., Qwen3.5 A3B). Strong multilingual support, native tool calling, and a thinking mode that toggles chain-of-thought on and off. PromptHub's default models are from this family.
+The best all-rounder family right now. Dense models from 0.6B to 235B, plus MoE variants (for example, Qwen3.5 A3B). Strong multilingual support, native tool calling, and thinking mode that toggles chain-of-thought on and off. PromptHub's default models are from this family.
 
 - **Strengths**: Tool calling, multilingual, thinking mode, wide size range
 - **Best for**: Fast Chat, Reasoning, Agent, Coding
@@ -107,15 +108,15 @@ OpenAI's first open-weight model. 20B dense. Native support in LM Studio. Well-s
 
 Quantization reduces model size by using fewer bits per weight. Lower bits = smaller file = less RAM, but quality degrades.
 
-| Level | Bits/Weight | Quality | Notes |
-|-------|-------------|---------|-------|
-| Q2_K | ~2.5 | Poor | Only for extreme memory constraints. Noticeable degradation. |
-| Q3_K_M | ~3.5 | Usable | Some quality loss. Good for fitting very large models in limited RAM. |
-| **Q4_K_M** | **~4.5** | **Good** | **Recommended default.** Best balance of size and quality. |
-| Q5_K_M | ~5.5 | Better | ~15% larger than Q4. Worth it if RAM allows. |
-| Q6_K | ~6.5 | Very Good | ~50% larger than Q4. Diminishing returns for most tasks. |
-| Q8_0 | 8.0 | Near-original | ~2x size of Q4. For benchmarking or quality-critical tasks. |
-| F16/BF16 | 16.0 | Original | Full precision. Use for embedding models and reference testing only. |
+| Level      | Bits/Weight | Quality       | Notes                                                                 |
+| ---------- | ----------- | ------------- | --------------------------------------------------------------------- |
+| Q2_K       | ~2.5        | Poor          | Only for extreme memory constraints. Noticeable degradation.          |
+| Q3_K_M     | ~3.5        | Usable        | Some quality loss. Good for fitting very large models in limited RAM. |
+| **Q4_K_M** | **~4.5**    | **Good**      | **Recommended default.** Best balance of size and quality.            |
+| Q5_K_M     | ~5.5        | Better        | ~15% larger than Q4. Worth it if RAM allows.                          |
+| Q6_K       | ~6.5        | Very Good     | ~50% larger than Q4. Diminishing returns for most tasks.              |
+| Q8_0       | 8.0         | Near-original | ~2x size of Q4. For benchmarking or quality-critical tasks.           |
+| F16/BF16   | 16.0        | Original      | Full precision. Use for embedding models and reference testing only.  |
 
 ### Estimating RAM usage
 
@@ -124,6 +125,7 @@ RAM needed = (model_params_in_billions x bits_per_weight) / 8 + 2 GB overhead
 ```
 
 Examples:
+
 - 7B model at Q4_K_M: `(7 x 4.5) / 8 + 2 = 5.9 GB`
 - 14B model at Q4_K_M: `(14 x 4.5) / 8 + 2 = 9.9 GB`
 - 30B model at Q4_K_M: `(30 x 4.5) / 8 + 2 = 18.9 GB`
@@ -136,13 +138,13 @@ Examples:
 
 All figures assume GGUF format with Q4_K_M quantization unless noted. Apple Silicon unified memory is shared between CPU and GPU -- reserve 4-6 GB for macOS and other apps.
 
-| RAM | Usable for Models | Max Dense Model (Q4) | Recommended Models |
-|-----|-------------------|----------------------|-------------------|
-| **8 GB** | ~3-4 GB | ~3B | Phi-4 Mini 3.8B, Qwen3 4B, Gemma 3 4B |
-| **16 GB** | ~10-12 GB | ~7-8B | Qwen3 8B, Phi-4 14B (Q3), Gemma 3 12B |
-| **32 GB** | ~24-26 GB | ~14B | Qwen3 14B, Devstral Small 24B, DeepSeek R1 14B distill |
-| **48 GB** | ~40-42 GB | ~30B | Qwen3 30B, Devstral Small 24B (Q6), Mistral Small 24B |
-| **64 GB+** | ~56-58 GB | ~70B | Llama 3.3 70B, Qwen2.5 Coder 32B (Q6), DeepSeek R1 32B distill |
+| RAM        | Usable for Models | Max Dense Model (Q4) | Recommended Models                                             |
+| ---------- | ----------------- | -------------------- | -------------------------------------------------------------- |
+| **8 GB**   | ~3-4 GB           | ~3B                  | Phi-4 Mini 3.8B, Qwen3 4B, Gemma 3 4B                          |
+| **16 GB**  | ~10-12 GB         | ~7-8B                | Qwen3 8B, Phi-4 14B (Q3), Gemma 3 12B                          |
+| **32 GB**  | ~24-26 GB         | ~14B                 | Qwen3 14B, Devstral Small 24B, DeepSeek R1 14B distill         |
+| **48 GB**  | ~40-42 GB         | ~30B                 | Qwen3 30B, Devstral Small 24B (Q6), Mistral Small 24B          |
+| **64 GB+** | ~56-58 GB         | ~70B                 | Llama 3.3 70B, Qwen2.5 Coder 32B (Q6), DeepSeek R1 32B distill |
 
 **MoE models** have a large total parameter count but only activate a fraction per token. For example, Qwen3.5 A3B (MoE) has ~36B total params but only 3B active -- it needs RAM for all 36B weights but runs at 3B-equivalent speed.
 
@@ -154,52 +156,52 @@ All figures assume GGUF format with Q4_K_M quantization unless noted. Apple Sili
 
 For prompt rewriting and lightweight conversation. Speed matters more than depth.
 
-| RAM | Model | Notes |
-|-----|-------|-------|
-| 8 GB | Qwen3 4B Q4_K_M | PromptHub default. Fast, capable. |
-| 16 GB | Qwen3 8B Q4_K_M | Noticeably better rewrites. |
+| RAM    | Model            | Notes                                          |
+| ------ | ---------------- | ---------------------------------------------- |
+| 8 GB   | Qwen3 4B Q4_K_M  | PromptHub default. Fast, capable.              |
+| 16 GB  | Qwen3 8B Q4_K_M  | Noticeably better rewrites.                    |
 | 32 GB+ | Qwen3 14B Q4_K_M | Diminishing returns past this for enhancement. |
 
 ### Reasoning / Orchestrator
 
 For chain-of-thought, intent classification, and planning. Thinking mode is important here.
 
-| RAM | Model | Notes |
-|-----|-------|-------|
-| 8 GB | Qwen3 4B Thinking Q4_K_M | PromptHub default orchestrator. |
-| 16 GB | Phi-4 14B Q4_K_M | Strong reasoning per parameter. |
-| 32 GB+ | Qwen3 14B Q4_K_M | Good balance. DeepSeek R1 14B distill is an alternative for deeper reasoning. |
+| RAM    | Model                    | Notes                                                                         |
+| ------ | ------------------------ | ----------------------------------------------------------------------------- |
+| 8 GB   | Qwen3 4B Thinking Q4_K_M | PromptHub default orchestrator.                                               |
+| 16 GB  | Phi-4 14B Q4_K_M         | Strong reasoning per parameter.                                               |
+| 32 GB+ | Qwen3 14B Q4_K_M         | Good balance. DeepSeek R1 14B distill is an alternative for deeper reasoning. |
 
 ### Coding
 
 For code generation, completion, and refactoring in IDE copilots or Claude Code.
 
-| RAM | Model | Notes |
-|-----|-------|-------|
-| 8 GB | Qwen3 4B Q4_K_M | Handles simple completions. |
-| 16 GB | Devstral Small 24B Q3_K_M | Code-specialized. Tight fit at Q3 but very capable. |
+| RAM    | Model                     | Notes                                                                      |
+| ------ | ------------------------- | -------------------------------------------------------------------------- |
+| 8 GB   | Qwen3 4B Q4_K_M           | Handles simple completions.                                                |
+| 16 GB  | Devstral Small 24B Q3_K_M | Code-specialized. Tight fit at Q3 but very capable.                        |
 | 32 GB+ | Devstral Small 24B Q5_K_M | Higher quality quant. Qwen3 Coder 30B (MoE, A3B active) is also excellent. |
 
 ### Assistant
 
 For general-purpose use in Open WebUI, Claude Desktop passthrough, or direct chat.
 
-| RAM | Model | Notes |
-|-----|-------|-------|
-| 8 GB | Gemma 3 4B Q4_K_M | Vision support at a small size. |
-| 16 GB | Qwen3 8B Q4_K_M | Strong all-rounder. |
-| 32 GB | Qwen3 14B Q4_K_M | Excellent instruction following. |
+| RAM    | Model                | Notes                                 |
+| ------ | -------------------- | ------------------------------------- |
+| 8 GB   | Gemma 3 4B Q4_K_M    | Vision support at a small size.       |
+| 16 GB  | Qwen3 8B Q4_K_M      | Strong all-rounder.                   |
+| 32 GB  | Qwen3 14B Q4_K_M     | Excellent instruction following.      |
 | 64 GB+ | Llama 3.3 70B Q4_K_M | Near cloud-quality for general tasks. |
 
 ### Agent / Tool Calling
 
 For MCP tool orchestration and multi-step agentic workflows. The model must support structured tool calling.
 
-| RAM | Model | Notes |
-|-----|-------|-------|
-| 8 GB | Qwen3 4B Q4_K_M | Trained for tool use. Handles simple tool chains. |
-| 16 GB | Qwen3 8B Q4_K_M | More reliable multi-step tool use. GPT-OSS 20B Q3 is an alternative. |
-| 32 GB+ | Qwen3 14B Q4_K_M | Reliable complex tool chains. GPT-OSS 20B Q4 also strong. |
+| RAM    | Model            | Notes                                                                |
+| ------ | ---------------- | -------------------------------------------------------------------- |
+| 8 GB   | Qwen3 4B Q4_K_M  | Trained for tool use. Handles simple tool chains.                    |
+| 16 GB  | Qwen3 8B Q4_K_M  | More reliable multi-step tool use. GPT-OSS 20B Q3 is an alternative. |
+| 32 GB+ | Qwen3 14B Q4_K_M | Reliable complex tool chains. GPT-OSS 20B Q4 also strong.            |
 
 > In LM Studio, verify the model card shows tool calling support. Not all quantizations preserve tool-use fine-tuning.
 
@@ -207,11 +209,11 @@ For MCP tool orchestration and multi-step agentic workflows. The model must supp
 
 For tab-complete and fill-in-the-middle (FIM) in editors. Latency is critical -- smaller models win here.
 
-| RAM | Model | Notes |
-|-----|-------|-------|
-| 8 GB | Phi-4 Mini 3.8B Q4_K_M | Fast, good completion quality. Qwen3 4B Q4 also works. |
-| 16 GB | Qwen3 4B Q6_K | Same model, higher quality quant. Speed stays excellent. |
-| 32 GB+ | Qwen3 4B Q8_0 | Near-original quality. No reason to go bigger for inline. |
+| RAM    | Model                  | Notes                                                     |
+| ------ | ---------------------- | --------------------------------------------------------- |
+| 8 GB   | Phi-4 Mini 3.8B Q4_K_M | Fast, good completion quality. Qwen3 4B Q4 also works.    |
+| 16 GB  | Qwen3 4B Q6_K          | Same model, higher quality quant. Speed stays excellent.  |
+| 32 GB+ | Qwen3 4B Q8_0          | Near-original quality. No reason to go bigger for inline. |
 
 > For inline completions, do not use models larger than 8B. The latency cost outweighs any quality gain.
 
@@ -219,20 +221,20 @@ For tab-complete and fill-in-the-middle (FIM) in editors. Latency is critical --
 
 For summarization and search augmentation in tools like Perplexity or Raycast.
 
-| RAM | Model | Notes |
-|-----|-------|-------|
-| 8 GB | Qwen3 4B Q4_K_M | Adequate for summarization. |
-| 16 GB | Qwen3 8B Q4_K_M | Better extraction and synthesis. |
+| RAM    | Model            | Notes                               |
+| ------ | ---------------- | ----------------------------------- |
+| 8 GB   | Qwen3 4B Q4_K_M  | Adequate for summarization.         |
+| 16 GB  | Qwen3 8B Q4_K_M  | Better extraction and synthesis.    |
 | 32 GB+ | Qwen3 14B Q4_K_M | Strong long-document summarization. |
 
 ### Embedding
 
 For vector search, RAG, and semantic similarity. Always use full precision or near-full precision -- quantization hurts embedding quality disproportionately.
 
-| Model | Size | Notes |
-|-------|------|-------|
-| Nomic Embed Text v1.5 | 84 MB (Q4_K_M) | Lightweight, battle-tested. Good default. |
-| Qwen3 Embedding 0.6B | 639 MB (F16) | Better multilingual coverage. Use F16 for embeddings. |
+| Model                 | Size           | Notes                                                 |
+| --------------------- | -------------- | ----------------------------------------------------- |
+| Nomic Embed Text v1.5 | 84 MB (Q4_K_M) | Lightweight, battle-tested. Good default.             |
+| Qwen3 Embedding 0.6B  | 639 MB (F16)   | Better multilingual coverage. Use F16 for embeddings. |
 
 > Embedding models are small enough that full precision is practical. Do not quantize below Q6 for embedding tasks.
 
@@ -254,8 +256,8 @@ Engine:     mlx-llm v1.4.0 (LLMs), llama.cpp v2.8.0 (embeddings)
 
 **Why these models?**
 
-- **Qwen3 4B** is fast enough for real-time prompt enhancement (~20-40 tokens/sec on MLX) without noticeable delay. PromptHub enhances every prompt before forwarding it, so latency matters more than peak quality.
-- **Qwen3 4B Thinking** adds chain-of-thought for the orchestrator's intent classification without requiring a larger model. The thinking mode activates only when the model needs to reason about ambiguous prompts.
+- **Qwen3** is fast enough for real-time prompt enhancement (~20-40 tokens/sec on MLX) without noticeable delay. PromptHub enhances every prompt before forwarding it, so latency matters more than peak quality.
+- **The Qwen3 thinking variant** adds chain-of-thought for the orchestrator's intent classification without requiring a larger model. The thinking mode activates only when the model needs to reason about ambiguous prompts.
 - **Both models stay loaded simultaneously** to avoid model-swap latency. At ~2.5 GB each, they fit comfortably in 16 GB with room for macOS and apps.
 
 > PromptHub works with any OpenAI-compatible server. These recommendations assume [LM Studio](https://lmstudio.ai/docs) but also apply to Ollama, llama.cpp server, or vLLM.
@@ -282,4 +284,4 @@ Engine:     mlx-llm v1.4.0 (LLMs), llama.cpp v2.8.0 (embeddings)
 
 ---
 
-*For PromptHub configuration details, see the [Client Setup Guide](06-client-configuration-guide.md). For OpenAI-compatible proxy setup, see the [OpenAI API Guide](04-openai-api-guide.md). For LM Studio documentation, visit [lmstudio.ai/docs](https://lmstudio.ai/docs).*
+_For PromptHub configuration details, see the [Client Setup Guide](06-client-configuration-guide.md). For OpenAI-compatible proxy setup, see the [OpenAI API Guide](04-openai-api-guide.md). For LM Studio documentation, visit [lmstudio.ai/docs](https://lmstudio.ai/docs)._

@@ -9,10 +9,12 @@ See [openapi.yaml](openapi.yaml) for the complete OpenAPI 3.0 specification.
 ### Viewing the Spec
 
 **Online Tools:**
+
 - [Swagger Editor](https://editor.swagger.io/) - Paste the YAML content
 - [Redocly](https://redocly.github.io/redoc/) - Beautiful API docs
 
 **Local Tools:**
+
 ```bash
 # Install swagger-ui-watcher
 npm install -g swagger-ui-watcher
@@ -22,17 +24,20 @@ swagger-ui-watcher docs/api/openapi.yaml
 ```
 
 **VS Code Extension:**
+
 - Install [OpenAPI (Swagger) Editor](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi)
 - Right-click `openapi.yaml` → "Preview Swagger"
 
 ## Quick Reference
 
 ### Base URL
+
 ```
 http://localhost:9090
 ```
 
 ### Authentication
+
 - **MCP proxy, health, servers**: No authentication required (local-only)
 - **OpenAI-compatible `/v1/` endpoints**: Bearer token required (configured in `app/configs/api-keys.json`)
 
@@ -66,6 +71,7 @@ curl -X POST http://localhost:9090/llm/enhance \
 ```
 
 Response:
+
 ```json
 {
   "original": "Write a Python function to merge two sorted arrays",
@@ -116,22 +122,18 @@ open http://localhost:9090/dashboard
 ### 5. Configure a Client
 
 ```bash
-# Inspect repo-managed client files
-ls clients/claude
-ls clients/raycast
-ls clients/vscode
-
-# Run the client's setup helper when available
-./clients/raycast/setup.sh
-./clients/claude/desktop-setup.sh
+# Inspect the local app-specific config for the client you are connecting
+ls ~/.config/claude
+ls ~/.config/raycast
+ls ~/Library/Application\ Support/Code\ -\ Insiders/User/globalStorage
 ```
 
-PromptHub no longer serves generated client configs from `/configs/*`. Use the
-tracked files in `clients/` instead.
+PromptHub no longer serves generated client configs from `/configs/*`. Use the local app config files for the client you are connecting.
 
 ## Error Handling
 
 ### Circuit Breaker Open
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -149,6 +151,7 @@ tracked files in `clients/` instead.
 **Solution:** Wait for `retry_after` seconds. Circuit breakers auto-recover after the recovery timeout (30s default).
 
 ### Server Not Running
+
 ```json
 {
   "detail": "Server context7 is not running"
@@ -156,6 +159,7 @@ tracked files in `clients/` instead.
 ```
 
 **Solution:**
+
 ```bash
 # Check if auto_start is enabled
 curl http://localhost:9090/servers/context7 | jq .config.auto_start
@@ -165,6 +169,7 @@ curl -X POST http://localhost:9090/servers/context7/start
 ```
 
 ### LLM Server Not Available
+
 ```json
 {
   "original": "your prompt",
@@ -177,6 +182,7 @@ curl -X POST http://localhost:9090/servers/context7/start
 ```
 
 **Solution:**
+
 ```bash
 # Check LM Studio status
 curl http://localhost:1234/v1/models
@@ -191,6 +197,7 @@ The `/v1/` prefix is used for the OpenAI-compatible proxy endpoints. All other e
 ## SDKs
 
 ### Python
+
 ```python
 import httpx
 
@@ -218,29 +225,26 @@ class PromptHubClient:
 ```
 
 ### TypeScript
+
 ```typescript
 class PromptHubClient {
   constructor(private baseUrl: string = "http://localhost:9090") {}
 
-  async enhancePrompt(
-    prompt: string,
-    clientName: string = "vscode",
-    bypassCache: boolean = false
-  ) {
+  async enhancePrompt(prompt: string, clientName: string = "vscode", bypassCache: boolean = false) {
     const response = await fetch(`${this.baseUrl}/llm/enhance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Client-Name": clientName,
+        "X-Client-Name": clientName
       },
-      body: JSON.stringify({ prompt, bypass_cache: bypassCache }),
-    });
-    return response.json();
+      body: JSON.stringify({ prompt, bypass_cache: bypassCache })
+    })
+    return response.json()
   }
 
   async listServers() {
-    const response = await fetch(`${this.baseUrl}/servers`);
-    return response.json();
+    const response = await fetch(`${this.baseUrl}/servers`)
+    return response.json()
   }
 }
 ```

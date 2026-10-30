@@ -1,9 +1,10 @@
-# Qwen3-4B tool schema templates for LM Studio
-This directory contains JSON Schema templates for LM Studio enhancement prompts, designed to align with the Qwen3-4B-Thinking-2507 model's capabilities and your bridge's tool schema style. These templates are meant to be used in PromptHub's enhancement rules to rewrite user prompts into structured formats that the model can use for intent classification and tool routing.
+# Qwen3 tool schema templates for LM Studio
+
+This directory contains JSON Schema templates for LM Studio enhancement prompts, designed to align with the Qwen3 family and your bridge's tool schema style. These templates are meant to be used in PromptHub's enhancement rules to rewrite user prompts into structured formats that the model can use for intent classification and tool routing.
 
 ## Baseline version
 
-- This is the **general baseline** I’d use to get on the right track with Qwen3-4B-Instruct-2507 or Qwen3-4B-Thinking-2507 in LM Studio. It matches your Hermes-style tool call envelope and your bridge’s minified schema style. [docs/architecture/mcp-transport-adapters.md](../../../../docs/architecture/mcp-transport-adapters.md)
+- This is the **general baseline** I’d use to get on the right track with Qwen3 in LM Studio. It matches your Hermes-style tool call envelope and your bridge’s minified schema style. [docs/architecture/mcp-transport-adapters.md](../../../../docs/architecture/mcp-transport-adapters.md)
 - Keep only a few high-value tools exposed at first, because your own bridge docs emphasize tool-count reduction and recursive schema minification for smaller models. [mcps/README.md](../../../../mcps/README.md)
 
 ```json

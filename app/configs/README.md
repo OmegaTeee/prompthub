@@ -13,19 +13,23 @@ configs/
 └── logrotate-macos.conf                   # System: Log rotation (macOS)
 ```
 
-> **Note:** Client setup files now live under [`clients/`](../../clients/README.md).
+> **Note:** Client setup files are machine-local and live outside the repo.
 > `app/configs/` is for shared router behavior, not per-client install output.
 
 ## Configuration Types
 
 ### ⚙️ PromptHub Configurations
+
 Core PromptHub router settings:
+
 - **`enhancement-rules.json`** - Per-client enhancement settings, system prompts, and privacy levels
 - **`mcp-servers.json`** - MCP server lifecycle (command, args, auto_start)
-**When to modify:** Adding MCP servers or changing enhancement behavior.
+  **When to modify:** Adding MCP servers or changing enhancement behavior.
 
 ### 🔧 System Configurations (root)
+
 Infrastructure and logging:
+
 - **`logrotate.conf`** - Log file rotation and archival
 - **`logrotate-macos.conf`** - macOS-specific log rotation
 
@@ -93,11 +97,12 @@ python scripts/manage-keys.py set my_api_key
 
 This organization separates:
 
-1. **Client concerns** (how apps connect) → `clients/`
+1. **Client concerns** (how local apps connect) → app-local machine settings outside the repo
 2. **Router concerns** (how PromptHub behaves) → `app/configs/`
 3. **System concerns** (logging, OS integration) → `app/configs/`
 
 This makes it easy to:
+
 - ✅ Add new clients without touching PromptHub config
 - ✅ Modify PromptHub behavior without breaking clients
 - ✅ Keep client setup and router behavior separate

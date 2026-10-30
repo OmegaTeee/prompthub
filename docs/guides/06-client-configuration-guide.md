@@ -12,112 +12,47 @@ For scripting and developer integration (Python, curl, Node.js, Automator), see 
 
 ---
 
-## Repo-Managed Client Setup
+## Local Client Setup
 
-PromptHub no longer uses the old Python config-generator CLI. Client
-configuration now lives in repo-managed files under `clients/`, with `setup.sh`
- scripts handling symlinks, copies, or manual instructions.
+PromptHub does not maintain a tracked client config tree in the repository. Client-specific setup is local to each app, each machine, and each user profile. The router itself remains the repo source of truth; local AI app settings are treated as user runtime state.
 
 Typical workflow:
 
 ```bash
 cd ~/prompthub
 
-./clients/claude/desktop-setup.sh   # Claude Desktop
-./clients/claude/code-setup.sh      # Claude Code
-./clients/vscode/setup.sh           # VS Code + Copilot
-./clients/lm-studio/setup.sh        # LM Studio
-./clients/codex/setup.sh            # Codex instructions / symlink setup
-
-./scripts/diagnose.sh               # Health and config checks
+./scripts/diagnose.sh
 ```
 
-The source of truth is always the file in `clients/`. If a client uses a
-symlink strategy, the app reads the repo-managed file directly. If a client
-uses a copy or merge strategy, the setup script handles the app-specific step.
-
-### Supported Clients
-
-| Client directory | Target | Setup strategy |
-|--------|-------------|------------------|
-| `clients/claude/` | Claude Desktop + Claude Code | desktop symlink + code copy |
-| `clients/vscode/` | VS Code + Copilot settings | merge / guided file update |
-| `clients/lm-studio/` | `~/.lmstudio/mcp.json` | symlink |
-| `clients/codex/` | `~/.codex/config.toml` | manual / TOML |
-| `clients/perplexity-desktop/` | Perplexity Desktop config | manual / client-specific |
-| `clients/_open-webui/` | Open WebUI example config | placeholder |
+Use the app's own configuration UI or local setup scripts for the client you are connecting. Keep the router config in the repo and keep the client settings outside the repository and out of editor indexing.
 
 ---
 
 ## Install Strategies
 
-PromptHub uses a few different install strategies depending on the client.
-Think of it like the difference between copying a recipe into a cookbook
-(merge), taping a note to the fridge that points to the recipe (symlink), or
-following handwritten instructions for a proprietary app (manual).
+PromptHub works with several common app patterns, but the important distinction is that the actual client config is local and app-specific rather than stored in this repo.
 
 ### Symlink Install
 
-**Used by:** LM Studio, Claude Desktop (for some assets)
-
-The setup script keeps the real config in `clients/<client-name>/` and creates
- a symlink from the app's expected config path to that repo file.
-
-```
-~/.lmstudio/mcp.json  -->  ~/prompthub/clients/lm-studio/mcp.json
-```
-
-**Why this is useful:**
-
-- The repo is the single source of truth. Every change is tracked in git.
-- When you update the config in the repo, the app picks it up on restart.
-- No manual copying needed.
-
-**What happens during install:**
-
-1. The setup script backs up any existing config when needed.
-2. It points the app's config path at the tracked file in `clients/`.
-3. Future edits happen in the repo, not in the app-specific copy.
+Some apps allow a local config path to point at a generated or user-managed file in the home directory or app data directory. This is the same pattern used for local model integrations and browser or desktop app setups.
 
 ### Merge Install
 
-**Used by:** VS Code and other clients that keep many unrelated settings in one
-file
-
-The setup script or manual process updates only the PromptHub-related section
-of the app's existing config file. All other settings are preserved.
-
-**Why this is useful:**
-
-- These apps store many settings in a single config file (editor preferences, themes, keybindings).
-- Overwriting the entire file would erase those settings.
-- The merge only touches the MCP/servers section.
-
-**What happens during install:**
-
-1. The setup process backs up the existing file when appropriate.
-2. It updates the MCP or provider section that PromptHub owns.
-3. The rest of the app config stays intact.
+Some apps store multiple settings in one file. In those cases, only the PromptHub-related section is updated and the rest of the config is preserved.
 
 ### Copy Install
 
-**Used by:** Claude Code
-
-Claude Code reads a project-local `mcp.json`, so the setup script copies the
-repo-managed config into the working location that Claude expects.
+Some local clients read a file from a project or app-specific location. The config content is still local to the client environment, not a tracked repository artifact.
 
 ### Manual Install
 
-**Used by:** Codex, Perplexity Desktop, placeholder clients
-
-Some clients either use TOML, have fast-moving app-specific formats, or are not
-fully standardized in this repo yet. For those, PromptHub stores a reference
-file in `clients/` and the README explains the manual steps.
+Some clients rely on app-local TOML, JSON, or system configuration files. PromptHub does not treat those files as repo-managed state; they are installation-specific and should be documented alongside the local machine setup.
 
 ### Key points
 
-- Run the client's `setup.sh` from the repo root whenever possible.
-- Treat the file in `clients/` as the source of truth.
+- Keep router config in the repository.
+- Keep per-app client config local to the machine.
+- Do not treat local client files as repository source-of-truth.
 - Use `./scripts/diagnose.sh` after setup to confirm the router and bridge are healthy.
 
 ---
@@ -126,7 +61,7 @@ file in `clients/` and the README explains the manual steps.
 
 Every MCP bridge client config follows a similar shape. The exact key names
 vary by client, but the bridge entry is the same. Understanding it helps when
-you need to inspect or troubleshoot the repo-managed client files.
+you need to inspect or troubleshoot the local app config files that live outside the repo.
 
 ### Standard format (mcpServers)
 
@@ -169,12 +104,12 @@ clients:
 
 ### Environment variables
 
-| Field | Purpose |
-|-------|---------|
-| `AUTHORIZATION` | Bearer token matching a key in `app/configs/api-keys.json` |
-| `CLIENT_NAME` | Identifies the client for per-app enhancement rules and audit |
-| `PROMPTHUB_URL` | Router address. Use `127.0.0.1`, not `localhost` (avoids IPv6 issues) |
-| `SERVERS` | Comma-separated MCP servers to expose. Empty = all. |
+| Field           | Purpose                                                                 |
+| --------------- | ----------------------------------------------------------------------- |
+| `AUTHORIZATION` | Bearer token matching a key in `app/configs/api-keys.json`              |
+| `CLIENT_NAME`   | Identifies the client for per-app enhancement rules and audit           |
+| `PROMPTHUB_URL` | Router address. Use `127.0.0.1`, not `localhost` (avoids IPv6 issues)   |
+| `SERVERS`       | Comma-separated MCP servers to expose. Empty = all.                     |
 | `EXCLUDE_TOOLS` | Comma-separated tool names to hide. Reduces context for smaller models. |
 
 ---
@@ -188,12 +123,10 @@ clients:
 Uses MCP for direct tool integration.
 
 ```bash
-./clients/claude/desktop-setup.sh
+# Use the app's local setup flow or config editor
 ```
 
-Or inspect/edit the tracked file in `clients/claude/desktop-mcp.json` before
-running setup. Claude Desktop still reads the installed file at
-`~/Library/Application Support/Claude/claude_desktop_config.json`.
+Inspect or edit the local Claude Desktop config before starting the app. Claude Desktop still reads the installed file at `~/Library/Application Support/Claude/claude_desktop_config.json`.
 
 ```json
 {
@@ -219,22 +152,17 @@ Restart Claude after editing. Verify by asking: "What tools do you have availabl
 
 **Type:** Bridge client
 
-```bash
-./clients/claude/code-setup.sh
-```
-
-Claude Code uses the same `mcpServers` format, but the setup script copies the
-repo-managed config into the project-local `mcp.json` that Claude Code reads.
+Use your local Claude Code setup flow to write the project-local `mcp.json` that Claude Code reads.
 The API key and enhancement rule names still use `claude-code`.
 
 ### VS Code
 
 **Type:** Bridge client + provider config
 
-**MCP tools** -- use the repo-managed files and setup script:
+**MCP tools** -- use the local VS Code configuration flow for your machine:
 
 ```bash
-./clients/vscode/setup.sh
+# Use the VS Code config UI or local setup script for your installation
 ```
 
 **Chat via OpenAI API** -- add to `settings.json`:
@@ -254,11 +182,10 @@ The API key and enhancement rule names still use `claude-code`.
 Uses MCP for tool access within LM Studio's chat. Config lives at `~/.lmstudio/mcp.json`.
 
 ```bash
-./clients/lm-studio/setup.sh
+# Use the local LM Studio config flow for your machine
 ```
 
-The setup script keeps the config in `~/prompthub/clients/lm-studio/mcp.json`
-and creates a symlink:
+The config lives in the local LM Studio app directory and is not tracked in the repo.
 
 ```
 ~/.lmstudio/mcp.json  -->  ~/prompthub/clients/lm-studio/mcp.json
@@ -276,9 +203,7 @@ After editing or installing, restart MCP servers in LM Studio's Developer tab.
 
 **Type:** Manual config only (TOML format)
 
-Codex uses a TOML config file at `~/.codex/config.toml`. Edit it by hand using
-the repo-managed reference in `clients/codex/config.toml` or
-`clients/codex/codex-config.toml`.
+Codex uses a TOML config file at `~/.codex/config.toml`. Edit it by hand using your local machine-specific config and the app's own setup pattern.
 
 ```toml
 [mcp_servers.prompthub]
@@ -332,13 +257,7 @@ config shape remains useful if you maintain it separately. Manually edit
     "prompthub": {
       "command": "node",
       "args": ["/Users/you/prompthub/mcps/prompthub-bridge.js"],
-      "env": [
-        "AUTHORIZATION=Bearer sk-prompthub-opencode-001",
-        "CLIENT_NAME=opencode",
-        "PROMPTHUB_URL=http://127.0.0.1:9090",
-        "SERVERS=memory,context7,sequential-thinking,desktop-commander",
-        "EXCLUDE_TOOLS=duckduckgo,perplexity-comet"
-      ],
+      "env": ["AUTHORIZATION=Bearer sk-prompthub-opencode-001", "CLIENT_NAME=opencode", "PROMPTHUB_URL=http://127.0.0.1:9090", "SERVERS=memory,context7,sequential-thinking,desktop-commander", "EXCLUDE_TOOLS=duckduckgo,perplexity-comet"],
       "type": "stdio"
     }
   }
@@ -384,6 +303,7 @@ Each app gets its own key in `app/configs/api-keys.json`:
 ```
 
 Benefits:
+
 - Disable one app without affecting others
 - Per-app enhancement settings
 - Audit trail per client
@@ -427,21 +347,21 @@ Per-client prompt rewriting behavior is configured in `app/configs/enhancement-r
 }
 ```
 
-| Field | Purpose |
-|-------|---------|
-| `model` | Which LLM rewrites the prompt (all clients currently share the same model) |
-| `system_prompt` | Instructions for the rewriter -- tailored per client |
-| `temperature` | Randomness (0.2 for code, 0.3 for general, 0.5 for creative) |
-| `max_tokens` | Maximum length of the rewritten prompt |
+| Field           | Purpose                                                                        |
+| --------------- | ------------------------------------------------------------------------------ |
+| `model`         | Which LLM rewrites the prompt (all clients currently share the same model)     |
+| `system_prompt` | Instructions for the rewriter -- tailored per client                           |
+| `temperature`   | Randomness (0.2 for code, 0.3 for general, 0.5 for creative)                   |
+| `max_tokens`    | Maximum length of the rewritten prompt                                         |
 | `privacy_level` | `local_only` (never leaves machine), `free_ok` (cloud fallback allowed), `any` |
 
 ### Privacy Levels
 
-| Level | Behavior |
-|-------|----------|
+| Level        | Behavior                                                                          |
+| ------------ | --------------------------------------------------------------------------------- |
 | `local_only` | Prompts never leave localhost. Cloud fallback disabled. Default for most clients. |
-| `free_ok` | Falls back to OpenRouter free-tier if LM Studio is down. Used by Perplexity. |
-| `any` | Any cloud provider allowed (not currently used). |
+| `free_ok`    | Falls back to OpenRouter free-tier if LM Studio is down. Used by Perplexity.      |
+| `any`        | Any cloud provider allowed (not currently used).                                  |
 
 The `X-Privacy-Level` header can downgrade privacy (more restrictive) but never upgrade it.
 
@@ -488,16 +408,16 @@ to the reference in the [Codex section](#codex) above.
 
 ## Summary
 
-| App | Connection | MCP Tools | AI Provider | Install Strategy |
-|-----|-----------|-----------|-------------|------------------|
-| Claude Desktop | MCP bridge | Yes | No (uses own models) | desktop setup script |
-| Claude Code | MCP bridge | Yes | No | code setup script |
-| VS Code | MCP bridge + OpenAI API | Yes | Yes | setup script |
-| LM Studio | MCP bridge | Yes | No (is the model server) | symlink setup script |
-| Codex | MCP bridge (TOML) | Yes | No | manual |
-| Perplexity Desktop | MCP bridge | Yes | No | manual / client-specific |
-| Open WebUI | OpenAI API + Streamable HTTP | Yes | Yes | placeholder / manual |
-| Obsidian | OpenAI API | No | Yes | plugin setup |
+| App                | Connection                   | MCP Tools | AI Provider              | Install Strategy         |
+| ------------------ | ---------------------------- | --------- | ------------------------ | ------------------------ |
+| Claude Desktop     | MCP bridge                   | Yes       | No (uses own models)     | desktop setup script     |
+| Claude Code        | MCP bridge                   | Yes       | No                       | code setup script        |
+| VS Code            | MCP bridge + OpenAI API      | Yes       | Yes                      | setup script             |
+| LM Studio          | MCP bridge                   | Yes       | No (is the model server) | symlink setup script     |
+| Codex              | MCP bridge (TOML)            | Yes       | No                       | manual                   |
+| Perplexity Desktop | MCP bridge                   | Yes       | No                       | manual / client-specific |
+| Open WebUI         | OpenAI API + Streamable HTTP | Yes       | Yes                      | placeholder / manual     |
+| Obsidian           | OpenAI API                   | No        | Yes                      | plugin setup             |
 
 ---
 

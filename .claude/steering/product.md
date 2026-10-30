@@ -19,16 +19,16 @@ macOS power users who work across multiple AI-powered editors and tools and want
 
 ## Key Features
 
-| Feature | Description |
-|---------|-------------|
-| MCP server management | Spawn, monitor, auto-restart stdio MCP servers from a central registry (9 servers) |
-| Per-client enhancement | All clients use `qwen3-4b-instruct-2507` with per-client system prompts, temperature, and token limits |
-| OpenAI-compatible proxy | `/v1/chat/completions` endpoint for desktop apps (Cursor, Raycast, Obsidian) |
-| Circuit breakers | 3 failures → OPEN → 30s → HALF_OPEN → recovery; per-server isolation |
-| Response caching | SHA256-keyed L1 in-memory LRU cache for enhanced prompts |
-| Audit logging | Structured JSON audit trail with security alerts and integrity verification |
-| Unified MCP bridge | Single stdio server that aggregates all MCP tools for Claude Desktop |
-| HTMX dashboard | Real-time monitoring of server status, cache stats, activity |
+| Feature                 | Description                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| MCP server management   | Spawn, monitor, auto-restart stdio MCP servers from a central registry (9 servers)                     |
+| Per-client enhancement  | All clients use `qwen3-4b-instruct-2507` with per-client system prompts, temperature, and token limits |
+| OpenAI-compatible proxy | `/v1/chat/completions` endpoint for desktop apps (Cursor, Raycast, Obsidian)                           |
+| Circuit breakers        | 3 failures → OPEN → 30s → HALF_OPEN → recovery; per-server isolation                                   |
+| Response caching        | SHA256-keyed L1 in-memory LRU cache for enhanced prompts                                               |
+| Audit logging           | Structured JSON audit trail with security alerts and integrity verification                            |
+| Unified MCP bridge      | Single stdio server that aggregates all MCP tools for Claude Desktop                                   |
+| HTMX dashboard          | Real-time monitoring of server status, cache stats, activity                                           |
 
 ## Business Rules
 
@@ -44,23 +44,25 @@ User-facing documentation (guides, quickstarts, troubleshooting) is written at a
 
 ## Project Phases
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Phase 2 | Complete | Core router, caching, circuit breakers, LLM enhancement |
-| Phase 2.5 | Complete | MCP server management, stdio bridges |
-| Phase 3 | Complete | Desktop integration, repo-managed client configs, documentation pipeline |
-| Phase 4 | Complete | HTMX dashboard with real-time monitoring |
-| Phase 5 | Complete | OpenAI-compatible API proxy for desktop apps |
+| Phase     | Status   | Description                                                     |
+| --------- | -------- | --------------------------------------------------------------- |
+| Phase 2   | Complete | Core router, caching, circuit breakers, LLM enhancement         |
+| Phase 2.5 | Complete | MCP server management, stdio bridges                            |
+| Phase 3   | Complete | Desktop integration, local client setup, documentation pipeline |
+| Phase 4   | Complete | HTMX dashboard with real-time monitoring                        |
+| Phase 5   | Complete | OpenAI-compatible API proxy for desktop apps                    |
 
 ## Request Lifecycle
 
 ### MCP Proxy (`POST /mcp/{server}/{path}`)
+
 1. Circuit breaker check → reject if OPEN
 2. Auto-start server if `auto_start: true` and not running
 3. JSON-RPC proxied via stdio bridge to MCP server
 4. Success/failure updates circuit breaker state
 
 ### OpenAI Proxy (`POST /v1/chat/completions`)
+
 1. Bearer token validation → resolve `client_name`
 2. Circuit breaker check (`llm-proxy`)
 3. Enhancement: last user message enhanced via EnhancementService (if `enhance: true`)
@@ -68,6 +70,7 @@ User-facing documentation (guides, quickstarts, troubleshooting) is written at a
 5. Stream SSE or return JSON → back to desktop app
 
 ### Direct Enhancement (`POST /llm/enhance`)
+
 1. X-Client-Name header selects per-client enhancement rules
 2. Cache check (SHA256 of prompt)
 3. LM Studio request with per-client system prompt (`qwen3-4b-instruct-2507`)

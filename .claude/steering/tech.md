@@ -2,18 +2,18 @@
 
 ## Core Stack
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| Language | Python | 3.11+ |
-| Web Framework | FastAPI | 0.109+ |
-| HTTP Client | httpx | 0.26+ (async) |
-| Data Validation | Pydantic / pydantic-settings | 2.5+ |
-| Templating | Jinja2 | 3.1+ |
-| Database | SQLite (aiosqlite) | Async for activity log |
-| Credential Store | macOS Keychain (keyring) | 24.0+ |
-| Logging | structlog | 25.0+ (JSON structured) |
-| Metrics | prometheus_client | 0.20+ |
-| MCP Bridge | Node.js | 20+ |
+| Layer            | Technology                   | Version                 |
+| ---------------- | ---------------------------- | ----------------------- |
+| Language         | Python                       | 3.11+                   |
+| Web Framework    | FastAPI                      | 0.109+                  |
+| HTTP Client      | httpx                        | 0.26+ (async)           |
+| Data Validation  | Pydantic / pydantic-settings | 2.5+                    |
+| Templating       | Jinja2                       | 3.1+                    |
+| Database         | SQLite (aiosqlite)           | Async for activity log  |
+| Credential Store | macOS Keychain (keyring)     | 24.0+                   |
+| Logging          | structlog                    | 25.0+ (JSON structured) |
+| Metrics          | prometheus_client            | 0.20+                   |
+| MCP Bridge       | Node.js                      | 20+                     |
 
 ## Build System
 
@@ -45,9 +45,8 @@ cd app && ruff format router/
 # Health check
 curl http://localhost:9090/health
 
-# Client setup + diagnostics
-./clients/claude/desktop-setup.sh
-./clients/vscode/setup.sh
+# Local client setup + diagnostics
+# Use each app's local config workflow or setup script on this machine
 ./scripts/diagnose.sh
 ```
 
@@ -65,6 +64,7 @@ curl http://localhost:9090/health
 ## Key Patterns
 
 ### Factory Functions for Routers
+
 ```python
 def create_dashboard_router(
     get_servers: Callable, get_cache: Callable
@@ -76,17 +76,20 @@ def create_dashboard_router(
 
 ### LLM Model Roles
 
-| Role | Model | Purpose |
-|------|-------|---------|
-| Enhancement (all clients) | `qwen3-4b-instruct-2507` | Fast prompt rewriting |
-| Orchestrator | `qwen3-4b-thinking-2507` | Intent classification, tool suggestions |
-| Embedding (standby) | `text-embedding-nomic-embed-text-v1.5` | Future RAG pipeline |
+| Role                      | Model                                  | Purpose                                 |
+| ------------------------- | -------------------------------------- | --------------------------------------- |
+| Enhancement (all clients) | `qwen3-4b-instruct-2507`               | Fast prompt rewriting                   |
+| Orchestrator              | `qwen3-4b-thinking-2507`               | Intent classification, tool suggestions |
+| Embedding (standby)       | `text-embedding-nomic-embed-text-v1.5` | Future RAG pipeline                     |
 
 ### Circuit Breaker States
+
 `CLOSED` (normal) → 3 failures → `OPEN` (reject all) → 30s → `HALF_OPEN` (test one) → success → `CLOSED`
 
 ### Audit Events
+
 Use `audit_event()` for generic logging; convenience wrappers exist for common cases:
+
 - `audit_admin_action(action, server_name, status)` — server start/stop/restart
 - `audit_credential_access(action, credential_key, status)` — keyring access
 
@@ -102,6 +105,7 @@ audit_event(
 ```
 
 ### Pydantic Settings with .env
+
 ```python
 class Settings(BaseSettings):
     host: str = "127.0.0.1"

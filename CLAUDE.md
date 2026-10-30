@@ -8,7 +8,7 @@ PromptHub is a centralized MCP (Model Context Protocol) router for macOS. It pro
 
 ## Workspace Structure
 
-This is a **multi-root workspace** with clear separation between the Python project, client configs, user guides, and MCP servers:
+This is a **multi-root workspace** with clear separation between the Python project, machine-local client configs, user guides, and MCP servers:
 
 ```
 prompthub/                        # Workspace root
@@ -26,20 +26,15 @@ prompthub/                        # Workspace root
 │   ├── guides/                   # User-facing setup and integration guides
 │   ├── api/                      # OpenAPI spec and API reference
 │   ├── modules/                  # Module documentation
-│   ├── audit/                    # Audit system docs
+│   ├── audit/                    # Historical audit implementation notes
 │   └── archive/                  # Historical docs
-├── clients/                      # Per-client directories (MCP configs, setup.sh, llm.txt knowledge files)
-│   ├── claude/                   # Claude Desktop + Claude Code (desktop-setup.sh, code-setup.sh)
-│   ├── lm-studio/                # mcp.json, setup.sh, lm-studio-llm.txt, config-presets/
-│   ├── vscode/                   # mcp.json, setup.sh, vscode-llm.txt
-│   ├── codex/                    # config.toml, setup.sh
-│   └── ...                       # ~9 client directories total
 ├── mcps/                         # MCP servers (Node.js bridge)
 │   ├── prompthub-bridge.js       # Stdio bridge aggregating all servers
 │   ├── configs/                  # Bridge-specific configs (mcp-inspector only)
 │   └── package.json              # npm dependencies
 ├── logs/                         # LaunchAgent stdout/stderr logs
-└── .claude/ .github/ .vscode/    # Workspace-level configs
+├── .claude/ .github/ .vscode/    # Workspace-level configs
+└── ~/.config/ or app-local config dirs # Machine-local client config, intentionally outside the repo
 # User guides live in Obsidian vault: ~/Vault/PromptHub/
 ```
 
@@ -66,11 +61,8 @@ cd app && ruff format router/
 # Verify health
 curl http://localhost:9090/health
 
-# Client config setup (per-client scripts)
-./clients/lm-studio/setup.sh          # Symlink MCP config
-./clients/claude-desktop/setup.sh     # Symlink MCP config
-./clients/zed/setup.sh                # Print paste instructions
-
+# Machine-local client setup is handled per app and per machine.
+# Repo-managed client directories are intentionally not used.
 # Full stack diagnostics
 ./scripts/diagnose.sh
 
@@ -83,25 +75,25 @@ tail -f logs/router-stderr.log
 
 This is a **modular monolith** built with FastAPI. The main package is `app/router/` with these modules:
 
-| Module               | Purpose                                                                                                           |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `routes/`            | Route handlers extracted from main.py (health, servers, mcp_proxy, enhancement, audit, pipelines)                 |
-| `config/`            | Pydantic settings, JSON config loading                                                                            |
-| `servers/`           | MCP server lifecycle via FastMCP (spawn, monitor, restart stdio processes)                                        |
-| `resilience/`        | Circuit breaker (CLOSED → OPEN → HALF_OPEN states)                                                                |
-| `cache/`             | L1 in-memory LRU + L2 SQLite persistent write-through cache                                                       |
+| Module               | Purpose                                                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `routes/`            | Route handlers extracted from main.py (health, servers, mcp_proxy, enhancement, audit, pipelines)                      |
+| `config/`            | Pydantic settings, JSON config loading                                                                                 |
+| `servers/`           | MCP server lifecycle via FastMCP (spawn, monitor, restart stdio processes)                                             |
+| `resilience/`        | Circuit breaker (CLOSED → OPEN → HALF_OPEN states)                                                                     |
+| `cache/`             | L1 in-memory LRU + L2 SQLite persistent write-through cache                                                            |
 | `enhancement/`       | LLM HTTP client (OpenAI-compat), per-client prompt enhancement, cloud fallback via OpenRouter, token budget truncation |
-| `orchestrator/`      | Pre-enhancement intent classifier — classifies prompts, suggests tools, annotates for enhancement                  |
-| `openai_compat/`     | OpenAI-compatible `/v1/` proxy with bearer auth and optional enhancement                                          |
-| `memory/`            | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync)                              |
-| `tool_registry/`     | MCP tool definition cache (SQLite-backed snapshots, automatic archival, cache-through proxy)                      |
-| `dashboard/`         | HTMX observability UI (servers, cache, circuit breakers, Local Models, memory, tool registry panels)              |
-| `pipelines/`         | Workflow orchestration (documentation generation)                                                                 |
-| `middleware/`        | Audit context, activity logging, request timeout, persistent storage                                              |
-| `audit.py`           | Structured audit logging with security alerts                                                                     |
-| `security_alerts.py` | Real-time anomaly detection and alerting                                                                          |
-| `audit_integrity.py` | Tamper detection with SHA256 checksums                                                                            |
-| `keyring_manager.py` | Credential management with macOS Keychain                                                                         |
+| `orchestrator/`      | Pre-enhancement intent classifier — classifies prompts, suggests tools, annotates for enhancement                      |
+| `openai_compat/`     | OpenAI-compatible `/v1/` proxy with bearer auth and optional enhancement                                               |
+| `memory/`            | Session memory and context management (SQLite-backed facts, memory blocks, MCP sync)                                   |
+| `tool_registry/`     | MCP tool definition cache (SQLite-backed snapshots, automatic archival, cache-through proxy)                           |
+| `dashboard/`         | HTMX observability UI (servers, cache, circuit breakers, Local Models, memory, tool registry panels)                   |
+| `pipelines/`         | Workflow orchestration (documentation generation)                                                                      |
+| `middleware/`        | Audit context, activity logging, request timeout, persistent storage                                                   |
+| `audit.py`           | Structured audit logging with security alerts                                                                          |
+| `security_alerts.py` | Real-time anomaly detection and alerting                                                                               |
+| `audit_integrity.py` | Tamper detection with SHA256 checksums                                                                                 |
+| `keyring_manager.py` | Credential management with macOS Keychain                                                                              |
 
 ### Request Flow
 
@@ -141,14 +133,14 @@ This is a **modular monolith** built with FastAPI. The main package is `app/rout
 
 All persistent state (databases, logs, checksums) lives under `~/.prompthub/` by default, configurable via `DATA_DIR` env var. Individual paths are resolved from `data_dir` in `Settings.model_post_init` and can each be overridden independently:
 
-| Setting | Default | Used by |
-|---|---|---|
-| `cache_db_path` | `$DATA_DIR/cache.db` | `PersistentCache`, `PersistentEnhancementCache` |
-| `activity_db_path` | `$DATA_DIR/activity.db` | `PersistentActivityLog` |
-| `memory_db_path` | `$DATA_DIR/memory.db` | `SessionStorage` |
-| `tool_registry_db_path` | `$DATA_DIR/tool_registry.db` | `ToolRegistryStorage` |
-| `audit_log_path` | `$DATA_DIR/audit.log` | `setup_audit_logging`, `AuditIntegrityManager` |
-| `audit_checksum_path` | `$DATA_DIR/audit_checksums.json` | `AuditIntegrityManager` |
+| Setting                 | Default                          | Used by                                         |
+| ----------------------- | -------------------------------- | ----------------------------------------------- |
+| `cache_db_path`         | `$DATA_DIR/cache.db`             | `PersistentCache`, `PersistentEnhancementCache` |
+| `activity_db_path`      | `$DATA_DIR/activity.db`          | `PersistentActivityLog`                         |
+| `memory_db_path`        | `$DATA_DIR/memory.db`            | `SessionStorage`                                |
+| `tool_registry_db_path` | `$DATA_DIR/tool_registry.db`     | `ToolRegistryStorage`                           |
+| `audit_log_path`        | `$DATA_DIR/audit.log`            | `setup_audit_logging`, `AuditIntegrityManager`  |
+| `audit_checksum_path`   | `$DATA_DIR/audit_checksums.json` | `AuditIntegrityManager`                         |
 
 Storage constructors use `db_path: Path | None = None` with lazy `get_settings()` resolution inside the `if` branch to avoid circular imports and allow tests to pass explicit `tmp_path`.
 
@@ -245,12 +237,12 @@ For detailed audit system documentation, see `docs/audit/`
 
 Operational patterns for MCP tools that agents should follow. These supplement the tool descriptions exposed by the bridge.
 
-| Hint | Details |
-| --- | --- |
+| Hint                                        | Details                                                                                                                                                                                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Obsidian tools require Obsidian running** | Before calling any `obsidian_*` or `obsidian-mcp-tools_*` tool, verify Obsidian is open. If not, launch it via `desktop-commander_start_process` with command `open -a Obsidian` and wait ~3 seconds for the REST API to initialize on port 27124. |
-| **On-demand servers need manual start** | Servers with `auto_start: false` (`chrome-devtools-mcp`) are not running by default. Start them via `curl -X POST http://localhost:9090/servers/{name}/start` using desktop-commander, then wait for the bridge to refresh its tool list. |
-| **Desktop Commander is always available** | Use `desktop-commander_start_process` for launching apps, running shell commands, and starting services. It's the agent's primary way to interact with the system outside of file editing. |
-| **Comet tools require Comet browser** | `comet_*` tools (aliased from `perplexity-comet`) need the Comet browser running. The bridge auto-starts Comet via `comet_connect`, but initial connection may take 5-10 seconds. |
+| **On-demand servers need manual start**     | Servers with `auto_start: false` (`chrome-devtools-mcp`) are not running by default. Start them via `curl -X POST http://localhost:9090/servers/{name}/start` using desktop-commander, then wait for the bridge to refresh its tool list.          |
+| **Desktop Commander is always available**   | Use `desktop-commander_start_process` for launching apps, running shell commands, and starting services. It's the agent's primary way to interact with the system outside of file editing.                                                         |
+| **Comet tools require Comet browser**       | `comet_*` tools (aliased from `perplexity-comet`) need the Comet browser running. The bridge auto-starts Comet via `comet_connect`, but initial connection may take 5-10 seconds.                                                                  |
 
 ## Steering Documents
 
@@ -269,15 +261,15 @@ Steering documents guide AI agents with project-specific conventions and pattern
 
 ### Post-implementation documentation queue
 
-**IMPORTANT — Active directive:** After completing any feature, fix, or structural change, evaluate the decision table below and proactively ask the user: *"Should I run the doc queue? Based on this change I'd update: [list applicable steps]."* Do not skip this prompt. Do not wait for the user to remember.
+**IMPORTANT — Active directive:** After completing any feature, fix, or structural change, evaluate the decision table below and proactively ask the user: _"Should I run the doc queue? Based on this change I'd update: [list applicable steps]."_ Do not skip this prompt. Do not wait for the user to remember.
 
-| Change type | 1. CHANGELOG.md | 2. Code docs (`code-docs` agent) | 3. User guide (`user-manual` agent) |
-|---|---|---|---|
-| New feature | Yes | Yes | Yes — create/update in `docs/guides/` |
-| Bug fix | Yes | If code changed | If user-facing |
-| Refactor | If notable | Yes | No |
-| Config change | Yes | No | If user-facing |
-| Test-only | No | No | No |
+| Change type   | 1. CHANGELOG.md | 2. Code docs (`code-docs` agent) | 3. User guide (`user-manual` agent)   |
+| ------------- | --------------- | -------------------------------- | ------------------------------------- |
+| New feature   | Yes             | Yes                              | Yes — create/update in `docs/guides/` |
+| Bug fix       | Yes             | If code changed                  | If user-facing                        |
+| Refactor      | If notable      | Yes                              | No                                    |
+| Config change | Yes             | No                               | If user-facing                        |
+| Test-only     | No              | No                               | No                                    |
 
 Steps are independent and can run in parallel. See `AGENTS.md` § "Post-Implementation Documentation Queue" for full details, flow diagram, and agent prompts.
 
@@ -286,16 +278,18 @@ Steps are independent and can run in parallel. See `AGENTS.md` § "Post-Implemen
 When asked to "simplify", "clean up", "clarify", or otherwise reduce documentation, default to **deletion over annotation**. Git history is the archive — anything cut from active docs remains recoverable via `git log --follow -p -- <path>` or `git show <rev>:<path>` (use `--follow` to track renames/moves like `git mv`).
 
 **Do:**
+
 - Delete stale prose, dead "see also" pointers, and redirect chains that no longer earn their cost.
 - Cut historical names from prose explanations of how the system works today.
-- Treat each active doc as representing *current state*; the past lives in commit history.
+- Treat each active doc as representing _current state_; the past lives in commit history.
 
 **Do not:**
+
 - Add `FLAGGED:`, `HISTORICAL:`, or `DEPRECATED:` annotations to active docs. If it's stale, cut it.
-- Generate verification reports, audit logs, or migration plans *before* editing. Edit and commit; let the diff be the report.
+- Generate verification reports, audit logs, or migration plans _before_ editing. Edit and commit; let the diff be the report.
 - Wrap historical model/tool names in parenthetical "now `X`" suffixes in prose. The current name alone is sufficient.
 
-**Carve-out — preserve historical names in *config and code*** where user environments might still reference them: vendor-native env-var aliases (`AliasChoices("LLM_API_KEY", "LM_API_TOKEN")`), keyring keys, deprecated API endpoints, version-pinned dependencies. The compat surface is real; the prose nostalgia isn't. (Pure-legacy aliases that nobody is reasonably using anymore — e.g. the retired `OLLAMA_*` env vars dropped 2026-06-01 — are fair game to remove, since they're cruft on the compat surface rather than load-bearing.)
+**Carve-out — preserve historical names in _config and code_** where user environments might still reference them: vendor-native env-var aliases (`AliasChoices("LLM_API_KEY", "LM_API_TOKEN")`), keyring keys, deprecated API endpoints, version-pinned dependencies. The compat surface is real; the prose nostalgia isn't. (Pure-legacy aliases that nobody is reasonably using anymore — e.g. the retired `OLLAMA_*` env vars dropped 2026-06-01 — are fair game to remove, since they're cruft on the compat surface rather than load-bearing.)
 
 When in doubt: delete, commit, and let the user say "put it back" if they actually miss it. Default to courage, not caution.
 

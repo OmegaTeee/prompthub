@@ -107,24 +107,20 @@ cd ~/prompthub
 
 ---
 
-## 6. Client Configuration
+## 6. Local Client Configuration
 
-Client configs live in `clients/` — each client has its own directory with an `mcp.json` and a `setup.sh` script.
+Client-specific setup is machine-local and app-specific. PromptHub keeps the runtime router configuration in the repo, while local client settings and app config files remain outside the repository and are intentionally excluded from Git tracking and editor indexing.
 
 ```bash
-# Set up a client (creates symlink or prints instructions)
-./clients/lm-studio/setup.sh
-./clients/claude/setup.sh
-
-# Check all clients and system health
+# Check router and local runtime health
 ./scripts/diagnose.sh
 ```
 
-Sources of truth:
+Source of truth:
 
-- `clients/<name>/mcp.json` for per-client MCP bridge configs.
-- `app/configs/mcp-servers.json` for MCP server definitions.
-- `app/configs/enhancement-rules.json` for prompt-enhancement behavior.
+- `app/configs/mcp-servers.json` for MCP server definitions
+- `app/configs/enhancement-rules.json` for prompt-enhancement behavior
+- local user app settings for the specific AI client you are connecting
 
 ---
 

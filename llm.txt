@@ -1,105 +1,74 @@
-# PromptHub — Project Context for LLM Assistants
+# PromptHub — project context for LLM assistants
 
-> This file is for external LLM tools (Perplexity, etc.) that read project files
-> via Desktop Commander or similar MCP tools. It provides a self-contained snapshot
-> of the project so you can give informed recommendations without reading the full codebase.
+> Self-contained project snapshot for external tools and AI assistants. Keep this file brief and current.
 >
-> Last updated: 2026-04-05
+> Last updated: 2026-10-29
 
 ## What this project is
 
-PromptHub is a local MCP (Model Context Protocol) router for macOS. It runs on
-localhost:9090 and provides:
+PromptHub is a local MCP router for macOS. It exposes a single local endpoint on localhost:9090 and centralizes:
 
-- **MCP server multiplexing** — One endpoint proxies 9 MCP servers (context7,
-  desktop-commander, sequential-thinking, memory, duckduckgo, obsidian-mcp-tools,
-  chrome-devtools-mcp, perplexity-comet, browsermcp) to any client
-- **Prompt enhancement** — Local LLM rewrites prompts per-client before they reach
-  the AI (different system prompts for code editors vs research tools vs image gen)
-- **OpenAI-compatible proxy** — `/v1/chat/completions` with bearer auth, so any
-  OpenAI-compatible client can use local models through PromptHub
-- **Resilience** — Circuit breakers, L1/L2 cache, cloud fallback via OpenRouter
+- MCP server lifecycle and routing
+- per-client enhancement and privacy controls
+- OpenAI-compatible `/v1` access to local models
+- circuit breakers, caching, and audit/logging
 
-## Tech stack
+This is an app-level router and enhancement layer, not a tracked per-client config repo.
 
-- **Backend**: Python 3.14, FastAPI, Pydantic, uvicorn, httpx, aiosqlite
-- **MCP bridge**: Node.js stdio bridge (`mcps/prompthub-bridge.js`) aggregating
-  all servers behind a single process
-- **Local LLM**: LM Studio (port 1234), OpenAI-compatible API
-- **Dashboard**: HTMX + Jinja2 templates at `/dashboard`
-- **Persistent storage**: SQLite databases under `~/.prompthub/`
+## Stack and runtime
 
-## Current models (LM Studio)
+- Python 3.11+ with FastAPI, Pydantic, httpx, SQLAlchemy/SQLite patterns
+- Node.js bridge in `mcps/prompthub-bridge.js`
+- Local model backend: LM Studio or a compatible OpenAI-style local endpoint
+- Dashboard at `/dashboard`
+- State under `~/.prompthub/` by default
 
-| Model ID | Params | Role |
-|---|---|---|
-| `qwen3-4b-instruct-2507` | 4B | Enhancement — prompt rewriting for all clients |
-| `qwen3-4b-instruct-2507` | 4B | Orchestrator — intent classification with CoT |
-| `text-embedding-nomic-embed-text-v1.5` | 137M | Embedding (not currently wired into pipelines) |
+## Current model usage
 
-Both 4B models stay loaded (~5 GB total). DeepSeek loads on demand.
+- Default enhancement model: `qwen3-4b-instruct-2507`
+- Orchestrator/reasoning model: `qwen3-4b-thinking-2507`
+- Local health-monitoring/tool-compression workflows may also use `qwen-3.8b-distill` as a separate runtime model
 
-## Directory structure
+Exact runtime IDs matter more than family labels. Use them verbatim in config and examples.
+
+## Repo structure
 
 ```
-~/prompthub/                          # Project root (symlink to ~/.local/share/prompthub)
-├── app/                              # Python project (FastAPI router)
-│   ├── router/                       # Main package: routes/, config/, servers/, enhancement/,
-│   │                                 #   resilience/, cache/, orchestrator/, openai_compat/,
-│   │                                 #   memory/, tool_registry/, dashboard/, middleware/
-│   ├── tests/                        # pytest suite (314 tests passing)
-│   ├── configs/                      # Runtime JSON configs (mcp-servers, enhancement-rules,
-│   │                                 #   api-keys, cloud-models)
-│   └── templates/                    # Jinja2 + HTMX dashboard
-├── clients/                          # 13 per-client directories, each with:
-│   ├── <name>/mcp.json               #   MCP bridge config
-│   ├── <name>/setup.sh               #   Install script (symlink or manual instructions)
-│   ├── <name>/uninstall.sh           #   Reverse script (where applicable)
-│   └── <name>/README.md              #   Client-specific notes
-├── mcps/                             # Node.js MCP bridge + npm dependencies
-│   └── prompthub-bridge.js           # Stdio bridge aggregating all servers
-├── docs/                             # Developer docs, ADRs, user guides
-│   ├── architecture/                 # ADRs and design docs
-│   ├── guides/                       # User-facing setup and integration guides
-│   └── notes/                        # Working notes, model cards, plans
-├── scripts/                          # Shell scripts, LaunchAgent plists
-├── CLAUDE.md                         # Full dev guide for Claude Code / coding agents
-├── AGENTS.md                         # Multi-agent onboarding and conventions
-└── llm.txt                           # This file
+~/prompthub/
+├── app/                 # FastAPI app and runtime config
+│   ├── router/          # route/service modules
+│   ├── configs/        # source-of-truth runtime config (mcp-servers.json, enhancement-rules.json, etc.)
+│   ├── tests/           # pytest suite
+│   └── templates/       # dashboard templates
+├── mcps/                # MCP bridge and server packages
+├── docs/                # architecture, guides, API, archive
+├── scripts/             # shell scripts and launch helpers
+├── CLAUDE.md            # developer guide
+├── AGENTS.md            # multi-agent conventions
+├── README.md            # project summary
+├── llm.txt              # this file
+└── app/.env             # local runtime settings (not repo-managed client config)
 ```
 
-## Supported clients
+## Important repo conventions
 
-**Active** (7): Claude (Code + Desktop), Codex, LM Studio,
-Perplexity Desktop, Raycast, VS Code (includes Copilot)
+- Machine-local client configs live outside the repo; they are not maintained as a tracked `clients/` tree.
+- The repo source of truth for router behavior is under `app/configs/`.
+- `enhancement-rules.json` holds per-client enhancement settings, privacy levels, and `model_profile` / `tool_profile` mappings.
+- `model_profile` is a real feature and is not a stale concept.
 
-**Placeholder** (4, `_` prefixed): Cherry Studio, JetBrains, Open WebUI,
-Zed — config directories exist but not fully wired
+## Key design choices
 
-## Key design decisions
+- Privacy boundary is enforced by `PrivacyLevel` (`local_only`, `free_ok`, `any`).
+- Local-only clients do not leak prompts to cloud providers.
+- Enhancement is optional per client and fails gracefully when the local model backend is unavailable.
+- Tool schema minification reduces context size before sending tool definitions to clients.
+- The router supports an OpenAI-compatible API and a local MCP gateway.
 
-- **Privacy boundary**: `PrivacyLevel` enum (local_only, free_ok, any) controls
-  whether prompts leave localhost. Most clients default to local_only.
-- **Cloud fallback**: When LM Studio is down, free_ok/any clients fall back to
-  OpenRouter free tier. local_only clients never use cloud.
-- **Single enhancement model**: All clients use the same model (`qwen3-4b-instruct-2507`)
-  with per-client system prompts and temperature settings.
-- **Schema minification**: Bridge strips verbose fields from tool schemas before
-  sending to LLM clients, reducing context by ~67%.
-- **Token budget**: Enhancement input capped at 4,096 tokens to prevent wasting
-  context on prompt rewrites.
+## Good reference files
 
-## Active concerns and TODOs
-
-- MCPs README is stale (lists 7 of 9 servers)
-- Evaluating @perplexity-ai/mcp-server vs existing perplexity-comet-mcp
-- @brave/brave-search-mcp-server scheduled for removal (unused)
-- Enhancement service has near-identical exception handlers (deferred refactor)
-- Lifespan init function is ~97 lines (deferred refactor)
-
-## Where to find more detail
-
-- Full developer guide: `CLAUDE.md` (architecture, API endpoints, config files, code style)
-- Agent conventions: `AGENTS.md` (roles, operating rules, doc queue, escalation)
-- Architecture decisions: `docs/architecture/ADR-*.md`
-- User guides: `docs/guides/`
+- `CLAUDE.md` — architecture and local development conventions
+- `AGENTS.md` — repo operating rules and agent workflow notes
+- `app/configs/enhancement-rules.json` — active enhancement/config definitions
+- `docs/glossary.md` — canonical terminology
+- `docs/guides/` — user-facing setup and troubleshooting
