@@ -44,16 +44,7 @@
   "terminal.integrated.cwd": "${workspaceFolder}/app",
   "terminal.integrated.enablePersistentSessions": true,
   "terminal.integrated.env.osx": {
-    "PATH": "${workspaceFolder}/app/.venv/bin:${env:PATH}",
-    "USERHOME": "/Users/visualval"
-  },
-  "terminal.integrated.defaultProfile.osx": "PromptHub",
-  "terminal.integrated.profiles.osx": {
-    "PromptHub": {
-      "path": "/bin/zsh",
-      "args": ["-l"],
-      "cwd": "${workspaceFolder}"
-    }
+    "PATH": "${workspaceFolder}/app/.venv/bin:${env:PATH}"
   },
   "files.exclude": {
     "**/__pycache__": true,
@@ -82,7 +73,13 @@
     "**/scripts/launch-agents/**": true
   },
   "chat.mcp.serverSampling": {
-    "prompthub-bridge": {
+    "prompthub/bridge": {
+      "allowedModels": ["*"]
+    },
+    "oraios/serena": {
+      "allowedModels": ["*"]
+    },
+    "headroom": {
       "allowedModels": ["*"]
     }
   },

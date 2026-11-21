@@ -531,6 +531,7 @@ body[data-vscode-theme-kind="vscode-dark"] {
 .markdown-body h5 strong,
 .markdown-body h6 strong {
   color: color-mix(in lch shorter hue, currentColor, white);
+  color: color-mix(in srgb, currentColor, white);
   font-size: inherit;
   text-shadow: inherit;
 }
@@ -546,6 +547,8 @@ body[data-vscode-theme-kind="vscode-dark"] {
   /*--- layout */
   display: inline-block;
   padding: var(--px1) var(--px1-5) var(--px1);
+  margin-inline-start: var(--px-1-5);
+  margin-inline-end: var(--px-1-5);
   vertical-align: var(--px0-5);
   /*--- text */
   font-family: var(--font-family-mono, inherit);
@@ -554,12 +557,13 @@ body[data-vscode-theme-kind="vscode-dark"] {
   text-shadow: var(--text-alias-strong);
   color: color-mix(in lch longer hue, currentColor, white 10%);
   /*--- appearance */
-  background: color-mix(in lch shorter hue, currentColor 30%, black 100%);
-  border-block-start: var(--highlight-10) solid var(--px1);
-  border-block-end: solid transparent var(--px1-5);
+  --x-hue: hsl(from currentColor calc(h * 0.75) 24% 16%);
+  background: color-mix(in hsl shorter hue, var(--x-hue), var(--surface));
+  border-block-start: var(--highlight-10) solid var(--px0-5);
+  border-block-end: solid transparent var(--px1);
   border-inline-start: solid transparent var(--px3);
   border-inline-end: solid transparent var(--px3);
-  border-radius: var(--round-xs);
+  border-radius: var(--round-sm);
   box-shadow: var(--outline-shadow);
   outline-offset: var(--px-1);
   outline: var(--highlight-border-05);
@@ -845,12 +849,12 @@ body[data-vscode-theme-kind="vscode-dark"] {
   line-height: inherit;
   color: hsla(var(--orange), 64%, 64%, 80%);
   /*--- appearance */
-  background: hsla(var(--rose), 24%, 24%, 0.8);
-  background: color-mix(in lch longer hue, currentColor 30%, black);
+  --x-hue: hsl(from currentColor calc(h * 0.25) 32% 24%);
+  background: color-mix(in hsl shorter hue, var(--x-hue), var(--blue-100) 25%);
   border-block-end: solid transparent var(--px1);
   border-block-start: var(--highlight-10) solid var(--px1);
-  border-inline-start: solid transparent var(--px3);
-  border-inline-end: solid transparent var(--px3);
+  border-inline-start: solid transparent var(--px2-5);
+  border-inline-end: solid transparent var(--px2-5);
   border-radius: var(--round-xs);
   box-shadow: var(--outline-shadow);
   outline-offset: var(--px-1);
