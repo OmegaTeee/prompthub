@@ -8,7 +8,7 @@ that need explicit rules to pick the right tool.
 Copy the **Rules block** at the bottom into your client's system prompt.
 Keep this file as the single source of truth; per-client copies drift.
 
-> **Related:** [`docs/guides/enhancement-tuning.md`](../docs/guides/enhancement-tuning.md)
+> **Related:** [`docs/guides/features.md`](../docs/guides/features.md#enhancement-tuning)
 > covers how the local rewriter shapes the prompts the chat model receives
 > *before* these tool-routing rules fire. Tuning the rewriter (in
 > [`app/configs/enhancement-rules.json`](../app/configs/enhancement-rules.json))
