@@ -1,3 +1,13 @@
+# Scripts
+
+| Script | Purpose |
+| --- | --- |
+| `prompthub-update.zsh` | Update the deployed checkout and restart the daemon safely (`--dry-run`, `--rollback`). See [operations: Upgrades](../../docs/guides/operations.md#upgrades). |
+| `prompthub-start.zsh` / `prompthub-kill.zsh` | Start or stop a router outside launchd |
+| `diagnose.sh` | Full-stack diagnostics |
+| `manage-keys.py` | Keychain credential CLI (below) |
+| `test.sh` | Test runner wrapper |
+
 # Credential Management
 
 PromptHub uses the Python `keyring` library for all credential management. Credentials are stored in macOS Keychain and accessed via `KeyringManager` at runtime, with full audit logging.
