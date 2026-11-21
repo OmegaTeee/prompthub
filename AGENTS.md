@@ -1,233 +1,157 @@
 # AGENTS.md
 
-Default onboarding context for AI coding agents working in this repository.
-Cross-client — Claude Code, OpenCode, and future agentic tools share the same repo contract.
+Shared contract for every AI coding agent in this repo (Claude Code, Codex, OpenCode, Copilot).
+`CLAUDE.md` imports this file and adds Claude Code–specific setup. Terms follow [docs/glossary.md](docs/glossary.md).
 
-## Why this repo exists
+## What PromptHub is
 
-PromptHub is the local MCP router project for sharing MCP servers and centralizing client configurations across multiple AI clients.
-The repo preserves a single source of truth for routing behavior, config generation, enhancement logic, and cross-client conventions.
-Prefer improving shared abstractions over adding one-off client-specific hacks.
+A local MCP router for macOS. One FastAPI service on `localhost:9090` that:
 
-## Agent roles
+- runs and proxies a fleet of stdio MCP servers behind one endpoint (plus a Node stdio bridge, `mcps/prompthub-bridge.js`, that aggregates them for clients);
+- enhances prompts per client through a local LLM server (LM Studio by default, any OpenAI-compatible backend works);
+- exposes an OpenAI-compatible `/v1/` proxy with bearer auth;
+- wraps everything in circuit breakers, an L1/L2 cache, audit logging, and an HTMX dashboard.
 
-| Agent | Role | Typical use |
-| --- | --- | --- |
-| **Claude Code** | Primary high-trust implementer | Architecture, structural changes, nuanced refactors, documentation, broad repo work |
-| **OpenCode** | Backup local coding agent | Local-first implementation, terminal workflows, second-pass execution, fallback when Claude is unavailable |
-| **Copilot / IDE assist** | Inline helper | Autocomplete, snippets, small local edits, quick chat inside the editor |
+Per-client behaviour (model, tool disclosure, privacy level) is resolved **server-side** from `app/configs/enhancement-rules.json`. Clients only need a near-identical bridge entry with their `CLIENT_NAME`. Prefer improving shared server-side logic over client-specific hacks.
 
-All agents follow the same repo conventions unless a task explicitly requires client-specific behavior.
+## Checkouts: dev vs. running daemon
 
-## Supported clients
+| Path | Role |
+| --- | --- |
+| `~/workspaces/prompthub` | Development checkout (this repo). Edit and test here. |
+| `~/.local/share/prompthub` (symlinked as `~/prompthub`) | Deployed checkout. The LaunchAgent `com.prompthub.router` and client bridge configs run from here. |
 
-Per-client directories under `clients/`. Active clients are unprefixed; placeholder/draft clients use a `_` prefix.
+Changes reach the daemon only after they are merged and pulled into the deployed checkout. Never edit the deployed checkout from a dev task unless asked.
 
-| Client | Directory | Strategy | Status |
-|---|---|---|---|
-| Claude Code | `clients/claude-code/` | symlink | Active |
-| Claude Desktop | `clients/claude-desktop/` | symlink | Active |
-| Codex | `clients/codex/` | symlink | Active |
-| LM Studio | `clients/lm-studio/` | symlink | Active |
-| Perplexity Desktop | `clients/perplexity-desktop/` | symlink | Active |
-| VS Code + Copilot | `clients/vscode/` | merge | Active |
-| Default | `clients/default/` | template | Template |
-| Cherry Studio | `clients/_cherry-studio/` | manual | Placeholder |
-| JetBrains | `clients/_jetbrains/` | symlink | Placeholder |
-| Open WebUI | `clients/_open-webui/` | symlink | Placeholder |
-| Raycast | `clients/raycast/` | symlink | Active |
-| Zed | `clients/_zed/` | manual | Placeholder |
-
-When editing shared config logic, think in terms of cross-client consistency first and per-client customization second.
-
-## Repo priorities
-
-- Keep PromptHub centralized.
-- Preserve compatibility across supported clients unless the task explicitly allows a breaking change.
-- Prefer generator/source fixes over manual edits to derived output.
-- Keep Claude-primary and OpenCode/LM Studio-backup workflows aligned where practical.
-- Update durable docs when conventions, paths, or generated outputs change.
-
-## Important paths
-
-- Repo root: `~/prompthub`
-- Docs root: `~/prompthub/docs`
-- Agent docs: `~/prompthub/docs/agent-guides`
-- Client configs: `~/prompthub/clients/`
-- Shared enhancement rules: `~/prompthub/app/configs/enhancement-rules.json`
-
-Read these before large or cross-cutting changes:
-
-- `docs/agent-guides/project-map.md`
-- `docs/agent-guides/build-test-verify.md`
-- `docs/agent-guides/config-locations.md`
-- `docs/architecture/README.md`
-- `docs/guides/06-client-configuration-guide.md`
-
-## Steering documents
-
-`.claude/steering/` contains three documents loaded into agent context:
-
-| File | Answers | Updated when |
-|------|---------|-------------|
-| `product.md` | Why does this exist? What does it do? | Features or scope change |
-| `tech.md` | How is it built? What patterns to follow? | Stack or conventions change |
-| `structure.md` | Where does code live? What owns what? | Files or modules are added/moved |
-
-Keep these concise. Do not add transient content (task lists, session notes, review checklists).
-
-`.claude/agents/` contains the agent spec files (`code-docs.md`, `user-manual.md`) referenced in the doc queue below.
-
-## Operating rules
-
-- Treat PromptHub as the source of truth for MCP server sharing and centralized client configuration.
-- Prefer editing source files, templates, or generators instead of patching generated output directly.
-- Do not invent new config shapes or naming conventions when an existing pattern already exists.
-- Keep MCP server labels, transport language, and env var names consistent across clients where possible.
-- Do not delete historical, failed, or experimental config paths unless cleanup is explicitly in scope.
-- For local-model workflows, assume LM Studio is the default local LLM backend unless the task states otherwise.
-- If code, docs, and external references disagree, trust the current repository and active docs.
-
-## Commit hygiene
-
-- Each commit stands on its own with a clear message
-- Use `Co-Authored-By` trailer when an agent builds on another's work
-- One logical change per commit (don't bundle unrelated fixes)
-- Follow [Keep a Changelog](https://keepachangelog.com/) categories in `CHANGELOG.md`: Added, Changed, Fixed, Removed
-- Add entries under `## [Unreleased]` — one sentence summarizing the user-visible change
-
-## Validation rules
-
-- Use the smallest effective validation step first.
-- If changing config generation, inspect the generated output for the affected client.
-- If changing routing or transport behavior, validate both happy path and at least one fallback or failure path.
-- Do not claim success unless you ran the relevant command or inspected the relevant artifact.
-- Summaries should explicitly name affected clients, docs, generators, and risks.
-
-For exact validation expectations, read `docs/agent-guides/build-test-verify.md`.
-
-## Documentation rules
-
-- Keep durable project guidance in stable docs, not temporary tracking files.
-- Update user-facing docs when user-visible behavior changes.
-- Update agent-facing docs when repo conventions, paths, or workflows change.
-- Keep documentation concise, current, and easy for future agents to scan.
-
-Recommended doc locations:
-
-- User guides: `docs/guides/`
-- Architecture docs: `docs/architecture/`
-- Agent docs: `docs/agent-guides/`
-- Historical material: `docs/archive/`
-- Working notes and research: `docs/notes/`
-
-## Post-implementation documentation queue
-
-After completing a feature, fix, or structural change, run the following three-step documentation pass. Each step uses a dedicated agent (or inline edits for the changelog). Steps are independent and can run in parallel.
+## Layout
 
 ```
-┌──────────────────┐
-│  Implementation  │
-│    complete       │
-└────────┬─────────┘
-         │
-         ├──────────────────────────────┐
-         │                              │
-         ▼                              ▼
-┌─────────────────┐          ┌─────────────────────┐
-│ 1. CHANGELOG.md │          │ 2. Code docs        │
-│   (inline edit) │          │   (code-docs agent) │
-└────────┬────────┘          └──────────┬──────────┘
-         │                              │
-         │          ┌───────────────────┘
-         │          │
-         ▼          ▼
-    ┌──────────────────────┐
-    │ 3. User guide        │
-    │   (user-manual agent)│
-    └──────────────────────┘
+app/                    Python project (run all Python commands from here)
+├── router/             FastAPI package (modular monolith, see below)
+├── tests/              pytest: unit/ + integration/
+├── configs/            mcp-servers.json, enhancement-rules.json, api-keys.json, cloud-models.json
+├── templates/          Jinja2 + HTMX dashboard
+├── scripts/            diagnose.sh, manage-keys.py, prompthub-start/kill.zsh, test.sh
+└── pyproject.toml      pytest/ruff/mypy config; deps in requirements.txt
+mcps/                   Node stdio bridge (prompthub-bridge.js) + npm-installed MCP servers
+docs/                   glossary, architecture/ (ADRs), api/ (openapi.yaml), modules/, features/,
+                        guides/ (3 user references), agent-guides/, wiki/, notes/
 ```
 
-**Step 1 — Update CHANGELOG.md** (always, inline)
+Client MCP config files are no longer kept in this repo; the config pattern is documented in [docs/guides/getting-started.md](docs/guides/getting-started.md).
 
-Add a line under `## [Unreleased]` in the appropriate category (Added / Changed / Fixed / Removed). One sentence summarizing the user-visible change, key details in parentheses.
+## Commands
 
-**Step 2 — Update code documentation** (when code was added or modified)
+```bash
+cd app && python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+cd mcps && npm install                                 # MCP server packages
 
-Run the `code-docs` agent on all new or modified files. Scope:
-- Docstrings for new/changed functions, classes, and modules
-- Type hints on new signatures
-- Clarifying comments on non-obvious logic
+cd app && uvicorn router.main:app --reload --port 9090 # run (dev)
+cd app && pytest tests/ -v                             # test
+cd app && ruff check router/ && ruff format router/    # lint/format
+cd app && mypy router/                                 # types
+node --check mcps/prompthub-bridge.js                  # bridge syntax
+curl http://localhost:9090/health                      # verify
+./app/scripts/diagnose.sh                              # full-stack diagnostics
 
-Do not touch unchanged code. Match the existing style (concise docstrings, 88-char line limit).
+launchctl kickstart -k gui/$(id -u)/com.prompthub.router   # restart deployed daemon
+```
 
-**Step 3 — Add or update user guide** (when a user-facing feature was added or changed)
+CI (`.github/workflows/ci.yml`) runs ruff and pytest on Python 3.11 and 3.12.
 
-Run the `user-manual` agent to create or update a guide in `docs/guides/`. Scope:
-- New feature → new guide file (follow the `NN-name-guide.md` numbering convention)
-- Changed feature → update the existing guide in-place (add sections, don't remove working content)
-- Include: overview, setup/prerequisites, usage with copy-pasteable examples, troubleshooting
+## Architecture (`app/router/`)
 
-Skip this step for internal-only changes (refactors, test-only changes, CI tweaks).
+| Module | Purpose |
+| --- | --- |
+| `main.py` | App factory: lifespan init, middleware, router wiring |
+| `routes/` | health, servers, mcp_proxy, enhancement, audit, pipelines, clients (tool/model profiles) |
+| `config/` | Pydantic `Settings` (`.env`), JSON config loading |
+| `servers/` | MCP server lifecycle via FastMCP + StdioTransport (spawn, monitor, restart) |
+| `resilience/` | Circuit breaker (3 failures → OPEN, 30s → HALF_OPEN, success → CLOSED) |
+| `cache/` | L1 in-memory LRU + L2 SQLite write-through |
+| `enhancement/` | OpenAI-compatible LLM client, per-client rules, OpenRouter cloud fallback, token budget |
+| `orchestrator/` | Pre-enhancement intent classifier (thinking model) |
+| `openai_compat/` | `/v1/` proxy (chat completions, responses, models) |
+| `memory/` | Session memory (SQLite facts, memory blocks, MCP sync) |
+| `tool_registry/` | SQLite cache of `tools/list` snapshots with archival |
+| `dashboard/` | HTMX observability UI |
+| `pipelines/` | Documentation generation workflow |
+| `middleware/` | Audit context, activity log, request timeouts |
+| `audit.py`, `audit_integrity.py`, `security_alerts.py` | Structured audit log, SHA256 tamper checks, anomaly alerts |
+| `keyring_manager.py` | macOS Keychain credentials |
 
-### When to run
+**Request flow** for `POST /mcp/{server}/{path}`: circuit breaker check → `tools/list` served from tool registry if cached → auto-start server if configured → JSON-RPC via FastMCP bridge → cache `tools/list` result → update breaker.
 
-| Change type | Step 1 (changelog) | Step 2 (code docs) | Step 3 (user guide) |
-|---|---|---|---|
+**Key patterns**
+
+- Async everywhere (`httpx`, `asyncio`); never `requests`.
+- Route modules use factory-with-getter-callables: `create_X_router(get_service=lambda: service)`, so globals resolve after lifespan init.
+- Tiered timeouts: httpx client 120s → middleware 60s (180s for slow paths) → LLM keep-alive 5 min.
+- Privacy boundary: `PrivacyLevel` (`local_only`, `free_ok`, `any`). `local_only` never leaves localhost; the others may fall back to OpenRouter free tier (ADR-007).
+- Model profiles: `model_profiles` in `enhancement-rules.json` (`daemon`, `coder`, `instruct`) mapped per client via `model_profile`. `Settings.llm_model` is the code-level fallback (ADR-008).
+- Tool disclosure: per-client `tool_profile` (`full` or `progressive` + `tier1_servers`), served at `GET /clients/{name}/tool-profile`. Bridge env vars (`TOOL_DISCLOSURE`, `TIER1_SERVERS`) override it, so leave them unset unless pinning on purpose.
+- Bridge minifies tool `inputSchema` (drops description/title/examples/default) before returning to clients.
+- Enhancement input capped at 4,096 tokens (`TokenBudget`).
+
+Full endpoint list: [docs/api/openapi.yaml](docs/api/openapi.yaml). ADRs: [docs/architecture/](docs/architecture/).
+
+## Configuration
+
+| File | Holds |
+| --- | --- |
+| `app/.env` (from `.env.example`) | `HOST`, `PORT`, `LLM_HOST`/`LLM_PORT`/`LLM_MODEL`/`LLM_ORCHESTRATOR_MODEL`/`LLM_TIMEOUT`, `DATA_DIR`, cache and breaker tuning, config paths, `OPENROUTER_*`, `LOG_LEVEL` |
+| `app/configs/mcp-servers.json` | MCP server registry (command, args, env, `auto_start`, `restart_on_failure`) |
+| `app/configs/enhancement-rules.json` | Per-client prompts, privacy level, `model_profile`, `tool_profile`; top-level `model_profiles` |
+| `app/configs/api-keys.json` | Bearer tokens for `/v1/` (client name, enhance flag) |
+| `app/configs/cloud-models.json` | Local → free-tier cloud model mapping |
+
+Persistent state lives under `~/.prompthub/` (`DATA_DIR`): `cache.db`, `activity.db`, `memory.db`, `tool_registry.db`, `audit.log`, `audit_checksums.json`. Storage classes take `db_path: Path | None = None` and resolve `get_settings()` lazily so tests can pass `tmp_path`.
+
+## Code style
+
+- Python 3.11+, type hints required, 88-char lines (ruff format).
+- `logging`, never `print()`.
+- No new global state; inject dependencies. Never hardcode config; add it to `Settings`.
+- Don't invent new config shapes when an existing pattern fits.
+
+## Working rules
+
+- Smallest effective validation first; don't claim success without running the command or inspecting the artifact.
+- Routing/transport changes: test the happy path and at least one failure/fallback path.
+- One logical change per commit. Changelog entries go under `## [Unreleased]` in `CHANGELOG.md` (Added / Changed / Fixed / Removed), one sentence each.
+- If code and docs disagree, trust the code and fix the doc.
+
+**Stop and ask the user** before: changing auth, credentials, or audit behaviour; removing or renaming a public endpoint; touching more than ~20 files in one change.
+
+## Documentation
+
+| Location | Purpose |
+| --- | --- |
+| `docs/guides/` | Exactly three user references: `getting-started.md`, `features.md`, `operations.md`. Update in place; don't add files. |
+| `docs/architecture/` | ADRs and design docs |
+| `docs/api/` | OpenAPI spec, integration examples |
+| `docs/agent-guides/` | Short agent-facing references (project map, build/test/verify, config locations, MCP routing) |
+| `docs/wiki/` | LLM-maintained knowledge wiki (`/wiki-*` commands) |
+| `docs/notes/` | Working notes, research, plans; not authoritative |
+
+### Post-implementation doc queue
+
+After a feature, fix, or structural change, run the applicable steps (independent, can run in parallel):
+
+| Change type | 1. `CHANGELOG.md` | 2. Code docs (`code-docs` agent) | 3. User guide (`user-manual` agent) |
+| --- | --- | --- | --- |
 | New feature | Yes | Yes | Yes |
 | Bug fix | Yes | If code changed | If user-facing |
 | Refactor | If notable | Yes | No |
 | Config change | Yes | No | If user-facing |
 | Test-only | No | No | No |
 
-### Quick reference
+Step 2 touches only new/modified code (docstrings, type hints, comments on non-obvious logic). Step 3 updates the relevant file in `docs/guides/`.
 
-```bash
-# After implementing a feature, run the doc queue:
+### Pruning policy
 
-# 1. Changelog — edit directly
-#    Add entry under [Unreleased] → Added/Changed/Fixed/Removed
+When asked to simplify or clean up docs, delete rather than annotate. Git history is the archive (`git log --follow -p -- <path>`).
 
-# 2. Code docs — delegate to agent
-#    Agent: code-docs
-#    Prompt: "Update docs for new/modified files: <list files>"
-
-# 3. User guide — delegate to agent
-#    Agent: user-manual
-#    Prompt: "Add/update guide in docs/guides/ for <feature>"
-```
-
-## When to escalate
-
-If an agent encounters any of these, stop and surface it to the user:
-
-- Conflicting instructions between `CLAUDE.md` and steering docs
-- A change that would affect more than 20 files
-- Security-sensitive modifications (auth, credentials, audit)
-- Removing or renaming a public API endpoint
-
-## Change style
-
-- Make small, reviewable changes.
-- Avoid mixing unrelated fixes in one pass.
-- For large refactors, explain intended impact before touching many files.
-- Preserve stable abstractions unless they clearly increase duplication or fragility.
-- When uncertain, choose the option that keeps PromptHub more centralized, not less.
-
-## Progressive disclosure
-
-Read only the guides needed for the current task:
-
-- Repo structure: `docs/agent-guides/project-map.md`
-- Validation and verification: `docs/agent-guides/build-test-verify.md`
-- Config and runtime paths: `docs/agent-guides/config-locations.md`
-- Additional guides may be added under `docs/agent-guides/` for routing and client-specific patterns.
-
-## Output expectations
-
-In the final summary:
-
-- Explain what changed in plain language.
-- List affected files, clients, generators, and docs.
-- Mention what validation was run or what artifacts were inspected.
-- Call out any migration work, follow-up tasks, or compatibility risks.
+- Cut stale prose, dead links, and redirect chains. Active docs describe the current state only.
+- No `FLAGGED:` / `HISTORICAL:` / `DEPRECATED:` annotations and no "(formerly X)" asides.
+- Exception: keep historical names in **config and code** where real environments still use them (env-var aliases such as `AliasChoices("LLM_API_KEY", "LM_API_TOKEN")`, keyring keys, deprecated endpoints). Pure-legacy aliases nobody uses can go.
