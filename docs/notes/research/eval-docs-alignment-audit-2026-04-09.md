@@ -27,15 +27,13 @@ PromptHub's active docs, agent docs, client docs, and historical material.
   `docs/notes/plans/`.
 - Added explicit historical framing to ADRs, research notes, and superpowers
   specs/plans that preserve older Ollama-era examples.
-- Fixed the archive index and added retention guidance in
-  `docs/archive/README.md`.
 
 ## Audit outcome
 
 Active documentation is now substantially cleaner. Remaining mentions of
 `LLM` in active surfaces are intentional:
 
-- compatibility guidance in `docs/guides/10-local-llm-recommendations.md`
+- compatibility guidance in `docs/guides/operations.md`
 - vendor/reference wording in `clients/_cherry-studio/cherry-studio-llm.txt`
 
 Historical docs still contain older terms by design, but they are now marked so
@@ -55,5 +53,4 @@ they do not read as current implementation guidance.
 
 - `docs/architecture/README.md`
 - `docs/glossary.md`
-- `docs/archive/README.md`
 - `docs/notes/README.md`

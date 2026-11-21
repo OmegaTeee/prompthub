@@ -84,5 +84,4 @@ security add-generic-password -U -s "prompthub:my_api_key" -a "$USER" -w "YOUR_V
 ## Related
 
 - [KeyringManager](../router/keyring_manager.py) — core credential module
-- [Audit System](../../docs/audit/AUDIT-IMPLEMENTATION-COMPLETE.md) — credential access logging
 - [MCP Server Config](../configs/mcp-servers.json) — keyring references in server env

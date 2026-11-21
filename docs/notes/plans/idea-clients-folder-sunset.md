@@ -42,9 +42,9 @@ That uniformity is exactly what generic MCP-sync tools assume.
 Roughly 4 work-units, each independently revertible:
 
 1. **Audit `clients/<name>/`.** Build a disposition table: for each client folder, classify content as (a) `setup.sh`/`check.sh` boilerplate that agentsync replaces, (b) MCP config block that agentsync templatizes from one source, (c) unique non-MCP content like LM Studio presets or per-client `llm.txt` knowledge files. Item (c) is the real work — where does it move?
-2. **Extract unique content out of `clients/`.** LM Studio presets → user's LM Studio preset folder (already where the runtime expects them). `llm.txt` knowledge files → either bundled with agentsync's source-of-truth directory or moved to `docs/clients/`. Per-client READMEs → either inlined into `docs/guides/06-client-configuration-guide.md` or kept as `docs/clients/<name>.md`.
+2. **Extract unique content out of `clients/`.** LM Studio presets → user's LM Studio preset folder (already where the runtime expects them). `llm.txt` knowledge files → either bundled with agentsync's source-of-truth directory or moved to `docs/clients/`. Per-client READMEs → either inlined into `docs/guides/getting-started.md` or kept as `docs/clients/<name>.md`.
 3. **Install and configure agentsync.** Create `.agents/prompthub-bridge.json` as the single source of truth for the bridge entry. Document `CLIENT_NAME` as the only per-client env var (everything else lives in `enhancement-rules.json`).
-4. **Replace `clients/*/setup.sh` with `agentsync apply`.** Update `docs/guides/06-client-configuration-guide.md` to read "install agentsync, set CLIENT_NAME, run apply." Delete `clients/<name>/` once nothing in the repo references it.
+4. **Replace `clients/*/setup.sh` with `agentsync apply`.** Update `docs/guides/getting-started.md` to read "install agentsync, set CLIENT_NAME, run apply." Delete `clients/<name>/` once nothing in the repo references it.
 
 ## Open questions (blockers for a decision)
 
@@ -63,6 +63,6 @@ Recommendation: audit first. Two hours of reading the seventeen `clients/<name>/
 
 ## See also
 
-- The user guide for clients today: [`docs/guides/06-client-configuration-guide.md`](../../guides/06-client-configuration-guide.md).
+- The user guide for clients today: [`docs/guides/getting-started.md`](../../guides/getting-started.md#connecting-clients).
 - The mechanism that made this idea viable: [`docs/architecture/ADR-008-task-specific-models.md`](../../architecture/ADR-008-task-specific-models.md) (per-client model profiles) and the now-merged stack PRs #31, #32, #33 (per-client tool profiles + router-driven resolution).
 - The pattern this would replace: every `clients/<name>/setup.sh` script in the repo today.

@@ -2,7 +2,7 @@
 
 Developer examples for calling PromptHub's OpenAI-compatible API from scripts and tools.
 
-For desktop app setup (Claude, VS Code, Raycast), see the [App Configuration Guide](../guides/06-client-configuration-guide.md).
+For desktop app setup (Claude, VS Code, Raycast), see [Connecting clients](../guides/getting-started.md#connecting-clients).
 
 ---
 

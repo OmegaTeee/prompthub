@@ -18,10 +18,9 @@ configuration files, and shared enhancement logic.
 - `docs/` — human and agent-facing documentation.
 - `docs/api/` — API reference and integration details.
 - `docs/architecture/` — ADRs and architecture notes; read before major refactors.
-- `docs/guides/` — user-facing guides and configuration documentation.
+- `docs/guides/` — three user reference files: `getting-started.md`, `features.md`, `operations.md`.
 - `docs/modules/` — module-level docs such as server-related explanations.
 - `docs/notes/` — research, plans, dashboards, and working notes.
-- `docs/archive/` — archived historical docs; use for context, not current source of truth.
 - `.firecrawl/` — repo knowledge files and scraped references used to improve coding assistance.
 - `scripts/` — repo wrapper commands and operational helpers for development, testing, router management, and maintenance.
 - `~/.local/share/prompthub/` — local runtime/application data outside the repo; inspect carefully before modifying.
@@ -50,7 +49,7 @@ Read these first when relevant:
 - `docs/architecture/README.md`
 - `docs/architecture/ADR-004-modular-monolith.md`
 - `docs/architecture/ADR-009-orchestrator-agent.md`
-- `docs/guides/06-client-configuration-guide.md`
+- `docs/guides/getting-started.md`
 - `clients/README.md`
 - `docs/modules/servers.md`
 - `scripts/README.md`

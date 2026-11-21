@@ -123,7 +123,7 @@ The startup log line reflects what actually resolved, so a partial config is alw
 Tool disclosure: progressive (tier1: memory, sequential-thinking, desktop-commander, source: router)
 ```
 
-`source` is `env` or `router`, telling you which path won. End-user setup, tier-1 selection guidance, and verification chat examples live in [docs/guides/11-progressive-tool-disclosure.md](../docs/guides/11-progressive-tool-disclosure.md).
+`source` is `env` or `router`, telling you which path won. End-user setup, tier-1 selection guidance, and verification chat examples live in [docs/guides/features.md](../docs/guides/features.md#progressive-tool-disclosure).
 
 ## Adding a new MCP server
 
