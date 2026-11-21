@@ -1,10 +1,10 @@
 # Core dependencies
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
-httpx>=0.26.0
-pydantic>=2.5.0
+httpx>=0.28.1
+pydantic>=2.13.4
 pydantic-settings>=2.15.0
-jinja2>=3.1.0
+jinja2>=3.1.6
 python-multipart>=0.0.6
 
 # Development tools
@@ -15,7 +15,7 @@ ruff>=0.16.2
 mypy>=1.8.0
 
 # Keychain integration (for secure MCP credential management)
-keyring>=24.0.0
+keyring>=25.7.0
 
 # Structured logging for audit trails
 structlog>=25.0.0
