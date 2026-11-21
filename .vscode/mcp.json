@@ -1,1 +1,30 @@
-../.mcp.json
+{
+  "servers": {
+    "prompthub/bridge": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"],
+      "env": {
+        "PROMPTHUB_URL": "http://127.0.0.1:9090",
+        "CLIENT_NAME": "vscode",
+        "TOOL_DISCLOSURE": "progressive",
+        "TIER1_SERVERS": "sequential-thinking,context7,memory",
+        "EXCLUDE_TOOLS": "perplexity-comet,duckduckgo"
+      }
+    },
+    "oraios/serena": {
+      "type": "stdio",
+      "command": "serena",
+      "args": ["start-mcp-server", "--context=vscode", "--project", "${workspaceFolder}"]
+    },
+    "headroom": {
+      "command": "headroom",
+      "args": ["mcp", "serve"]
+    },
+    "fetch_mcp": {
+      "type": "stdio",
+      "command": "mcp-server-fetch"
+    }
+  },
+  "inputs": []
+}
