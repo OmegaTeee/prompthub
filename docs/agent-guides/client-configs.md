@@ -1,82 +1,16 @@
 # Client configs
 
-This guide explains how coding agents should approach supported client configurations in PromptHub.
-The goal is to keep configuration behavior centralized, understandable, and consistent across clients.
+PromptHub does not ship per-client config files or setup scripts. Every MCP client uses the same bridge entry, pasted into that client's own MCP config. The full pattern and per-client examples are in [getting-started.md](../guides/getting-started.md#connecting-clients).
 
-## Supported-now clients
+## Rules
 
-Current supported-now clients include:
+- The bridge entry is identical for every client: `command: node`, `args: [<repo>/mcps/prompthub-bridge.js]`, env `PROMPTHUB_URL=http://127.0.0.1:9090` and `CLIENT_NAME=<name>`.
+- Only the container differs: Claude Code uses `.mcp.json` (key `mcpServers`), VS Code uses `.vscode/mcp.json` (key `servers`), Codex uses TOML in `~/.codex/config.toml`.
+- `CLIENT_NAME` must match a key in `app/configs/enhancement-rules.json`.
+- Per-client behavior (model profile, tool disclosure, privacy) is resolved server-side from that file via `GET /clients/{name}/model-profile` and `GET /clients/{name}/tool-profile`. Change the rules file, not the client config.
+- Keep client-side differences thin: do not duplicate server definitions, models, or tool filters in client configs unless pinning for debugging (`TOOL_DISCLOSURE`, `TIER1_SERVERS`).
+- Local-model assumptions default to LM Studio unless the task says otherwise.
 
-- `vscode-mcp`
-- `perplexity-desktop-mcp`
-- `claude-code-mcp`
-- `claude-desktop-mcp`
-- `lm-studio-mcp`
-- `codex-mcp`
+## When changing client-facing behavior
 
-Treat this list as the current compatibility surface when making shared config changes.
-
-## Core rules
-
-- Prefer shared config generation patterns over one-off manual client files.
-- Keep naming, server labels, and env var references consistent across clients where possible.
-- If a client needs a special projection or field mapping, keep the special logic isolated and well documented.
-- Avoid introducing a new config shape unless an existing abstraction clearly cannot support it.
-- When changing output shape, document user-visible impact and migration expectations.
-
-## Generated versus manual
-
-Before editing any client config:
-
-1. Determine whether the file is generated, templated, or manually maintained.
-2. If it is generated, edit the generator or source template instead of only patching the output.
-3. If it is manual, preserve existing conventions unless the task explicitly calls for a redesign.
-4. If unsure, inspect adjacent docs and implementation files before editing.
-
-## Cross-client consistency
-
-When changing shared config behavior, check for the following:
-
-- Does the same server have the same label across clients where feasible?
-- Are transport terms used consistently?
-- Do environment variables follow the same names and semantics?
-- Does client-specific customization stay small and explainable?
-- Are docs and examples still accurate for affected clients?
-
-## Backup workflow alignment
-
-PromptHub should support both Claude-primary and OpenCode/LM Studio-backup workflows without forcing the repo into two different mental models.
-When changing shared config logic, prefer conventions that keep those workflows aligned.
-
-That means:
-
-- Shared MCP server definitions should remain central.
-- Client-specific differences should stay thin.
-- Local-model assumptions should default to LM Studio unless the task says otherwise.
-- Agent instructions should remain cross-client when possible.
-
-## Documentation expectations
-
-Update docs when any of the following change:
-
-- Supported client list.
-- Config field meanings.
-- Output structure.
-- Setup steps for a client.
-- Shared naming conventions.
-
-Relevant docs may include:
-
-- `docs/guides/06-client-configuration-guide.md`
-- `docs/agent-guides/config-locations.md`
-- `docs/agent-guides/mcp-routing.md`
-- `AGENTS.md`
-
-## Output expectations
-
-In the final summary for client-config work, include:
-
-- Which clients were affected.
-- Whether the change touched source templates, generators, or generated outputs.
-- Any migration or compatibility concerns.
-- Which docs were updated.
+Update [getting-started.md](../guides/getting-started.md), `app/configs/enhancement-rules.json`, and [config-locations.md](config-locations.md) together, and say in the final summary which clients are affected.

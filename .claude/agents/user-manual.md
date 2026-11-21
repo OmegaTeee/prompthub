@@ -71,7 +71,17 @@ Write at a **high-school reading level (grade 9–10)**. Every section must foll
    - Ensure examples are consistent with the codebase (namespaces, function names, CLI flags).
    - Call out assumptions or places where extra input from the user is needed.
 
+## Where user docs live
+
+User guides are exactly three files. Update the right one in place; do not create new guide files.
+
+| File | Covers |
+| --- | --- |
+| `docs/guides/getting-started.md` | Install, run, verify, tokens, connecting clients |
+| `docs/guides/features.md` | Enhancement, orchestrator, memory, `/v1/` API, tool disclosure, privacy/cloud fallback |
+| `docs/guides/operations.md` | Troubleshooting, model recommendations, advanced config, diagnostics |
+
 ## Output expectations
 
-- Produce Markdown suitable for `docs/`, `README.md`, or a dedicated user guide file.
+- Produce Markdown that fits into one of the three guide files above (or `README.md` for top-level overview changes).
 - Include a short “Next steps” section pointing to related commands, APIs, or configuration options.

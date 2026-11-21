@@ -21,13 +21,13 @@
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
     "github@claude-plugins-official": true,
-    "plugin-dev@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": false,
     "code-review@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
-    "hookify@claude-plugins-official": true,
-    "claude-api@anthropic-agent-skills": true
+    "hookify@claude-plugins-official": false,
+    "claude-api@anthropic-agent-skills": false
   },
-  "enableAllProjectMcpServers": true,
+  "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "prompthub-bridge"
   ],

@@ -18,10 +18,9 @@ configuration files, and shared enhancement logic.
 - `docs/` — human and agent-facing documentation.
 - `docs/api/` — API reference and integration details.
 - `docs/architecture/` — ADRs and architecture notes; read before major refactors.
-- `docs/guides/` — user-facing guides and configuration documentation.
+- `docs/guides/` — three user reference files: `getting-started.md`, `features.md`, `operations.md`.
 - `docs/modules/` — module-level docs such as server-related explanations.
 - `docs/notes/` — research, plans, dashboards, and working notes.
-- `docs/archive/` — archived historical docs; use for context, not current source of truth.
 - `.firecrawl/` — repo knowledge files and scraped references used to improve coding assistance.
 - `scripts/` — repo wrapper commands and operational helpers for development, testing, router management, and maintenance.
 - `~/.local/share/prompthub/` — local runtime/application data outside the repo; inspect carefully before modifying.
@@ -33,7 +32,7 @@ configuration files, and shared enhancement logic.
 - Agent guide root: `~/prompthub/docs/agent-guides`
 - Scripts root: `~/prompthub/scripts`
 - Shared enhancement rules: `~/prompthub/app/configs/enhancement-rules.json`
-- Local app  `~/.local/share/prompthub/`
+- Local app `~/.local/share/prompthub/`
 
 ## Working assumptions
 
@@ -50,18 +49,17 @@ Read these first when relevant:
 - `docs/architecture/README.md`
 - `docs/architecture/ADR-004-modular-monolith.md`
 - `docs/architecture/ADR-009-orchestrator-agent.md`
-- `docs/guides/06-client-configuration-guide.md`
+- `docs/guides/getting-started.md`
 - `clients/README.md`
 - `docs/modules/servers.md`
 - `scripts/README.md`
 
 ## Change strategy
 
-- For config-related work, inspect both `app/configs/` and the relevant
-  `clients/<name>/` directory before editing.
-- For client onboarding or placeholder activation, check `clients/README.md`
-  first. If you are using Claude, also check
-  `.claude/skills/client-setup/SKILL.md`.
+- For config-related work, inspect `app/configs/` first and treat repo config
+  as the source of truth.
+- For client onboarding, use the current user-facing guide and runtime config
+  docs instead of repository-local client setup skills.
 - For router or transport changes, inspect architecture ADRs before modifying behavior.
 - For documentation changes, update both user-facing docs and agent-facing docs when conventions change.
 - For workflow or operational command changes, update both the script docs and the related agent guides.

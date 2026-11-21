@@ -37,7 +37,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from fastmcp import Client, FastMCP
-from fastmcp.server.proxy import FastMCPProxy
+from fastmcp.server.providers.proxy import FastMCPProxy
 
 if TYPE_CHECKING:
     from router.servers.registry import ServerRegistry
@@ -109,7 +109,7 @@ def build_mcp_gateway(
     Iterates over every server in the registry (optionally narrowed by
     *server_filter*), creates a dynamic client factory via
     :func:`_make_client_factory`, wraps it in a ``FastMCPProxy``, and
-    mounts it on the gateway under the server's name prefix.
+    mounts it on the gateway under the server's name as namespace.
 
     Servers that fail to mount (e.g. import errors in proxy setup) are
     logged and skipped -- they do not prevent the remaining servers from
@@ -141,7 +141,7 @@ def build_mcp_gateway(
         try:
             factory = _make_client_factory(supervisor, name)
             proxy = FastMCPProxy(client_factory=factory, name=name)
-            gateway.mount(proxy, prefix=name)
+            gateway.mount(proxy, namespace=name)
             mounted += 1
             logger.info(f"Mounted dynamic proxy for {name}")
         except Exception as e:

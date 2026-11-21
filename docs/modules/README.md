@@ -396,4 +396,4 @@ audit_admin_action(
 - [Architecture Overview](../architecture/README.md)
 - [ADR Index](../architecture/README.md#architecture-decision-records-adrs)
 - [API Documentation](../api/README.md)
-- User Guides: `docs/guides/`
+- User Guides: `docs/guides/` (`getting-started.md`, `features.md`, `operations.md`)

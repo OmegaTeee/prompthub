@@ -4,7 +4,7 @@ Usage:
     python docs/tools/migrate_to_wiki.py <archive-file> <section> <slug> <title>
 
 Example:
-    python docs/tools/migrate_to_wiki.py docs/archive/2026-02-03-agents-md-treatment.md syntheses agents-md-treatment "Agents.md Treatment"
+    python docs/tools/migrate_to_wiki.py docs/notes/2026-02-03-agents-md-treatment.md syntheses agents-md-treatment "Agents.md Treatment"
 """
 
 from __future__ import annotations
@@ -66,7 +66,7 @@ def main() -> None:
     print(
         f"Migrated: {args.archive_file.name} -> docs/wiki/{args.section}/{args.slug}.md"
     )
-    print(f"Original moved to: docs/archive/.to-delete/{args.archive_file.name}")
+    print(f"Original moved to: {staging_dir / args.archive_file.name}")
 
 
 if __name__ == "__main__":

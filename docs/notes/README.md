@@ -43,17 +43,16 @@ tags: [relevant, topic, tags]
 **Status lifecycle:**
 - **draft** — Work in progress, incomplete, may contain placeholders
 - **review** — Content is complete, needs validation or peer review
-- **final** — Validated and ready to reference; consider promoting to `docs/guides/` or `docs/architecture/` if broadly useful
+- **final** — Validated and ready to reference; consider promoting to `docs/guides/`, or `docs/architecture/` if broadly useful
 
 ## What belongs here vs. elsewhere
 
 | Content type | Location |
 |---|---|
-| Setup & integration guides | `docs/guides/` |
+| User reference (setup, features, operations) | `docs/guides/` |
 | Architecture decisions (ADRs) | `docs/architecture/` |
 | API specs | `docs/api/` |
 | Module documentation | `docs/modules/` |
-| Historical/completed docs | `docs/archive/` |
 | Everything else (research, plans, model cards, ideas) | `docs/notes/` |
 
 ## Current notes

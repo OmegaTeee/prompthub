@@ -102,7 +102,6 @@
   "ignores": [
     "node_modules",
     "dist",
-    ".git",
-    "app/docs/archive/**"
+    ".git"
   ]
 }

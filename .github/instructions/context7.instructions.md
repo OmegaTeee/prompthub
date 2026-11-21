@@ -2,6 +2,7 @@
 description: Use Context7 as the canonical source for external library documentation, avoiding reliance on stale training data.
 applyTo: "**"
 ---
+
 # Context7: Library Documentation Guidelines
 
 Purpose: ensure all contributors and MCP tools use Context7 as the canonical source for external library documentation, avoiding reliance on stale training data.
@@ -19,25 +20,25 @@ How to use (recommended sequence)
 
 1. resolve-library-id
 
-  - Use Context7's resolver to convert a human library name (and optional
-    version hint) to a Context7-compatible library id.
-  - Example (pseudo):
+- Use Context7's resolver to convert a human library name (and optional
+  version hint) to a Context7-compatible library id.
+- Example (pseudo):
 
-    ```text
-    mcp.context7.resolve-library-id: { "query": "react useEffect React 18" }
-    -> returns: "/reactjs/react" or "/reactjs/react/v18.2.0"
-    ```
+  ```text
+  mcp.context7.resolve-library-id: { "query": "react useEffect React 18" }
+  -> returns: "/reactjs/react" or "/reactjs/react/v18.2.0"
+  ```
 
 2. query docs
 
-  - After resolving the library id, call the Context7 docs query endpoint to
-    fetch the authoritative documentation or specific API page.
-  - Example (pseudo):
+- After resolving the library id, call the Context7 docs query endpoint to
+  fetch the authoritative documentation or specific API page.
+- Example (pseudo):
 
-    ```text
-    mcp.context7.query-docs: { "libraryId": "/reactjs/react/v18.2.0", "query": "useEffect" }
-    -> returns: HTML/markdown summary, usage examples, and API signatures
-    ```
+  ```text
+  mcp.context7.query-docs: { "libraryId": "/reactjs/react/v18.2.0", "query": "useEffect" }
+  -> returns: HTML/markdown summary, usage examples, and API signatures
+  ```
 
 Best practices for MCP tool authors and agents
 
@@ -51,10 +52,10 @@ Best practices for MCP tool authors and agents
 
 Project notes
 
-- This repository already includes a Context7 server entry in
-- [configs/vscode-mcp.json](../configs/vscode-mcp.json).
-- When adding new MCP servers or updating `configs/vscode-mcp.json`, ensure the
-  Context7 server is present and reachable by local tooling.
+- This repository includes MCP config for editor tooling via
+- [.mcp.json](../../.mcp.json) and pointer file [.vscode/mcp.json](../../.vscode/mcp.json).
+- When adding new MCP servers or updating MCP config, ensure the Context7 server
+- is present and reachable by local tooling.
 
 Example: fetching React `useEffect` docs (high-level)
 

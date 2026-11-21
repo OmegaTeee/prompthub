@@ -79,7 +79,6 @@ Suggested flow:
 
 Potential expansion later:
 
-- `docs/audit-llm-guide.txt`
 - `docs/memory-system-llm-guide.txt`
 - `docs/openai-api-llm-guide.txt`
 

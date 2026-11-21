@@ -1,6 +1,6 @@
 # PromptHub - Copilot Instructions
 
-**Canonical reference**: See [CLAUDE.md](../CLAUDE.md) for the full project guide (architecture, modules, endpoints, code style, configuration).
+**Canonical reference**: See [AGENTS.md](../AGENTS.md) for the full project guide (architecture, modules, endpoints, code style, configuration).
 
 ## Quick Context
 
@@ -31,5 +31,5 @@ app/router/          # FastAPI application (modular monolith)
 app/configs/         # Runtime JSON configs
 app/tests/           # Pytest suite (unit/ + integration/)
 docs/                # Developer docs and ADRs
-mcps/                # Node.js MCP bridge + client configs
+mcps/                # Node.js MCP bridge + MCP server packages
 ```

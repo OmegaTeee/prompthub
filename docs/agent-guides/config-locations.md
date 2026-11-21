@@ -35,12 +35,11 @@ If uncertain, search nearby docs and code paths before editing.
 
 ## Documentation locations
 
-- User guides: `docs/guides/`
+- User guides: `docs/guides/` (`getting-started.md`, `features.md`, `operations.md`)
 - Architecture decisions: `docs/architecture/`
 - API docs: `docs/api/`
 - Module docs: `docs/modules/`
 - Agent-oriented docs: `docs/agent-guides/`
-- Historical context: `docs/archive/`
 - Working notes and research: `docs/notes/`
 
 ## Editing rules
