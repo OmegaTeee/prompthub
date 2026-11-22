@@ -250,12 +250,10 @@ def create_openai_compat_router(
             "temperature": body.temperature,
             "stream": body.stream,
         }
+        extra_params = body.passthrough_params()
+        payload.update(extra_params)
         if body.max_tokens is not None:
             payload["max_tokens"] = body.max_tokens
-        if body.top_p is not None:
-            payload["top_p"] = body.top_p
-        if body.stop is not None:
-            payload["stop"] = body.stop
         if body.tools is not None:
             payload["tools"] = body.tools
         if body.tool_choice is not None:
@@ -282,6 +280,7 @@ def create_openai_compat_router(
                 max_tokens=body.max_tokens,
                 tools=body.tools,
                 tool_choice=body.tool_choice,
+                extra_params=extra_params,
             )
             if breaker:
                 breaker.record_success()

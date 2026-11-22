@@ -18,6 +18,12 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
+# Payload keys chat_completion() builds from its own arguments; extra_params
+# may not override them (e.g. a client-supplied "model" or "stream").
+_CORE_PAYLOAD_KEYS = frozenset(
+    {"model", "messages", "temperature", "stream", "max_tokens", "tools", "tool_choice"}
+)
+
 
 class LLMConfig(BaseModel):
     """Configuration for OpenAI-compatible LLM client."""
@@ -185,6 +191,7 @@ class LLMClient:
         tools: list[dict[str, Any]] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         stream: bool = False,
+        extra_params: dict[str, Any] | None = None,
     ) -> ChatCompletionResponse:
         """
         Generate chat completion using OpenAI-compatible API.
@@ -195,6 +202,9 @@ class LLMClient:
             temperature: Sampling temperature (0.0-1.0)
             max_tokens: Maximum tokens to generate
             stream: Whether to stream response (not implemented)
+            extra_params: Further OpenAI fields to send as-is (e.g.
+                ``response_format``, ``top_p``, ``stop``). Keys this method
+                sets itself (model, messages, stream, ...) are ignored.
 
         Returns:
             ChatCompletionResponse with generated text
@@ -221,6 +231,12 @@ class LLMClient:
             payload["tools"] = tools
         if tool_choice is not None:
             payload["tool_choice"] = tool_choice
+
+        for key, value in (extra_params or {}).items():
+            if key in _CORE_PAYLOAD_KEYS:
+                logger.debug(f"Ignoring extra_params key {key!r}; set by caller")
+                continue
+            payload[key] = value
 
         last_error: Exception | None = None
 

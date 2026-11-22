@@ -16,12 +16,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from router.enhancement.llm_client import LLMConnectionError, LLMError
+from router.openai_compat import router as router_module
 from router.openai_compat.auth import ApiKeyManager
 from router.openai_compat.models import (
     ChatCompletionRequest,
     ResponsesRequest,
 )
-from router.openai_compat import router as router_module
 from router.openai_compat.router import (
     _build_responses_response,
     _find_last_user_message,
@@ -1794,3 +1794,144 @@ class TestListModelsResponseShape:
         assert body["object"] == "list"
         assert body["data"] == known
         assert body["models"] == known
+
+
+class TestSamplingAndFormatForwarding:
+    """Optional OpenAI fields must reach the LLM server on both paths.
+
+    `response_format` is forwarded for structured output (`json_object`,
+    `json_schema`). Regression: the non-streaming path also dropped `top_p`
+    and `stop`, and neither path forwarded `frequency_penalty`,
+    `presence_penalty` or `user` although the request model accepted them.
+    """
+
+    AUTH = {"Authorization": "Bearer sk-prompthub-passthrough-def456"}
+
+    JSON_SCHEMA = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "city",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {"name": {"type": "string"}},
+                "required": ["name"],
+            },
+        },
+    }
+
+    OPTIONAL = {
+        "top_p": 0.9,
+        "stop": ["\n\n"],
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0.25,
+        "user": "user-123",
+    }
+
+    @staticmethod
+    def _ok_response():
+        from router.enhancement.llm_client import (
+            ChatCompletionChoice,
+            ChatCompletionResponse,
+            ChatMessage,
+        )
+
+        return ChatCompletionResponse(
+            id="chatcmpl-test",
+            object="chat.completion",
+            created=1700000000,
+            model="qwen3-4b-instruct-2507",
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content='{"name": "Paris"}'),
+                    finish_reason="stop",
+                )
+            ],
+            usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+        )
+
+    def _post(self, client, **fields):
+        return client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "qwen3-4b-instruct-2507",
+                "messages": [{"role": "user", "content": "Name a city"}],
+                **fields,
+            },
+            headers=self.AUTH,
+        )
+
+    @patch("router.openai_compat.router._stream_with_breaker")
+    def test_streaming_forwards_response_format_and_sampling(self, mock_stream, client):
+        async def _fake_stream(*args, **kwargs):
+            yield "data: [DONE]\n\n"
+
+        mock_stream.side_effect = _fake_stream
+        response = self._post(
+            client, stream=True, response_format=self.JSON_SCHEMA, **self.OPTIONAL
+        )
+        assert response.status_code == 200, response.text
+        payload = mock_stream.call_args.args[0]
+        assert payload["response_format"] == self.JSON_SCHEMA
+        for key, value in self.OPTIONAL.items():
+            assert payload[key] == value, key
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_non_streaming_forwards_response_format_and_sampling(
+        self, mock_chat, client
+    ):
+        mock_chat.return_value = self._ok_response()
+        response = self._post(
+            client, response_format={"type": "json_object"}, **self.OPTIONAL
+        )
+        assert response.status_code == 200, response.text
+        extra = mock_chat.call_args.kwargs["extra_params"]
+        assert extra["response_format"] == {"type": "json_object"}
+        for key, value in self.OPTIONAL.items():
+            assert extra[key] == value, key
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_omitted_fields_are_not_sent(self, mock_chat, client):
+        mock_chat.return_value = self._ok_response()
+        response = self._post(client)
+        assert response.status_code == 200, response.text
+        assert mock_chat.call_args.kwargs["extra_params"] == {}
+
+    def test_rejects_non_object_response_format(self, client):
+        response = self._post(client, response_format="json")
+        assert response.status_code == 422
+
+
+class TestLLMClientExtraParams:
+    """LLMClient.chat_completion merges extra_params into the upstream payload."""
+
+    @pytest.mark.asyncio
+    async def test_extra_params_reach_payload_without_overriding_core_keys(self):
+        from router.enhancement.llm_client import LLMClient
+
+        llm = LLMClient.__new__(LLMClient)
+        llm.config = MagicMock(max_retries=0)
+        http = AsyncMock()
+        http.post.return_value = MagicMock(
+            status_code=200,
+            json=MagicMock(return_value={"choices": [], "model": "m"}),
+            raise_for_status=MagicMock(),
+        )
+        llm._get_client = AsyncMock(return_value=http)
+
+        await llm.chat_completion(
+            model="m",
+            messages=[{"role": "user", "content": "hi"}],
+            extra_params={
+                "response_format": {"type": "json_object"},
+                "top_p": 0.5,
+                "model": "attacker",  # core keys must not be overridden
+                "stream": True,
+            },
+        )
+        sent = http.post.call_args.kwargs["json"]
+        assert sent["response_format"] == {"type": "json_object"}
+        assert sent["top_p"] == 0.5
+        assert sent["model"] == "m"
+        assert sent["stream"] is False
