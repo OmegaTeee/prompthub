@@ -1,15 +1,8 @@
 {
   // ── Python environment ──────────────────────────────────
-  // The project lives in app/ with its own venv
+  // The project lives in app/; Python Environments uses installed uv by default.
   "python.defaultInterpreterPath": "${workspaceFolder}/app/.venv/bin/python",
   "python.envFile": "${workspaceFolder}/app/.env",
-  "python-envs.pythonProjects": [
-    {
-      "path": "${workspaceFolder}/app/",
-      "envManager": "ms-python.python:venv",
-      "packageManager": "ms-python.python:pip"
-    }
-  ],
   "python.terminal.useEnvFile": true,
   "python.terminal.activateEnvInCurrentTerminal": true,
   "python.terminal.activateEnvironment": true,
@@ -22,7 +15,6 @@
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
   "python.testing.cwd": "${workspaceFolder}/app",
-  "python.testing.pytestPath": "${workspaceFolder}/app/.venv/bin/pytest",
   "python.testing.pytestArgs": ["tests", "-q"],
   // ── Formatting & linting (ruff) ─────────────────────────
   "djlint.configuration": "app/.djlintrc",
@@ -86,9 +78,5 @@
   "chat.tools.terminal.autoApprove": {
     "${workspaceFolder}/app/.venv/bin/python": true
   },
-  "markdown.styles": [".vscode/markdown.css"],
-  // --- Headroom Copilot proxy --- (comma-added)
-  "github.copilot.advanced.debug.overrideProxyUrl": "http://127.0.0.1:8790/p/visualval",
-  "github.copilot.advanced.debug.overrideCapiUrl": "http://127.0.0.1:8790/p/visualval"
-  // --- end Headroom Copilot proxy ---
+  "markdown.styles": [".vscode/markdown.css"]
 }

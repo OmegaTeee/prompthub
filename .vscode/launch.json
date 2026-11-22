@@ -6,12 +6,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
-      "args": [
-        "router.main:app",
-        "--host", "127.0.0.1",
-        "--port", "9090",
-        "--reload"
-      ],
+      "args": ["router.main:app", "--host", "127.0.0.1", "--port", "9090", "--reload"],
       "cwd": "${workspaceFolder}/app",
       "envFile": "${workspaceFolder}/app/.env",
       "jinja": true,
@@ -41,15 +36,9 @@
       "type": "debugpy",
       "request": "launch",
       "module": "pytest",
-      "args": ["${relativeFile}", "-v"],
+      "args": ["${file}", "-v"],
       "cwd": "${workspaceFolder}/app",
       "console": "integratedTerminal"
-    },
-    {
-      "name": "VSCode: Web Developer Tools",
-      "type": "chrome",
-      "request": "launch",
-      "url": "vscode-webview://**"
     }
   ]
 }
