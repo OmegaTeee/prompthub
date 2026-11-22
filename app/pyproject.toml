@@ -12,7 +12,7 @@ pythonpath = ["."]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 markers = [
-    "integration: Integration tests (require PromptHub running)",
+    "integration: Integration tests (run against the isolated live_router fixture)",
     "unit: Unit tests (no external dependencies)",
     "slow: Slow tests (may take >1 second)",
     "requires_llm: Tests that require a local LLM server to be running",

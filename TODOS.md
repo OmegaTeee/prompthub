@@ -4,9 +4,7 @@
 
 ### Apply merged config-path fixes after restart (PR #53)
 
-> **Context:** PR #53 corrected two service paths in the repo, but the *running* LaunchAgents/router hold the old values in memory until reloaded. A full reboot re-registers both plists from `~/Library/LaunchAgents/`, so resume here after the planned computer/app update + restart. Verify, don't assume.
-
-- [ ] If using Open WebUI: its LaunchAgent (`com.prompthub.openwebui`, `RunAtLoad=false`) now wraps `scripts/_open-webui/start.sh` (renamed from `scripts/open-webui/`). Re-register so launchd picks up the new ProgramArguments path: `launchctl bootout gui/$(id -u)/com.prompthub.openwebui 2>/dev/null; launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.prompthub.openwebui.plist`, then start it (dashboard or `launchctl kickstart gui/$(id -u)/com.prompthub.openwebui`).
+> **Context:** PR #53 corrected two service paths in the repo, but the _running_ LaunchAgents/router hold the old values in memory until reloaded. A full reboot re-registers both plists from `~/Library/LaunchAgents/`, so resume here after the planned computer/app update + restart. Verify, don't assume.
 
 ### Progressive Tool Disclosure (priority: high)
 
@@ -25,7 +23,6 @@
 - [ ] Support `response_format` passthrough; add `response_format` to `ChatCompletionRequest`, preserve and forward it in `app/router/openai_compat/router.py`, extend `LLMClient.chat_completion()` in `app/router/enhancement/llm_client.py` to accept passthrough options, add tests for `json_object` and `json_schema`, and document backend compatibility and fallback behavior.
 - [ ] Audit dropped OpenAI-compatible fields; review whether `frequency_penalty`, `presence_penalty`, `user`, and Responses API structured-output fields should also pass through consistently.
 
-
 ## Next
 
 ### Bridge-wide `X-Client-ID` consistency
@@ -38,7 +35,7 @@
 
 ### Client llm.txt knowledge files
 
-- [ ] Add `<client>-llm.txt` knowledge files for active clients: Claude, Codex, LM Studio, Perplexity Desktop, and VS Code; base each on official docs and client-specific quirks.
+- [ ] Add `<client>-llm.txt` knowledge files for active clients: Claude, Codex, LM Studio, and VS Code; base each on official docs and client-specific quirks.
 
 ### Revise Project README
 

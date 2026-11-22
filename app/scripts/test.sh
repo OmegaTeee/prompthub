@@ -4,7 +4,7 @@
 # Usage:
 #   ./scripts/test.sh              # unit tests only (fast, no server needed)
 #   ./scripts/test.sh unit         # same
-#   ./scripts/test.sh integration  # integration tests (requires live server)
+#   ./scripts/test.sh integration  # integration tests (start their own router)
 #   ./scripts/test.sh all          # everything
 #   ./scripts/test.sh coverage     # unit tests + HTML coverage report
 #   ./scripts/test.sh watch        # re-run unit tests on file change
@@ -38,22 +38,17 @@ case "$MODE" in
     ;;
 
   integration)
-    warn "Integration tests require a live PromptHub server on :9090"
-    warn "Start it with: cd $APP_DIR && uvicorn router.main:app --port 9090"
-    echo ""
     python3 -m pytest tests/integration/ -v --tb=short
     ;;
 
   all)
     log "Running full test suite..."
-    warn "Integration tests may fail if server is not running"
-    echo ""
     python3 -m pytest tests/ -v --tb=short \
       --ignore=tests/integration \
       -q
     echo ""
-    log "Running integration tests separately (failures expected without server)..."
-    python3 -m pytest tests/integration/ --tb=line -q || true
+    log "Running integration tests (isolated router)..."
+    python3 -m pytest tests/integration/ --tb=line -q
     ;;
 
   coverage)
