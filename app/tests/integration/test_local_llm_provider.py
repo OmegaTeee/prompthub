@@ -1,6 +1,8 @@
 """Live integration checks for the configured local LLM provider."""
 
+import json
 import os
+from pathlib import Path
 
 import httpx
 import pytest
@@ -9,6 +11,16 @@ from router.config.settings import get_settings
 from router.enhancement.llm_client import LLMClient, LLMConfig
 
 ROUTER_URL = os.environ["PROMPTHUB_TEST_URL"]
+APP_DIR = Path(__file__).resolve().parents[2]
+
+
+def _default_rule_model(settings) -> str:
+    """Model the router uses for an unconfigured client: the rules file's default."""
+    rules_path = Path(settings.enhancement_rules_config)
+    if not rules_path.is_absolute():
+        rules_path = APP_DIR / rules_path
+    rules = json.loads(rules_path.read_text())
+    return rules.get("default", {}).get("model") or settings.llm_model
 
 
 @pytest.mark.asyncio
@@ -58,7 +70,7 @@ async def test_enhancement_uses_configured_local_provider(live_router):
     assert response.status_code == 200, response.text
     data = response.json()
     assert data["original"] == prompt
-    assert data["model"] == settings.llm_model
+    assert data["model"] == _default_rule_model(settings)
     assert data["provider"] == "llm", (
         f"Configured local provider {endpoint} failed: {data.get('error')}"
     )
