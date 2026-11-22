@@ -4,7 +4,7 @@ A local MCP router for macOS. One service on `localhost:9090` runs your MCP serv
 
 ## What it does
 
-- **MCP routing.** Runs a fleet of stdio MCP servers (context7, desktop-commander, memory, sequential-thinking, duckduckgo, Obsidian, and more) and exposes them through one endpoint. A Node bridge (`mcps/prompthub-bridge.js`) makes the fleet look like a single MCP server to clients.
+- **MCP routing.** Runs a fleet of stdio MCP servers (context7, desktop-commander, memory, sequential-thinking, duckduckgo, and more) and exposes them through one endpoint. A Node bridge (`mcps/prompthub-bridge.js`) makes the fleet look like a single MCP server to clients.
 - **Server-side client profiles.** Each client's model, tool disclosure (full or progressive), and privacy level live in `app/configs/enhancement-rules.json`. A client only needs its `CLIENT_NAME`.
 - **Prompt enhancement.** A local model (LM Studio by default) rewrites prompts per client before they are forwarded. If the LLM is down, the original prompt passes through. Clients that allow it can fall back to OpenRouter's free tier.
 - **OpenAI-compatible API.** `/v1/chat/completions`, `/v1/responses`, and `/v1/models` with bearer auth, so any OpenAI-compatible app can use your local models.

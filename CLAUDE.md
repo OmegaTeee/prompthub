@@ -23,7 +23,6 @@ After any feature, fix, or structural change, check the doc-queue table in AGENT
 
 | Situation | What to do |
 | --- | --- |
-| `obsidian*` tools | Obsidian must be running. If it isn't, start it with `desktop-commander_start_process` (`open -a Obsidian`) and wait about 3s for its REST API on port 27124. |
 | Server with `auto_start: false` (`chrome-devtools-mcp`) | Start it with `prompthub_start_server` or `curl -X POST http://localhost:9090/servers/{name}/start`, then reload tools. |
 | Progressive disclosure hides a server's tools | Call `discover_tools` / `load_server_tools` from the bridge. |
 | `comet_*` tools | Need the Comet browser. `comet_connect` launches it; the first connection takes 5–10s. |

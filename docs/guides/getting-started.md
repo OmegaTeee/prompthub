@@ -69,7 +69,7 @@ Config files in `app/configs/`:
 | `api-keys.json` | Bearer tokens for the `/v1/` API |
 | `cloud-models.json` | Local model to free-tier cloud model mapping |
 
-Servers with `auto_start: true` start with the router (`context7`, `desktop-commander`, `sequential-thinking`, `memory`, `duckduckgo`, `obsidian-mcp-tools`, `perplexity-comet`, `knowledge-to-action`). `chrome-devtools-mcp` is on-demand:
+Servers with `auto_start: true` start with the router (`context7`, `desktop-commander`, `sequential-thinking`, `memory`, `duckduckgo`, `perplexity-comet`). `chrome-devtools-mcp` is on-demand:
 
 ```bash
 curl -X POST http://localhost:9090/servers/chrome-devtools-mcp/start
