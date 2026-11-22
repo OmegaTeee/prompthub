@@ -520,7 +520,7 @@ paths:
             text/event-stream:
               schema:
                 type: string
-                description: SSE stream of ChatCompletionChunk objects, ending with `data: [DONE]`
+                description: "SSE stream of ChatCompletionChunk objects, ending with `data: [DONE]`"
         '401':
           description: Missing or invalid bearer token
           content:
@@ -1253,6 +1253,53 @@ components:
           nullable: true
         frequency_penalty:
           type: number
+          nullable: true
+        presence_penalty:
+          type: number
+          nullable: true
+        stop:
+          nullable: true
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        user:
+          type: string
+          nullable: true
+        tools:
+          type: array
+          nullable: true
+          items:
+            type: object
+        tool_choice:
+          nullable: true
+          oneOf:
+            - type: string
+            - type: object
+        response_format:
+          type: object
+          nullable: true
+          description: >
+            Structured output, forwarded unchanged to the LLM server, which
+            decides which types it supports. A non-object value is rejected
+            with 422. llama.cpp-based servers (e.g. Unsloth Studio) accept
+            json_object and json_schema; LM Studio accepts only json_schema
+            and text, and an unsupported type fails with 502.
+          example:
+            type: json_schema
+            json_schema:
+              name: city
+              strict: true
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                required: [name]
+      description: >
+        Optional fields (top_p, stop, penalties, user, response_format) are
+        sent to the LLM server only when set.
 
     ResponsesRequest:
       type: object

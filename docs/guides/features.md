@@ -191,6 +191,29 @@ curl -s http://localhost:9090/v1/chat/completions \
 
 Typical app setup: set the provider type to "OpenAI compatible", base URL as above, API key as above, and the model to one listed by `/v1/models`.
 
+### Structured output and sampling fields
+
+`/v1/chat/completions` forwards `response_format`, `top_p`, `stop`, `frequency_penalty`, `presence_penalty`, and `user` to the LLM server unchanged, on streaming and non-streaming requests. Fields you leave out are not sent, so the server's defaults apply.
+
+```bash
+curl -s http://localhost:9090/v1/chat/completions \
+  -H "Authorization: Bearer sk-prompthub-<client>-001" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "<model-id>",
+       "messages": [{"role": "user", "content": "Name a European capital."}],
+       "response_format": {"type": "json_schema", "json_schema": {"name": "city", "strict": true,
+         "schema": {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]}}}}'
+```
+
+The LLM server decides which `response_format` types it supports:
+
+| Server | `json_schema` | `json_object` |
+| --- | --- | --- |
+| LM Studio | Yes | No (fails with 502) |
+| llama.cpp-based servers, e.g. Unsloth Studio | Yes | Yes |
+
+`json_schema` works on both, so prefer it. A `response_format` that is not a JSON object (for example `"json"`) is rejected with 422 before it reaches the server.
+
 ## Progressive tool disclosure
 
 With many servers, listing every tool wastes context. The bridge supports two modes:
