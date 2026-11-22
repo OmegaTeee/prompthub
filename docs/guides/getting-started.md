@@ -161,7 +161,7 @@ Every client uses the same pattern. No per-client setup scripts exist; paste the
 }
 ```
 
-`CLIENT_NAME` must match a client in `app/configs/enhancement-rules.json` (`claude-desktop`, `claude-code`, `codex`, `vscode`, `raycast`, `perplexity`, `cursor`, `comfyui`, `open-webui`, `lm-studio`, `opencode`). The router resolves that client's tool and model profiles server-side:
+`CLIENT_NAME` must match a client in `app/configs/enhancement-rules.json` (`claude-desktop`, `claude-code`, `codex`, `vscode`, `raycast`, `cursor`, `comfyui`, `lm-studio`, `opencode`). The router resolves that client's tool and model profiles server-side:
 
 ```bash
 curl http://localhost:9090/clients/claude-code/tool-profile    # {disclosure, tier1_servers, source}
@@ -226,13 +226,13 @@ PROMPTHUB_URL = "http://127.0.0.1:9090"
 CLIENT_NAME = "codex"
 ```
 
-### OpenCode, Cursor, Raycast, Perplexity, ComfyUI
+### OpenCode, Cursor, Raycast, ComfyUI
 
 Use the same bridge entry with the matching `CLIENT_NAME` in the client's MCP config. Raycast and other OpenAI-compatible apps connect through the `/v1/` API instead (base URL `http://localhost:9090/v1`).
 
 ### Streamable HTTP (no bridge)
 
-Clients that speak MCP over HTTP can connect directly to `http://127.0.0.1:9090/mcp-direct/mcp`. Set `GATEWAY_SERVERS` in `app/.env` (comma-separated server names) to limit what the gateway exposes; empty means all servers. See [Open WebUI](features.md#open-webui).
+Clients that speak MCP over HTTP can connect directly to `http://127.0.0.1:9090/mcp-direct/mcp`. Set `GATEWAY_SERVERS` in `app/.env` (comma-separated server names) to limit what the gateway exposes; empty means all servers.
 
 ### Verify a client
 

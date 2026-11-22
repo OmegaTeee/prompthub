@@ -25,16 +25,6 @@
       "description": "VSCode IDE",
       "enhance": false
     },
-    "sk-prompthub-open-webui-001": {
-      "client_name": "open-webui",
-      "description": "Open WebUI",
-      "enhance": false
-    },
-    "sk-prompthub-perplexity-001": {
-      "client_name": "perplexity",
-      "description": "Comet Web Research",
-      "enhance": false
-    },
     "sk-prompthub-lm-studio-001": {
       "client_name": "lm-studio",
       "description": "LM Studio",

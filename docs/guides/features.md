@@ -8,7 +8,6 @@ Reference for what PromptHub does once it is running. Setup is in [getting-start
 - [Session memory](#session-memory)
 - [OpenAI-compatible API](#openai-compatible-api)
 - [Progressive tool disclosure](#progressive-tool-disclosure)
-- [Open WebUI](#open-webui)
 - [Privacy levels and cloud fallback](#privacy-levels-and-cloud-fallback)
 
 ## Prompt enhancement
@@ -107,7 +106,7 @@ Keep system prompts to four goals: clarity, specificity, explicit targets, and f
 | `temperature` | 0.2 to 0.3 | 0.1 for code-heavy clients; 0.5 for image-generation prompts (comfyui). Avoid 0.0, which can echo input |
 | `max_tokens` | 500 to 600 | 300 for short-answer apps (raycast); about 1,000 for thinking models |
 
-Per-client patterns: code clients (claude-code, vscode, cursor, opencode) get low temperature and concrete-target wording; conversational clients (claude-desktop, open-webui, lm-studio) get light-touch clarity; research clients (perplexity) get question-sharpening; image clients (comfyui) get descriptive expansion. Copy the closest existing rule when adding a client.
+Per-client patterns: code clients (claude-code, vscode, cursor, opencode) get low temperature and concrete-target wording; conversational clients (claude-desktop, lm-studio) get light-touch clarity; image clients (comfyui) get descriptive expansion. Copy the closest existing rule when adding a client.
 
 ### Debugging
 
@@ -215,7 +214,7 @@ Option 1, per client in `app/configs/enhancement-rules.json` (preferred):
 }
 ```
 
-The bridge fetches it at startup from `GET /clients/{CLIENT_NAME}/tool-profile` (`source` shows where it came from). Profiles currently exist for `claude-desktop`, `claude-code`, `codex`, `vscode`, and `open-webui`.
+The bridge fetches it at startup from `GET /clients/{CLIENT_NAME}/tool-profile` (`source` shows where it came from). Profiles currently exist for `claude-desktop`, `claude-code`, `codex`, and `vscode`.
 
 Option 2, pin on the bridge via env vars in the client's MCP config:
 
@@ -235,23 +234,14 @@ curl http://localhost:9090/clients/claude-code/tool-profile
 
 Then restart the client fully and check the bridge log (the client's MCP log, e.g. Claude Desktop's `mcp-server-prompthub.log`) for the startup line `Tool disclosure: progressive (tier1: ...)`. Ask the model for a task that needs an unloaded server (for example a web search) and confirm it calls `discover_tools`/`load_server_tools` before the tool. Judge by the tool-call trace, not by the answer.
 
-## Open WebUI
-
-Open WebUI (default port 3000) can use PromptHub two ways.
-
-1. **Chat model provider**: Admin Settings, Connections, add an OpenAI connection with URL `http://localhost:9090/v1` and a bearer key whose `client_name` is `open-webui` (see [API tokens](getting-started.md#api-tokens)). `open-webui` has a rule and a progressive `tool_profile` in `enhancement-rules.json`.
-2. **Tools via MCP gateway**: add the streamable HTTP MCP server `http://127.0.0.1:9090/mcp-direct/mcp`. Set `GATEWAY_SERVERS` in `app/.env` to the comma-separated servers to expose (empty means all).
-
-If Open WebUI runs in Docker, use `http://host.docker.internal:9090` instead of `localhost`. The dashboard Open WebUI panel shows connection status, the API base URL, the MCP endpoint, and recent activity.
-
 ## Privacy levels and cloud fallback
 
 Each client rule has a `privacy_level` controlling whether a prompt may leave localhost:
 
 | Level | Meaning | Default clients |
 | --- | --- | --- |
-| `local_only` | Never leaves localhost; if the local LLM fails the original prompt is used | claude-desktop, claude-code, codex, vscode, cursor, comfyui, open-webui, lm-studio, opencode |
-| `free_ok` | May fall back to an OpenRouter free-tier model when the local LLM fails | raycast, perplexity |
+| `local_only` | Never leaves localhost; if the local LLM fails the original prompt is used | claude-desktop, claude-code, codex, vscode, cursor, comfyui, lm-studio, opencode |
+| `free_ok` | May fall back to an OpenRouter free-tier model when the local LLM fails | raycast |
 | `any` | May use any cloud fallback | none by default |
 
 Rules:
