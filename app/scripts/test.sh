@@ -2,17 +2,17 @@
 # =============================================================================
 # PromptHub test runner
 # Usage:
-#   ./scripts/test.sh              # unit tests only (fast, no server needed)
-#   ./scripts/test.sh unit         # same
-#   ./scripts/test.sh integration  # integration tests (start their own router)
-#   ./scripts/test.sh all          # everything
-#   ./scripts/test.sh coverage     # unit tests + HTML coverage report
-#   ./scripts/test.sh watch        # re-run unit tests on file change
+#   ./app/scripts/test.sh              # unit tests only (fast, no server needed)
+#   ./app/scripts/test.sh unit         # same
+#   ./app/scripts/test.sh integration  # integration tests (start their own router)
+#   ./app/scripts/test.sh all          # everything
+#   ./app/scripts/test.sh coverage     # unit tests + HTML coverage report
+#   ./app/scripts/test.sh watch        # re-run unit tests on file change
 # =============================================================================
 
 set -euo pipefail
 
-APP_DIR="$(cd "$(dirname "$0")/../app" && pwd)"
+APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 VENV="$APP_DIR/.venv/bin/activate"
 
 # Colours
@@ -23,7 +23,7 @@ warn() { echo "${YELLOW}  >${NC} $*"; }
 die()  { echo "${RED}✗ $*${NC}" >&2; exit 1; }
 
 # Activate venv
-[[ -f "$VENV" ]] || die "venv not found at $VENV — run: cd $APP_DIR && python3 -m venv .venv && pip install -e ."
+[[ -f "$VENV" ]] || die "venv not found at $VENV — run: cd $APP_DIR && python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt"
 source "$VENV"
 
 cd "$APP_DIR"
