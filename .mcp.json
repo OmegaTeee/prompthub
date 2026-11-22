@@ -1,14 +1,15 @@
 {
   "mcpServers": {
-    "prompthub-bridge": {
+    "prompthub/bridge": {
       "type": "stdio",
       "command": "node",
-      "args": [
-        "/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"
-      ],
+      "args": ["/Users/visualval/.local/share/prompthub/mcps/prompthub-bridge.js"],
       "env": {
         "PROMPTHUB_URL": "http://127.0.0.1:9090",
-        "CLIENT_NAME": "claude-code"
+        "CLIENT_NAME": "claude-code",
+        "TOOL_DISCLOSURE": "progressive",
+        "TIER1_SERVERS": "sequential-thinking,context7,memory",
+        "EXCLUDE_TOOLS": "perplexity-comet,duckduckgo"
       }
     }
   }

@@ -21,7 +21,7 @@ Per-client behaviour (model, tool disclosure, privacy level) is resolved **serve
 | `~/workspaces/prompthub` | Development checkout (this repo). Edit and test here. |
 | `~/.local/share/prompthub` (symlinked as `~/prompthub`) | Deployed checkout. The LaunchAgent `com.prompthub.router` and client bridge configs run from here. |
 
-Changes reach the daemon only after they are merged and pulled into the deployed checkout. Never edit the deployed checkout from a dev task unless asked.
+Changes reach the daemon only after they are merged to `main` and deployed with `app/scripts/prompthub-update.zsh`. Never edit the deployed checkout from a dev task unless asked.
 
 ## Layout
 
@@ -31,7 +31,7 @@ app/                    Python project (run all Python commands from here)
 ├── tests/              pytest: unit/ + integration/
 ├── configs/            mcp-servers.json, enhancement-rules.json, api-keys.json, cloud-models.json
 ├── templates/          Jinja2 + HTMX dashboard
-├── scripts/            diagnose.sh, manage-keys.py, prompthub-start/kill.zsh, test.sh
+├── scripts/            prompthub-update.zsh, diagnose.sh, manage-keys.py, prompthub-start/kill.zsh, test.sh
 └── pyproject.toml      pytest/ruff/mypy config; deps in requirements.txt
 mcps/                   Node stdio bridge (prompthub-bridge.js) + npm-installed MCP servers
 docs/                   glossary, architecture/ (ADRs), api/ (openapi.yaml), modules/, features/,
@@ -54,7 +54,9 @@ node --check mcps/prompthub-bridge.js                  # bridge syntax
 curl http://localhost:9090/health                      # verify
 ./app/scripts/diagnose.sh                              # full-stack diagnostics
 
-launchctl kickstart -k gui/$(id -u)/com.prompthub.router   # restart deployed daemon
+./app/scripts/prompthub-update.zsh --dry-run           # plan a deploy to ~/.local/share/prompthub
+./app/scripts/prompthub-update.zsh                     # deploy: ff-pull, deps, restart, health check
+launchctl kickstart -k gui/$(id -u)/com.prompthub.router   # restart deployed daemon only
 ```
 
 CI (`.github/workflows/ci.yml`) runs ruff and pytest on Python 3.11 and 3.12.
