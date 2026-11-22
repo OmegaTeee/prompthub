@@ -32,7 +32,7 @@ Useful endpoints:
 | `GET /security/alerts` | Recent security alerts |
 | `GET /clients/{name}/tool-profile`, `/model-profile` | Resolved per-client profiles |
 
-Repo scripts (all in `app/scripts/`): `diagnose.sh`, `manage-keys.py` (Keychain credentials), `prompthub-start.zsh`, `prompthub-kill.zsh`, `test.sh`, `router/validate-mcp-servers.sh`, `router/restart_mcp_servers.py`, `system/launchctl-env-audit.sh`, `system/audit-maintenance.sh`. See `app/scripts/README.md`.
+Repo scripts (all in `app/scripts/`): `diagnose.sh`, `manage-keys.py` (Keychain credentials), `prompthub-start.zsh`, `prompthub-kill.zsh`, `lms-start.sh` (loads the router's model; run at login by `com.prompthub.lms.plist`), `test.sh`, `router/validate-mcp-servers.sh`, `router/restart_mcp_servers.py`, `system/launchctl-env-audit.sh`, `system/audit-maintenance.sh`. See `app/scripts/README.md`.
 
 To collect a report for an issue:
 

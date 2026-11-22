@@ -4,6 +4,8 @@
 | --- | --- |
 | `prompthub-update.zsh` | Update the deployed checkout and restart the daemon safely (`--dry-run`, `--rollback`). See [operations: Upgrades](../../docs/guides/operations.md#upgrades). |
 | `prompthub-start.zsh` / `prompthub-kill.zsh` | Start or stop a router outside launchd |
+| `com.prompthub.router.plist` | LaunchAgent that runs the router from the deployed checkout |
+| `lms-start.sh` + `com.prompthub.lms.plist` | At login, start LM Studio's server and load the router's model as `qwen3.5-4b-distill` (no-op if already loaded) |
 | `diagnose.sh` | Full-stack diagnostics |
 | `manage-keys.py` | Keychain credential CLI (below) |
 | `test.sh` | Test runner wrapper |
