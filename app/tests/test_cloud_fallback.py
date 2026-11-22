@@ -5,17 +5,21 @@ Covers:
 - OpenAICompatConfig extra_headers
 - Cloud model mapping from cloud-models.json
 - _try_cloud_fallback privacy gating
-- Full enhance() flow with Ollama→OpenRouter fallback
+- Full enhance() flow with LLM→OpenRouter fallback
 - EnhancementResult provider field
 """
 
 import json
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from router.enhancement.llm_client import LLMConfig as OpenAICompatConfig
+from router.enhancement.llm_client import (
+    LLMConfig as OpenAICompatConfig,
+)
+from router.enhancement.llm_client import (
+    LLMConnectionError,
+)
 from router.enhancement.service import (
     EnhancementResult,
     EnhancementRule,
@@ -23,7 +27,6 @@ from router.enhancement.service import (
     PrivacyLevel,
 )
 from router.resilience import CircuitBreakerError, CircuitState
-
 
 # --- Fixtures ---
 
@@ -88,7 +91,6 @@ def _make_service(
     """Create an EnhancementService with cloud fallback configured."""
     with patch("router.enhancement.service.get_settings") as mock_settings:
         settings = MagicMock()
-        settings.ollama_api_mode = "native"
         mock_settings.return_value = settings
 
         return EnhancementService(
@@ -177,10 +179,14 @@ class TestTryCloudFallback:
         """LOCAL_ONLY privacy prevents any cloud attempt."""
         rule = EnhancementRule(model="llama3.2:latest")
         result = await service._try_cloud_fallback(
-            "test prompt", rule, PrivacyLevel.LOCAL_ONLY, "vscode", "Ollama down",
+            "test prompt",
+            rule,
+            PrivacyLevel.LOCAL_ONLY,
+            "vscode",
+            "LLM down",
         )
         assert result.original == result.enhanced
-        assert result.error == "Ollama down"
+        assert result.error == "LLM down"
         assert result.provider is None
 
     @pytest.mark.asyncio
@@ -193,7 +199,11 @@ class TestTryCloudFallback:
 
         rule = EnhancementRule(model="llama3.2:latest")
         result = await service._try_cloud_fallback(
-            "test prompt", rule, PrivacyLevel.FREE_OK, "perplexity", "Ollama down",
+            "test prompt",
+            rule,
+            PrivacyLevel.FREE_OK,
+            "perplexity",
+            "LLM down",
         )
         assert result.enhanced == "enhanced by cloud"
         assert result.provider == "openrouter"
@@ -209,7 +219,11 @@ class TestTryCloudFallback:
 
         rule = EnhancementRule(model="llama3.2:latest")
         result = await service._try_cloud_fallback(
-            "test prompt", rule, PrivacyLevel.ANY, "test", "Ollama down",
+            "test prompt",
+            rule,
+            PrivacyLevel.ANY,
+            "test",
+            "LLM down",
         )
         assert result.enhanced == "enhanced by cloud"
         assert result.provider == "openrouter"
@@ -221,22 +235,32 @@ class TestTryCloudFallback:
 
         rule = EnhancementRule(model="llama3.2:latest")
         result = await service._try_cloud_fallback(
-            "test prompt", rule, PrivacyLevel.FREE_OK, "perplexity", "Ollama down",
+            "test prompt",
+            rule,
+            PrivacyLevel.FREE_OK,
+            "perplexity",
+            "LLM down",
         )
         assert result.original == result.enhanced
-        assert result.error == "Ollama down"
+        assert result.error == "LLM down"
 
     @pytest.mark.asyncio
     async def test_cloud_breaker_open_returns_original(self, service):
         """Cloud circuit breaker open → return original with combined error."""
         service._cloud_client = AsyncMock()
         service._cloud_circuit_breaker.check = MagicMock(
-            side_effect=CircuitBreakerError("openrouter", CircuitState.OPEN, retry_after=45.0),
+            side_effect=CircuitBreakerError(
+                "openrouter", CircuitState.OPEN, retry_after=45.0
+            ),
         )
 
         rule = EnhancementRule(model="llama3.2:latest")
         result = await service._try_cloud_fallback(
-            "test prompt", rule, PrivacyLevel.FREE_OK, "perplexity", "Ollama down",
+            "test prompt",
+            rule,
+            PrivacyLevel.FREE_OK,
+            "perplexity",
+            "LLM down",
         )
         assert result.original == result.enhanced
         assert "cloud breaker open" in result.error
@@ -254,7 +278,11 @@ class TestTryCloudFallback:
 
         rule = EnhancementRule(model="llama3.2:latest")
         await service._try_cloud_fallback(
-            "test prompt", rule, PrivacyLevel.FREE_OK, "perplexity", "Ollama down",
+            "test prompt",
+            rule,
+            PrivacyLevel.FREE_OK,
+            "perplexity",
+            "LLM down",
         )
         service._cache.set_enhanced.assert_called_once()
 
@@ -268,7 +296,11 @@ class TestTryCloudFallback:
 
         rule = EnhancementRule(model="llama3.2:latest")
         result = await service._try_cloud_fallback(
-            "test prompt", rule, PrivacyLevel.FREE_OK, "perplexity", "Ollama down",
+            "test prompt",
+            rule,
+            PrivacyLevel.FREE_OK,
+            "perplexity",
+            "LLM down",
         )
         assert "cloud fallback failed" in result.error
         assert "API error" in result.error
@@ -283,7 +315,11 @@ class TestTryCloudFallback:
 
         rule = EnhancementRule(model="unknown-model:latest")
         result = await service._try_cloud_fallback(
-            "test prompt", rule, PrivacyLevel.FREE_OK, "perplexity", "Ollama down",
+            "test prompt",
+            rule,
+            PrivacyLevel.FREE_OK,
+            "perplexity",
+            "LLM down",
         )
         assert result.model == "deepseek/deepseek-r1-0528:free"
 
@@ -301,8 +337,8 @@ class TestEnhanceWithFallback:
         return svc
 
     @pytest.mark.asyncio
-    async def test_ollama_success_no_cloud_attempt(self, service):
-        """When Ollama succeeds, cloud client is never called."""
+    async def test_llm_success_no_cloud_attempt(self, service):
+        """When LLM succeeds, cloud client is never called."""
         service._llm = AsyncMock()
         service._llm.generate_from_prompt = AsyncMock(
             return_value="enhanced by llm",
@@ -318,13 +354,11 @@ class TestEnhanceWithFallback:
         cloud_mock.generate_from_prompt.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_ollama_fail_free_ok_cloud_success(self, service):
-        """Ollama connection error + free_ok client → cloud fallback succeeds."""
-        from router.enhancement.llm_client import LLMConnectionError as OllamaConnectionError
-
+    async def test_llm_fail_free_ok_cloud_success(self, service):
+        """LLM connection error + free_ok client → cloud fallback succeeds."""
         service._llm = AsyncMock()
         service._llm.generate_from_prompt = AsyncMock(
-            side_effect=OllamaConnectionError("Connection refused"),
+            side_effect=LLMConnectionError("Connection refused"),
         )
         service._llm.is_healthy = AsyncMock(return_value=False)
 
@@ -340,13 +374,11 @@ class TestEnhanceWithFallback:
         assert result.provider == "openrouter"
 
     @pytest.mark.asyncio
-    async def test_ollama_fail_local_only_no_cloud(self, service):
-        """Ollama fails + local_only client → returns original, no cloud."""
-        from router.enhancement.llm_client import LLMConnectionError as OllamaConnectionError
-
+    async def test_llm_fail_local_only_no_cloud(self, service):
+        """LLM fails + local_only client → returns original, no cloud."""
         service._llm = AsyncMock()
         service._llm.generate_from_prompt = AsyncMock(
-            side_effect=OllamaConnectionError("Connection refused"),
+            side_effect=LLMConnectionError("Connection refused"),
         )
         service._llm.is_healthy = AsyncMock(return_value=False)
 
@@ -361,12 +393,12 @@ class TestEnhanceWithFallback:
         cloud_mock.generate_from_prompt.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_ollama_breaker_open_cloud_fallback(self, service):
-        """Ollama circuit breaker open + free_ok → cloud fallback."""
+    async def test_llm_breaker_open_cloud_fallback(self, service):
+        """LLM circuit breaker open + free_ok → cloud fallback."""
         service._llm = AsyncMock()
         service._llm.is_healthy = AsyncMock(return_value=False)
 
-        # Trip the Ollama circuit breaker
+        # Trip the LLM circuit breaker
         for _ in range(3):
             service._circuit_breaker.record_failure(Exception("fail"))
 
@@ -382,10 +414,8 @@ class TestEnhanceWithFallback:
         assert result.provider == "openrouter"
 
     @pytest.mark.asyncio
-    async def test_ollama_fail_cloud_disabled(self, tmp_path, enhancement_rules_file):
-        """Ollama fails + cloud disabled → returns original."""
-        from router.enhancement.llm_client import LLMConnectionError as OllamaConnectionError
-
+    async def test_llm_fail_cloud_disabled(self, tmp_path, enhancement_rules_file):
+        """LLM fails + cloud disabled → returns original."""
         service = _make_service(
             tmp_path,
             enhancement_rules_file=enhancement_rules_file,
@@ -393,7 +423,7 @@ class TestEnhanceWithFallback:
         )
         service._llm = AsyncMock()
         service._llm.generate_from_prompt = AsyncMock(
-            side_effect=OllamaConnectionError("Connection refused"),
+            side_effect=LLMConnectionError("Connection refused"),
         )
         service._llm.is_healthy = AsyncMock(return_value=False)
 
@@ -404,13 +434,11 @@ class TestEnhanceWithFallback:
         assert result.provider is None
 
     @pytest.mark.asyncio
-    async def test_ollama_fail_cloud_fail_returns_original(self, service):
-        """Both Ollama and cloud fail → returns original with combined error."""
-        from router.enhancement.llm_client import LLMConnectionError as OllamaConnectionError
-
+    async def test_llm_fail_cloud_fail_returns_original(self, service):
+        """Both LLM and cloud fail → returns original with combined error."""
         service._llm = AsyncMock()
         service._llm.generate_from_prompt = AsyncMock(
-            side_effect=OllamaConnectionError("Connection refused"),
+            side_effect=LLMConnectionError("Connection refused"),
         )
         service._llm.is_healthy = AsyncMock(return_value=False)
 
@@ -428,7 +456,7 @@ class TestEnhanceWithFallback:
 
     @pytest.mark.asyncio
     async def test_cached_result_skips_both(self, service):
-        """Cached result returns immediately — no Ollama or cloud call."""
+        """Cached result returns immediately — no LLM or cloud call."""
         service._llm = AsyncMock()
         service._llm.is_healthy = AsyncMock(return_value=True)
 
@@ -478,19 +506,25 @@ class TestEnhancementResultProvider:
 
     def test_llm_provider(self):
         result = EnhancementResult(
-            original="test", enhanced="enhanced", provider="llm",
+            original="test",
+            enhanced="enhanced",
+            provider="llm",
         )
         assert result.provider == "llm"
 
     def test_openrouter_provider(self):
         result = EnhancementResult(
-            original="test", enhanced="enhanced", provider="openrouter",
+            original="test",
+            enhanced="enhanced",
+            provider="openrouter",
         )
         assert result.provider == "openrouter"
 
     def test_serialization_includes_provider(self):
         result = EnhancementResult(
-            original="test", enhanced="enhanced", provider="openrouter",
+            original="test",
+            enhanced="enhanced",
+            provider="openrouter",
         )
         d = result.model_dump()
         assert d["provider"] == "openrouter"

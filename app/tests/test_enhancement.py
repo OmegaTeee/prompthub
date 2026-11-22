@@ -4,12 +4,12 @@ Tests for prompt enhancement service.
 Verifies:
 - Client-specific enhancement rules are applied
 - Cache hit returns cached result
-- Fallback to original prompt when Ollama fails
+- Fallback to original prompt when LLM fails
 - Circuit breaker integration
 - Stats tracking
 
 Note: These tests are currently skipped pending proper mock setup for the complex
-EnhancementService initialization. The service requires Ollama client and creates
+EnhancementService initialization. The service requires LLM client and creates
 its own circuit breaker and cache internally.
 """
 
@@ -24,8 +24,8 @@ class TestEnhancementService:
     """Test cases for prompt enhancement service."""
 
     @pytest.fixture
-    def mock_ollama_client(self):
-        """Mock Ollama client for testing."""
+    def mock_llm_client(self):
+        """Mock LLM client for testing."""
         client = AsyncMock()
         client.generate = AsyncMock(return_value="Enhanced prompt text")
         return client
@@ -67,13 +67,13 @@ class TestEnhancementService:
 
     @pytest.mark.asyncio
     async def test_cache_hit_returns_cached_result(
-        self, mock_cache, mock_ollama_client, mock_circuit_breaker
+        self, mock_cache, mock_llm_client, mock_circuit_breaker
     ):
         """Test enhancement returns cached result on cache hit."""
         mock_cache.get.return_value = "Cached enhanced prompt"
 
         service = EnhancementService(
-            ollama_client=mock_ollama_client,
+            llm_client=mock_llm_client,
             cache=mock_cache,
             circuit_breaker=mock_circuit_breaker,
             rules={}
@@ -84,18 +84,18 @@ class TestEnhancementService:
         assert result.enhanced == "Cached enhanced prompt"
         assert result.cached is True
         assert result.enhanced_by_llm is False
-        mock_ollama_client.generate.assert_not_called()
+        mock_llm_client.generate.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_cache_miss_calls_ollama(
-        self, mock_cache, mock_ollama_client, mock_circuit_breaker, enhancement_rules
+    async def test_cache_miss_calls_llm(
+        self, mock_cache, mock_llm_client, mock_circuit_breaker, enhancement_rules
     ):
-        """Test enhancement calls Ollama on cache miss."""
+        """Test enhancement calls LLM on cache miss."""
         mock_cache.get.return_value = None
-        mock_ollama_client.generate.return_value = "LLM enhanced prompt"
+        mock_llm_client.generate.return_value = "LLM enhanced prompt"
 
         service = EnhancementService(
-            ollama_client=mock_ollama_client,
+            llm_client=mock_llm_client,
             cache=mock_cache,
             circuit_breaker=mock_circuit_breaker,
             rules=enhancement_rules
@@ -106,18 +106,18 @@ class TestEnhancementService:
         assert result.enhanced == "LLM enhanced prompt"
         assert result.cached is False
         assert result.enhanced_by_llm is True
-        mock_ollama_client.generate.assert_called_once()
+        mock_llm_client.generate.assert_called_once()
         mock_cache.set.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_client_specific_rules_applied(
-        self, mock_cache, mock_ollama_client, mock_circuit_breaker, enhancement_rules
+        self, mock_cache, mock_llm_client, mock_circuit_breaker, enhancement_rules
     ):
         """Test client-specific enhancement rules are used."""
         mock_cache.get.return_value = None
 
         service = EnhancementService(
-            ollama_client=mock_ollama_client,
+            llm_client=mock_llm_client,
             cache=mock_cache,
             circuit_breaker=mock_circuit_breaker,
             rules=enhancement_rules
@@ -126,19 +126,19 @@ class TestEnhancementService:
         await service.enhance("code prompt", client_name="vscode")
 
         # Verify vscode-specific model was used
-        call_args = mock_ollama_client.generate.call_args
+        call_args = mock_llm_client.generate.call_args
         assert "qwen2.5-coder:7b" in str(call_args)
 
     @pytest.mark.asyncio
-    async def test_fallback_on_ollama_failure(
-        self, mock_cache, mock_ollama_client, mock_circuit_breaker
+    async def test_fallback_on_llm_failure(
+        self, mock_cache, mock_llm_client, mock_circuit_breaker
     ):
-        """Test falls back to original prompt when Ollama fails."""
+        """Test falls back to original prompt when LLM fails."""
         mock_cache.get.return_value = None
-        mock_ollama_client.generate.side_effect = Exception("Ollama connection failed")
+        mock_llm_client.generate.side_effect = Exception("LLM connection failed")
 
         service = EnhancementService(
-            ollama_client=mock_ollama_client,
+            llm_client=mock_llm_client,
             cache=mock_cache,
             circuit_breaker=mock_circuit_breaker,
             rules={}
@@ -153,15 +153,15 @@ class TestEnhancementService:
         mock_circuit_breaker.record_failure.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_circuit_breaker_open_skips_ollama(
-        self, mock_cache, mock_ollama_client, mock_circuit_breaker
+    async def test_circuit_breaker_open_skips_llm(
+        self, mock_cache, mock_llm_client, mock_circuit_breaker
     ):
-        """Test circuit breaker OPEN state skips Ollama call."""
+        """Test circuit breaker OPEN state skips LLM call."""
         mock_cache.get.return_value = None
         mock_circuit_breaker.is_available.return_value = False
 
         service = EnhancementService(
-            ollama_client=mock_ollama_client,
+            llm_client=mock_llm_client,
             cache=mock_cache,
             circuit_breaker=mock_circuit_breaker,
             rules={}
@@ -170,11 +170,11 @@ class TestEnhancementService:
         result = await service.enhance("original prompt", client_name="default")
 
         assert result.enhanced == "original prompt"
-        mock_ollama_client.generate.assert_not_called()
+        mock_llm_client.generate.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_disabled_rule_returns_original(
-        self, mock_cache, mock_ollama_client, mock_circuit_breaker
+        self, mock_cache, mock_llm_client, mock_circuit_breaker
     ):
         """Test disabled enhancement rule returns original prompt."""
         disabled_rules = {
@@ -185,7 +185,7 @@ class TestEnhancementService:
         }
 
         service = EnhancementService(
-            ollama_client=mock_ollama_client,
+            llm_client=mock_llm_client,
             cache=mock_cache,
             circuit_breaker=mock_circuit_breaker,
             rules=disabled_rules
@@ -194,18 +194,18 @@ class TestEnhancementService:
         result = await service.enhance("original prompt", client_name="default")
 
         assert result.enhanced == "original prompt"
-        mock_ollama_client.generate.assert_not_called()
+        mock_llm_client.generate.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_success_records_circuit_breaker(
-        self, mock_cache, mock_ollama_client, mock_circuit_breaker, enhancement_rules
+        self, mock_cache, mock_llm_client, mock_circuit_breaker, enhancement_rules
     ):
         """Test successful enhancement records success in circuit breaker."""
         mock_cache.get.return_value = None
-        mock_ollama_client.generate.return_value = "Enhanced"
+        mock_llm_client.generate.return_value = "Enhanced"
 
         service = EnhancementService(
-            ollama_client=mock_ollama_client,
+            llm_client=mock_llm_client,
             cache=mock_cache,
             circuit_breaker=mock_circuit_breaker,
             rules=enhancement_rules
