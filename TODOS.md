@@ -21,14 +21,6 @@
 
 ## Next
 
-### Bridge-wide `X-Client-ID` consistency
-
-> **Memory:** [`reference_audit_context_headers.md`](~/.claude/projects/-Users-visualval--local-share-prompthub/memory/reference_audit_context_headers.md)
-> **Context:** PR #23 caught the `X-Client-Name` (enhancement) vs `X-Client-ID` (audit-context) header drift via smoke test. Only `searchMemoryViaRouter` in `mcps/prompthub-bridge.js` currently sends both. Other bridge endpoints (`fetchRunningServers`, `callPromptHub`, `listAvailableServers`, `startServerViaRouter`) send only `X-Client-Name`. Not currently broken — those endpoints don't filter by audit-context client_id. Becomes a silent-failure trap the moment any future endpoint does.
-
-- [ ] Add `X-Client-ID: CLIENT_NAME` to every `fetch()` call in `mcps/prompthub-bridge.js` (alongside the existing `X-Client-Name`). One-line change per call site, ~5 sites total.
-- [ ] Optional: extract a `routerHeaders()` helper so future bridge endpoints can't forget either header.
-
 ### Revise Project README
 
 - [ ] Update `README.md` to reflect the current architecture, active clients, and primary documentation entry points; remove the project status table if it cannot be kept current.
