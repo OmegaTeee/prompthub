@@ -106,7 +106,7 @@ Keep system prompts to four goals: clarity, specificity, explicit targets, and f
 | `temperature` | 0.2 to 0.3 | 0.1 for code-heavy clients; 0.5 for image-generation prompts (comfyui). Avoid 0.0, which can echo input |
 | `max_tokens` | 500 to 600 | 300 for short-answer apps (raycast); about 1,000 for thinking models |
 
-Per-client patterns: code clients (claude-code, vscode, cursor, opencode) get low temperature and concrete-target wording; conversational clients (claude-desktop, lm-studio) get light-touch clarity; image clients (comfyui) get descriptive expansion. Copy the closest existing rule when adding a client.
+Per-client patterns: code clients (claude-code, vscode, opencode) get low temperature and concrete-target wording; conversational clients (claude-desktop, lm-studio) get light-touch clarity; image clients (comfyui) get descriptive expansion. Copy the closest existing rule when adding a client.
 
 ### Debugging
 
@@ -240,7 +240,7 @@ Each client rule has a `privacy_level` controlling whether a prompt may leave lo
 
 | Level | Meaning | Default clients |
 | --- | --- | --- |
-| `local_only` | Never leaves localhost; if the local LLM fails the original prompt is used | claude-desktop, claude-code, codex, vscode, cursor, comfyui, lm-studio, opencode |
+| `local_only` | Never leaves localhost; if the local LLM fails the original prompt is used | claude-desktop, claude-code, codex, vscode, comfyui, lm-studio, opencode |
 | `free_ok` | May fall back to an OpenRouter free-tier model when the local LLM fails | raycast |
 | `any` | May use any cloud fallback | none by default |
 
