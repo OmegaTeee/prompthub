@@ -2,7 +2,7 @@
 
 This guide defines how coding agents should validate changes in PromptHub.
 Use the smallest effective validation step first, then expand only as needed.
-Prefer repo wrapper commands in `~/prompthub/scripts` when they exist and accurately reflect the intended workflow.
+Run everything from the development checkout `~/workspaces/prompthub`, never the deployed one at `~/prompthub`. Prefer the wrapper commands in `app/scripts/` when they exist and match the intended workflow.
 
 ## Validation principles
 
@@ -33,11 +33,10 @@ shape.
 
 Recommended flow:
 
-1. Identify the source file in `clients/` or `app/configs/`.
-2. Run the relevant setup script or inspect the repo-managed client file if the workflow uses one.
-3. Inspect the resulting config or documented install target for the affected client.
-4. Check that shared naming and env var conventions still align across clients.
-5. Update docs if user-facing behavior changed.
+1. Identify the source file in `app/configs/`.
+2. Check the resolved result through the router, e.g. `GET /clients/{name}/tool-profile` or `/model-profile`.
+3. Check that shared naming and env var conventions still align across clients.
+4. Update docs if user-facing behavior changed.
 
 ### Routing change
 
@@ -54,19 +53,19 @@ Recommended flow:
 ## Preferred repo commands
 
 Use these commands as the default starting point for validation in this repository.
-When a wrapper command exists in `scripts/`, prefer it.
+When a wrapper command exists in `app/scripts/`, prefer it.
 
 ### Install
 
 ```bash
 # Python app dependencies
-cd ~/prompthub/app
-python3 -m venv .venv
+cd ~/workspaces/prompthub/app
+python3.12 -m venv .venv   # 3.11 or 3.12, matching CI
 source .venv/bin/activate
 pip install -r requirements.txt
 
 # MCP / Node dependencies
-cd ~/prompthub/mcps
+cd ~/workspaces/prompthub/mcps
 npm install
 ```
 
@@ -75,14 +74,14 @@ npm install
 Wrapper command:
 
 ```bash
-cd ~/prompthub
-./scripts/prompthub-start.zsh
+cd ~/workspaces/prompthub
+./app/scripts/prompthub-start.zsh
 ```
 
 Direct dev command:
 
 ```bash
-cd ~/prompthub/app
+cd ~/workspaces/prompthub/app
 source .venv/bin/activate
 uvicorn router.main:app --reload --port 9090
 ```
@@ -92,8 +91,8 @@ uvicorn router.main:app --reload --port 9090
 Wrapper command:
 
 ```bash
-cd ~/prompthub
-./scripts/prompthub-kill.zsh
+cd ~/workspaces/prompthub
+./app/scripts/prompthub-kill.zsh
 ```
 
 ### Health check
@@ -107,19 +106,19 @@ curl http://localhost:9090/health
 Primary wrapper command:
 
 ```bash
-cd ~/prompthub
-./scripts/test.sh unit
-./scripts/test.sh integration
-./scripts/test.sh all
-./scripts/test.sh coverage
-./scripts/test.sh watch
+cd ~/workspaces/prompthub
+./app/scripts/test.sh unit
+./app/scripts/test.sh integration
+./app/scripts/test.sh all
+./app/scripts/test.sh coverage
+./app/scripts/test.sh watch
 ```
 
 Default behavior note:
 
 ```bash
-cd ~/prompthub
-./scripts/test.sh
+cd ~/workspaces/prompthub
+./app/scripts/test.sh
 ```
 
 This runs unit tests by default.
@@ -127,7 +126,7 @@ This runs unit tests by default.
 Equivalent direct unit-test command:
 
 ```bash
-cd ~/prompthub/app
+cd ~/workspaces/prompthub/app
 source .venv/bin/activate
 python3 -m pytest tests/unit/ -v --tb=short
 ```
@@ -142,10 +141,19 @@ To run them against a router you started yourself, set `PROMPTHUB_TEST_URL`:
 PROMPTHUB_TEST_URL=http://127.0.0.1:9191 python3 -m pytest tests/integration/
 ```
 
+### Network guard
+
+An autouse fixture in `tests/conftest.py` fails any test that sends a real HTTP request through `httpx` to anything other than the test router. In-process clients (FastAPI `TestClient`, `ASGITransport`) are unaffected. When a test trips it, mock the call. Two markers relax it:
+
+| Marker | Effect |
+| --- | --- |
+| `requires_llm` | The test may reach the local LLM server (live smoke tests). |
+| `offline` | Real requests still fail with `httpx.ConnectError`, but the test passes; use it for tests of unreachable-server handling. |
+
 ### Lint
 
 ```bash
-cd ~/prompthub/app
+cd ~/workspaces/prompthub/app
 source .venv/bin/activate
 python3 -m ruff check .
 ```
@@ -153,25 +161,25 @@ python3 -m ruff check .
 ### Typecheck
 
 ```bash
-cd ~/prompthub/app
+cd ~/workspaces/prompthub/app
 source .venv/bin/activate
-python3 -m mypy router cli
+python3 -m mypy router
 ```
 
 ### MCP validation
 
 ```bash
-cd ~/prompthub
-./scripts/router/validate-mcp-servers.sh
+cd ~/workspaces/prompthub
+./app/scripts/router/validate-mcp-servers.sh
 ```
 
 ### Restart MCP servers
 
 ```bash
-cd ~/prompthub
-python3 scripts/router/restart_mcp_servers.py
-python3 scripts/router/restart_mcp_servers.py --all
-python3 scripts/router/restart_mcp_servers.py obsidian
+cd ~/workspaces/prompthub
+python3 app/scripts/router/restart_mcp_servers.py
+python3 app/scripts/router/restart_mcp_servers.py --all
+python3 app/scripts/router/restart_mcp_servers.py obsidian
 ```
 
 This requires the router running on `localhost:9090`.
@@ -179,14 +187,14 @@ This requires the router running on `localhost:9090`.
 ### MCP package install or update
 
 ```bash
-cd ~/prompthub/mcps
+cd ~/workspaces/prompthub/mcps
 npm install <package-name>
 ```
 
 ### Python package install or update
 
 ```bash
-cd ~/prompthub/app
+cd ~/workspaces/prompthub/app
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
