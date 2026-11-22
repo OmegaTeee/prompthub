@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-BRIDGE="$REPO_ROOT/mcps/prompthub-bridge.js"
+BRIDGE="$REPO_ROOT/../../../mcps/prompthub-bridge.js"
 ROUTER_URL="http://127.0.0.1:9090"
 
 PASS=0

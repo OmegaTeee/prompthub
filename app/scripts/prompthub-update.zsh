@@ -63,11 +63,15 @@ die()  { print -r -- "[PromptHub] ERROR: $*" >&2; exit 1; }
 g()    { git -C "$DEPLOY_DIR" "$@"; }
 
 indent()      { sed 's/^/    /'; }                 # stdin -> stdout, indented
+# $1 = file; prints its line count with no padding (BSD wc pads with spaces).
 count_lines() { wc -l < "$1" | tr -d ' '; }
+# Prints the current UTC time as ISO 8601.
 now()         { date -u +%FT%TZ; }
+# Appends "<timestamp> <args>" as one line to $HISTORY, creating its directory.
 log_history() { mkdir -p "${HISTORY:h}"; print -r -- "$(now) $*" >> "$HISTORY"; }
 
-# Predicates over a file listing changed paths, one per line.
+# Predicates over a file listing changed paths, one per line ($1 = that file).
+# py matches the whole line literally; npm matches NPM_DEPS_RE.
 py_deps_changed()  { grep -qxF "$PY_DEPS_FILE" "$1"; }
 npm_deps_changed() { grep -qE "$NPM_DEPS_RE" "$1"; }
 
@@ -140,14 +144,16 @@ repo_relative() {
 }
 
 # True if repo path $1 is deleted by the update, or is a directory containing
-# a deleted file.
+# a deleted file. Reads the update's deleted-path list from $TMP/deleted.
 is_deleted() {
   grep -Fxq "$1" "$TMP/deleted" \
     || awk -v p="$1/" 'index($0, p) == 1 { f = 1; exit } END { exit !f }' "$TMP/deleted"
 }
 
 # Print "<link> -> <repo path>" for each symlink under the link roots (and the
-# checkout itself) that points at something the update deletes.
+# checkout itself) that points at something the update deletes. Roots come from
+# PROMPTHUB_LINK_ROOTS (colon-separated) or DEFAULT_LINK_ROOTS; scan depth is 3.
+# Needs $TMP/changed and $TMP/deleted to be populated first.
 find_broken_links() {
   local -a roots
   if [[ -n "${PROMPTHUB_LINK_ROOTS:-}" ]]; then

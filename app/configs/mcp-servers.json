@@ -4,9 +4,7 @@
       "package": "@upstash/context7-mcp",
       "transport": "stdio",
       "command": "node",
-      "args": [
-        "./mcps/node_modules/@upstash/context7-mcp/dist/index.js"
-      ],
+      "args": ["./mcps/node_modules/@upstash/context7-mcp/dist/index.js"],
       "env": {},
       "auto_start": true,
       "restart_on_failure": true,
@@ -18,9 +16,7 @@
       "package": "@wonderwhy-er/desktop-commander",
       "transport": "stdio",
       "command": "node",
-      "args": [
-        "./mcps/node_modules/@wonderwhy-er/desktop-commander/dist/index.js"
-      ],
+      "args": ["./mcps/node_modules/@wonderwhy-er/desktop-commander/dist/index.js"],
       "env": {
         "CLIENT_IP_ENCRYPTION_KEY": "3765aa62cca47c2929675c3a5e644775"
       },
@@ -34,9 +30,7 @@
       "package": "@modelcontextprotocol/server-sequential-thinking",
       "transport": "stdio",
       "command": "node",
-      "args": [
-        "./mcps/node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"
-      ],
+      "args": ["./mcps/node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"],
       "env": {},
       "auto_start": true,
       "restart_on_failure": true,
@@ -48,9 +42,7 @@
       "package": "@modelcontextprotocol/server-memory",
       "transport": "stdio",
       "command": "node",
-      "args": [
-        "./mcps/node_modules/@modelcontextprotocol/server-memory/dist/index.js"
-      ],
+      "args": ["./mcps/node_modules/@modelcontextprotocol/server-memory/dist/index.js"],
       "env": {},
       "auto_start": true,
       "restart_on_failure": true,
@@ -62,9 +54,7 @@
       "package": "ddg-mcp-search",
       "transport": "stdio",
       "command": "node",
-      "args": [
-        "./mcps/node_modules/ddg-mcp-search/dist/index.js"
-      ],
+      "args": ["./mcps/node_modules/ddg-mcp-search/dist/index.js"],
       "env": {},
       "auto_start": true,
       "restart_on_failure": true,
@@ -99,13 +89,7 @@
       "package": "chrome-devtools-mcp",
       "transport": "stdio",
       "command": "node",
-      "args": [
-        "./mcps/node_modules/chrome-devtools-mcp/build/src/bin/chrome-devtools-mcp.js",
-        "--browserUrl",
-        "http://127.0.0.1:9222",
-        "--usageStatistics",
-        "false"
-      ],
+      "args": ["./mcps/node_modules/chrome-devtools-mcp/build/src/bin/chrome-devtools-mcp.js", "--browserUrl", "http://127.0.0.1:9222", "--usageStatistics", "false"],
       "env": {},
       "auto_start": false,
       "restart_on_failure": false,
@@ -117,9 +101,7 @@
       "package": "perplexity-comet-mcp",
       "transport": "stdio",
       "command": "node",
-      "args": [
-        "./mcps/node_modules/perplexity-comet-mcp/dist/index.js"
-      ],
+      "args": ["./mcps/node_modules/perplexity-comet-mcp/dist/index.js"],
       "env": {},
       "auto_start": true,
       "restart_on_failure": true,
@@ -127,25 +109,6 @@
       "health_check_interval": 30,
       "proxy_timeout": 180,
       "description": "Perplexity research via Comet browser CDP bridge"
-    },
-    "knowledge-to-action": {
-      "package": "@tac0de/knowledge-to-action-mcp",
-      "transport": "stdio",
-      "command": "node",
-      "args": [
-        "./mcps/node_modules/@tac0de/knowledge-to-action-mcp/dist/index.js"
-      ],
-      "env": {
-        "OBSIDIAN_VAULT_ROOT": "/Users/visualval/Lab",
-        "EMBEDDINGS_ENABLED": "true",
-        "PLANNING_ENABLED": "true",
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
-      },
-      "auto_start": true,
-      "restart_on_failure": true,
-      "max_restarts": 3,
-      "health_check_interval": 30,
-      "description": "Knowledge to Action MCP server"
     }
   }
 }
