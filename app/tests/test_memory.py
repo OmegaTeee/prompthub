@@ -2,14 +2,13 @@
 Unit tests for session memory system.
 """
 
-import json
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
 
-from router.memory import SessionStorage, get_session_storage, MemoryMCPClient
+from router.memory import MemoryMCPClient, SessionStorage
 
 
 @pytest.fixture

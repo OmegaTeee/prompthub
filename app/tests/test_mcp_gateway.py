@@ -5,8 +5,9 @@ Verifies that the gateway uses dynamic client factories to resolve
 the current bridge at request time, not a captured client instance.
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from router.servers.mcp_gateway import _make_client_factory, build_mcp_gateway
 

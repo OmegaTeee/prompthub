@@ -4,8 +4,8 @@ Integration tests for MCP proxy functionality.
 Tests that JSON-RPC requests are correctly proxied to MCP servers.
 """
 
-import os
 import asyncio
+import os
 
 import httpx
 import pytest
@@ -183,7 +183,7 @@ class TestMCPProxyPerformance:
                 # Either completes or times out gracefully
                 assert response.status_code in [200, 408, 503]
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Timeout is acceptable behavior
                 pass
 

@@ -12,7 +12,6 @@ Tests cover:
 - get_stats (aggregate statistics)
 """
 
-import asyncio
 from datetime import datetime, timedelta
 from pathlib import Path
 

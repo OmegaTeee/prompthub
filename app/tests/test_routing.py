@@ -9,10 +9,8 @@ Verifies:
 - Process state tracking
 """
 
-import pytest
-from pathlib import Path
-from router.servers.registry import ServerRegistry
 from router.servers.models import ServerConfig, ServerStatus, ServerTransport
+from router.servers.registry import ServerRegistry
 
 
 class TestServerRegistry:
