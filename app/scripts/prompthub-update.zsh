@@ -33,6 +33,13 @@ DEFAULT_LINK_ROOTS=(
   "$HOME/.claude" "$HOME/.codex" "$HOME/.config" "$HOME/.cursor"
   "$HOME/.lmstudio" "$HOME/.vscode" "$HOME/.vscode-insiders"
 )
+# Paths that resolve into the checkout. ~/prompthub is the conventional symlink
+# to it; ${:a} normalises but does not follow symlinks, so list it explicitly.
+DEPLOY_ABS="${DEPLOY_DIR:a}"
+CHECKOUT_PREFIXES=("$DEPLOY_ABS/" "$HOME/prompthub/")
+# Files whose change between two commits means deps must be reinstalled.
+PY_DEPS_FILE='app/requirements.txt'
+NPM_DEPS_RE='^mcps/package(-lock)?\.json$'
 
 DRY_RUN=0 ASSUME_YES=0 RESTART=1 STASH=0 IGNORE_LINKS=0 ROLLBACK=0
 for arg in "$@"; do
@@ -53,6 +60,15 @@ warn() { print -r -- "[PromptHub] WARNING: $*" >&2; }
 die()  { print -r -- "[PromptHub] ERROR: $*" >&2; exit 1; }
 g()    { git -C "$DEPLOY_DIR" "$@"; }
 
+indent()      { sed 's/^/    /'; }                 # stdin -> stdout, indented
+count_lines() { wc -l < "$1" | tr -d ' '; }
+now()         { date -u +%FT%TZ; }
+log_history() { mkdir -p "${HISTORY:h}"; print -r -- "$(now) $*" >> "$HISTORY"; }
+
+# Predicates over a file listing changed paths, one per line.
+py_deps_changed()  { grep -qxF "$PY_DEPS_FILE" "$1"; }
+npm_deps_changed() { grep -qE "$NPM_DEPS_RE" "$1"; }
+
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -68,12 +84,12 @@ confirm() {
 sync_deps() {
   local changed="$TMP/deps-changed"
   g diff --name-only "$1" "$2" > "$changed"
-  if grep -qx 'app/requirements.txt' "$changed"; then
+  if py_deps_changed "$changed"; then
     [[ -x "$DEPLOY_DIR/app/.venv/bin/pip" ]] || die "No venv at $DEPLOY_DIR/app/.venv"
     say "requirements.txt changed: installing Python deps..."
     "$DEPLOY_DIR/app/.venv/bin/pip" install -q -r "$DEPLOY_DIR/app/requirements.txt"
   fi
-  if grep -qE '^mcps/package(-lock)?\.json$' "$changed"; then
+  if npm_deps_changed "$changed"; then
     say "mcps/package*.json changed: running npm ci..."
     (cd "$DEPLOY_DIR/mcps" && npm ci --no-audit --no-fund --loglevel=error)
   fi
@@ -113,10 +129,44 @@ repo_relative() {
   [[ "$target" == /* ]] || target="${link:h}/$target"
   target="${target:a}"
   local prefix
-  for prefix in "${DEPLOY_DIR:a}/" "$HOME/prompthub/"; do
+  for prefix in "${CHECKOUT_PREFIXES[@]}"; do
     if [[ "$target" == "$prefix"* ]]; then
       print -r -- "${target#$prefix}"
       return
+    fi
+  done
+}
+
+# True if repo path $1 is deleted by the update, or is a directory containing
+# a deleted file.
+is_deleted() {
+  grep -Fxq "$1" "$TMP/deleted" \
+    || awk -v p="$1/" 'index($0, p) == 1 { f = 1; exit } END { exit !f }' "$TMP/deleted"
+}
+
+# Print "<link> -> <repo path>" for each symlink under the link roots (and the
+# checkout itself) that points at something the update deletes.
+find_broken_links() {
+  local -a roots
+  if [[ -n "${PROMPTHUB_LINK_ROOTS:-}" ]]; then
+    roots=("${(@s/:/)PROMPTHUB_LINK_ROOTS}")
+  else
+    roots=("${DEFAULT_LINK_ROOTS[@]}")
+  fi
+  roots+=("$DEPLOY_DIR")
+  local root link rel self
+  for root in "${roots[@]}"; do
+    [[ -d "$root" ]] || continue
+    find "$root" -maxdepth 3 \( -name node_modules -o -name .venv -o -name .git \) -prune \
+      -o -type l -print 2>/dev/null
+  done | while IFS= read -r link; do
+    rel="$(repo_relative "$link")"
+    [[ -n "$rel" ]] || continue
+    # A link inside the checkout that the update itself deletes or replaces is fine.
+    self="${link#$DEPLOY_ABS/}"
+    [[ "$self" != "$link" ]] && grep -Fxq "$self" "$TMP/changed" && continue
+    if is_deleted "$rel"; then
+      print -r -- "$link -> $rel"
     fi
   done
 }
@@ -137,7 +187,7 @@ if (( ROLLBACK )); then
   confirm "Proceed with rollback?" || die "Aborted."
   g reset --keep "$prev"   # keeps local edits; refuses if they conflict
   sync_deps "$new" "$prev"
-  print -r -- "$(date -u +%FT%TZ) $new $prev rollback" >> "$HISTORY"
+  log_history "$new" "$prev" rollback
   restart_and_check
   exit $?
 fi
@@ -156,7 +206,7 @@ g merge-base --is-ancestor "$old" "$target" \
   || die "Deployed $BRANCH has commits not on origin/$BRANCH; resolve by hand."
 
 say "Incoming commits:"
-g log --oneline --no-decorate "$old..$target" | sed 's/^/    /'
+g log --oneline --no-decorate "$old..$target" | indent
 
 g diff --no-renames --name-only "$old" "$target" > "$TMP/changed"
 g diff --no-renames --name-only --diff-filter=D "$old" "$target" > "$TMP/deleted"
@@ -171,52 +221,31 @@ grep -Fxf "$TMP/changed" "$TMP/dirty" > "$TMP/overlap" || true
 grep -Fxf "$TMP/added" "$TMP/untracked" >> "$TMP/overlap" || true
 if [[ -s "$TMP/overlap" ]]; then
   if (( STASH )); then
-    warn "$(wc -l < "$TMP/overlap" | tr -d ' ') locally edited file(s) overlap the update; they will be stashed and re-applied (conflicts possible)."
+    warn "$(count_lines "$TMP/overlap") locally edited file(s) overlap the update; they will be stashed and re-applied (conflicts possible)."
   else
     warn "The update touches files with local edits or untracked copies:"
-    sed 's/^/    /' "$TMP/overlap" >&2
+    indent < "$TMP/overlap" >&2
     say "  Commit or back them up first, or re-run with --stash."
     blockers=1
   fi
 fi
 if [[ -s "$TMP/dirty" ]]; then
-  say "$(wc -l < "$TMP/dirty" | tr -d ' ') file(s) have local edits in the deployed checkout (kept unless listed above)."
+  say "$(count_lines "$TMP/dirty") file(s) have local edits in the deployed checkout (kept unless listed above)."
 fi
 
 # 2. Live symlinks pointing at files the update deletes.
 if (( ! IGNORE_LINKS )) && [[ -s "$TMP/deleted" ]]; then
-  if [[ -n "${PROMPTHUB_LINK_ROOTS:-}" ]]; then
-    roots=("${(@s/:/)PROMPTHUB_LINK_ROOTS}")
-  else
-    roots=("${DEFAULT_LINK_ROOTS[@]}")
-  fi
-  roots+=("$DEPLOY_DIR")
-  : > "$TMP/broken"
-  for root in "${roots[@]}"; do
-    [[ -d "$root" ]] || continue
-    find "$root" -maxdepth 3 \( -name node_modules -o -name .venv -o -name .git \) -prune \
-      -o -type l -print 2>/dev/null
-  done | while IFS= read -r link; do
-    rel="$(repo_relative "$link")"
-    [[ -n "$rel" ]] || continue
-    # A link inside the checkout that the update itself deletes or replaces is fine.
-    self="${link#${DEPLOY_DIR:a}/}"
-    [[ "$self" != "$link" ]] && grep -Fxq "$self" "$TMP/changed" && continue
-    if grep -Fxq "$rel" "$TMP/deleted" \
-      || awk -v p="$rel/" 'index($0, p) == 1 { f = 1; exit } END { exit !f }' "$TMP/deleted"; then
-      print -r -- "$link -> $rel" >> "$TMP/broken"
-    fi
-  done
+  find_broken_links > "$TMP/broken"
   if [[ -s "$TMP/broken" ]]; then
     warn "These symlinks point at files the update deletes; their apps would lose config:"
-    sed 's/^/    /' "$TMP/broken" >&2
+    indent < "$TMP/broken" >&2
     say "  Move those configs out of the checkout first, or re-run with --ignore-links."
     blockers=1
   fi
 fi
 
-grep -qx 'app/requirements.txt' "$TMP/changed" && say "Will reinstall Python deps (requirements.txt changed)."
-grep -qE '^mcps/package(-lock)?\.json$' "$TMP/changed" && say "Will run npm ci (mcps/package*.json changed)."
+py_deps_changed "$TMP/changed" && say "Will reinstall Python deps (requirements.txt changed)."
+npm_deps_changed "$TMP/changed" && say "Will run npm ci (mcps/package*.json changed)."
 (( RESTART )) && say "Will restart $LABEL and wait for $HEALTH_URL."
 
 if (( blockers )); then
@@ -232,14 +261,13 @@ confirm "Update ${old:0:7} -> ${target:0:7}?" || die "Aborted."
 
 stashed=0
 if (( STASH )) && [[ -s "$TMP/overlap" ]]; then
-  g stash push --quiet --include-untracked -m "prompthub-update $(date -u +%FT%TZ)"
+  g stash push --quiet --include-untracked -m "prompthub-update $(now)"
   stashed=1
   say "Stashed local edits."
 fi
 
 g merge --ff-only --quiet "$target"
-mkdir -p "${HISTORY:h}"
-print -r -- "$(date -u +%FT%TZ) $old $target" >> "$HISTORY"
+log_history "$old" "$target"
 say "Checkout now at ${target:0:7} (previous ${old:0:7} logged to $HISTORY)."
 
 if (( stashed )); then
