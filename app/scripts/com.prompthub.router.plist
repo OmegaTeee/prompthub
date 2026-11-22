@@ -13,7 +13,6 @@
       <string>127.0.0.1</string>
       <string>--port</string>
       <string>9090</string>
-      <string>--reload</string>
     </array>
 
     <key>WorkingDirectory</key>

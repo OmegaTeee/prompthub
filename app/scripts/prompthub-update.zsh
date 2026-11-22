@@ -29,6 +29,7 @@ HEALTH_TIMEOUT=30
 HISTORY="${DATA_DIR:-$HOME/.prompthub}/deploy-history.log"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 DEFAULT_LINK_ROOTS=(
+  "$HOME/Library/LaunchAgents"
   "$HOME/Library/Application Support/Claude"
   "$HOME/Library/Application Support/Code/User"
   "$HOME/Library/Application Support/Code - Insiders/User"

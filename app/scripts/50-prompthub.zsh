@@ -1,1 +1,0 @@
-/Users/visualval/workspaces/dotfiles/config/zsh/apps.d/50-prompthub.zsh
