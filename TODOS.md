@@ -2,10 +2,6 @@
 
 ## Now
 
-### Apply merged config-path fixes after restart (PR #53)
-
-> **Context:** PR #53 corrected two service paths in the repo, but the _running_ LaunchAgents/router hold the old values in memory until reloaded. A full reboot re-registers both plists from `~/Library/LaunchAgents/`, so resume here after the planned computer/app update + restart. Verify, don't assume.
-
 ### Progressive Tool Disclosure (priority: high)
 
 > **Plan:** [`docs/notes/plans/progressive-tool-disclosure.md`](docs/notes/plans/progressive-tool-disclosure.md)
@@ -19,7 +15,7 @@
 
 ### OpenAI-Compatible Proxy
 
-- [ ] **Cherry Studio auth via PromptHub router stopped working** — was working previously, now Cherry Studio fails to authenticate against `/v1/`. Suspected cause: a proxy setting in Cherry Studio got flipped (it has both direct-LLM and proxy-via-PromptHub modes; the LevelDB-backed config may have reverted). First debug step: capture a request from Cherry Studio with verbose HTTP logging and compare against the `Authorization: Bearer sk-prompthub-cherry-studio-001` shape that should reach `app/router/openai_compat/auth.py`. Verify the api-keys.json entry for cherry-studio is still intact and `enhance: false` (it shouldn't need to be flipped).
+- [x] **Cherry Studio auth via PromptHub router stopped working** — was working previously, now Cherry Studio fails to authenticate against `/v1/`. Suspected cause: a proxy setting in Cherry Studio got flipped (it has both direct-LLM and proxy-via-PromptHub modes; the LevelDB-backed config may have reverted). First debug step: capture a request from Cherry Studio with verbose HTTP logging and compare against the `Authorization: Bearer sk-prompthub-cherry-studio-001` shape that should reach `app/router/openai_compat/auth.py`. Verify the api-keys.json entry for cherry-studio is still intact and `enhance: false` (it shouldn't need to be flipped).
 - [ ] Support `response_format` passthrough; add `response_format` to `ChatCompletionRequest`, preserve and forward it in `app/router/openai_compat/router.py`, extend `LLMClient.chat_completion()` in `app/router/enhancement/llm_client.py` to accept passthrough options, add tests for `json_object` and `json_schema`, and document backend compatibility and fallback behavior.
 - [ ] Audit dropped OpenAI-compatible fields; review whether `frequency_penalty`, `presence_penalty`, `user`, and Responses API structured-output fields should also pass through consistently.
 
@@ -33,43 +29,16 @@
 - [ ] Add `X-Client-ID: CLIENT_NAME` to every `fetch()` call in `mcps/prompthub-bridge.js` (alongside the existing `X-Client-Name`). One-line change per call site, ~5 sites total.
 - [ ] Optional: extract a `routerHeaders()` helper so future bridge endpoints can't forget either header.
 
-### Client llm.txt knowledge files
-
-- [ ] Add `<client>-llm.txt` knowledge files for active clients: Claude, Codex, LM Studio, and VS Code; base each on official docs and client-specific quirks.
-
 ### Revise Project README
 
 - [ ] Update `README.md` to reflect the current architecture, active clients, and primary documentation entry points; remove the project status table if it cannot be kept current.
-- [ ] Add MCP prompts/resources in the next Headroom/PromptHub pass; use the new `hdiff`, `hloc`, and `hsg` helpers as the lightweight CLI side of that workflow.
 
 ## Later
-
-### Feature: Dashboard Chat Sidecar
-
-> **Status (2026-05-31):** Vision-stage idea. The earlier exploration branch (`feature/open-webui-chat`) was deleted on 2026-05-31 — only some settings and exploration were ever there; the vision below is the canonical artifact. Recoverable via `git log --all` if the historical commits are ever needed.
-> **Vision:** Add a chat UI sidecar to the dashboard for generating, exploring, and fixing client config files. Could extend to enhancement-rule editing — a wizard component that guides users toward config that matches their workflow rather than blank-page editing of `mcp.json` / `enhancement-rules.json`. Pairs naturally with the existing dashboard observability surface: see what a client is doing, then chat-edit its config in the same view.
 
 ### Feature: PromptHub RAG Improvements
 
 > **Status (2026-05-31):** Vision-stage idea. The earlier exploration branch (`feature/prompthub-rag-improvements`) was deleted on 2026-05-31; vision preserved here.
 > **Vision:** Promising direction — needs more learning to fully leverage. Aligns well with integrations like Obsidian (vault as knowledge base) and Raycast (quick recall). Likely composes with the FTS5 memory_search work (PR #23) — RAG could ride on top of the same SQLite/FTS5 foundation, with embedding-based retrieval as the next layer once lexical search is well-understood.
-
-### Sunset the `clients/<name>/` directory pattern
-
-> **Status (2026-05-31):** Vision-stage idea. Full thinking in [`docs/notes/plans/idea-clients-folder-sunset.md`](docs/notes/plans/idea-clients-folder-sunset.md).
-> **Vision:** After PRs #31–#41 made per-client behavior server-side (`tool_profile` + `model_profile` in `enhancement-rules.json`), every client's MCP config block converges to a near-identical bridge entry. That uniformity is what generic MCP-sync tools assume — [agentsync](https://github.com/dallay/agentsync) (symlinks, 32+ client coverage) or [mcp-sync](https://github.com/ztripez/mcp-sync) (smart-merge hierarchy) could replace the bespoke `clients/<name>/setup.sh` plumbing. **Recommended next step (not committed):** audit the `clients/<name>/` folders for content that's actually unique (LM Studio presets, `llm.txt` knowledge files) vs. boilerplate the sync tool would replace, then pick a pilot client.
-
-### Model layer: llmpm + vLLM daemon migration
-
-> **Status (2026-06-01):** Vision-stage idea. Full thinking in [`docs/notes/plans/idea-llmpm-vllm-migration.md`](docs/notes/plans/idea-llmpm-vllm-migration.md).
-> **Vision:** Replace `scripts/models/download-qwen-distilled.sh` with [llmpm](https://www.llmpm.co) (CLI package manager — handles both GGUF and safetensors, manifest model like `package.json`), and move the daemon model from LM Studio to [vLLM](https://docs.vllm.ai) for proper concurrent-request serving (batching, KV-cache reuse). The `instruct` profile shipped today (`Qwen/Qwen3-4B-Instruct-2507` safetensors) is forward-compatible with both — it loads in LM Studio now as the daemon fallback, and is vLLM-ready when the daemon migration lands. **Triggers to revisit:** daemon serving more than ~1 concurrent request on average, model set grows past 5 profiles, or wanting CLI-driven model swaps without going through LM Studio's GUI.
-
-### Refactor and standardize `scripts/` folder
-
-- [ ] Audit `scripts/` for dead, redundant, or misplaced scripts.
-- [ ] Reorganize `scripts/` into shallow, component-based groups.
-- [ ] Define and apply naming conventions such as `*-install.sh`, `*-diagnose.sh`, and `*-restart.sh`.
-- [ ] Update `scripts/README.md` to reflect the final structure, intended usage, and glossary-aligned terminology.
 
 ## Deferred Refactors
 
