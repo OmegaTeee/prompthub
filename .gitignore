@@ -41,6 +41,7 @@ env/
 *.swo
 *~
 .history/
+Copilot-Processing.md
 
 # Environment variables
 .env

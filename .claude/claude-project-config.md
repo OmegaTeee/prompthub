@@ -2,7 +2,7 @@
 
 The Claude Code setup for this repo, with the reason for each choice. Update this file whenever `.mcp.json`, `.claude/settings.json`, or anything under `.claude/` changes.
 
-Last reviewed: 2026-11-21.
+Last reviewed: 2026-11-22.
 
 ## Context files
 
@@ -21,9 +21,9 @@ Last reviewed: 2026-11-21.
 | User (`~/.claude.json`) | `tokensave` | Keep | Primary code-navigation tool, required by the user's global rules. |
 | User | `headroom` | Keep | Context compression, required by the user's global rules. |
 | User | `serena` | Optional | Overlaps with tokensave. Consider disabling it for this project with `/mcp`. |
-| Removed from project | `oraios/serena`, `headroom`, `fetch_mcp` | Removed | Duplicates of user-scope servers, or not needed for this codebase. |
+| Project (`.mcp.json`) | `oraios/serena`, `headroom`, `fetch_mcp` | VS Code only | Listed for VS Code. Claude Code skips them because they are not in `enabledMcpjsonServers`, and it already has `serena` and `headroom` at user scope. |
 
-`.mcp.json` must use the `mcpServers` key (Claude Code format). VS Code reads its own `.vscode/mcp.json`, which uses the `servers` key and `CLIENT_NAME=vscode`.
+`.mcp.json` uses the `mcpServers` key (Claude Code format) and is the single project MCP file for both Claude Code and VS Code; there is no `.vscode/mcp.json`.
 
 ## Plugins (`.claude/settings.json` → `enabledPlugins`)
 

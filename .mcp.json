@@ -11,6 +11,38 @@
         "TIER1_SERVERS": "sequential-thinking,context7,memory",
         "EXCLUDE_TOOLS": "perplexity-comet,duckduckgo"
       }
+    },
+    "fetch_mcp": {
+      "type": "stdio",
+      "command": "mcp-server-fetch",
+      "args": [],
+      "tools": [
+        "*"
+      ]
+    },
+    "headroom": {
+      "type": "stdio",
+      "command": "headroom",
+      "args": [
+        "mcp",
+        "serve"
+      ],
+      "tools": [
+        "*"
+      ]
+    },
+    "oraios/serena": {
+      "type": "stdio",
+      "command": "serena",
+      "args": [
+        "start-mcp-server",
+        "--context=vscode",
+        "--project",
+        "/Users/visualval/workspaces/prompthub"
+      ],
+      "tools": [
+        "*"
+      ]
     }
   }
 }
