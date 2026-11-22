@@ -22,6 +22,19 @@ import { formatToolCallResult } from './bridge-result.js';
 const PROMPTHUB_URL = process.env.PROMPTHUB_URL || 'http://127.0.0.1:9090';
 const CLIENT_NAME = process.env.CLIENT_NAME || 'claude-desktop';
 
+/**
+ * Headers for every request to the router. Both carry CLIENT_NAME because
+ * the bridge represents one identity, but they serve different layers:
+ *   - X-Client-Name: enhancement-rule lookup (which client's rule to apply)
+ *   - X-Client-ID:   audit-context client_id (audit log attribution and
+ *                    session-memory scoping; defaults to "anonymous")
+ * Use this instead of building headers by hand so neither is forgotten.
+ * @param {Record<string, string>} [extra]
+ */
+function routerHeaders(extra = {}) {
+  return { 'X-Client-Name': CLIENT_NAME, 'X-Client-ID': CLIENT_NAME, ...extra };
+}
+
 // Progressive tool disclosure.
 //   TOOL_DISCLOSURE=full        (default): return tools for every running server
 //   TOOL_DISCLOSURE=progressive          : return only tier-1 + explicitly loaded
@@ -113,7 +126,7 @@ let cachedServers = [];
 async function fetchRunningServers() {
   try {
     const response = await fetch(`${PROMPTHUB_URL}/servers`, {
-      headers: { 'X-Client-Name': CLIENT_NAME }
+      headers: routerHeaders()
     });
     /** @type {any} */
     const data = await response.json();
@@ -140,10 +153,7 @@ async function callPromptHub(serverName, jsonRpcRequest) {
 
   const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Client-Name': CLIENT_NAME
-    },
+    headers: routerHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(jsonRpcRequest)
   });
 
@@ -175,7 +185,7 @@ async function fetchToolProfileFromRouter() {
   try {
     const response = await fetch(
       `${PROMPTHUB_URL}/clients/${encodeURIComponent(CLIENT_NAME)}/tool-profile`,
-      { headers: { 'X-Client-Name': CLIENT_NAME } }
+      { headers: routerHeaders() }
     );
     if (!response.ok) return null;
     const data = await response.json();
@@ -303,7 +313,7 @@ const META_TOOLS = [
  */
 async function listAvailableServers() {
   const response = await fetch(`${PROMPTHUB_URL}/servers`, {
-    headers: { 'X-Client-Name': CLIENT_NAME },
+    headers: routerHeaders(),
   });
   if (!response.ok) {
     throw new Error(`GET /servers failed: HTTP ${response.status}`);
@@ -324,7 +334,7 @@ async function startServerViaRouter(name) {
     `${PROMPTHUB_URL}/servers/${encodeURIComponent(name)}/start`,
     {
       method: 'POST',
-      headers: { 'X-Client-Name': CLIENT_NAME },
+      headers: routerHeaders(),
     }
   );
   /** @type {any} */
@@ -338,7 +348,7 @@ async function startServerViaRouter(name) {
   const deadline = Date.now() + 15000;
   while (Date.now() < deadline) {
     const allResp = await fetch(`${PROMPTHUB_URL}/servers`, {
-      headers: { 'X-Client-Name': CLIENT_NAME },
+      headers: routerHeaders(),
     });
     /** @type {any} */
     const allData = await allResp.json();
@@ -363,13 +373,8 @@ async function startServerViaRouter(name) {
  * from X-Client-ID), so cross-tenant data is invisible without an
  * explicit cross_client flag.
  *
- * NOTE: Two headers are sent because they serve different layers:
- *   - X-Client-Name: enhancement-rule lookup (which client's rule to apply)
- *   - X-Client-ID:   audit-context client_id (which sessions to search)
- * Both carry CLIENT_NAME because the bridge represents one identity to
- * the router. The audit layer reads X-Client-ID; without it the
- * default is "anonymous" and the search returns no rows for sessions
- * owned by the caller.
+ * Scoping depends on X-Client-ID (sent by routerHeaders()); without it the
+ * client_id is "anonymous" and the search returns none of the caller's rows.
  */
 async function searchMemoryViaRouter(args) {
   if (!args?.query || typeof args.query !== 'string') {
@@ -395,11 +400,7 @@ async function searchMemoryViaRouter(args) {
 
   const response = await fetch(`${PROMPTHUB_URL}/sessions/search`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Client-Name': CLIENT_NAME,
-      'X-Client-ID': CLIENT_NAME,
-    },
+    headers: routerHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
   });
   if (!response.ok) {
