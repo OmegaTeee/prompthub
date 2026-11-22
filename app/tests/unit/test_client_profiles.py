@@ -18,6 +18,7 @@ verification in the PR test plan — pytest doesn't run the JS bridge.
 """
 
 import json
+from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import FastAPI
@@ -318,6 +319,7 @@ async def test_enhancement_service_resolves_model_via_profile(tmp_path):
     )
 
     svc = EnhancementService(rules_path=rules_path, cache_persistent=False)
+    svc._llm.is_healthy = AsyncMock(return_value=True)  # skip the LLM probe
     await svc.initialize()
 
     rule = svc.get_rule("vscode")

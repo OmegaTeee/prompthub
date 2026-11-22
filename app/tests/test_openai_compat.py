@@ -494,10 +494,11 @@ class TestAuthEndpoints:
         body = response.json()
         assert "error" in body["detail"]
 
+    @pytest.mark.offline
     def test_models_no_auth_required(self, client):
         """GET /v1/models is unauthenticated (model listing is non-sensitive)."""
         response = client.get("/v1/models")
-        # Returns 200 with models list or 502 if LLM server unreachable in tests
+        # 502 because the LLM server is unreachable under the network guard
         assert response.status_code in [200, 502]
 
     def test_api_keys_reload_no_auth_required(self, client):

@@ -359,9 +359,10 @@ async def test_session_touch(storage):
 
 # MCP Client tests
 @pytest.mark.asyncio
+@pytest.mark.offline
 async def test_mcp_client_graceful_degradation():
     """Test that MCP client gracefully handles unavailable server."""
-    client = MemoryMCPClient(base_url="http://localhost:19999")  # Invalid port
+    client = MemoryMCPClient(base_url="http://localhost:19999")  # Unreachable
 
     # Should not raise exception
     result = await client._call_tool("test_tool", {})

@@ -34,6 +34,58 @@ ROUTER_URL = os.environ["PROMPTHUB_TEST_URL"]
 ROUTER_STARTUP_TIMEOUT = 90  # seconds; auto-start MCP servers spawn at boot
 
 
+_ALLOWED_NETLOC = httpx.URL(ROUTER_URL).netloc
+
+
+@pytest.fixture(autouse=True)
+def block_real_http(request, monkeypatch):
+    """Fail any test whose code sends a real HTTP request, except to the test router.
+
+    Only ``httpx.HTTPTransport``/``AsyncHTTPTransport`` are patched; in-process
+    transports (FastAPI ``TestClient``, ``ASGITransport``) never hit the network
+    and are unaffected. A blocked request raises ``httpx.ConnectError`` so the
+    code under test sees an ordinary offline failure, and the test is failed at
+    teardown even if that error was swallowed (e.g. turned into a 502).
+    Tests marked ``requires_llm`` may reach the local LLM server. Tests marked
+    ``offline`` still get the ``ConnectError`` but are not failed, because
+    exercising the unreachable-server path is their purpose.
+    """
+    if request.node.get_closest_marker("requires_llm"):
+        yield
+        return
+    offline_expected = request.node.get_closest_marker("offline") is not None
+
+    blocked: list[str] = []
+
+    def _check(req: httpx.Request) -> None:
+        if req.url.netloc != _ALLOWED_NETLOC:
+            blocked.append(f"{req.method} {req.url}")
+            raise httpx.ConnectError(
+                f"real HTTP blocked in tests: {req.method} {req.url}", request=req
+            )
+
+    sync_send = httpx.HTTPTransport.handle_request
+    async_send = httpx.AsyncHTTPTransport.handle_async_request
+
+    def guarded_sync(self, req):
+        _check(req)
+        return sync_send(self, req)
+
+    async def guarded_async(self, req):
+        _check(req)
+        return await async_send(self, req)
+
+    monkeypatch.setattr(httpx.HTTPTransport, "handle_request", guarded_sync)
+    monkeypatch.setattr(httpx.AsyncHTTPTransport, "handle_async_request", guarded_async)
+    yield
+    if blocked and not offline_expected:
+        pytest.fail(
+            "Test sent real HTTP requests; mock them or mark the test requires_llm:\n  "
+            + "\n  ".join(blocked),
+            pytrace=False,
+        )
+
+
 @pytest.fixture(scope="session")
 def live_router(tmp_path_factory):
     """Yield the URL of a router the tests may freely mutate."""

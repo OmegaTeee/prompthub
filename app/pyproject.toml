@@ -16,6 +16,7 @@ markers = [
     "unit: Unit tests (no external dependencies)",
     "slow: Slow tests (may take >1 second)",
     "requires_llm: Tests that require a local LLM server to be running",
+    "offline: Real HTTP raises httpx.ConnectError without failing the test (tests unreachable-server handling)",
 ]
 
 [tool.coverage.run]
