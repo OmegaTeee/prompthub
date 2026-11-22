@@ -132,22 +132,14 @@ source .venv/bin/activate
 python3 -m pytest tests/unit/ -v --tb=short
 ```
 
-### Integration test server requirement
+### Integration test router
 
-Integration tests require a live PromptHub server on port 9090.
-Use one of these:
+Integration tests (`tests/integration/`, `tests/test_endpoints.py`) start their own router through the `live_router` fixture in `tests/conftest.py`: a free port, a throwaway `DATA_DIR`, and the repo's configs. They stop and start MCP servers, so they never use the daemon on `:9090`. The fixture shuts the router and its MCP servers down when the session ends.
 
-```bash
-cd ~/prompthub
-./scripts/prompthub-start.zsh
-```
-
-or
+To run them against a router you started yourself, set `PROMPTHUB_TEST_URL`:
 
 ```bash
-cd ~/prompthub/app
-source .venv/bin/activate
-uvicorn router.main:app --port 9090
+PROMPTHUB_TEST_URL=http://127.0.0.1:9191 python3 -m pytest tests/integration/
 ```
 
 ### Lint

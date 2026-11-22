@@ -4,10 +4,16 @@ Integration tests for prompt enhancement and caching.
 Tests client-specific enhancement models and cache performance.
 """
 
+import os
 import time
 
 import httpx
 import pytest
+
+# Router under test: an isolated instance from the live_router fixture (conftest.py).
+ROUTER_URL = os.environ["PROMPTHUB_TEST_URL"]
+pytestmark = pytest.mark.usefixtures("live_router")
+
 
 
 class TestPromptEnhancement:
@@ -24,7 +30,7 @@ class TestPromptEnhancement:
         - vscode: gemma3:4b
         - raycast: gemma3:4b
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             clients_and_models = [
                 ("claude-desktop", "gemma3"),
                 ("vscode", "gemma3"),
@@ -57,7 +63,7 @@ class TestPromptEnhancement:
 
         Expected: Code examples before explanations (gemma3:4b with code system prompt).
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             response = await client.post(
                 "/llm/enhance",
                 headers={"X-Client-Name": "vscode"},
@@ -81,7 +87,7 @@ class TestPromptEnhancement:
 
         Expected: CLI commands, under 200 words (gemma3:4b with action system prompt).
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             response = await client.post(
                 "/llm/enhance",
                 headers={"X-Client-Name": "raycast"},
@@ -110,7 +116,7 @@ class TestPromptEnhancement:
         503 only if the EnhancementService itself isn't initialized.
         A client-side timeout is also acceptable.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=15.0) as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=15.0) as client:
             original_prompt = "test prompt for fallback behavior"
 
             try:
@@ -153,7 +159,7 @@ class TestPromptEnhancement:
     async def test_enhancement_endpoint_exists(self):
         """Test that enhancement endpoint is accessible."""
         # Use longer timeout since Ollama might be slow
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=30.0) as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=30.0) as client:
             response = await client.post(
                 "/llm/enhance",
                 headers={"X-Client-Name": "test"},
@@ -182,7 +188,7 @@ class TestCaching:
 
         Expected: Second request returns cached=True with identical enhanced text.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=60.0) as client:
             await client.post("/dashboard/actions/clear-cache")
 
             prompt = "Explain list comprehensions in Python"
@@ -230,7 +236,7 @@ class TestCaching:
         claude-desktop is stored separately from vscode (different system
         prompts produce different enhancements even with the same model).
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=120.0) as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=120.0) as client:
             await client.post("/dashboard/actions/clear-cache")
 
             prompt = "What are Python generators"
@@ -279,7 +285,7 @@ class TestCaching:
 
         Expected: After a miss + hit cycle, stats show at least 1 hit.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=60.0) as client:
             await client.post("/dashboard/actions/clear-cache")
 
             prompt = "Cache stats integration test prompt"
@@ -321,7 +327,7 @@ class TestCaching:
 
         Expected: After clear, next request is not cached.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=60.0) as client:
             prompt = "Cache clear integration test"
 
             # Populate cache
@@ -365,7 +371,7 @@ class TestCaching:
 
         Expected: Even after caching, bypass returns a fresh result.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=60.0) as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=60.0) as client:
             await client.post("/dashboard/actions/clear-cache")
 
             prompt = "Cache bypass test prompt"
@@ -412,7 +418,7 @@ class TestEnhancementAndCachingIntegration:
         Expected: Same original prompt → identical enhanced text from cache,
         with cached=True flag and faster response time.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=30.0) as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=30.0) as client:
             await client.post("/dashboard/actions/clear-cache")
 
             original_prompt = "Explain React hooks"
@@ -459,7 +465,7 @@ class TestEnhancementAndCachingIntegration:
         When Ollama is running: verifies per-client cache isolation.
         When Ollama is down: verifies each client gets its own error/fallback entry.
         """
-        async with httpx.AsyncClient(base_url="http://localhost:9090", timeout=120.0) as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=120.0) as client:
             # Clear cache
             await client.post("/dashboard/actions/clear-cache")
 

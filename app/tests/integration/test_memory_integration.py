@@ -1,17 +1,23 @@
 """
 Integration tests for session memory endpoints.
 
-Requires a running PromptHub server on localhost:9090.
+Runs against the isolated router from the live_router fixture.
 """
 
+import os
 import httpx
 import pytest
+
+# Router under test: an isolated instance from the live_router fixture (conftest.py).
+ROUTER_URL = os.environ["PROMPTHUB_TEST_URL"]
+pytestmark = pytest.mark.usefixtures("live_router")
+
 
 
 @pytest.fixture
 async def client():
     """Create an async test client pointing to running server."""
-    async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+    async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
         yield client
 
 

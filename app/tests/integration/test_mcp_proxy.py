@@ -4,10 +4,16 @@ Integration tests for MCP proxy functionality.
 Tests that JSON-RPC requests are correctly proxied to MCP servers.
 """
 
+import os
 import asyncio
 
 import httpx
 import pytest
+
+# Router under test: an isolated instance from the live_router fixture (conftest.py).
+ROUTER_URL = os.environ["PROMPTHUB_TEST_URL"]
+pytestmark = pytest.mark.usefixtures("live_router")
+
 
 
 class TestMCPProxyRouting:
@@ -16,7 +22,7 @@ class TestMCPProxyRouting:
     @pytest.mark.asyncio
     async def test_proxy_to_context7(self):
         """Test proxying requests to context7 server."""
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             response = await client.post(
                 "/mcp/context7/tools/call",
                 headers={"X-Client-Name": "test"},
@@ -56,7 +62,7 @@ class TestMCPProxyRouting:
             "duckduckgo",
         ]
 
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             for server_name in servers:
                 response = await client.post(
                     f"/mcp/{server_name}/tools/call",
@@ -77,7 +83,7 @@ class TestMCPProxyRouting:
     @pytest.mark.asyncio
     async def test_invalid_server_returns_404(self):
         """Test that requesting non-existent server returns 404."""
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             response = await client.post(
                 "/mcp/nonexistent-server/tools/call",
                 headers={"X-Client-Name": "test"},
@@ -89,7 +95,7 @@ class TestMCPProxyRouting:
     @pytest.mark.asyncio
     async def test_json_rpc_error_handling(self):
         """Test that invalid JSON-RPC requests are handled properly."""
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             # Missing required fields
             response = await client.post(
                 "/mcp/context7/tools/call",
@@ -106,7 +112,7 @@ class TestMCPProxyRouting:
     @pytest.mark.asyncio
     async def test_client_name_header_preserved(self):
         """Test that X-Client-Name header is forwarded to servers."""
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             client_names = ["claude-desktop", "vscode", "raycast", "test"]
 
             for client_name in client_names:
@@ -135,7 +141,7 @@ class TestMCPProxyPerformance:
             )
 
         async with httpx.AsyncClient(
-            base_url="http://localhost:9090", timeout=30.0
+            base_url=ROUTER_URL, timeout=30.0
         ) as client:
             # Send 10 concurrent requests
             tasks = [make_request(client, i) for i in range(10)]
@@ -152,7 +158,7 @@ class TestMCPProxyPerformance:
     async def test_timeout_handling(self):
         """Test that long-running requests don't hang forever."""
         async with httpx.AsyncClient(
-            base_url="http://localhost:9090", timeout=5.0
+            base_url=ROUTER_URL, timeout=5.0
         ) as client:
             try:
                 # Make request with short timeout
@@ -187,82 +193,60 @@ class TestMCPProxyResilience:
 
     @pytest.mark.asyncio
     async def test_circuit_breaker_activates_on_failures(self):
-        """Test that circuit breaker opens after consecutive failures."""
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
-            # Use a server that's not auto-started (memory server)
-            server_name = "memory"
+        """A stopped server returns 503; an auto-start server recovers on demand.
 
-            # Step 1: Ensure server is stopped
-            stop_response = await client.post(f"/servers/{server_name}/stop")
-            # May return 200 or 400 if already stopped - both are OK
+        The 503 comes from the server-not-running check (before bridge.send),
+        so the circuit breaker may stay CLOSED: breakers protect against
+        unhealthy running services, not stopped ones.
+        """
+        async with httpx.AsyncClient(base_url=ROUTER_URL, timeout=30.0) as client:
+            servers = (await client.get("/servers")).json()
+            servers = servers.get("servers", servers)
+            if isinstance(servers, dict):
+                servers = [dict(name=k, **v) for k, v in servers.items()]
+            names = {s["name"] for s in servers}
 
-            # Step 2: Make 3+ consecutive requests to trigger circuit breaker
-            failure_count = 0
+            # Part 1: a server without auto_start stays down and returns 503.
+            on_demand = "chrome-devtools-mcp"
+            assert on_demand in names, f"{on_demand} missing from test config"
+            await client.post(f"/servers/{on_demand}/stop")  # 200 or 400 are both fine
+            statuses = []
             for i in range(4):
                 response = await client.post(
-                    f"/mcp/{server_name}/tools/call",
+                    f"/mcp/{on_demand}/tools/call",
                     headers={"X-Client-Name": "test"},
                     json={"jsonrpc": "2.0", "method": "tools/list", "id": i + 1},
                 )
-
-                # Should return 503 (service unavailable) once circuit opens
-                if response.status_code == 503:
-                    failure_count += 1
-
-            # Step 3: Verify server returned 503 (not running)
-            assert failure_count > 0, "Stopped server should return 503 responses"
-
-            # Step 4: Check circuit breaker status via dashboard
-            # Note: circuit breaker may stay CLOSED because the 503 comes from
-            # the server-not-running check (before bridge.send), not from an
-            # actual bridge failure. This is correct — circuit breakers protect
-            # against unhealthy running services, not stopped services.
-            breakers_response = await client.get("/circuit-breakers")
-            if breakers_response.status_code == 200:
-                breakers = breakers_response.json()
-                if server_name in breakers:
-                    state = breakers[server_name]["state"]
-                    assert state in ["OPEN", "HALF_OPEN", "closed", "CLOSED"], (
-                        f"Unexpected circuit breaker state: {state}"
-                    )
-
-            # Step 5: Restart server
-            start_response = await client.post(f"/servers/{server_name}/start")
-            assert start_response.status_code in [200, 201], (
-                f"Failed to restart server: {start_response.status_code}"
+                statuses.append(response.status_code)
+            assert all(code == 503 for code in statuses), (
+                f"Stopped on-demand server should return 503, got {statuses}"
             )
+            breakers = await client.get("/circuit-breakers")
+            if breakers.status_code == 200 and on_demand in breakers.json():
+                state = breakers.json()[on_demand]["state"]
+                assert state.upper() in ["OPEN", "HALF_OPEN", "CLOSED"], state
 
-            # Step 6: Wait briefly for server to initialize (async is fast!)
-            await asyncio.sleep(2)
-
-            # Step 7: Make a request - should eventually succeed or circuit should heal
-            # May need to wait for HALF_OPEN -> CLOSED transition
-            success_found = False
-            for attempt in range(3):
+            # Part 2: an auto_start server comes back after being stopped.
+            auto = "memory"
+            stop = await client.post(f"/servers/{auto}/stop")
+            assert stop.status_code in [200, 400], stop.text
+            recovered = False
+            for attempt in range(5):
                 response = await client.post(
-                    f"/mcp/{server_name}/tools/call",
+                    f"/mcp/{auto}/tools/call",
                     headers={"X-Client-Name": "test"},
-                    json={
-                        "jsonrpc": "2.0",
-                        "method": "tools/list",
-                        "id": 100 + attempt,
-                    },
+                    json={"jsonrpc": "2.0", "method": "tools/list", "id": 100 + attempt},
                 )
-
                 if response.status_code == 200:
-                    success_found = True
+                    recovered = True
                     break
-
-                # Wait for circuit to attempt recovery
                 await asyncio.sleep(1)
-
-            # Circuit should have recovered (or server should respond)
-            # We accept that recovery might take time, so we just verify the mechanism works
+            assert recovered, f"{auto} did not recover after stop (last {response.status_code})"
 
     @pytest.mark.asyncio
     async def test_auto_restart_on_crash(self):
         """Test that crashed MCP servers auto-restart if configured with restart_on_failure."""
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             # Use context7 server which has auto_start and restart_on_failure configured
             server_name = "context7"
 
@@ -335,7 +319,7 @@ class TestMCPProxyAudit:
     @pytest.mark.asyncio
     async def test_all_requests_logged(self):
         """Test that all MCP proxy requests are logged to audit trail."""
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             # Make a unique request
             response = await client.post(
                 "/mcp/context7/tools/call",
@@ -356,7 +340,7 @@ class TestMCPProxyAudit:
     @pytest.mark.asyncio
     async def test_sensitive_data_not_logged(self):
         """Test that sensitive data (API keys, tokens) is redacted from logs."""
-        async with httpx.AsyncClient(base_url="http://localhost:9090") as client:
+        async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
             # Send request with potentially sensitive data
             response = await client.post(
                 "/mcp/context7/tools/call",
