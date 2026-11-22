@@ -34,7 +34,6 @@ relevant.
 | `context7_*`            | Library/framework docs (React, FastAPI, etc.)                     | `context7` (2 tools)               |
 | `sequential_thinking`   | Stepwise reasoning scratchpad                                     | `sequential-thinking` (1 tool)     |
 | `memory_*`              | Cross-session knowledge graph                                     | `memory` (9 tools)                 |
-| `obsidian-mcp-tools_*`  | Vault ops (requires Obsidian running)                             | `obsidian-mcp-tools` (18 tools)    |
 | `fetch` *(client-side)* | Plain HTTP GET — no JS, no rendering                              | `mcp-server-fetch` in client mcp.json |
 
 On-demand (not auto-started): `chrome-devtools-mcp`.
@@ -61,7 +60,6 @@ tools when the user references earlier work.
 | Shell command, process management, diagnostics            | `desktop_commander_start_process` / `_list_processes` | Host OS, not browser              |
 | Library/API docs ("how do I use FastAPI lifespan?")       | `context7_query-docs`                          | Versioned, structured                     |
 | Multi-step reasoning ("plan this refactor")               | `sequential_thinking`                          | Externalizes chain-of-thought             |
-| Vault note ops (Obsidian)                                 | `obsidian-mcp-tools_*`                         | Obsidian must be open                     |
 
 ---
 
