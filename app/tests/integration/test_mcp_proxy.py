@@ -278,12 +278,10 @@ class TestMCPProxyResilience:
                 servers = servers_response.json()
                 initial_info = servers[server_name]
 
-            initial_pid = initial_info.get("pid")
-
-            # Step 2: Forcefully stop the server (simulates crash)
-            # Use the stop endpoint to cleanly stop it
+            # Step 2: Stop the server. This is a clean stop through the API,
+            # not a real crash, so it only approximates the crash path.
             stop_response = await client.post(f"/servers/{server_name}/stop")
-            # Server should stop successfully
+            assert stop_response.status_code == 200, stop_response.text
 
             # Step 3: Wait for supervisor to detect and restart (if restart_on_failure is true)
             await asyncio.sleep(3)
@@ -293,24 +291,13 @@ class TestMCPProxyResilience:
             servers = servers_response.json()
             current_info = servers.get(server_name, {})
 
-            # If restart_on_failure is configured, server should auto-restart
-            # If not, it will remain stopped - both behaviors are valid depending on config
-            # We'll check the configuration to know what to expect
+            # With restart_on_failure the supervisor should bring it back;
+            # without it, staying stopped is the expected behaviour.
             if initial_info.get("restart_on_failure"):
                 assert current_info.get("status") == "running", (
-                    f"Server with restart_on_failure should auto-restart, got status: {current_info.get('status')}"
+                    "Server with restart_on_failure should auto-restart, "
+                    f"got status: {current_info.get('status')}"
                 )
-
-                # Verify it's a new process (different PID)
-                current_pid = current_info.get("pid")
-                if initial_pid and current_pid:
-                    # PIDs should be different (new process)
-                    # Note: In some cases the PID might be None if process is restarting
-                    pass  # PID comparison can be flaky, main thing is status is running
-            else:
-                # Without restart_on_failure, server should stay stopped
-                # This is also valid behavior
-                pass
 
 
 class TestMCPProxyAudit:
@@ -318,34 +305,38 @@ class TestMCPProxyAudit:
 
     @pytest.mark.asyncio
     async def test_all_requests_logged(self):
-        """Test that all MCP proxy requests are logged to audit trail."""
+        """Test that MCP proxy requests are recorded in the activity log."""
         async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
-            # Make a unique request
+            # The activity log keys entries on X-Client-ID, not X-Client-Name.
             response = await client.post(
                 "/mcp/context7/tools/call",
-                headers={"X-Client-Name": "test-audit"},
+                headers={"X-Client-Name": "test-audit", "X-Client-ID": "test-audit"},
                 json={"jsonrpc": "2.0", "method": "tools/list", "id": 999},
             )
 
             assert response.status_code == 200
 
-            # Query audit log to verify it was logged
-            audit_response = await client.get("/audit/activity?limit=10")
-
-            if audit_response.status_code == 200:
-                audit_data = audit_response.json()
-                # Should find our request in recent activity
-                # (checking for client_name="test-audit")
+            audit_response = await client.get(
+                "/audit/activity", params={"client_id": "test-audit", "limit": 10}
+            )
+            assert audit_response.status_code == 200, audit_response.text
+            paths = [e["path"] for e in audit_response.json()["entries"]]
+            assert "/mcp/context7/tools/call" in paths
 
     @pytest.mark.asyncio
     async def test_sensitive_data_not_logged(self):
-        """Test that sensitive data (API keys, tokens) is redacted from logs."""
+        """Secrets in headers or params never reach the activity log API.
+
+        Covers only what /audit/activity exposes; the audit.log file lives in
+        the test router's private DATA_DIR and is not checked here.
+        """
+        secrets = ["secret-token-123", "sk-12345", "super-secret"]
         async with httpx.AsyncClient(base_url=ROUTER_URL) as client:
-            # Send request with potentially sensitive data
             response = await client.post(
                 "/mcp/context7/tools/call",
                 headers={
                     "X-Client-Name": "test",
+                    "X-Client-ID": "test-redaction",
                     "Authorization": "Bearer secret-token-123",
                 },
                 json={
@@ -355,7 +346,14 @@ class TestMCPProxyAudit:
                     "id": 1,
                 },
             )
+            assert response.status_code == 200, response.text
 
-            # Audit logs should redact sensitive fields
-            # (This would require checking audit database)
+            audit_response = await client.get(
+                "/audit/activity", params={"client_id": "test-redaction"}
+            )
+            assert audit_response.status_code == 200, audit_response.text
+            body = audit_response.text
+            assert audit_response.json()["entries"], "request was not logged"
+            for secret in secrets:
+                assert secret not in body, f"{secret!r} leaked into activity log"
             # (This would require checking audit database)

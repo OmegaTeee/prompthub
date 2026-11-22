@@ -133,6 +133,9 @@ async def test_fact_add_and_list(storage):
     assert fact1["fact"] == "The user prefers Python"
     assert fact1["tags"] == ["preferences", "python"]
     assert fact1["source"] == "manual"
+    assert fact2["id"] not in (None, fact1["id"])
+    assert fact2["tags"] == ["location"]
+    assert fact2["source"] == "inferred"
 
     # List facts
     facts = await storage.get_facts("s1")

@@ -56,12 +56,17 @@ async def test_list_sessions_endpoint(client):
     assert response.status_code == 200
     data = response.json()
     assert data["total"] >= 2
+    listed = {s["id"] for s in data["sessions"]}
+    assert {session1_id, session2_id} <= listed
 
     # Filter by client
     response = await client.get("/sessions?client_id=client-1")
     assert response.status_code == 200
     data = response.json()
     assert all(s["client_id"] == "client-1" for s in data["sessions"])
+    filtered = {s["id"] for s in data["sessions"]}
+    assert session1_id in filtered
+    assert session2_id not in filtered
 
 
 @pytest.mark.asyncio
