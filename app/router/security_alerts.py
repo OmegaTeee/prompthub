@@ -57,6 +57,9 @@ class SecurityAlertManager:
         # Tracking for anomaly detection
         self._failed_attempts: defaultdict[str, list[datetime]] = defaultdict(list)
         self._credential_access: defaultdict[str, list[datetime]] = defaultdict(list)
+        # Credentials read successfully at least once; a failed read of anything
+        # outside this set is treated as probing.
+        self._known_credentials: set[str] = set()
         self._config_changes: list[datetime] = []
 
     def check_event(
@@ -179,6 +182,8 @@ class SecurityAlertManager:
 
         key = f"{client_id}:{credential_key}"
         self._credential_access[key].append(now)
+        if status == "success":
+            self._known_credentials.add(credential_key)
 
         # Clean old accesses (>1 minute)
         cutoff = now - timedelta(minutes=1)
@@ -204,12 +209,10 @@ class SecurityAlertManager:
                 client_ip=client_ip,
             )
 
-        # Alert on failed credential access
+        # A failed read of a credential that has never been read successfully
+        # (by any client) looks like someone guessing key names.
         if status == "failed" and action == "get":
-            # Check if this is a new credential being probed
-            if credential_key not in [
-                k.split(":")[1] for k in self._credential_access.keys()
-            ]:
+            if credential_key not in self._known_credentials:
                 return SecurityAlert(
                     id=f"cred-probe-{now.timestamp()}",
                     timestamp=now.isoformat(),
