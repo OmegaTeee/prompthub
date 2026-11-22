@@ -19,6 +19,8 @@
 
 set -euo pipefail
 
+SELF="$0"   # inside zsh functions $0 is the function name, so capture it here
+
 DEPLOY_DIR="${PROMPTHUB_DEPLOY_DIR:-$HOME/.local/share/prompthub}"
 BRANCH="${PROMPTHUB_BRANCH:-main}"
 LABEL="${PROMPTHUB_LABEL:-com.prompthub.router}"
@@ -118,7 +120,7 @@ restart_and_check() {
     say "Last lines of $errlog:"
     tail -n 30 "$errlog" >&2
   fi
-  say "To roll back: $0 --rollback"
+  say "To roll back: $SELF --rollback"
   return 1
 }
 
