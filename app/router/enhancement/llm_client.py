@@ -18,6 +18,12 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
+# Payload keys chat_completion() builds from its own arguments; extra_params
+# may not override them (e.g. a client-supplied "model" or "stream").
+_CORE_PAYLOAD_KEYS = frozenset(
+    {"model", "messages", "temperature", "stream", "max_tokens", "tools", "tool_choice"}
+)
+
 
 class LLMConfig(BaseModel):
     """Configuration for OpenAI-compatible LLM client."""
@@ -72,6 +78,37 @@ class LLMModelError(LLMError):
     """Raised when model is not available."""
 
     pass
+
+
+class LLMUpstreamError(LLMError):
+    """The LLM server answered with an HTTP error status.
+
+    ``message`` is the server's own explanation (e.g. LM Studio's
+    ``'response_format.type' must be 'json_schema' or 'text'``), so callers can
+    relay it instead of a generic transport error.
+    """
+
+    def __init__(self, status_code: int, message: str):
+        super().__init__(f"LLM server returned {status_code}: {message}")
+        self.status_code = status_code
+        self.message = message
+
+
+def upstream_error_message(response: httpx.Response) -> str:
+    """Extract the error text from an LLM server's error response.
+
+    Handles LM Studio (``{"error": "..."}``) and OpenAI
+    (``{"error": {"message": "..."}}``) shapes; otherwise returns the raw body.
+    """
+    try:
+        error = response.json().get("error")
+    except (json.JSONDecodeError, AttributeError):
+        error = None
+    if isinstance(error, str) and error:
+        return error
+    if isinstance(error, dict) and error.get("message"):
+        return str(error["message"])
+    return response.text[:500] or response.reason_phrase
 
 
 class LLMClient:
@@ -185,6 +222,7 @@ class LLMClient:
         tools: list[dict[str, Any]] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         stream: bool = False,
+        extra_params: dict[str, Any] | None = None,
     ) -> ChatCompletionResponse:
         """
         Generate chat completion using OpenAI-compatible API.
@@ -195,6 +233,9 @@ class LLMClient:
             temperature: Sampling temperature (0.0-1.0)
             max_tokens: Maximum tokens to generate
             stream: Whether to stream response (not implemented)
+            extra_params: Further OpenAI fields to send as-is (e.g.
+                ``response_format``, ``top_p``, ``stop``). Keys this method
+                sets itself (model, messages, stream, ...) are ignored.
 
         Returns:
             ChatCompletionResponse with generated text
@@ -222,6 +263,12 @@ class LLMClient:
         if tool_choice is not None:
             payload["tool_choice"] = tool_choice
 
+        for key, value in (extra_params or {}).items():
+            if key in _CORE_PAYLOAD_KEYS:
+                logger.debug(f"Ignoring extra_params key {key!r}; set by caller")
+                continue
+            payload[key] = value
+
         last_error: Exception | None = None
 
         for attempt in range(self.config.max_retries + 1):
@@ -231,8 +278,11 @@ class LLMClient:
 
                 if response.status_code == 404:
                     raise LLMModelError(f"Model '{model}' not found")
+                if response.is_error:
+                    raise LLMUpstreamError(
+                        response.status_code, upstream_error_message(response)
+                    )
 
-                response.raise_for_status()
                 try:
                     data = response.json()
                 except json.JSONDecodeError:
@@ -268,8 +318,8 @@ class LLMClient:
                 )
                 logger.warning(f"LLM server connection failed (attempt {attempt + 1})")
 
-            except LLMModelError:
-                raise  # Don't retry model errors
+            except (LLMModelError, LLMUpstreamError):
+                raise  # The server answered; retrying won't change it
 
             except httpx.TimeoutException as e:
                 last_error = LLMError(f"Request timed out: {e}")

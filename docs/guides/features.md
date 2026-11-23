@@ -106,7 +106,7 @@ Keep system prompts to four goals: clarity, specificity, explicit targets, and f
 | `temperature` | 0.2 to 0.3 | 0.1 for code-heavy clients; 0.5 for image-generation prompts (comfyui). Avoid 0.0, which can echo input |
 | `max_tokens` | 500 to 600 | 300 for short-answer apps (raycast); about 1,000 for thinking models |
 
-Per-client patterns: code clients (claude-code, vscode, cursor, opencode) get low temperature and concrete-target wording; conversational clients (claude-desktop, lm-studio) get light-touch clarity; image clients (comfyui) get descriptive expansion. Copy the closest existing rule when adding a client.
+Per-client patterns: code clients (claude-code, vscode, opencode) get low temperature and concrete-target wording; conversational clients (claude-desktop, lm-studio) get light-touch clarity; image clients (comfyui) get descriptive expansion. Copy the closest existing rule when adding a client.
 
 ### Debugging
 
@@ -191,6 +191,29 @@ curl -s http://localhost:9090/v1/chat/completions \
 
 Typical app setup: set the provider type to "OpenAI compatible", base URL as above, API key as above, and the model to one listed by `/v1/models`.
 
+### Structured output and sampling fields
+
+`/v1/chat/completions` forwards `response_format`, `top_p`, `stop`, `frequency_penalty`, `presence_penalty`, and `user` to the LLM server unchanged, on streaming and non-streaming requests. Fields you leave out are not sent, so the server's defaults apply.
+
+```bash
+curl -s http://localhost:9090/v1/chat/completions \
+  -H "Authorization: Bearer sk-prompthub-<client>-001" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "<model-id>",
+       "messages": [{"role": "user", "content": "Name a European capital."}],
+       "response_format": {"type": "json_schema", "json_schema": {"name": "city", "strict": true,
+         "schema": {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]}}}}'
+```
+
+The LLM server decides which `response_format` types it supports:
+
+| Server | `json_schema` | `json_object` |
+| --- | --- | --- |
+| LM Studio | Yes | No (fails with 400) |
+| llama.cpp-based servers, e.g. Unsloth Studio | Yes | Yes |
+
+`json_schema` works on both, so prefer it. When the server rejects a request, PromptHub returns the server's own 4xx status and message, for example LM Studio's `'response_format.type' must be 'json_schema' or 'text'`. A `response_format` that is not a JSON object (for example `"json"`) is rejected with 422 before it reaches the server.
+
 ## Progressive tool disclosure
 
 With many servers, listing every tool wastes context. The bridge supports two modes:
@@ -240,7 +263,7 @@ Each client rule has a `privacy_level` controlling whether a prompt may leave lo
 
 | Level | Meaning | Default clients |
 | --- | --- | --- |
-| `local_only` | Never leaves localhost; if the local LLM fails the original prompt is used | claude-desktop, claude-code, codex, vscode, cursor, comfyui, lm-studio, opencode |
+| `local_only` | Never leaves localhost; if the local LLM fails the original prompt is used | claude-desktop, claude-code, codex, vscode, comfyui, lm-studio, opencode |
 | `free_ok` | May fall back to an OpenRouter free-tier model when the local LLM fails | raycast |
 | `any` | May use any cloud fallback | none by default |
 

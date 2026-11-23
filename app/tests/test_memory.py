@@ -2,14 +2,13 @@
 Unit tests for session memory system.
 """
 
-import json
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
 
-from router.memory import SessionStorage, get_session_storage, MemoryMCPClient
+from router.memory import MemoryMCPClient, SessionStorage
 
 
 @pytest.fixture
@@ -134,6 +133,9 @@ async def test_fact_add_and_list(storage):
     assert fact1["fact"] == "The user prefers Python"
     assert fact1["tags"] == ["preferences", "python"]
     assert fact1["source"] == "manual"
+    assert fact2["id"] not in (None, fact1["id"])
+    assert fact2["tags"] == ["location"]
+    assert fact2["source"] == "inferred"
 
     # List facts
     facts = await storage.get_facts("s1")
@@ -359,9 +361,10 @@ async def test_session_touch(storage):
 
 # MCP Client tests
 @pytest.mark.asyncio
+@pytest.mark.offline
 async def test_mcp_client_graceful_degradation():
     """Test that MCP client gracefully handles unavailable server."""
-    client = MemoryMCPClient(base_url="http://localhost:19999")  # Invalid port
+    client = MemoryMCPClient(base_url="http://localhost:19999")  # Unreachable
 
     # Should not raise exception
     result = await client._call_tool("test_tool", {})

@@ -11,6 +11,7 @@ Tests cover:
 """
 
 import pytest
+
 from router.enhancement.context_window import (
     CHARS_PER_TOKEN,
     ENHANCEMENT_INPUT_CAP,

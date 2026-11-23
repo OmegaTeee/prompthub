@@ -9,13 +9,15 @@ Verifies:
 - Failure in HALF_OPEN returns to OPEN
 """
 
-import pytest
 import asyncio
+
+import pytest
+
 from router.resilience.circuit_breaker import (
     CircuitBreaker,
     CircuitBreakerConfig,
-    CircuitState,
     CircuitBreakerError,
+    CircuitState,
 )
 
 

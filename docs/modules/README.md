@@ -134,7 +134,7 @@ Each module owns its data structures:
 Test modules in isolation with mocks:
 
 ```python
-# tests/test_enhancement.py
+# tests/test_cloud_fallback.py
 def test_enhancement_service():
     mock_llm = Mock()
     service = EnhancementService(...)

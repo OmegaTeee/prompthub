@@ -5,8 +5,10 @@ Verifies that the gateway uses dynamic client factories to resolve
 the current bridge at request time, not a captured client instance.
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+from fastmcp import FastMCP
 
 from router.servers.mcp_gateway import _make_client_factory, build_mcp_gateway
 
@@ -132,6 +134,7 @@ class TestBuildMcpGateway:
 
         # Should not raise — skips bad, mounts good
         gateway = build_mcp_gateway(mock_supervisor, mock_registry)
+        assert isinstance(gateway, FastMCP)
         assert MockProxy.call_count == 2
 
     @patch("router.servers.mcp_gateway.FastMCPProxy")

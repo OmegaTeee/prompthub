@@ -9,7 +9,7 @@ The rest of this file is Claude Code–specific. The active tool setup and the r
 ## Tooling in this project
 
 - **Code navigation:** use the tokensave MCP tools (`tokensave_context`, `tokensave_search`, `tokensave_callers`, `tokensave_impact`); the index lives in `.tokensave/`. Don't spawn Explore agents for code research.
-- **Project MCP server:** `prompthub-bridge` (from `.mcp.json`) is the only project-scoped server. It dogfoods the router as client `claude-code` and needs the router daemon running on `:9090`. The bridge itself takes no token (bearer keys gate only `/v1/*`).
+- **Project MCP server:** `prompthub-bridge` is the only project server Claude Code loads (`enabledMcpjsonServers`). Root `.mcp.json` is shared with VS Code, which also starts the `serena`, `headroom`, and `fetch_mcp` entries listed there. The bridge dogfoods the router as client `claude-code` and needs the router daemon running on `:9090`. The bridge itself takes no token (bearer keys gate only `/v1/*`).
 - **Plugins:** `superpowers`, `code-review`, `code-simplifier`, `github`. Plugins that don't serve this codebase are switched off in `.claude/settings.json`.
 - **Project skill:** `hypothesis` (property-based tests for `app/tests`).
 - **Project agents:** `code-docs` and `user-manual` (doc queue steps 2 and 3).

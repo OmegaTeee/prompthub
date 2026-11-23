@@ -24,6 +24,30 @@ class ChatCompletionRequest(BaseModel):
     user: str | None = None
     tools: list[dict[str, Any]] | None = None
     tool_choice: str | dict[str, Any] | None = None
+    # Structured output: {"type": "json_object"} or {"type": "json_schema", ...}.
+    # Passed through as-is; the LLM server decides which types it supports.
+    response_format: dict[str, Any] | None = None
+
+    def passthrough_params(self) -> dict[str, Any]:
+        """Optional OpenAI fields the client set, to forward to the LLM server.
+
+        Fields left unset are omitted so the server applies its own defaults.
+        """
+        return {
+            name: value
+            for name in _PASSTHROUGH_FIELDS
+            if (value := getattr(self, name)) is not None
+        }
+
+
+_PASSTHROUGH_FIELDS = (
+    "top_p",
+    "stop",
+    "frequency_penalty",
+    "presence_penalty",
+    "user",
+    "response_format",
+)
 
 
 class ApiKeyConfig(BaseModel):

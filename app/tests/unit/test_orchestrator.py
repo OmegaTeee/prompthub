@@ -17,12 +17,12 @@ from router.orchestrator.agent import (
     _strip_think_blocks,
 )
 from router.orchestrator.intent import IntentCategory, OrchestratorResult
-from router.resilience import CircuitBreakerError, CircuitState
-
+from router.resilience import CircuitState
 
 # ── Helper ─────────────────────────────────────────────────────────────────────
 
-def _mock_ollama_response(payload: dict) -> MagicMock:
+
+def _mock_llm_response(payload: dict) -> MagicMock:
     """Create a mock ChatCompletionResponse returning a JSON string."""
     mock = MagicMock()
     mock.choices = [MagicMock()]
@@ -32,8 +32,9 @@ def _mock_ollama_response(payload: dict) -> MagicMock:
 
 # ── strip_think_blocks ─────────────────────────────────────────────────────────
 
+
 def test_strip_think_blocks_removes_block():
-    raw = "<think>some reasoning here</think>{\"intent\": \"code\"}"
+    raw = '<think>some reasoning here</think>{"intent": "code"}'
     assert _strip_think_blocks(raw) == '{"intent": "code"}'
 
 
@@ -93,6 +94,7 @@ def test_parse_json_nested_braces():
 
 # ── pass_through factory ──────────────────────────────────────────────────────
 
+
 def test_pass_through_sets_skipped():
     r = OrchestratorResult.pass_through("hello", "timeout")
     assert r.skipped is True
@@ -102,10 +104,11 @@ def test_pass_through_sets_skipped():
 
 # ── OrchestratorAgent.process ─────────────────────────────────────────────────
 
+
 @pytest.fixture
 def agent():
     a = OrchestratorAgent()
-    a._healthy = True   # skip real health check
+    a._healthy = True  # skip real health check
     return a
 
 
@@ -119,7 +122,11 @@ async def test_process_classifies_code_intent(agent):
         "reasoning": "User asked for code.",
         "confidence": 0.95,
     }
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(return_value=_mock_ollama_response(payload))):
+    with patch.object(
+        agent._client,
+        "chat_completion",
+        new=AsyncMock(return_value=_mock_llm_response(payload)),
+    ):
         result = await agent.process("write a function", client_name="vscode")
 
     assert result.intent == IntentCategory.CODE
@@ -133,10 +140,15 @@ async def test_process_classifies_code_intent(agent):
 async def test_process_returns_passthrough_on_timeout(agent):
     async def _slow(*args, **kwargs):
         import asyncio
+
         await asyncio.sleep(10)
 
-    with patch("router.orchestrator.agent.TIMEOUT_SECONDS", 0.01), \
-         patch.object(agent._client, "chat_completion", new=AsyncMock(side_effect=_slow)):
+    with (
+        patch("router.orchestrator.agent.TIMEOUT_SECONDS", 0.01),
+        patch.object(
+            agent._client, "chat_completion", new=AsyncMock(side_effect=_slow)
+        ),
+    ):
         result = await agent.process("hello")
 
     assert result.skipped is True
@@ -159,11 +171,13 @@ async def test_process_cache_hit(agent):
     async def _generate(*args, **kwargs):
         nonlocal call_count
         call_count += 1
-        return _mock_ollama_response(payload)
+        return _mock_llm_response(payload)
 
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(side_effect=_generate)):
+    with patch.object(
+        agent._client, "chat_completion", new=AsyncMock(side_effect=_generate)
+    ):
         await agent.process("hi")
-        await agent.process("hi")   # should hit cache
+        await agent.process("hi")  # should hit cache
 
     assert call_count == 1
 
@@ -173,7 +187,9 @@ async def test_process_handles_non_json_response(agent):
     mock_resp = MagicMock()
     mock_resp.choices = [MagicMock()]
     mock_resp.choices[0].message.content = "I cannot classify this."
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(return_value=mock_resp)):
+    with patch.object(
+        agent._client, "chat_completion", new=AsyncMock(return_value=mock_resp)
+    ):
         result = await agent.process("weird prompt")
 
     assert result.skipped is True
@@ -191,6 +207,7 @@ async def test_process_passthrough_when_unhealthy():
 
 # ── LLM output validation ───────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_process_handles_invalid_suggested_tools_type(agent):
     """LLM returns suggested_tools as a string instead of a list."""
@@ -202,7 +219,11 @@ async def test_process_handles_invalid_suggested_tools_type(agent):
         "reasoning": "Code task.",
         "confidence": 0.9,
     }
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(return_value=_mock_ollama_response(payload))):
+    with patch.object(
+        agent._client,
+        "chat_completion",
+        new=AsyncMock(return_value=_mock_llm_response(payload)),
+    ):
         result = await agent.process("write code")
 
     assert result.skipped is False
@@ -222,7 +243,11 @@ async def test_process_handles_non_numeric_confidence(agent):
         "reasoning": "Simple greeting.",
         "confidence": "high",  # non-numeric
     }
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(return_value=_mock_ollama_response(payload))):
+    with patch.object(
+        agent._client,
+        "chat_completion",
+        new=AsyncMock(return_value=_mock_llm_response(payload)),
+    ):
         result = await agent.process("hello")
 
     assert result.skipped is False
@@ -240,7 +265,11 @@ async def test_process_clamps_out_of_range_confidence(agent):
         "reasoning": "Greeting.",
         "confidence": 50.0,
     }
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(return_value=_mock_ollama_response(payload))):
+    with patch.object(
+        agent._client,
+        "chat_completion",
+        new=AsyncMock(return_value=_mock_llm_response(payload)),
+    ):
         result = await agent.process("hello")
 
     assert result.confidence == 1.0  # clamped to max
@@ -252,7 +281,9 @@ async def test_process_handles_regex_extracted_invalid_json(agent):
     mock_resp = MagicMock()
     mock_resp.choices = [MagicMock()]
     mock_resp.choices[0].message.content = "Here is the result: {not valid json} done"
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(return_value=mock_resp)):
+    with patch.object(
+        agent._client, "chat_completion", new=AsyncMock(return_value=mock_resp)
+    ):
         result = await agent.process("test")
 
     assert result.skipped is True
@@ -275,9 +306,11 @@ async def test_process_bypass_cache(agent):
     async def _generate(*args, **kwargs):
         nonlocal call_count
         call_count += 1
-        return _mock_ollama_response(payload)
+        return _mock_llm_response(payload)
 
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(side_effect=_generate)):
+    with patch.object(
+        agent._client, "chat_completion", new=AsyncMock(side_effect=_generate)
+    ):
         await agent.process("hi")
         await agent.process("hi", bypass_cache=True)  # should NOT hit cache
 
@@ -298,13 +331,17 @@ async def test_cache_eviction(agent):
     def _make_response(**kwargs):
         messages = kwargs.get("messages", [])
         user_content = messages[-1]["content"] if messages else ""
-        return _mock_ollama_response({
-            **payload_template,
-            "intent": "general",
-            "annotated_prompt": user_content,
-        })
+        return _mock_llm_response(
+            {
+                **payload_template,
+                "intent": "general",
+                "annotated_prompt": user_content,
+            }
+        )
 
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(side_effect=_make_response)):
+    with patch.object(
+        agent._client, "chat_completion", new=AsyncMock(side_effect=_make_response)
+    ):
         await agent.process("first")
         await agent.process("second")
         await agent.process("third")  # should evict "first"
@@ -313,6 +350,7 @@ async def test_cache_eviction(agent):
 
 
 # ── Circuit breaker ──────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_process_passthrough_when_circuit_open(agent):
@@ -329,6 +367,7 @@ async def test_process_passthrough_when_circuit_open(agent):
 
 
 # ── Session context truncation ───────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_session_context_truncated_to_budget(agent):
@@ -351,14 +390,18 @@ async def test_session_context_truncated_to_budget(agent):
         messages = kwargs.get("messages", [])
         # User message is the last message in the list
         captured_prompt = messages[-1]["content"] if messages else ""
-        return _mock_ollama_response(payload)
+        return _mock_llm_response(payload)
 
-    with patch.object(agent._client, "chat_completion", new=AsyncMock(side_effect=_capture)):
+    with patch.object(
+        agent._client, "chat_completion", new=AsyncMock(side_effect=_capture)
+    ):
         await agent.process("hi", session_context=long_context)
 
     # The context block should be present but truncated to budget
     assert "[SESSION_CONTEXT]" in captured_prompt
-    ctx_start = captured_prompt.index("[SESSION_CONTEXT]\n") + len("[SESSION_CONTEXT]\n")
+    ctx_start = captured_prompt.index("[SESSION_CONTEXT]\n") + len(
+        "[SESSION_CONTEXT]\n"
+    )
     ctx_end = captured_prompt.index("\n[/SESSION_CONTEXT]")
     injected_context = captured_prompt[ctx_start:ctx_end]
     assert len(injected_context) == budget_chars

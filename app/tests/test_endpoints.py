@@ -6,9 +6,9 @@ These are integration tests that require the router to be running.
 """
 
 import os
+
 import pytest
 from httpx import AsyncClient
-import json
 
 # Router under test: an isolated instance from the live_router fixture (conftest.py).
 ROUTER_URL = os.environ["PROMPTHUB_TEST_URL"]
