@@ -493,7 +493,25 @@ class TestAuthEndpoints:
         )
         assert response.status_code == 401
         body = response.json()
-        assert "error" in body["detail"]
+        assert body == {
+            "error": {"message": "Invalid API key", "type": "invalid_request_error"}
+        }
+        assert response.headers["WWW-Authenticate"] == "Bearer"
+
+    def test_missing_auth_error_is_top_level(self, client):
+        """OpenAI SDKs read `error` at the top level, not under `detail`."""
+        response = client.post(
+            "/v1/chat/completions",
+            json={"model": "llama3.2", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+        assert response.json()["error"]["message"] == "Missing bearer token"
+        assert "detail" not in response.json()
+
+    def test_non_v1_errors_keep_fastapi_shape(self, client):
+        """Only /v1 routes use the OpenAI envelope; other routes are unchanged."""
+        response = client.get("/v1/no-such-endpoint")
+        assert response.status_code == 404
+        assert response.json() == {"detail": "Not Found"}
 
     @pytest.mark.offline
     def test_models_no_auth_required(self, client):
@@ -568,10 +586,8 @@ class TestChatCompletionsModelValidation:
         )
         assert response.status_code == 422
         body = response.json()
-        # FastAPI wraps HTTPException.detail in `{"detail": ...}`; the detail
-        # itself is the OpenAI-style `{"error": {...}}` envelope.
-        assert "error" in body["detail"]
-        err = body["detail"]["error"]
+        assert "detail" not in body
+        err = body["error"]
         assert err["type"] == "invalid_request_error"
         assert err["param"] == "model"
         assert err["code"] == "invalid_model_name"
@@ -1042,7 +1058,7 @@ class TestResponsesEndpoint:
             headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
         )
         assert response.status_code == 422
-        err = response.json()["detail"]["error"]
+        err = response.json()["error"]
         assert err["type"] == "invalid_request_error"
         assert err["param"] == "model"
         assert err["code"] == "invalid_model_name"
@@ -1902,6 +1918,10 @@ class TestSamplingAndFormatForwarding:
     def test_rejects_non_object_response_format(self, client):
         response = self._post(client, response_format="json")
         assert response.status_code == 422
+        err = response.json()["error"]
+        assert err["type"] == "invalid_request_error"
+        assert err["param"] == "response_format"
+        assert "response_format" in err["message"]
 
 
 class TestLLMClientExtraParams:
@@ -2024,7 +2044,7 @@ class TestUpstreamErrorPassthrough:
             headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
         )
         assert response.status_code == 400
-        assert response.json()["detail"]["error"]["message"] == self.LMSTUDIO_MSG
+        assert response.json()["error"]["message"] == self.LMSTUDIO_MSG
         mock_circuit_breakers.get.return_value.record_failure.assert_not_called()
 
     @pytest.mark.asyncio

@@ -9,12 +9,14 @@ and forwarded to the LLM server with circuit breaker protection.
 import json
 import logging
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
 from typing import Any
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.routing import APIRoute
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from router.audit import audit_event
@@ -36,6 +38,60 @@ from router.openai_compat.models import (
 logger = logging.getLogger(__name__)
 
 bearer_scheme = HTTPBearer(auto_error=False)
+
+
+def _validation_error_body(e: RequestValidationError) -> dict[str, Any]:
+    """Convert a request validation error into OpenAI's error envelope.
+
+    ``param`` names the first offending body field (dotted for nested
+    fields); ``message`` lists every problem so none is hidden.
+    """
+    problems = []
+    first_param = None
+    for err in e.errors():
+        loc = [str(p) for p in err.get("loc", ())]
+        if loc and loc[0] == "body":
+            loc = loc[1:]
+        param = ".".join(loc) or None
+        first_param = first_param or param
+        problems.append(f"{param}: {err.get('msg')}" if param else err.get("msg"))
+    return {
+        "error": {
+            "message": "; ".join(str(p) for p in problems) or "Invalid request",
+            "type": "invalid_request_error",
+            "param": first_param,
+            "code": None,
+        }
+    }
+
+
+class OpenAIErrorRoute(APIRoute):
+    """Route class that returns errors in OpenAI's top-level envelope.
+
+    FastAPI serialises ``HTTPException(detail=...)`` as ``{"detail": ...}`` and
+    validation errors as ``{"detail": [...]}``. OpenAI SDKs read ``error`` at
+    the top level, so on /v1 routes both become ``{"error": {...}}``. An
+    HTTPException whose detail is not already an ``{"error": ...}`` dict is
+    re-raised unchanged. Errors raised after a stream starts are sent as SSE
+    events by the streaming generators and never reach this handler.
+    """
+
+    def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
+        handler = super().get_route_handler()
+
+        async def openai_error_handler(request: Request) -> Response:
+            try:
+                return await handler(request)
+            except HTTPException as e:
+                if isinstance(e.detail, dict) and "error" in e.detail:
+                    return JSONResponse(
+                        e.detail, status_code=e.status_code, headers=e.headers
+                    )
+                raise
+            except RequestValidationError as e:
+                return JSONResponse(_validation_error_body(e), status_code=422)
+
+        return openai_error_handler
 
 
 def create_openai_compat_router(
@@ -62,7 +118,9 @@ def create_openai_compat_router(
     Returns:
         Configured APIRouter for /v1/ endpoints
     """
-    router = APIRouter(prefix="/v1", tags=["openai-compat"])
+    router = APIRouter(
+        prefix="/v1", tags=["openai-compat"], route_class=OpenAIErrorRoute
+    )
 
     # Shared LLM client for non-streaming requests
     _llm_client = LLMClient(
