@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -1915,6 +1916,7 @@ class TestLLMClientExtraParams:
         http = AsyncMock()
         http.post.return_value = MagicMock(
             status_code=200,
+            is_error=False,
             json=MagicMock(return_value={"choices": [], "model": "m"}),
             raise_for_status=MagicMock(),
         )
@@ -1935,3 +1937,123 @@ class TestLLMClientExtraParams:
         assert sent["top_p"] == 0.5
         assert sent["model"] == "m"
         assert sent["stream"] is False
+
+
+class TestUpstreamErrorPassthrough:
+    """LLM-server 4xx errors reach the client with their status and message.
+
+    Regression: an upstream 400 (e.g. LM Studio rejecting json_object) became a
+    502 "server_error" with httpx's generic text, and counted as a circuit
+    breaker failure, so a few bad requests could trip the breaker for everyone.
+    """
+
+    LMSTUDIO_MSG = "'response_format.type' must be 'json_schema' or 'text'"
+
+    @staticmethod
+    def _http_response(status, body):
+        request = httpx.Request("POST", "http://llm/v1/chat/completions")
+        return httpx.Response(status, json=body, request=request)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "body, expected",
+        [
+            ({"error": LMSTUDIO_MSG}, LMSTUDIO_MSG),  # LM Studio shape
+            ({"error": {"message": "bad schema", "type": "x"}}, "bad schema"),  # OpenAI
+            ({"detail": "nope"}, '{"detail":"nope"}'),  # unknown shape: raw body
+        ],
+    )
+    async def test_client_raises_upstream_error_without_retry(self, body, expected):
+        from router.enhancement.llm_client import LLMClient, LLMUpstreamError
+
+        llm = LLMClient.__new__(LLMClient)
+        llm.config = MagicMock(max_retries=2, retry_delay=0)
+        http = AsyncMock()
+        http.post.return_value = self._http_response(400, body)
+        llm._get_client = AsyncMock(return_value=http)
+
+        with pytest.raises(LLMUpstreamError) as exc_info:
+            await llm.chat_completion(model="m", messages=[])
+        assert exc_info.value.status_code == 400
+        assert exc_info.value.message == expected
+        assert http.post.call_count == 1  # a 4xx is not retried
+
+    def test_handle_llm_error_passes_4xx_through(self):
+        from fastapi import HTTPException
+
+        from router.enhancement.llm_client import LLMUpstreamError
+
+        breaker = MagicMock()
+        with pytest.raises(HTTPException) as exc_info:
+            _handle_llm_error(
+                LLMUpstreamError(400, self.LMSTUDIO_MSG), breaker, "chat_completion", "m"
+            )
+        assert exc_info.value.status_code == 400
+        assert exc_info.value.detail["error"] == {
+            "message": self.LMSTUDIO_MSG,
+            "type": "invalid_request_error",
+            "code": 400,
+        }
+        breaker.record_failure.assert_not_called()
+
+    def test_handle_llm_error_keeps_502_for_upstream_5xx(self):
+        from fastapi import HTTPException
+
+        from router.enhancement.llm_client import LLMUpstreamError
+
+        breaker = MagicMock()
+        err = LLMUpstreamError(500, "model crashed")
+        with pytest.raises(HTTPException) as exc_info:
+            _handle_llm_error(err, breaker, "chat_completion", "m")
+        assert exc_info.value.status_code == 502
+        assert exc_info.value.detail["error"]["message"] == "model crashed"
+        breaker.record_failure.assert_called_once_with(err)
+
+    @patch("router.openai_compat.router.LLMClient.chat_completion")
+    def test_endpoint_returns_upstream_400(self, mock_chat, client, mock_circuit_breakers):
+        from router.enhancement.llm_client import LLMUpstreamError
+
+        mock_chat.side_effect = LLMUpstreamError(400, self.LMSTUDIO_MSG)
+        response = client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "m",
+                "messages": [{"role": "user", "content": "hi"}],
+                "response_format": {"type": "json_object"},
+            },
+            headers={"Authorization": "Bearer sk-prompthub-passthrough-def456"},
+        )
+        assert response.status_code == 400
+        assert response.json()["detail"]["error"]["message"] == self.LMSTUDIO_MSG
+        mock_circuit_breakers.get.return_value.record_failure.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_stream_reports_upstream_400(self, monkeypatch):
+        from router.openai_compat import router as router_module
+
+        body = {"error": self.LMSTUDIO_MSG}
+        transport = httpx.MockTransport(lambda req: httpx.Response(400, json=body))
+        real_client = httpx.AsyncClient
+        monkeypatch.setattr(
+            router_module.httpx,
+            "AsyncClient",
+            lambda **kw: real_client(transport=transport, **kw),
+        )
+        llm = MagicMock()
+        llm.config = MagicMock(timeout=5, base_url="http://llm/v1", extra_headers={})
+        breaker = MagicMock()
+
+        events = [
+            e
+            async for e in router_module._stream_with_breaker(
+                {"model": "m"}, breaker, llm, "m"
+            )
+        ]
+        error = json.loads(events[0].removeprefix("data: "))["error"]
+        assert error == {
+            "message": self.LMSTUDIO_MSG,
+            "type": "invalid_request_error",
+            "code": 400,
+        }
+        assert events[-1] == "data: [DONE]\n\n"
+        breaker.record_failure.assert_not_called()

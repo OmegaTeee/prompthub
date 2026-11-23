@@ -23,6 +23,8 @@ from router.enhancement.llm_client import (
     LLMConfig,
     LLMConnectionError,
     LLMError,
+    LLMUpstreamError,
+    upstream_error_message,
 )
 from router.openai_compat.auth import ApiKeyManager
 from router.openai_compat.models import (
@@ -720,6 +722,17 @@ async def _stream_responses(
     yield "data: [DONE]\n\n"
 
 
+def _upstream_error_body(e: LLMUpstreamError) -> dict[str, Any]:
+    """OpenAI-style error body carrying the LLM server's own status and message."""
+    return {
+        "error": {
+            "message": e.message,
+            "type": "invalid_request_error" if e.status_code < 500 else "server_error",
+            "code": e.status_code,
+        }
+    }
+
+
 def _handle_llm_error(
     e: Exception,
     breaker: Any,
@@ -730,9 +743,16 @@ def _handle_llm_error(
 
     Shared by /chat/completions and /responses endpoints.
     Always raises — does not return.
+
+    An upstream 4xx is the request's fault, not the server's: it keeps its
+    status and message and does not count against the circuit breaker.
     """
+    client_error = isinstance(e, LLMUpstreamError) and e.status_code < 500
     if breaker:
-        breaker.record_failure(e)
+        if client_error:
+            breaker.record_success()  # the server answered
+        else:
+            breaker.record_failure(e)
     audit_event(
         event_type="openai_proxy",
         action=action,
@@ -741,6 +761,11 @@ def _handle_llm_error(
         status="failed",
         error=str(e),
     )
+    if isinstance(e, LLMUpstreamError):
+        raise HTTPException(
+            status_code=e.status_code if client_error else 502,
+            detail=_upstream_error_body(e),
+        )
     if isinstance(e, LLMConnectionError):
         raise HTTPException(
             status_code=502,
@@ -993,7 +1018,11 @@ async def _stream_with_breaker(
                 json=payload,
                 headers=llm_client.config.extra_headers or {},
             ) as response:
-                response.raise_for_status()
+                if response.is_error:
+                    await response.aread()
+                    raise LLMUpstreamError(
+                        response.status_code, upstream_error_message(response)
+                    )
                 async for line in response.aiter_lines():
                     if line.strip():
                         yield f"{line}\n\n"
@@ -1008,8 +1037,12 @@ async def _stream_with_breaker(
             stream=True,
         )
     except Exception as e:
+        client_error = isinstance(e, LLMUpstreamError) and e.status_code < 500
         if breaker:
-            breaker.record_failure(e)
+            if client_error:
+                breaker.record_success()  # the server answered
+            else:
+                breaker.record_failure(e)
         logger.error("Streaming error for model=%s: %s", model, e)
         audit_event(
             event_type="openai_proxy",
@@ -1019,5 +1052,9 @@ async def _stream_with_breaker(
             status="failed",
             error=str(e),
         )
-        yield f"data: {json.dumps({'error': {'message': str(e)}})}\n\n"
+        if isinstance(e, LLMUpstreamError):
+            body = _upstream_error_body(e)
+        else:
+            body = {"error": {"message": str(e)}}
+        yield f"data: {json.dumps(body)}\n\n"
         yield "data: [DONE]\n\n"

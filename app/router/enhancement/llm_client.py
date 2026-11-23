@@ -80,6 +80,37 @@ class LLMModelError(LLMError):
     pass
 
 
+class LLMUpstreamError(LLMError):
+    """The LLM server answered with an HTTP error status.
+
+    ``message`` is the server's own explanation (e.g. LM Studio's
+    ``'response_format.type' must be 'json_schema' or 'text'``), so callers can
+    relay it instead of a generic transport error.
+    """
+
+    def __init__(self, status_code: int, message: str):
+        super().__init__(f"LLM server returned {status_code}: {message}")
+        self.status_code = status_code
+        self.message = message
+
+
+def upstream_error_message(response: httpx.Response) -> str:
+    """Extract the error text from an LLM server's error response.
+
+    Handles LM Studio (``{"error": "..."}``) and OpenAI
+    (``{"error": {"message": "..."}}``) shapes; otherwise returns the raw body.
+    """
+    try:
+        error = response.json().get("error")
+    except (json.JSONDecodeError, AttributeError):
+        error = None
+    if isinstance(error, str) and error:
+        return error
+    if isinstance(error, dict) and error.get("message"):
+        return str(error["message"])
+    return response.text[:500] or response.reason_phrase
+
+
 class LLMClient:
     """
     OpenAI-compatible async client for local LLM servers.
@@ -247,8 +278,11 @@ class LLMClient:
 
                 if response.status_code == 404:
                     raise LLMModelError(f"Model '{model}' not found")
+                if response.is_error:
+                    raise LLMUpstreamError(
+                        response.status_code, upstream_error_message(response)
+                    )
 
-                response.raise_for_status()
                 try:
                     data = response.json()
                 except json.JSONDecodeError:
@@ -284,8 +318,8 @@ class LLMClient:
                 )
                 logger.warning(f"LLM server connection failed (attempt {attempt + 1})")
 
-            except LLMModelError:
-                raise  # Don't retry model errors
+            except (LLMModelError, LLMUpstreamError):
+                raise  # The server answered; retrying won't change it
 
             except httpx.TimeoutException as e:
                 last_error = LLMError(f"Request timed out: {e}")

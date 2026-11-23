@@ -209,10 +209,10 @@ The LLM server decides which `response_format` types it supports:
 
 | Server | `json_schema` | `json_object` |
 | --- | --- | --- |
-| LM Studio | Yes | No (fails with 502) |
+| LM Studio | Yes | No (fails with 400) |
 | llama.cpp-based servers, e.g. Unsloth Studio | Yes | Yes |
 
-`json_schema` works on both, so prefer it. A `response_format` that is not a JSON object (for example `"json"`) is rejected with 422 before it reaches the server.
+`json_schema` works on both, so prefer it. When the server rejects a request, PromptHub returns the server's own 4xx status and message, for example LM Studio's `'response_format.type' must be 'json_schema' or 'text'`. A `response_format` that is not a JSON object (for example `"json"`) is rejected with 422 before it reaches the server.
 
 ## Progressive tool disclosure
 
