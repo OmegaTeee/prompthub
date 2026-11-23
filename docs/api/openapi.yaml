@@ -521,6 +521,19 @@ paths:
               schema:
                 type: string
                 description: "SSE stream of ChatCompletionChunk objects, ending with `data: [DONE]`"
+        '400':
+          description: >-
+            The LLM server rejected the request (any 4xx it returns is passed
+            through with its own status and message)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIError'
+              example:
+                error:
+                  message: "'response_format.type' must be 'json_schema' or 'text'"
+                  type: "invalid_request_error"
+                  code: 400
         '401':
           description: Missing or invalid bearer token
           content:
@@ -531,8 +544,20 @@ paths:
                 error:
                   message: "Invalid API key"
                   type: "invalid_request_error"
+        '422':
+          description: Request failed validation (bad field type or placeholder model name)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIError'
+              example:
+                error:
+                  message: "response_format: Input should be a valid dictionary"
+                  type: "invalid_request_error"
+                  param: "response_format"
+                  code: null
         '502':
-          description: LLM server unreachable or returned an error
+          description: LLM server unreachable or returned a 5xx error
           content:
             application/json:
               schema:
@@ -1448,3 +1473,15 @@ components:
             type:
               type: string
               enum: [invalid_request_error, server_error]
+            param:
+              type: string
+              nullable: true
+              description: Request field that caused the error, when known
+            code:
+              oneOf:
+                - type: string
+                - type: integer
+              nullable: true
+              description: >-
+                Machine-readable code, e.g. `invalid_model_name`, or the LLM
+                server's HTTP status for errors it returned
