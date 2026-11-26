@@ -9,7 +9,7 @@
     "@modelcontextprotocol/server-sequential-thinking": "2026.8.31",
     "@upstash/context7-mcp": "4.1.0",
     "@wonderwhy-er/desktop-commander": "0.2.47",
-    "chrome-devtools-mcp": "1.9.0",
+    "chrome-devtools-mcp": "1.13.0",
     "ddg-mcp-search": "1.1.0",
     "perplexity-comet-mcp": "^2.6.2"
   },
