@@ -24,7 +24,7 @@ structlog>=25.0.0
 aiosqlite>=0.22.1
 
 # Markdown rendering for dashboard guides
-markdown2>=2.4.0
+markdown2>=2.5.5
 
 # Metrics (used by enhancement middleware)
 prometheus_client>=0.20.0
